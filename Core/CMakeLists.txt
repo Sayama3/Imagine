@@ -1,0 +1,84 @@
+cmake_minimum_required(VERSION 3.25)
+
+set(CORE_SRC_FILES
+		Includes/Core.hpp
+		Sources/Core.cpp
+		Includes/Imagine/Application/Application.hpp
+		Sources/Application/Application.cpp
+		Sources/Core/UUID.cpp
+		Includes/Imagine/Core/UUID.hpp
+		Includes/Imagine/Core/TypeHelper.hpp
+		Sources/Core/Logger.cpp
+		Includes/Imagine/Core/Logger.hpp
+		Includes/Imagine/Core/TimeStep.hpp
+		Includes/Imagine/Layers/Layer.hpp
+		Includes/Imagine/Layers/LayerStack.hpp
+		Includes/Imagine/Application/ApplicationParameters.hpp
+		Includes/Imagine/Application/Window.hpp
+		Includes/Imagine/Application/Renderer.hpp
+		Includes/Imagine/Application/WindowParameters.hpp
+		Sources/Application/Window.cpp
+		Sources/Application/Renderer.cpp
+)
+
+add_library(Core STATIC ${CORE_SRC_FILES})
+
+target_precompile_headers(Core PUBLIC
+		# Multithreading headers
+		<thread>
+		<atomic>
+		<future>
+		<condition_variable>
+		<mutex>
+		<shared_mutex>
+		<latch>
+		<barrier>
+
+		# Utility stuff
+		<functional>
+		<utility>
+		<algorithm>
+		<memory>
+		<source_location>
+		<chrono>
+		<coroutine>
+		<bitset>
+		<execution>
+
+		# Exception related stuff
+		<exception>
+		<stdexcept>
+
+		# String & IO manipulation
+		<filesystem>
+		<string>
+		<string_view>
+
+		# Containers
+		<array>
+		<vector>
+		<unordered_set>
+		<set>
+		<unordered_map>
+		<map>
+		<any>
+		<variant>
+		<optional>
+		<tuple>
+
+		# C-Types Helpers
+		<cstdint>
+		<cstring>
+		<cmath>
+)
+
+target_include_directories(Core PUBLIC Includes)
+target_include_directories(Core PRIVATE Sources)
+
+target_compile_features(Core PUBLIC cxx_std_20)
+
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient)
+
+add_library(Imagine::Core ALIAS Core)
+
+add_subdirectory(Platform)
