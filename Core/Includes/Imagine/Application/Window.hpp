@@ -28,6 +28,7 @@ namespace Imagine::Core {
 
 		virtual void* GetNativeWindow() = 0;
 		virtual bool WindowHasResized() = 0;
+		virtual bool ShouldClose() = 0;
 	};
 
 }

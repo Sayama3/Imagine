@@ -5,11 +5,21 @@
 #include "../../Includes/Imagine/Application/Application.hpp"
 #include "Imagine/Core/Macros.hpp"
 
+#undef CreateWindow;
+
 namespace Imagine::Core {
-	Application::Application(ApplicationParameters parameters) : m_Parameters(std::move(parameters)) {
+	Application::Application(const ApplicationParameters& parameters) : m_Parameters(parameters) {
 		m_ShouldStop = false;
 		m_LastFrame = m_Start = std::chrono::high_resolution_clock::now();
 		m_DeltaTime = 0.01666666f;
+
+		if (parameters.Window) {
+			m_Window = Window::CreateWindow(parameters.Name, parameters.Window.value());
+		}
+
+		if (parameters.UseRenderer) {
+			//TODO: Create the renderer.
+		}
 	}
 
 	Application::~Application() {
@@ -21,6 +31,10 @@ namespace Imagine::Core {
 
 	void Application::Run() {
 		while (!m_ShouldStop) {
+			if (m_Window) {
+				m_Window->Update();
+				m_ShouldStop |= m_Window->ShouldClose();
+			}
 			std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();
 			m_DeltaTime = std::chrono::duration<double, std::chrono::seconds::period>(newFrame - m_LastFrame).count();
 			m_LastFrame = newFrame;

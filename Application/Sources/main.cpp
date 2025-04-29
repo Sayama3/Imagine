@@ -5,6 +5,7 @@
 #include "../../Core/Includes/Imagine/Application/Application.hpp"
 #include <iostream>
 #include "Imagine/Core/Logger.hpp"
+#include "Imagine/Core/Macros.hpp"
 
 int main(int argc, char** argv)
 {
@@ -12,15 +13,22 @@ int main(int argc, char** argv)
 	using namespace Imagine::Core;
 	Imagine::Core::Log::Init();
 
+	// ApplicationParameters params {
+	// 	std::string{"Imagine"},
+	// 	WindowParameters {
+	// 		900,
+	// 		600,
+	// 		true
+	// 	},
+	// 	true,
+	// };
+
 	ApplicationParameters params {
-		"Imagine",
-		WindowParameters {
-			900,
-			600,
-			true
-		},
+		std::string{"Imagine"},
+		std::nullopt,
 		true,
 	};
+
 	Application* application = new Application(params);
 
 	application->Run();

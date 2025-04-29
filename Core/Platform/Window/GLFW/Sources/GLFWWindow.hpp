@@ -18,8 +18,10 @@ namespace Imagine::Core {
 		void * GetNativeWindow() override;
 
 		bool WindowHasResized() override;
+		bool ShouldClose() override;
 	private:
 		static void framebufferResizeCallback(void* window, int width, int height);
+
 	private:
 		void* m_Window;
 		bool frameBufferResized = false;

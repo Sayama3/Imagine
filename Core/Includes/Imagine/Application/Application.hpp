@@ -12,7 +12,7 @@ namespace Imagine::Core {
 
 	class Application {
 	public:
-		Application(ApplicationParameters parameters);
+		Application(const ApplicationParameters& parameters);
 		~Application();
 	public:
 		void Stop();

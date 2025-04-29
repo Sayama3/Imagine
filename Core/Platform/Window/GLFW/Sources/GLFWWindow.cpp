@@ -15,6 +15,10 @@ namespace Imagine::Core {
 		return frameBufferResized;
 	}
 
+	bool GLFWWindow::ShouldClose() {
+		return glfwWindowShouldClose(static_cast<GLFWwindow *>(m_Window));
+	}
+
 	void GLFWWindow::framebufferResizeCallback(void* window, int width, int height) {
 		auto app = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(static_cast<GLFWwindow *>(window)));
 		app->frameBufferResized = true;
