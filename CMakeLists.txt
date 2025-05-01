@@ -24,5 +24,3 @@ option(MGN_RENDERER_VULKAN "Launch the application with Vulkan as a render and c
 add_subdirectory(Libraries)
 add_subdirectory(Core)
 add_subdirectory(Application)
-
-message(STATUS "Created target ${LIBRARY_TARGET_NAME}.")
