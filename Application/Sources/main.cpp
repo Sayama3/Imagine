@@ -13,21 +13,21 @@ int main(int argc, char** argv)
 	using namespace Imagine::Core;
 	Imagine::Core::Log::Init();
 
-	// ApplicationParameters params {
-	// 	std::string{"Imagine"},
-	// 	WindowParameters {
-	// 		900,
-	// 		600,
-	// 		true
-	// 	},
-	// 	true,
-	// };
-
 	ApplicationParameters params {
 		std::string{"Imagine"},
-		std::nullopt,
+		WindowParameters {
+			900,
+			600,
+			true
+		},
 		true,
 	};
+
+	// ApplicationParameters params {
+	// 	std::string{"Imagine"},
+	// 	std::nullopt,
+	// 	true,
+	// };
 
 	Application* application = new Application(params);
 

@@ -11,18 +11,24 @@ namespace Imagine::Core {
 	static std::mt19937_64 s_RandomEngine(s_RandomDevice());
 	static std::uniform_int_distribution<uint64_t> s_UniformDistribution;
 
-	UUID::UUID() : m_UUID(s_UniformDistribution(s_RandomEngine)) {
+	UUID::UUID() : m_UUID1(s_UniformDistribution(s_RandomEngine)), m_UUID2(s_UniformDistribution(s_RandomEngine)) {
 	}
 
 	std::string UUID::string() const
 	{
 		using namespace std::string_literals;
-		return "UUID{"s + std::to_string(m_UUID) + "}"s;
+		return "UUID{"s + std::to_string(m_UUID1) + "_"s + std::to_string(m_UUID2) + "}"s;
+	}
+
+	UUID::operator bool() const
+	{
+		return m_UUID1 != 0 && m_UUID2 != 0;
 	}
 
 	bool operator==(const UUID &lft, const UUID &rht)
 	{
-		return lft.m_UUID == rht.m_UUID;
+		return lft.m_UUID1 == rht.m_UUID1 &&
+			   lft.m_UUID2 == rht.m_UUID2;
 	}
 
 	bool operator!=(const UUID &lft, const UUID &rht)

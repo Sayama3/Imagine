@@ -19,6 +19,19 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Application/WindowParameters.hpp
 		Sources/Application/Window.cpp
 		Sources/Application/Renderer.cpp
+		Sources/Scene/Scene.cpp
+		Includes/Imagine/Scene/Scene.hpp
+		Sources/Scene/Entity.cpp
+		Includes/Imagine/Scene/Entity.hpp
+		Includes/Imagine/Core/Math.hpp
+		Includes/Imagine/Core/Buffer.hpp
+		Sources/Core/Buffer.cpp
+		Sources/Scene/Renderable.cpp
+		Includes/Imagine/Scene/Renderable.hpp
+		Sources/Scene/Physicalisable.cpp
+		Includes/Imagine/Scene/Physicalisable.hpp
+		Sources/Core/BufferView.cpp
+		Includes/Imagine/Core/BufferView.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -71,6 +84,8 @@ target_precompile_headers(Core PUBLIC
 		<cstring>
 		<cmath>
 )
+
+target_compile_definitions(Core PUBLIC GLM_ENABLE_EXPERIMENTAL=1)
 
 target_include_directories(Core PUBLIC Includes)
 target_include_directories(Core PRIVATE Sources)

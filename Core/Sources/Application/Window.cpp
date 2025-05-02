@@ -11,7 +11,7 @@
 #endif
 
 namespace Imagine::Core {
-	Window* Window::CreateWindow(const std::string &windowName, WindowParameters parameters) {
+	Window* Window::Create(const std::string &windowName, WindowParameters parameters) {
 #ifdef MGN_WINDOW_GLFW
 			return new GLFWWindow(windowName, std::move(parameters));
 #else

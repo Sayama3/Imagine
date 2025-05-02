@@ -4,8 +4,9 @@
 
 #include "../../Includes/Imagine/Application/Application.hpp"
 #include "Imagine/Core/Macros.hpp"
+#include "Imagine/Scene/Renderable.hpp"
+#include "Imagine/Scene/Scene.hpp"
 
-#undef CreateWindow;
 
 namespace Imagine::Core {
 	Application::Application(const ApplicationParameters& parameters) : m_Parameters(parameters) {
@@ -14,7 +15,7 @@ namespace Imagine::Core {
 		m_DeltaTime = 0.01666666f;
 
 		if (parameters.Window) {
-			m_Window = Window::CreateWindow(parameters.Name, parameters.Window.value());
+			m_Window = Window::Create(parameters.Name, parameters.Window.value());
 		}
 
 		if (parameters.UseRenderer) {
@@ -30,6 +31,13 @@ namespace Imagine::Core {
 	}
 
 	void Application::Run() {
+		Scene* scene = new Scene();
+
+		UUID entityId = scene->CreateEntity().ID;
+		BufferView view = scene->AddComponent<Renderable>(entityId);
+		view.Get<Renderable>().m_Mesh = UUID::Null();
+		view.Get<Renderable>().m_Material = UUID::Null();
+
 		while (!m_ShouldStop) {
 			if (m_Window) {
 				m_Window->Update();
@@ -41,9 +49,14 @@ namespace Imagine::Core {
 			MGN_CORE_INFO("Frame #{}", m_CurrentFrame);
 			MGN_CORE_INFO("DeltaTime #{}", m_DeltaTime);
 			MGN_CORE_INFO("Time #{}", Time());
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+			MGN_CORE_INFO("Entity {} at position {}", entityId.string(), Math::ToString(scene->GetEntity(entityId).Position)*+£);
+
+			scene->GetEntity(entityId).Position += Vec3{m_DeltaTime, 0, 0};
+
 			m_CurrentFrame += 1;
 		}
+		delete scene;
 	}
 
 	double Application::Time() const {
