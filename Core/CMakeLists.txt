@@ -32,6 +32,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Scene/Physicalisable.hpp
 		Sources/Core/BufferView.cpp
 		Includes/Imagine/Core/BufferView.hpp
+		Sources/Core/SparseSet.cpp
+		Includes/Imagine/Core/SparseSet.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
