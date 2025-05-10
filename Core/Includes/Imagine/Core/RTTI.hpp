@@ -85,42 +85,42 @@ struct ::std::hash<::Imagine::Core::RTTI<Base>>
 #define RTTI_DECLARATION(Base, Self, Parent) RTTI_IMPLEMENT_CREATE(Base, Self) RTTI_ADVANCED_DECLARATION(Base, Self, #Self, Parent)
 #define RTTI_ROOT_DECLARATION(Base) RTTI_DECLARATION(Base, Base, Base)
 
-
-namespace Imagine::Core {
-
-	class Something;
-	using RTTISomething = ::Imagine::Core::RTTI<Something>;
-
- 	#define RTTISomething_DECLARATION(Self, Parent) RTTI_DECLARATION(::Imagine::Core::Something, Self, Parent)
-
- 	class Something {
- 	public:
- 		RTTI_ROOT_DECLARATION(Something);
-		Something() {}
-		virtual ~Something() {};
-
-	};
-
-	class SomeOtherThing : public Something {
-	public:
-		RTTISomething_DECLARATION(SomeOtherThing, Something);
-		SomeOtherThing() {}
-		virtual ~SomeOtherThing() override {};
-	};
-
-	class AnotherThing : public Something {
-	public:
-		RTTISomething_DECLARATION(AnotherThing, Something);
-		AnotherThing() {}
-		virtual ~AnotherThing() override {};
-	};
-
-	class AnotherSomeOtherThing : public SomeOtherThing {
-	public:
-		RTTISomething_DECLARATION(AnotherSomeOtherThing, SomeOtherThing);
-		AnotherSomeOtherThing()
-		{
-		}
-		virtual ~AnotherSomeOtherThing() override {};
-	};
-}
+//
+// namespace Imagine::Core {
+//
+// 	class Something;
+// 	using RTTISomething = ::Imagine::Core::RTTI<Something>;
+//
+//  	#define RTTISomething_DECLARATION(Self, Parent) RTTI_DECLARATION(::Imagine::Core::Something, Self, Parent)
+//
+//  	class Something {
+//  	public:
+//  		RTTI_ROOT_DECLARATION(Something);
+// 		Something() {}
+// 		virtual ~Something() {};
+//
+// 	};
+//
+// 	class SomeOtherThing : public Something {
+// 	public:
+// 		RTTISomething_DECLARATION(SomeOtherThing, Something);
+// 		SomeOtherThing() {}
+// 		virtual ~SomeOtherThing() override {};
+// 	};
+//
+// 	class AnotherThing : public Something {
+// 	public:
+// 		RTTISomething_DECLARATION(AnotherThing, Something);
+// 		AnotherThing() {}
+// 		virtual ~AnotherThing() override {};
+// 	};
+//
+// 	class AnotherSomeOtherThing : public SomeOtherThing {
+// 	public:
+// 		RTTISomething_DECLARATION(AnotherSomeOtherThing, SomeOtherThing);
+// 		AnotherSomeOtherThing()
+// 		{
+// 		}
+// 		virtual ~AnotherSomeOtherThing() override {};
+// 	};
+// }
