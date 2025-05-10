@@ -36,6 +36,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/SparseSet.hpp
 		Sources/Core/RTTI.cpp
 		Includes/Imagine/Core/RTTI.hpp
+		Sources/Core/HeapArray.cpp
+		Includes/Imagine/Core/HeapArray.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
