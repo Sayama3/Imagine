@@ -164,8 +164,11 @@ namespace Imagine::Core
         void swap_and_remove(const uint64_t index)
         {
             c_swap_elements(index, Count - 1);
-            std::swap(data[index], data[Count-1]);
             --Count;
+        }
+
+        void clear() {
+            Count = 0;
         }
     public:
         T& operator[](const uint64_t index) {

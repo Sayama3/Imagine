@@ -54,7 +54,7 @@ namespace Imagine::Core {
 		// view.Get<Renderable>().m_Material = UUID::Null();
 
 		MGN_CORE_TRACE("ElementsCount - {}", TmpElement::ElementsCount);
-		auto* set = new SparseSet<TmpElement>();
+		auto* set = new AutoIdSparseSet<TmpElement>();
 		uint32_t id = set->Create();
 		for (int i = 0; i < 32; ++i) {
 			set->Create();
