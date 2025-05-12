@@ -49,7 +49,7 @@ namespace Imagine::Core {
  		const std::string type;
  		const RTTI<Base>* const parent;
  	private:
- 		Base* (*createFunc) () const;
+ 		Base* (*createFunc) ();
  	};
 
  	template<class Base>

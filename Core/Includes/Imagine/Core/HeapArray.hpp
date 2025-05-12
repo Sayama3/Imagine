@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Macros.hpp"
+#include "MemoryHelper.hpp"
 
 namespace Imagine::Core
 {
@@ -19,33 +20,29 @@ namespace Imagine::Core
     template<typename T>
     class HeapArray {
     public:
-        HeapArray() {}
+        HeapArray() = default;
+        explicit HeapArray(const uint64_t capacity) {
+            reserve(capacity);
+        }
         ~HeapArray()
         {
             free(data);
+            data = nullptr;
+            Count = 0;
+            Capacity = 0;
         }
     private:
-        template<typename Type>
-        inline static void c_swap_memory(Type* id1, Type* id2)
-        {
-            //TODO: Optimize ?
-            Type* tmp = malloc(sizeof(Type));
-            memcpy(tmp, id1, sizeof(Type));
-            memcpy(id1, id2, sizeof(Type));
-            memcpy(id2, tmp, sizeof(Type));
-            free(tmp);
-        }
 
         inline void c_swap_elements(const uint64_t id1, const uint64_t id2)
         {
             MGN_CORE_ASSERT(id1 < Capacity, "THe index {} is out of bound.", id1);
             MGN_CORE_ASSERT(id2 < Capacity, "THe index {} is out of bound.", id2);
-            c_swap_memory(&data[id1], &data[id2]);
+            MemoryHelper::c_swap_memory(&data[id1], &data[id2]);
         }
 
         void reallocate_and_copy(const uint64_t size)
         {
-            T* tmpBuffer = malloc(sizeof(T)*size);
+            T* tmpBuffer = reinterpret_cast<T*>(malloc(sizeof(T) * size));
             if (data)
             {
                 memcpy(tmpBuffer, data, std::min(Count, size)*sizeof(T));
@@ -62,9 +59,16 @@ namespace Imagine::Core
             }
         }
     public:
-        [nodiscard] uint64_t size() const {return Count;}
-        [nodiscard] uint64_t capacity() const {return Capacity;}
+        [[nodiscard]] uint64_t size() const {return Count;}
+        [[nodiscard]] uint64_t capacity() const {return Capacity;}
+        [[nodiscard]] bool empty() const {return Count == 0;}
     public:
+        void reserve(const uint64_t capacity) {
+            if (capacity > Capacity) {
+                reallocate_and_copy(capacity);
+            }
+        }
+
         /**
          * This function will reallocate the whole buffer if the size isn't exactly the size passed as parameters.
          * @param size the new size of the HeapArray.
@@ -89,13 +93,13 @@ namespace Imagine::Core
             Count = size;
         }
 
-        [nodiscard] T* try_get(const uint64_t index)
+        [[nodiscard]] T* try_get(const uint64_t index)
         {
             if (index >= Count) return nullptr;
             return data[index];
         }
 
-        [nodiscard] T& get(const uint64_t index)
+        [[nodiscard]] T& get(const uint64_t index)
         {
 #ifdef MGN_DEBUG
             MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
@@ -104,13 +108,13 @@ namespace Imagine::Core
             return data[index];
         }
 
-        [nodiscard] const T* try_get(const uint64_t index) const
+        [[nodiscard]] const T* try_get(const uint64_t index) const
         {
             if (index >= Count) return nullptr;
             return data[index];
         }
 
-        [nodiscard] const T& get(const uint64_t index) const
+        [[nodiscard]] const T& get(const uint64_t index) const
         {
 #ifdef MGN_DEBUG
             MGN_CORE_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
@@ -119,20 +123,26 @@ namespace Imagine::Core
             return data[index];
         }
 
-        T& push_back(const T& copy)
+        void push_back(const T& copy)
         {
             const uint64_t index = Count++;
             reallocate_if_necessary(Count);
-            return data[index];
+            data[index] = copy;
         }
 
-        T& emplace_back()
+        void emplace_back()
         {
             const uint64_t index = Count++;
             reallocate_if_necessary(Count);
-            return data[index];
         }
 
+        T& back() {
+            return get(Count - 1);
+        }
+
+        void pop_back() {
+            Count = Count == 0 ? 0 : Count - 1;
+        }
         /**
         * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
         */
@@ -156,6 +166,13 @@ namespace Imagine::Core
             c_swap_elements(index, Count - 1);
             std::swap(data[index], data[Count-1]);
             --Count;
+        }
+    public:
+        T& operator[](const uint64_t index) {
+            return get(index);
+        }
+        const T& operator[](const uint64_t index) const {
+            return get(index);
         }
     private:
         T* data{nullptr};
