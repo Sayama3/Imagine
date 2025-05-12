@@ -39,6 +39,12 @@ set(CORE_SRC_FILES
 		Sources/Core/HeapArray.cpp
 		Includes/Imagine/Core/HeapArray.hpp
 		Includes/Imagine/Core/MemoryHelper.hpp
+		Sources/Scene/Component.cpp
+		Includes/Imagine/Scene/Component.hpp
+		Sources/Core/RawHeapArray.cpp
+		Includes/Imagine/Core/RawHeapArray.hpp
+		Sources/Core/RawSparseSet.cpp
+		Includes/Imagine/Core/RawSparseSet.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -104,3 +110,15 @@ target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_onl
 add_library(Imagine::Core ALIAS Core)
 
 add_subdirectory(Platform)
+
+
+if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
+	target_compile_definitions(Core PUBLIC MGN_DEBUG=1)
+elseif(CMAKE_BUILD_TYPE MATCHES "[Rr][Ee][Ll][Ee][Aa][Ss][Ee]")
+	target_compile_definitions(Core PUBLIC MGN_RELEASE=1)
+elseif(CMAKE_BUILD_TYPE MATCHES "[Dd][Ii][Ss][Tt]")
+	target_compile_definitions(Core PUBLIC MGN_RELEASE=1)
+	target_compile_definitions(Core PUBLIC MGN_DIST=1)
+else()
+	message(FATAL_ERROR "Unknown cmake build type '${CMAKE_BUILD_TYPE}'")
+endif()

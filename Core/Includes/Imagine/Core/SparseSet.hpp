@@ -144,9 +144,9 @@ namespace Imagine::Core
         }
 
     private:
-        HeapArray<UnsignedInteger> sparse{};
-        HeapArray<UnsignedInteger> dense{};
-        HeapArray<T> elements{};
+        HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
+        HeapArray<UnsignedInteger, UnsignedInteger> dense{};
+        HeapArray<T, UnsignedInteger> elements{};
     };
 
 

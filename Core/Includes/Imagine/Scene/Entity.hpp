@@ -9,9 +9,13 @@
 
 namespace Imagine::Core
 {
+    struct EntityID {
+        uint32_t id;
+        [[nodiscard]] UUID AsUUID() const {return UUID(id);}
+    };
 
     struct Entity {
-        UUID ID;
+        EntityID ID;
         Quat Rotation;
         Vec3 Position;
     };

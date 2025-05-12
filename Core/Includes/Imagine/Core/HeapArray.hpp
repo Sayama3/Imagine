@@ -17,11 +17,11 @@ namespace Imagine::Core
      *
      * @tparam T Element Type used in the HeapArray
      */
-    template<typename T>
+    template<typename T, typename UnsignedInteger = uint64_t>
     class HeapArray {
     public:
         HeapArray() = default;
-        explicit HeapArray(const uint64_t capacity) {
+        explicit HeapArray(const UnsignedInteger capacity) {
             reserve(capacity);
         }
         ~HeapArray()
@@ -32,15 +32,13 @@ namespace Imagine::Core
             Capacity = 0;
         }
     private:
-
-        inline void c_swap_elements(const uint64_t id1, const uint64_t id2)
+        void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2)
         {
             MGN_CORE_ASSERT(id1 < Capacity, "THe index {} is out of bound.", id1);
             MGN_CORE_ASSERT(id2 < Capacity, "THe index {} is out of bound.", id2);
             MemoryHelper::c_swap_memory(&data[id1], &data[id2]);
         }
-
-        void reallocate_and_copy(const uint64_t size)
+        void reallocate_and_copy(const UnsignedInteger size)
         {
             T* tmpBuffer = reinterpret_cast<T*>(malloc(sizeof(T) * size));
             if (data)
@@ -51,7 +49,7 @@ namespace Imagine::Core
             free(tmpBuffer);
             Capacity = size;
         }
-        void reallocate_if_necessary(const uint64_t minimumCapacity)
+        void reallocate_if_necessary(const UnsignedInteger minimumCapacity)
         {
             if (Capacity < minimumCapacity)
             {
@@ -59,11 +57,11 @@ namespace Imagine::Core
             }
         }
     public:
-        [[nodiscard]] uint64_t size() const {return Count;}
-        [[nodiscard]] uint64_t capacity() const {return Capacity;}
+        [[nodiscard]] UnsignedInteger size() const {return Count;}
+        [[nodiscard]] UnsignedInteger capacity() const {return Capacity;}
         [[nodiscard]] bool empty() const {return Count == 0;}
     public:
-        void reserve(const uint64_t capacity) {
+        void reserve(const UnsignedInteger capacity) {
             if (capacity > Capacity) {
                 reallocate_and_copy(capacity);
             }
@@ -73,7 +71,7 @@ namespace Imagine::Core
          * This function will reallocate the whole buffer if the size isn't exactly the size passed as parameters.
          * @param size the new size of the HeapArray.
          */
-        void resize(const uint64_t size)
+        void resize(const UnsignedInteger size)
         {
             if (size != Capacity)
             {
@@ -87,19 +85,19 @@ namespace Imagine::Core
          * Capacity is not high enough to accommodate the new size.
          * @param size the new count of the HeapArray
          */
-        void redimension(const uint64_t size)
+        void redimension(const UnsignedInteger size)
         {
             reallocate_if_necessary(size);
             Count = size;
         }
 
-        [[nodiscard]] T* try_get(const uint64_t index)
+        [[nodiscard]] T* try_get(const UnsignedInteger index)
         {
             if (index >= Count) return nullptr;
             return data[index];
         }
 
-        [[nodiscard]] T& get(const uint64_t index)
+        [[nodiscard]] T& get(const UnsignedInteger index)
         {
 #ifdef MGN_DEBUG
             MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
@@ -108,13 +106,13 @@ namespace Imagine::Core
             return data[index];
         }
 
-        [[nodiscard]] const T* try_get(const uint64_t index) const
+        [[nodiscard]] const T* try_get(const UnsignedInteger index) const
         {
             if (index >= Count) return nullptr;
             return data[index];
         }
 
-        [[nodiscard]] const T& get(const uint64_t index) const
+        [[nodiscard]] const T& get(const UnsignedInteger index) const
         {
 #ifdef MGN_DEBUG
             MGN_CORE_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
@@ -125,14 +123,14 @@ namespace Imagine::Core
 
         void push_back(const T& copy)
         {
-            const uint64_t index = Count++;
+            const UnsignedInteger index = Count++;
             reallocate_if_necessary(Count);
             data[index] = copy;
         }
 
         void emplace_back()
         {
-            const uint64_t index = Count++;
+            const UnsignedInteger index = Count++;
             reallocate_if_necessary(Count);
         }
 
@@ -146,10 +144,10 @@ namespace Imagine::Core
         /**
         * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
         */
-        void remove(const uint64_t index)
+        void remove(const UnsignedInteger index)
         {
             if (index >= Count) return;
-            const uint64_t element_to_move = Count - index;
+            const UnsignedInteger element_to_move = Count - index;
             for (int i = index+1; i < element_to_move; ++i)
             {
                 memcpy(&data[i-1], &data[i], sizeof(T));
@@ -161,7 +159,7 @@ namespace Imagine::Core
         * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
         * But the data will remain at index Count until further operation but not recommended to do it after.
         */
-        void swap_and_remove(const uint64_t index)
+        void swap_and_remove(const UnsignedInteger index)
         {
             c_swap_elements(index, Count - 1);
             --Count;
@@ -171,16 +169,16 @@ namespace Imagine::Core
             Count = 0;
         }
     public:
-        T& operator[](const uint64_t index) {
+        T& operator[](const UnsignedInteger index) {
             return get(index);
         }
-        const T& operator[](const uint64_t index) const {
+        const T& operator[](const UnsignedInteger index) const {
             return get(index);
         }
     private:
         T* data{nullptr};
-        uint64_t Count{0};
-        uint64_t Capacity{0};
+        UnsignedInteger Count{0};
+        UnsignedInteger Capacity{0};
     };
 
 }

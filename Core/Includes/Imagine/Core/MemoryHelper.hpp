@@ -5,15 +5,20 @@
 #pragma once
 
 namespace Imagine::Core::MemoryHelper {
-	template<typename Type>
-	inline static void c_swap_memory(Type *id1, Type *id2) {
+	inline static void c_swap_memory(void* id1, void* id2, const uint64_t size) {
 		//TODO: Optimize ?
-		Type *tmp = reinterpret_cast<Type*>(malloc(sizeof(Type)));
-		memcpy(tmp, id1, sizeof(Type));
-		memcpy(id1, id2, sizeof(Type));
-		memcpy(id2, tmp, sizeof(Type));
+		void* tmp = malloc(size);
+		memcpy(tmp, id1, size);
+		memcpy(id1, id2, size);
+		memcpy(id2, tmp, size);
 		free(tmp);
 	}
+
+	template<typename Type>
+	inline static void c_swap_memory(Type *id1, Type *id2) {
+		c_swap_memory(id1, id2, sizeof(Type));
+	}
+
 	template<typename Type>
 	inline static void c_swap_memory(Type& id1, Type& id2) {
 		c_swap_memory(&id1, &id2);
