@@ -59,7 +59,7 @@ namespace Imagine::Core
             elements.clear();
         }
 
-        [[nodiscard]] bool Exist(const UnsignedInteger id) {
+        [[nodiscard]] bool Exist(const UnsignedInteger id) const {
             if (id >= sparse.size()) return false;
             const UnsignedInteger index = sparse[id];
             if (index >= dense.size()) return false;
@@ -189,7 +189,7 @@ namespace Imagine::Core
                 const UnsignedInteger* begin = &FreeList[0];
                 const UnsignedInteger* end = &FreeList.back() + 1;
 
-                const UnsignedInteger& idxPtr = std::find(begin, end, id);
+                const UnsignedInteger* idxPtr = std::find(begin, end, id);
                 if (idxPtr != end) {
                     FreeList.swap_and_remove(idxPtr - begin);
                 }

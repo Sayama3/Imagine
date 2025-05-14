@@ -55,7 +55,7 @@ namespace Imagine::Core {
 	public:
 		UnsignedInteger GetDataSize() const { return elements.get_data_size(); }
 
-        [[nodiscard]] bool Exist(const UnsignedInteger id) {
+        [[nodiscard]] bool Exist(const UnsignedInteger id) const {
             if (id >= sparse.size()) return false;
             const UnsignedInteger index = sparse[id];
             if (index >= dense.size()) return false;
@@ -150,7 +150,7 @@ namespace Imagine::Core {
             return dense.size();
         }
 
-        [[nodisard]] UnsignedInteger Capacity const{
+        [[nodisard]] UnsignedInteger Capacity() const{
             return dense.capacity();
         }
 

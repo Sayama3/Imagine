@@ -12,7 +12,7 @@ namespace Imagine::Core
     struct EntityID {
         uint32_t id;
         [[nodiscard]] UUID AsUUID() const {return UUID(id);}
-        [[nodiscard]] std::string string() const { std::to_string(id); }
+        [[nodiscard]] std::string string() const { return std::to_string(id); }
     };
 
     struct Entity {

@@ -40,7 +40,7 @@ namespace Imagine::Core
         BufferView GetOrAddComponent(EntityID entityId, UUID componentId);
 
         template<typename T>
-        BufferView AddComponent(const EntityID entityId) {auto view = AddComponent(entityId, UUID::FromType<T>()); view.Get<T>() = T{}; return view;}
+        BufferView AddComponent(const EntityID entityId) {auto view = AddComponent(entityId, UUID::FromType<T>()); view.template Get<T>() = T{}; return view;}
         template<typename T>
         BufferView GetComponent(const EntityID entityId) {return GetComponent(entityId, UUID::FromType<T>());}
         template<typename T>
