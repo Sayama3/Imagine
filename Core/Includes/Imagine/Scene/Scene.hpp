@@ -26,13 +26,13 @@ namespace Imagine::Core
         const Entity& GetEntity(EntityID id) const;
         void DestroyEntity(EntityID id);
 
-        void AddComponentType(UUID componentId, uint64_t size, void(*constructor)(void*, UnsignedInteger) = nullptr, void(*destructor)(void*, UnsignedInteger) = nullptr, void(*copy_constructor)(void*, UnsignedInteger, BufferView view) = nullptr);
-        UUID AddComponentType(uint64_t size, void(*constructor)(void*, UnsignedInteger) = nullptr, void(*destructor)(void*, UnsignedInteger) = nullptr, void(*copy_constructor)(void*, UnsignedInteger, BufferView view) = nullptr);
+        void AddComponentType(UUID componentId, uint64_t size, void(*constructor)(void*, uint32_t) = nullptr, void(*destructor)(void*, uint32_t) = nullptr, void(*copy_constructor)(void*, uint32_t, BufferView view) = nullptr);
+        UUID AddComponentType(uint64_t size, void(*constructor)(void*, uint32_t) = nullptr, void(*destructor)(void*, uint32_t) = nullptr, void(*copy_constructor)(void*, uint32_t, BufferView view) = nullptr);
 
         template<typename T>
         void AddComponentType()
         {
-            AddComponentType(UUID::FromType<T>(), sizeof(T), (void* data, UnsignedInteger size) { new (data) T(); }, (void* data, UnsignedInteger size) { reinterpret_cast<T*>(data)->~T(); }, (void* data, UnsignedInteger size, BufferView view) { new (data) T(view.Get<T>()); });
+            AddComponentType(UUID::FromType<T>(), sizeof(T), [](void* data, uint32_t size) { new (data) T(); }, [](void* data, uint32_t size) { reinterpret_cast<T*>(data)->~T(); }, [](void* data, uint32_t size, BufferView view) { new (data) T(view.template Get<T>()); });
         }
 
         BufferView AddComponent(EntityID entityId, UUID componentId);

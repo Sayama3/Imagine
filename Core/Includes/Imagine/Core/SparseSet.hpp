@@ -45,6 +45,8 @@ namespace Imagine::Core
             // Set the elements two-way connection
             sparse[id] = index;
             dense[index] = id;
+
+            return true;
         }
     public:
         SparseSet() {sparse.resize(256);dense.resize(256);elements.resize(256);}
@@ -118,7 +120,7 @@ namespace Imagine::Core
 
         [[nodiscard]] virtual T* TryGet(const UnsignedInteger id) {
             if (!Exist(id)) return nullptr;
-            return elements[sparse[id]];
+            return &elements[sparse[id]];
         }
 
         [[nodiscard]] virtual T& Get(const UnsignedInteger id) {
@@ -129,7 +131,7 @@ namespace Imagine::Core
         }
         [[nodiscard]] virtual const T* TryGet(const UnsignedInteger id) const {
             if (!Exist(id)) return nullptr;
-            return elements[sparse[id]];
+            return &elements[sparse[id]];
         }
 
         [[nodiscard]] virtual const T& Get(const UnsignedInteger id) const {
@@ -143,7 +145,7 @@ namespace Imagine::Core
             return dense.size();
         }
 
-        [[nodisard]] UnsignedInteger Capacity const{
+        [[nodisard]] UnsignedInteger Capacity() const{
             return dense.capacity();
         }
 
@@ -184,8 +186,8 @@ namespace Imagine::Core
                 }
                 IDs = nextIDs;
             } else if (!FreeList.empty()) {
-                const UnsignedInteger& begin = &FreeList[0];
-                const UnsignedInteger& end = &FreeList.back() + 1;
+                const UnsignedInteger* begin = &FreeList[0];
+                const UnsignedInteger* end = &FreeList.back() + 1;
 
                 const UnsignedInteger& idxPtr = std::find(begin, end, id);
                 if (idxPtr != end) {

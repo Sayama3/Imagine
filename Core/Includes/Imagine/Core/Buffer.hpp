@@ -88,6 +88,5 @@ namespace Imagine::Core
     private:
         void* m_Data{nullptr};
         uint64_t m_Size;
-        std::vector<BufferEvents*> m_Subscribers;
     };
 }

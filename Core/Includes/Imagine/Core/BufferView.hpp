@@ -26,7 +26,7 @@ namespace Imagine::Core
     public:
         BufferView();
         BufferView(void* buffer, uint64_t offset, uint64_t size);
-        ~BufferView() override;
+        ~BufferView();
         BufferView(const BufferView&);
         BufferView& operator=(const BufferView&);
     public:

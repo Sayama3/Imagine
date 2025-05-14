@@ -6,6 +6,7 @@
 
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/BufferView.hpp"
+#include "Imagine/Core/RawHeapArray.hpp"
 
 namespace Imagine::Core {
 

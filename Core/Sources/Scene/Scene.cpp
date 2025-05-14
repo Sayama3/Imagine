@@ -8,7 +8,7 @@
 
 namespace Imagine::Core
 {
-    Scene::Scene() : m_SparseEntities(c_EntityPrepareCount)
+    Scene::Scene()
     {
         AddComponentType<Renderable>();
         AddComponentType<Physicalisable>();
