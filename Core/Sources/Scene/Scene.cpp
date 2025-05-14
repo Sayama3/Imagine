@@ -8,21 +8,10 @@
 
 namespace Imagine::Core
 {
-    Scene::Scene()
+    Scene::Scene() : m_SparseEntities(c_EntityPrepareCount)
     {
-        m_IDTable.reserve(c_EntityPrepareCount);
-        m_Entities.resize(c_EntityPrepareCount);
-
         AddComponentType<Renderable>();
         AddComponentType<Physicalisable>();
-
-        m_FreeList.resize(c_EntityPrepareCount);
-
-        auto it = m_FreeList.begin();
-        for (int i = 0; i < c_EntityPrepareCount; ++i)
-        {
-            *it++ = i;
-        }
     }
 
     Scene::~Scene() = default;
