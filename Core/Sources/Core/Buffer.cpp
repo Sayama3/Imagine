@@ -21,7 +21,6 @@ namespace Imagine::Core
     Buffer::~Buffer()
     {
         Release();
-        Destroy();
     }
 
     Buffer::Buffer(Buffer&& other) noexcept : m_Data(nullptr), m_Size(0)
@@ -45,45 +44,15 @@ namespace Imagine::Core
 
     void Buffer::Release()
     {
-        Release(true);
-    }
-
-    void Buffer::Release(bool triggerEvent)
-    {
         free(m_Data);
         m_Data = nullptr;
         m_Size = 0;
-        if(triggerEvent) ChangeSize(0);
     }
 
     void Buffer::Zeroes()
     {
         if (!m_Data) return;
         memset(m_Data, 0, m_Size);
-    }
-
-    void Buffer::AddSubscriber(BufferEvents* subscriber)
-    {
-    }
-
-    void Buffer::RemoveSubscriber(BufferEvents* subscriber)
-    {
-    }
-
-    void Buffer::ChangeSize(uint64_t size)
-    {
-        for (auto m_subscriber : m_Subscribers)
-        {
-            m_subscriber->OnChangeSize(size);
-        }
-    }
-
-    void Buffer::Destroy()
-    {
-        for (auto m_subscriber : m_Subscribers)
-        {
-            m_subscriber->OnBufferDestroy();
-        }
     }
 
     void* Buffer::Get()

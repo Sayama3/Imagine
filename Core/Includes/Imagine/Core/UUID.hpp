@@ -11,6 +11,12 @@ namespace Imagine::Core {
 	class UUID {
 	public:
 		static constexpr UUID Null() {return UUID{0,0};}
+
+		template<typename T>
+		inline static UUID FromType() {
+			return UUID{ typeid(T).hash_code() };
+		}
+
 	public:
 		UUID();
 		constexpr explicit UUID(const uint64_t id) : m_UUID1(id), m_UUID2(id) {}

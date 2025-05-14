@@ -2,12 +2,14 @@ cmake_minimum_required(VERSION 3.16)
 
 include(FetchContent)
 
+if(MGN_WINDOW_GLFW)
 FetchContent_Declare(
 		GLFW
 		GIT_REPOSITORY "https://github.com/glfw/glfw.git"
 		GIT_TAG "3.4"
 		GIT_PROGRESS TRUE
 )
+endif()
 
 set(GLM_ENABLE_CXX_20 ON)
 set(GLM_BUILD_LIBRARY OFF)
@@ -18,15 +20,19 @@ FetchContent_Declare(
 		GIT_TAG "1.0.1"
 )
 
-set(IMGUI_GLFW ON)
-set(IMGUI_VULKAN ON)
-set(IMGUI_STDLIB ON)
-FetchContent_Declare(
-		ImGui
-		GIT_REPOSITORY "https://github.com/Sayama3/imgui.git"
-		GIT_TAG "docking"
-		GIT_PROGRESS TRUE
-)
+if(MGN_WINDOW_GLFW)
+	set(IMGUI_GLFW ON)
+	if(MGN_RENDERER_VULKAN)
+		set(IMGUI_VULKAN ON)
+	endif()
+	set(IMGUI_STDLIB ON)
+	FetchContent_Declare(
+			ImGui
+			GIT_REPOSITORY "https://github.com/Sayama3/imgui.git"
+			GIT_TAG "docking"
+			GIT_PROGRESS TRUE
+	)
+endif()
 
 FetchContent_Declare(
 		Spdlog
@@ -53,8 +59,15 @@ FetchContent_Declare(
 		GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(GLFW glm ImGui Spdlog Tracy EASTL)
-find_package(Vulkan REQUIRED)
+FetchContent_MakeAvailable(glm ImGui Spdlog Tracy EASTL)
+if(MGN_WINDOW_GLFW)
+	FetchContent_MakeAvailable(GLFW)
+endif()
 
-# Need to say to imgui where is glfw & Vulkan Headers
-target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
+if(MGN_RENDERER_VULKAN)
+	find_package(Vulkan REQUIRED)
+	# Need to say to imgui where is glfw & Vulkan Headers
+	if(MGN_WINDOW_GLFW)
+		target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
+	endif()
+endif()

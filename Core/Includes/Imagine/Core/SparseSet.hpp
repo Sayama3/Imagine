@@ -143,6 +143,10 @@ namespace Imagine::Core
             return dense.size();
         }
 
+        [[nodisard]] UnsignedInteger Capacity const{
+            return dense.capacity();
+        }
+
     private:
         HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
         HeapArray<UnsignedInteger, UnsignedInteger> dense{};

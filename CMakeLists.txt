@@ -14,12 +14,12 @@ set(CPP_RTTI_ENABLED ON)
 set(BUILD_SHARED_LIBS OFF)
 
 # No window backend start the application in headless
-option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backend" ON)
+option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backend" OFF)
 #TODO: Implement SDL3 backend
 #option(MGN_WINDOW_SDL3 "Launch the application with a window and SDL3 as a backend" ON)
 
 # No renderer backend start the application in CPU mode.
-option(MGN_RENDERER_VULKAN "Launch the application with Vulkan as a render and compute backend." ON)
+option(MGN_RENDERER_VULKAN "Launch the application with Vulkan as a render and compute backend." OFF)
 
 add_subdirectory(Libraries)
 add_subdirectory(Core)

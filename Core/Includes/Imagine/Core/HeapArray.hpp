@@ -100,6 +100,7 @@ namespace Imagine::Core
         [[nodiscard]] T& get(const UnsignedInteger index)
         {
 #ifdef MGN_DEBUG
+            MGN_ASSERT(data, "The buffer is not allocated yet.");
             MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
             MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
@@ -115,6 +116,7 @@ namespace Imagine::Core
         [[nodiscard]] const T& get(const UnsignedInteger index) const
         {
 #ifdef MGN_DEBUG
+            MGN_ASSERT(data, "The buffer is not allocated yet.");
             MGN_CORE_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
             MGN_CORE_CHECK(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif

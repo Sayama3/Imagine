@@ -27,73 +27,109 @@ namespace Imagine::Core
 
     Scene::~Scene() = default;
 
-    Entity Scene::CreateEntity()
+    EntityID Scene::CreateEntity()
     {
-        UUID id{};
-        const uint64_t index = m_FreeList.front();
-        m_FreeList.pop_front();
-
-        m_IDTable[id] = index;
-        m_Entities[index] = Entity {
-            id,
-            Math::Identity<Quat>(),
-            Vec3{0},
-        };
-        return m_Entities.at(index);
-    }
-
-    Entity& Scene::GetEntity(const UUID id)
-    {
-        const uint64_t index = m_IDTable.at(id);
-        return m_Entities.at(index);
-    }
-
-    const Entity& Scene::GetEntity(const UUID id) const
-    {
-        const uint64_t index = m_IDTable.at(id);
-        return m_Entities.at(index);
-    }
-
-    void Scene::DestroyEntity(const UUID id)
-    {
-        if (!m_IDTable.contains(id)) return;
-        const uint64_t index = m_IDTable.at(id);
-        m_FreeList.push_front(index);
-        m_IDTable.erase(id);
-    }
-
-    UUID Scene::AddComponentType(const uint64_t size)
-    {
-        UUID id{};
-        AddComponentType(id, size);
+        const EntityID id = { m_SparseEntities.Create() };
+        m_SparseEntities.Get(id).Id = id;
         return id;
     }
 
-    void Scene::AddComponentType(const UUID componentId, const uint64_t size)
+    Entity& Scene::GetEntity(const EntityID id)
     {
-        m_CustomComponents[componentId] = Component{c_EntityPrepareCount, size};
+        return m_SparseEntities.Get(id.id);
     }
 
-    BufferView Scene::AddComponent(const UUID entityId, const UUID componentId)
+    const Entity& Scene::GetEntity(const EntityID id) const
     {
-        BufferView view {GetComponent(entityId, componentId)};
-        view.Zeroes();
-        return BufferView(view);
+        return m_SparseEntities.Get(id.id);
     }
 
-    BufferView Scene::GetComponent(const UUID entityId, const UUID componentId)
+    void Scene::DestroyEntity(const EntityID id)
+    {
+        m_SparseEntities.Remove(id.id);
+        for each (auto& [uuid, rawSparseSet] in m_CustomComponents)
+        {
+            rawSparseSet.Remove(id.id);
+        }
+    }
+
+    UUID Scene::AddComponentType(const uint64_t size, void(*constructor)(void*, UnsignedInteger), void(*destructor)(void*, UnsignedInteger), void(*copy_constructor)(void*, UnsignedInteger, BufferView view))
+    {
+        UUID id{};
+        AddComponentType(id, size, constructor, destructor, copy_constructor);
+        return id;
+    }
+
+    void Scene::AddComponentType(const EntityID componentId, const uint64_t size, void(*constructor)(void*, UnsignedInteger), void(*destructor)(void*, UnsignedInteger), void(*copy_constructor)(void*, UnsignedInteger, BufferView view))
+    {
+        m_CustomComponents[componentId] = RawSparseSet<uint32_t>{size, c_EntityPrepareCount};
+        auto& components = m_CustomComponents.at(componentId);
+        if (constructor) components.SetConstructor(constructor);
+        if (destructor) components.SetDestructor(destructor);
+        if (copy_constructor) components.SetCopyConstructor(copy_constructor);
+    }
+
+    BufferView Scene::AddComponent(const EntityID entityId, const UUID componentId)
     {
         if (!m_CustomComponents.contains(componentId))
         {
-            return BufferView{};
-        }
-        if (!m_IDTable.contains(entityId))
-        {
+            MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
             return BufferView{};
         }
 
-        const uint64_t index = m_IDTable.at(entityId);
-        auto& component = m_CustomComponents.at(componentId);
-        return BufferView{&component.Buffer, index*component.ComponentSize, component.ComponentSize};
+        auto& components = m_CustomComponents.at(componentId);
+
+
+        if (components.Exist(entityId.id)) {
+            return {};
+        }
+
+        if(components.Create(entityId.id)) {
+            return BufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
+        }
+
+        MGN_CORE_ERROR("The component id {} already exist on the entity {}.", componentId.string(), entityId.string());
+        return {};
+    }
+
+    BufferView Scene::GetComponent(const EntityID entityId, const UUID componentId)
+    {
+        if (!m_CustomComponents.contains(componentId))
+        {
+            MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+            return BufferView{};
+        }
+
+        auto& components = m_CustomComponents.at(componentId);
+
+        if (components.Exist(entityId.id)) {
+            return BufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
+        }
+
+        MGN_CORE_ERROR("The component id {} hasn't been added to the entity {}.", componentId.string(), entityId.string());
+        return {};
+    }
+
+
+    BufferView Scene::GetOrAddComponent(EntityID entityId, UUID componentId) {
+
+        if (!m_CustomComponents.contains(componentId))
+        {
+            MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+            return BufferView{};
+        }
+
+        auto& components = m_CustomComponents.at(componentId);
+
+        if (components.Exist(entityId.id)) {
+            return BufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
+        }
+
+        if (components.Create(entityId.id)) {
+            return BufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
+        }
+
+        MGN_CORE_ERROR("The component id {} didn't exist on entity {} but somehow hasn't been added successfully either.", componentId.string(), entityId.string());
+        return {};
     }
 }

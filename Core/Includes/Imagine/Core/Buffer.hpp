@@ -6,14 +6,6 @@
 
 namespace Imagine::Core
 {
-    class BufferEvents
-    {
-    public:
-        virtual ~BufferEvents() = default;
-        virtual void OnChangeSize(uint64_t size) = 0;
-        virtual void OnBufferDestroy() = 0;
-    };
-
     class Buffer
     {
     public:
@@ -33,14 +25,6 @@ namespace Imagine::Core
          * If no memory allocated, return without doing anything.
          */
         void Zeroes();
-    private:
-        void Release(bool triggerEvents);
-    public:
-        void AddSubscriber(BufferEvents* subscriber);
-        void RemoveSubscriber(BufferEvents* subscriber);
-    private:
-        void ChangeSize(uint64_t size);
-        void Destroy();
     public:
         void* Get();
         const void* Get() const;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 find_package(Vulkan REQUIRED)
-target_link_libraries(Core PUBLIC Vulkan::Vulkan imgui)
+target_link_libraries(Core PUBLIC Vulkan::Vulkan)
 
 target_include_directories(Core PRIVATE Sources)
 

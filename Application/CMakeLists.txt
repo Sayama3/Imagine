@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
 
-find_package(Vulkan REQUIRED)
-
 set(APPLICATION_SOURCES
 	Sources/main.cpp
 		Includes/Imagine/Header.hpp

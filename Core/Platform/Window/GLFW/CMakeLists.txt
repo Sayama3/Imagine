@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-target_link_libraries(Core PUBLIC glfw)
+target_link_libraries(Core PUBLIC glfw imgui)
 
 target_include_directories(Core PRIVATE Sources)
 
