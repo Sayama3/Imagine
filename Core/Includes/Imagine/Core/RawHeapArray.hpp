@@ -190,9 +190,9 @@ namespace Imagine::Core {
 			const UnsignedInteger element_to_move = Count - index;
 			for (int i = index + 1; i < element_to_move; ++i)
 			{
-				const previous = (i-1)*DataSize;
-				const current = i * DataSize;
-				memcpy(reinterpret_cast<uint8_t*>(data) + current, reinterpret_cast<uint8_t*>(data) + current, DataSize);
+				const auto previous = (i-1)*DataSize;
+				const auto current = i * DataSize;
+				memcpy(reinterpret_cast<uint8_t*>(data) + previous, reinterpret_cast<uint8_t*>(data) + current, DataSize);
 			}
 			--Count;
 		}
