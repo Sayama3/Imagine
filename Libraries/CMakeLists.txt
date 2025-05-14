@@ -59,9 +59,9 @@ FetchContent_Declare(
 		GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(glm ImGui Spdlog Tracy EASTL)
+FetchContent_MakeAvailable(glm Spdlog Tracy EASTL)
 if(MGN_WINDOW_GLFW)
-	FetchContent_MakeAvailable(GLFW)
+	FetchContent_MakeAvailable(GLFW ImGui)
 endif()
 
 if(MGN_RENDERER_VULKAN)
