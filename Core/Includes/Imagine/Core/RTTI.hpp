@@ -69,7 +69,7 @@ namespace Imagine::Core {
 }
 
 template<class Base>
-struct ::std::hash<::Imagine::Core::RTTI<Base>>
+struct std::hash<::Imagine::Core::RTTI<Base>>
 {
 	std::size_t operator()(const ::Imagine::Core::RTTI<Base>& s) const noexcept
 	{
