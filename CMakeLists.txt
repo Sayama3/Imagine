@@ -21,6 +21,19 @@ option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backe
 # No renderer backend start the application in CPU mode.
 option(MGN_RENDERER_VULKAN "Launch the application with Vulkan as a render and compute backend." ON)
 
+# IMGUI will automatically be set to OFF if the requirement as GLFW/SDL3/Vulkan/Direct3D/... are not met.
+option(MGN_IMGUI "Add ImGui to the Core application" ON)
+
+if(MGN_WINDOW_GLFW)
+else()
+	set(MGN_IMGUI OFF)
+endif()
+
+if(MGN_RENDERER_VULKAN)
+else()
+	set(MGN_IMGUI OFF)
+endif()
+
 add_subdirectory(Libraries)
 add_subdirectory(Core)
 add_subdirectory(Application)

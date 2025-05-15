@@ -45,6 +45,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/RawHeapArray.hpp
 		Sources/Core/RawSparseSet.cpp
 		Includes/Imagine/Core/RawSparseSet.hpp
+		Includes/Imagine/Events/Event.hpp
+		Sources/Layers/Layer.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -110,6 +112,13 @@ target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_onl
 add_library(Imagine::Core ALIAS Core)
 
 add_subdirectory(Platform)
+
+if(MGN_IMGUI AND NOT MGN_NO_IMGUI)
+	message(NOTICE "Add ImGui")
+	target_link_libraries(Core PUBLIC imgui)
+else()
+	message(NOTICE "Don't have ImGui")
+endif()
 
 
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")

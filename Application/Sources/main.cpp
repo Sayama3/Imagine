@@ -2,8 +2,9 @@
 // Created by Sayama on 29/04/2025.
 //
 
-#include "../../Core/Includes/Imagine/Application/Application.hpp"
 #include <iostream>
+
+#include "Imagine/Application/Application.hpp"
 #include "Imagine/Core/Logger.hpp"
 #include "Imagine/Core/Macros.hpp"
 

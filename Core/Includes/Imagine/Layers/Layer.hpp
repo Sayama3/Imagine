@@ -4,16 +4,15 @@
 
 #pragma once
 
-#include "Voxymore/Events/Event.hpp"
-#include "Voxymore/Core/Core.hpp"
-#include "Voxymore/Core/TimeStep.hpp"
+#include "Imagine/Events/Event.hpp"
+#include "Imagine/Core/TimeStep.hpp"
 
 // We shouldn't search layer by name!!
 
-namespace Voxymore::Core {
+namespace Imagine::Core {
     class Layer {
     public:
-        Layer(const std::string& name = "Layer");
+        explicit Layer(std::string name = "Layer");
         virtual ~Layer();
 
         virtual void OnAttach() {}

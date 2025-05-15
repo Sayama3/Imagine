@@ -22,9 +22,13 @@ FetchContent_Declare(
 
 if(MGN_WINDOW_GLFW)
 	set(IMGUI_GLFW ON)
-	if(MGN_RENDERER_VULKAN)
-		set(IMGUI_VULKAN ON)
-	endif()
+endif()
+
+if(MGN_RENDERER_VULKAN)
+	set(IMGUI_VULKAN ON)
+endif()
+
+if(MGN_IMGUI)
 	set(IMGUI_STDLIB ON)
 	FetchContent_Declare(
 			ImGui
@@ -37,7 +41,7 @@ endif()
 FetchContent_Declare(
 		Spdlog
 		GIT_REPOSITORY "https://github.com/gabime/spdlog.git"
-		GIT_TAG "v1.15.1"
+		GIT_TAG "v1.15.3"
 		GIT_PROGRESS TRUE
 )
 
@@ -52,22 +56,28 @@ FetchContent_Declare(
 		GIT_PROGRESS TRUE
 )
 
-FetchContent_Declare(
-		EASTL
-		GIT_REPOSITORY "https://github.com/electronicarts/EASTL.git"
-		GIT_TAG "3.21.23"
-		GIT_PROGRESS TRUE
-)
+#FetchContent_Declare(
+#		EASTL
+#		GIT_REPOSITORY "https://github.com/electronicarts/EASTL.git"
+#		GIT_TAG "3.21.23"
+#		GIT_PROGRESS TRUE
+#)
 
-FetchContent_MakeAvailable(glm Spdlog Tracy EASTL)
+FetchContent_MakeAvailable(glm Spdlog Tracy)
+
 if(MGN_WINDOW_GLFW)
-	FetchContent_MakeAvailable(GLFW ImGui)
+	FetchContent_MakeAvailable(GLFW)
 endif()
 
-if(MGN_RENDERER_VULKAN)
-	find_package(Vulkan REQUIRED)
-	# Need to say to imgui where is glfw & Vulkan Headers
+if(MGN_IMGUI)
+	FetchContent_MakeAvailable(ImGui)
+
 	if(MGN_WINDOW_GLFW)
-		target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
+		target_link_libraries(imgui PUBLIC glfw)
+	endif()
+
+	if(MGN_RENDERER_VULKAN)
+		find_package(Vulkan REQUIRED)
+		target_link_libraries(imgui PUBLIC Vulkan::Vulkan)
 	endif()
 endif()
