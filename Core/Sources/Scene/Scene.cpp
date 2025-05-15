@@ -10,8 +10,6 @@ namespace Imagine::Core
 {
     Scene::Scene()
     {
-        AddComponentType<Renderable>();
-        AddComponentType<Physicalisable>();
     }
 
     Scene::~Scene() = default;
@@ -42,14 +40,14 @@ namespace Imagine::Core
         }
     }
 
-    UUID Scene::AddComponentType(const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, BufferView view))
+    UUID Scene::AddComponentType(const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, ConstBufferView view))
     {
         UUID id{};
         AddComponentType(id, size, constructor, destructor, copy_constructor);
         return id;
     }
 
-    void Scene::AddComponentType(const UUID componentId, const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, BufferView view))
+    void Scene::AddComponentType(const UUID componentId, const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, ConstBufferView view))
     {
         m_CustomComponents[componentId] = RawSparseSet<uint32_t>{static_cast<uint32_t>(size), c_EntityPrepareCount};
         auto& components = m_CustomComponents.at(componentId);
@@ -98,7 +96,6 @@ namespace Imagine::Core
         MGN_CORE_ERROR("The component id {} hasn't been added to the entity {}.", componentId.string(), entityId.string());
         return {};
     }
-
 
     BufferView Scene::GetOrAddComponent(EntityID entityId, UUID componentId) {
 

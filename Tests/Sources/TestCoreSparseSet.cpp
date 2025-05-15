@@ -6,6 +6,10 @@
 
 TEST(CoreSparseSet, IntSparseSet) {
 	uint64_t idGenerator{0};
+	{
+		SparseSet<int, uint64_t> sparseSet{};
+		ASSERT_EQ(sparseSet.Count(), 0);
+	}
 	SparseSet<int, uint64_t> sparseSet{32};
 	ASSERT_EQ(sparseSet.Count(), 0);
 	ASSERT_EQ(sparseSet.Capacity(), 32);
@@ -68,6 +72,11 @@ TEST(CoreSparseSet, IntSparseSet) {
 
 TEST(CoreSparseSet, IntAutoSparseSet) {
 	using AutoSparseSet = AutoIdSparseSet<Vec4, uint64_t>;
+	{
+		AutoSparseSet sparseSet{};
+		ASSERT_EQ(sparseSet.Count(), 0);
+	}
+
 	AutoSparseSet sparseSet{32};
 	ASSERT_EQ(sparseSet.Count(), 0);
 	ASSERT_EQ(sparseSet.Capacity(), 32);
@@ -139,7 +148,7 @@ TEST(CoreSparseSet, IntAutoSparseSet) {
 
 
 TEST(CoreSparseSet, CounterSparseSet) {
-	using InstanceCounter = TmpInstanceCount<int>;
+	using InstanceCounter = InstanceCount<int>;
 	using AutoSparseSet = AutoIdSparseSet<InstanceCounter, uint64_t>;
 
 	AutoSparseSet sparseSet{32};
@@ -175,9 +184,4 @@ TEST(CoreSparseSet, CounterSparseSet) {
 
 	sparseSet.~AutoSparseSet();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
-}
-
-
-TEST(CoreAutoSparseSet, RAII) {
-	SparseSet<int, uint64_t> sparseSet{32};
 }

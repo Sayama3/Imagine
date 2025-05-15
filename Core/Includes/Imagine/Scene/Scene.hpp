@@ -26,13 +26,19 @@ namespace Imagine::Core
         const Entity& GetEntity(EntityID id) const;
         void DestroyEntity(EntityID id);
 
-        void AddComponentType(UUID componentId, uint64_t size, void(*constructor)(void*, uint32_t) = nullptr, void(*destructor)(void*, uint32_t) = nullptr, void(*copy_constructor)(void*, uint32_t, BufferView view) = nullptr);
-        UUID AddComponentType(uint64_t size, void(*constructor)(void*, uint32_t) = nullptr, void(*destructor)(void*, uint32_t) = nullptr, void(*copy_constructor)(void*, uint32_t, BufferView view) = nullptr);
+        void AddComponentType(UUID componentId, uint64_t size, void(*constructor)(void*, uint32_t) = nullptr, void(*destructor)(void*, uint32_t) = nullptr, void(*copy_constructor)(void*, uint32_t, ConstBufferView view) = nullptr);
+        UUID AddComponentType(uint64_t size, void(*constructor)(void*, uint32_t) = nullptr, void(*destructor)(void*, uint32_t) = nullptr, void(*copy_constructor)(void*, uint32_t, ConstBufferView view) = nullptr);
 
         template<typename T>
         void AddComponentType()
         {
-            AddComponentType(UUID::FromType<T>(), sizeof(T), [](void* data, uint32_t size) { new (data) T(); }, [](void* data, uint32_t size) { reinterpret_cast<T*>(data)->~T(); }, [](void* data, uint32_t size, BufferView view) { new (data) T(view.template Get<T>()); });
+            AddComponentType(
+                UUID::FromType<T>(),
+                sizeof(T),
+                [](void* data, uint32_t size) { new (data) T(); },
+                [](void* data, uint32_t size) { reinterpret_cast<T*>(data)->~T(); },
+                [](void* data, uint32_t size, ConstBufferView view) { new (data) T(view.template As<T>()); }
+                );
         }
 
         BufferView AddComponent(EntityID entityId, UUID componentId);
@@ -40,11 +46,16 @@ namespace Imagine::Core
         BufferView GetOrAddComponent(EntityID entityId, UUID componentId);
 
         template<typename T>
-        BufferView AddComponent(const EntityID entityId) {auto view = AddComponent(entityId, UUID::FromType<T>()); view.template Get<T>() = T{}; return view;}
+        BufferView AddComponent(const EntityID entityId) {auto view = AddComponent(entityId, UUID::FromType<T>()); view.template As<T>() = T{}; return view;}
         template<typename T>
         BufferView GetComponent(const EntityID entityId) {return GetComponent(entityId, UUID::FromType<T>());}
         template<typename T>
         BufferView GetOrAddComponent(const EntityID entityId) { return GetOrAddComponent(entityId, UUID::FromType<T>()); }
+
+        [[nodiscard]] uint32_t Count() const {
+            return m_SparseEntities.Count();
+        }
+
     private:
         AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
         std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;

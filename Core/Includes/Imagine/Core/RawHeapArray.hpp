@@ -196,6 +196,34 @@ namespace Imagine::Core {
 			return std::move(buff);
 		}
 
+		BufferView get_view(const UnsignedInteger index) {
+#ifdef MGN_DEBUG
+			MGN_ASSERT(data, "The buffer is not allocated yet.");
+			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+#endif
+			return {GetPtr(index), 0, DataSize};
+		}
+
+		BufferView try_get_view(const UnsignedInteger index) {
+			if (!data || index >= Count) return BufferView{};
+			return {GetPtr(index), 0, DataSize};
+		}
+
+		ConstBufferView get_const_view(const UnsignedInteger index) const {
+#ifdef MGN_DEBUG
+			MGN_ASSERT(data, "The buffer is not allocated yet.");
+			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+#endif
+			return {GetPtr(index), 0, DataSize};
+		}
+
+		ConstBufferView try_get_const_view(const UnsignedInteger index) const {
+			if (!data || index >= Count) return ConstBufferView{};
+			return {GetPtr(index), 0, DataSize};
+		}
+
 		void push_back(const BufferView& view) {
 			raw_push_back(view.Get(), view.Size(), "The BufferView sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", view.Size(), DataSize);
 		}

@@ -6,11 +6,14 @@
 
 namespace Imagine::Core
 {
-    BufferView::BufferView() : m_Buffer(nullptr), m_Offset(0), m_Size(0)
+    BufferView::BufferView() : m_Buffer(nullptr), m_Size(0)
     {
     }
 
-    BufferView::BufferView(void* buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer), m_Offset(offset), m_Size(size)
+    BufferView::BufferView(Buffer& buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer.Get() ? reinterpret_cast<uint8_t*>(buffer.Get()) + offset : nullptr), m_Size(size) {
+    }
+
+    BufferView::BufferView(void* buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer ? reinterpret_cast<uint8_t*>(buffer) + offset : nullptr), m_Size(size)
     {
     }
 
@@ -18,13 +21,12 @@ namespace Imagine::Core
     {
     }
 
-    BufferView::BufferView(const BufferView& other) : m_Buffer(other.m_Buffer), m_Size(other.m_Size), m_Offset(other.m_Offset)
+    BufferView::BufferView(const BufferView& other) : m_Buffer(other.m_Buffer), m_Size(other.m_Size)
     {
     }
 
     BufferView& BufferView::operator=(const BufferView& other) {
         m_Buffer = other.m_Buffer;
-        m_Offset = other.m_Offset;
         m_Size = other.m_Size;
         return *this;
     }
@@ -49,16 +51,75 @@ namespace Imagine::Core
     void* BufferView::Get()
     {
         if (!m_Buffer) return nullptr;
-        return reinterpret_cast<uint8_t*>(m_Buffer) + m_Offset;
+        return m_Buffer;
     }
 
     const void* BufferView::Get() const
     {
         if (!m_Buffer) return nullptr;
-        return reinterpret_cast<uint8_t*>(m_Buffer) + m_Offset;
+        return m_Buffer;
     }
 
     uint64_t BufferView::Size() const
+    {
+        return m_Size;
+    }
+}
+
+namespace Imagine::Core
+{
+    ConstBufferView::ConstBufferView() : m_Buffer(nullptr), m_Size(0)
+    {
+    }
+
+    ConstBufferView::ConstBufferView(const Buffer& buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer.Get() ? reinterpret_cast<const uint8_t*>(buffer.Get()) + offset : nullptr), m_Size(size) {
+    }
+
+    ConstBufferView::ConstBufferView(const void* buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer ? reinterpret_cast<const uint8_t*>(buffer) + offset : nullptr), m_Size(size)
+    {
+    }
+
+    ConstBufferView::ConstBufferView(const BufferView& view) : m_Buffer(view.Get()), m_Size(view.Size())
+    {
+    }
+
+    ConstBufferView & ConstBufferView::operator=(const BufferView &view) {
+        m_Buffer = view.Get();
+        m_Size = view.Size();
+        return *this;
+    }
+
+    ConstBufferView::~ConstBufferView()
+    {
+    }
+
+    ConstBufferView::ConstBufferView(const ConstBufferView& other) : m_Buffer(other.m_Buffer), m_Size(other.m_Size)
+    {
+    }
+
+    ConstBufferView& ConstBufferView::operator=(const ConstBufferView& other) {
+        m_Buffer = other.m_Buffer;
+        m_Size = other.m_Size;
+        return *this;
+    }
+
+    bool ConstBufferView::IsValid() const
+    {
+        return m_Buffer && m_Size;
+    }
+
+    ConstBufferView::operator bool() const
+    {
+        return IsValid();
+    }
+
+    const void* ConstBufferView::Get() const
+    {
+        if (!m_Buffer) return nullptr;
+        return reinterpret_cast<const uint8_t*>(m_Buffer);
+    }
+
+    uint64_t ConstBufferView::Size() const
     {
         return m_Size;
     }

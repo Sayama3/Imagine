@@ -10,7 +10,7 @@ namespace Imagine::Core
     {
     }
 
-    Buffer::Buffer(void* data, const uint64_t size) :m_Data(data), m_Size(size)
+    Buffer::Buffer(void* data, const uint64_t size) : m_Data(data), m_Size(size)
     {
     }
 

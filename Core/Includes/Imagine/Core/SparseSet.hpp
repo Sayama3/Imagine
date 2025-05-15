@@ -49,7 +49,7 @@ namespace Imagine::Core
             return true;
         }
     public:
-        SparseSet() {sparse.resize(256);dense.resize(256);elements.resize(256);}
+        SparseSet() {sparse.resize(256);dense.reserve(256);elements.reserve(256);}
         explicit SparseSet(const UnsignedInteger capacity) {sparse.resize(capacity);dense.reserve(capacity);elements.reserve(capacity);}
 
         virtual ~SparseSet() {

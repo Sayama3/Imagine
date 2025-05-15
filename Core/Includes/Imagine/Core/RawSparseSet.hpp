@@ -17,6 +17,28 @@ namespace Imagine::Core {
 	public:
 		static inline constexpr UnsignedInteger c_OverheadResize = 64;
 	public:
+		template<typename T>
+		inline static RawSparseSet Instantiate() {
+			RawSparseSet sparseSet = RawSparseSet<UnsignedInteger>{sizeof(T)};
+
+			sparseSet.SetConstructor([](void* data, const UnsignedInteger size){new(data) T();});
+			sparseSet.SetDestructor([](void* data, const UnsignedInteger size){reinterpret_cast<T*>(data)->~T();});
+			sparseSet.SetCopyConstructor([](void* data, const UnsignedInteger size, ConstBufferView view){new (data) T(view.As<T>());});
+
+			return sparseSet;
+		}
+
+		template<typename T>
+		inline static RawSparseSet Instantiate(const UnsignedInteger capacity) {
+			RawSparseSet sparseSet = RawSparseSet<UnsignedInteger>{sizeof(T), capacity};
+
+			sparseSet.SetConstructor([](void* data, const UnsignedInteger size){new(data) T();});
+			sparseSet.SetDestructor([](void* data, const UnsignedInteger size){reinterpret_cast<T*>(data)->~T();});
+			sparseSet.SetCopyConstructor([](void* data, const UnsignedInteger size, ConstBufferView view){new (data) T(view.As<T>());});
+
+			return sparseSet;
+		}
+	public:
 		RawSparseSet() noexcept {}
 		explicit RawSparseSet(const UnsignedInteger dataSize) : sparse(256), dense(256), elements(dataSize, 256) { sparse.redimension(256);}
 		RawSparseSet(const UnsignedInteger dataSize, const UnsignedInteger capacity) : sparse(capacity), dense(capacity), elements(dataSize, capacity) { sparse.redimension(capacity); }
@@ -60,7 +82,7 @@ namespace Imagine::Core {
         /// Function allowing to pass a function that will be used to initialize the data passed in parameter.
         /// </summary>
         /// <param name="constructor">The constructor parameter taking both the data pointer and it's byte size.</param>
-        void SetCopyConstructor(void(*constructor)(void*, UnsignedInteger, BufferView view)) {
+        void SetCopyConstructor(void(*constructor)(void*, UnsignedInteger, ConstBufferView view)) {
             this->copy_constructor = constructor;
         }
 
@@ -106,6 +128,20 @@ namespace Imagine::Core {
             return true;
         }
 
+        virtual bool Create(const UnsignedInteger id, const Buffer& buffer) {
+            if (!RawCreate(id)) return false;
+
+            // Initialise the data.
+            if (copy_constructor) {
+                copy_constructor(elements.get(sparse[id]), GetDataSize(), ConstBufferView{buffer,0,buffer.Size()});
+            } else if (constructor) {
+                MGN_CORE_WARN("No copy constructor found. Using the default constructor.");
+                constructor(elements.get(sparse[id]), GetDataSize());
+            }
+
+            return true;
+        }
+
         virtual void Remove(const UnsignedInteger id)
         {
             // Check the id is used. Cause no point doing work for naught.
@@ -142,6 +178,14 @@ namespace Imagine::Core {
             sparse[id] = -1;
         }
 
+
+		void Clear() {
+			for (int64_t i = dense.size() - 1; i >= 0; --i) {
+				const auto id = dense.get(i);
+				Remove(id);
+			}
+		}
+
         [[nodiscard]] virtual void* TryGet(const UnsignedInteger id) {
             if (!Exist(id)) return nullptr;
             return elements.get(sparse[id]);
@@ -153,6 +197,7 @@ namespace Imagine::Core {
 #endif
             return elements.get(sparse[id]);
         }
+
         [[nodiscard]] virtual const void* TryGet(const UnsignedInteger id) const {
             if (!Exist(id)) return nullptr;
             return elements.get(sparse[id]);
@@ -163,7 +208,49 @@ namespace Imagine::Core {
             MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
             return elements.get(sparse[id]);
-        }
+		}
+
+		[[nodiscard]] virtual Buffer GetBuffer(const UnsignedInteger id) const {
+#ifdef MGN_DEBUG
+			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+#endif
+
+			return elements.get_buffer(sparse[id]);
+		}
+
+		[[nodiscard]] virtual Buffer TryGetBuffer(const UnsignedInteger id) const {
+            if (!Exist(id)) return Buffer{};
+
+			return elements.get_buffer(sparse[id]);
+		}
+
+		[[nodiscard]] virtual BufferView GetView(const UnsignedInteger id) {
+#ifdef MGN_DEBUG
+			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+#endif
+
+			return elements.get_view(sparse[id]);
+		}
+
+		[[nodiscard]] virtual BufferView TryGetView(const UnsignedInteger id) {
+            if (!Exist(id)) return BufferView{};
+
+			return elements.get_view(sparse[id]);
+		}
+
+		[[nodiscard]] virtual ConstBufferView GetConstView(const UnsignedInteger id) const {
+#ifdef MGN_DEBUG
+			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+#endif
+
+			return elements.get_const_view(sparse[id]);
+		}
+
+		[[nodiscard]] virtual ConstBufferView TryGetConstView(const UnsignedInteger id) const {
+            if (!Exist(id)) return ConstBufferView{};
+
+			return elements.get_const_view(sparse[id]);
+		}
 
         [[nodiscard]] UnsignedInteger Count() const {
             return dense.size();
@@ -206,7 +293,6 @@ namespace Imagine::Core {
 		RawHeapArray<UnsignedInteger> elements{};
         void(*constructor)(void*, UnsignedInteger) = nullptr;
         void(*destructor)(void*, UnsignedInteger) = nullptr;
-        void(*copy_constructor)(void*, UnsignedInteger, BufferView view) = nullptr;
+        void(*copy_constructor)(void*, UnsignedInteger, ConstBufferView view) = nullptr;
 	};
-
 }

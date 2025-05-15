@@ -26,6 +26,7 @@ namespace Imagine::Core
         }
     public:
         BufferView();
+        BufferView(Buffer& buffer, uint64_t offset, uint64_t size);
         BufferView(void* buffer, uint64_t offset, uint64_t size);
         ~BufferView();
         BufferView(const BufferView&);
@@ -42,7 +43,26 @@ namespace Imagine::Core
         uint64_t Size() const;
 
         template<typename T>
-        T& Get()
+        T* Get()
+        {
+            // static_assert(sizeof(T) == m_Size);
+#ifdef MGN_DEBUG
+            MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+#endif
+            return reinterpret_cast<T*>(Get());
+        }
+
+        template<typename T>
+        const T* Get() const
+        {
+#ifdef MGN_DEBUG
+            MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+#endif
+            return reinterpret_cast<T*>(Get());
+        }
+
+        template<typename T>
+        T& As()
         {
             // static_assert(sizeof(T) == m_Size);
 #ifdef MGN_DEBUG
@@ -52,7 +72,7 @@ namespace Imagine::Core
         }
 
         template<typename T>
-        const T& Get() const
+        const T& As() const
         {
 #ifdef MGN_DEBUG
             MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
@@ -62,7 +82,60 @@ namespace Imagine::Core
 
     private:
         void* m_Buffer{nullptr};
-        uint64_t m_Offset;
+        uint64_t m_Size;
+    };
+    /**
+     * A slice of a buffer.
+     */
+    class ConstBufferView
+    {
+    public:
+        template<typename T>
+        static ConstBufferView MakeSlice(Buffer* buffer, const uint64_t index)
+        {
+            if (!buffer) return ConstBufferView{};
+            constexpr uint64_t size = sizeof(T);
+            const uint64_t offset = index * size;
+            if (offset + size > buffer->Size()) return ConstBufferView{};
+            return ConstBufferView{buffer->Get(), offset, size};
+        }
+    public:
+        ConstBufferView();
+        ConstBufferView(const Buffer& buffer, uint64_t offset, uint64_t size);
+        ConstBufferView(const void* buffer, uint64_t offset, uint64_t size);
+        ConstBufferView(const BufferView& view);
+        ConstBufferView& operator=(const BufferView& view);
+        ~ConstBufferView();
+        ConstBufferView(const ConstBufferView&);
+        ConstBufferView& operator=(const ConstBufferView&);
+    public:
+        bool IsValid() const;
+        explicit operator bool() const;
+
+        const void* Get() const;
+
+        uint64_t Size() const;
+
+        template<typename T>
+        const T* Get() const
+        {
+#ifdef MGN_DEBUG
+            MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+#endif
+            return reinterpret_cast<const T*>(Get());
+        }
+
+        template<typename T>
+        const T& As() const
+        {
+#ifdef MGN_DEBUG
+            MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+#endif
+            return *reinterpret_cast<const T*>(Get());
+        }
+
+    private:
+        const void* m_Buffer{nullptr};
         uint64_t m_Size;
     };
 }

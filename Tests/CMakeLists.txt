@@ -16,6 +16,8 @@ set(MGN_TESTS_SOURCES
 		Sources/TestCoreSparseSet.cpp
 		Sources/GlobalUsefullTests.hpp
 		Sources/TestRTTI.cpp
+		Sources/TestScene.cpp
+		Sources/TestCoreRawSparseSet.cpp
 )
 
 add_executable(MGN_Tests ${MGN_TESTS_SOURCES})

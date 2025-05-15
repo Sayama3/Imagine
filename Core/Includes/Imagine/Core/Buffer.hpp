@@ -9,12 +9,32 @@ namespace Imagine::Core
     class Buffer
     {
     public:
+        inline static Buffer Copy(void* data, const uint64_t size) {
+            void* newBuff = malloc(size);
+            memcpy(newBuff, data, size);
+            return Buffer{newBuff, size};
+        }
+
+        inline static Buffer Copy(const Buffer& buffer) {
+            void* newBuff = malloc(buffer.Size());
+            memcpy(newBuff, buffer.Get(), buffer.Size());
+            return Buffer{newBuff, buffer.Size()};
+        }
+
+        template<typename T>
+        inline static Buffer Copy(const T& other) {
+            void* newBuff = reinterpret_cast<void*>(new T(other));
+            return Buffer{newBuff, sizeof(T)};
+        }
+    public:
         Buffer();
         Buffer(void* data, uint64_t size);
-        Buffer(uint64_t size);
+        explicit Buffer(uint64_t size);
         ~Buffer();
+
         Buffer(const Buffer&) = delete;
         Buffer& operator=(const Buffer&) = delete;
+
         Buffer(Buffer&&) noexcept;
         Buffer& operator=(Buffer&&) noexcept;
     public:
