@@ -39,7 +39,7 @@ using namespace Imagine;
 template<typename T>
 class TmpAtomicInstanceCount {
 public:
-	inline static volatile std::atomic_uint32_t s_InstanceCount{0};
+	inline static std::atomic_uint32_t s_InstanceCount{0};
 
 	TmpAtomicInstanceCount() {
 		s_InstanceCount.fetch_add(1, std::memory_order::relaxed);

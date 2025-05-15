@@ -4,7 +4,6 @@
 
 #pragma once
 #include "Macros.hpp"
-#include "RTTI.hpp"
 
 namespace Imagine::Core {
 
@@ -18,18 +17,18 @@ namespace Imagine::Core {
 
  		template<typename Self>
  		inline RTTI() : type(typeid(Self).name()), parent(nullptr), createFunc(Self::Create) {
- 			MGN_TRACE(type);
+ 			// MGN_TRACE(type);
  			Initialise();
  		}
 
  		template<typename Self, typename ParentType>
  		inline RTTI() : type(typeid(Self).name()), parent(ParentType::rtti), createFunc(Self::Create) {
- 			MGN_TRACE(type);
+ 			// MGN_TRACE(type);
  			Initialise();
  		}
 
  		inline explicit RTTI(std::string name, Base*(*createFunc)(), const RTTI<Base>* parent_rtti) : type(std::move(name)), parent(parent_rtti), createFunc(createFunc) {
- 			MGN_TRACE(type);
+ 			// MGN_TRACE(type);
  			Initialise();
  		}
 
@@ -37,9 +36,36 @@ namespace Imagine::Core {
  		bool IsExactlyA(const RTTI<Base>& other) const;
  		bool IsA(const RTTI<Base>& other) const;
  	public:
+ 		bool operator==(const RTTI<Base>& other) const {
+ 			return IsExactlyA(other);
+ 		}
+ 		bool operator!=(const RTTI<Base>& other) const {
+ 			return !(*this == other);
+ 		}
+ 	public:
  		Base* Create() {return createFunc();}
- 		static inline Base* FactoryCreate(const std::string& type) {return Factory.contains(type) ? Factory.at(type)() : nullptr;}
- 		static inline Base* FactoryCreate(const RTTI<Base>& rtti) {return Factory.contains(rtti.type) ? Factory.at(rtti.type)() : nullptr;}
+ 		static inline Base* FactoryCreate(const std::string& type) {
+#ifdef MGN_DEBUG
+ 			if (Factory.contains(type)) {
+ 				auto& createFunc = Factory.at(type);
+ 				auto* obj = createFunc();
+ 				return obj;
+ 			} else {
+ 				return nullptr;
+ 			}
+#else
+ 			return Factory.contains(type) ? Factory.at(type)() : nullptr;
+#endif
+ 		}
+
+ 		static inline Base* FactoryCreate(const RTTI<Base>& rtti) {
+ 			return FactoryCreate(rtti.type);
+ 		}
+
+ 		template<class T>
+ 		static inline Base* FactoryCreate() {
+ 			return FactoryCreate(T::rtti.type);
+ 		}
  	private:
  		void Initialise()
  		{
@@ -61,9 +87,9 @@ namespace Imagine::Core {
  	bool RTTI<Base>::IsA(const RTTI<Base> &other) const {
  		const RTTI<Base>* comp = this;
  		do {
- 			if (other.IsExactlyA(comp)) return true;
+ 			if (other.IsExactlyA(*comp)) return true;
  			comp = comp->parent;
- 		} while (parent != nullptr);
+ 		} while (comp != nullptr);
  		return false;
  	}
 }
@@ -80,47 +106,9 @@ struct std::hash<::Imagine::Core::RTTI<Base>>
 };
 
 #define RTTI_IMPLEMENT_CREATE(Base, Self) inline static Base* Create() { return new Self(); }
-#define RTTI_ADVANCED_DECLARATION(Base, Self, TypeNameStr, Parent) inline static ::Imagine::Core::RTTI<Base> rtti{TypeNameStr, Self::Create, (typeid(Self)==typeid(Parent)?nullptr:&Parent::rtti)}
+#define RTTI_ROOT_ADVANCED_DECLARATION(Base, TypeNameStr) inline static ::Imagine::Core::RTTI<Base> rtti{TypeNameStr, Base::Create, nullptr};
+#define RTTI_ADVANCED_DECLARATION(Base, Self, TypeNameStr, Parent) inline static ::Imagine::Core::RTTI<Base> rtti{TypeNameStr, Self::Create, &Parent::rtti};
+#define RTTI_IMPLEMENT_THIS_RTTI(Base, Self) virtual ::Imagine::Core::RTTI<Base>& get_rtti() {return Self::rtti;};
 
-#define RTTI_DECLARATION(Base, Self, Parent) RTTI_IMPLEMENT_CREATE(Base, Self) RTTI_ADVANCED_DECLARATION(Base, Self, #Self, Parent)
-#define RTTI_ROOT_DECLARATION(Base) RTTI_DECLARATION(Base, Base, Base)
-
-//
-// namespace Imagine::Core {
-//
-// 	class Something;
-// 	using RTTISomething = ::Imagine::Core::RTTI<Something>;
-//
-//  	#define RTTISomething_DECLARATION(Self, Parent) RTTI_DECLARATION(::Imagine::Core::Something, Self, Parent)
-//
-//  	class Something {
-//  	public:
-//  		RTTI_ROOT_DECLARATION(Something);
-// 		Something() {}
-// 		virtual ~Something() {};
-//
-// 	};
-//
-// 	class SomeOtherThing : public Something {
-// 	public:
-// 		RTTISomething_DECLARATION(SomeOtherThing, Something);
-// 		SomeOtherThing() {}
-// 		virtual ~SomeOtherThing() override {};
-// 	};
-//
-// 	class AnotherThing : public Something {
-// 	public:
-// 		RTTISomething_DECLARATION(AnotherThing, Something);
-// 		AnotherThing() {}
-// 		virtual ~AnotherThing() override {};
-// 	};
-//
-// 	class AnotherSomeOtherThing : public SomeOtherThing {
-// 	public:
-// 		RTTISomething_DECLARATION(AnotherSomeOtherThing, SomeOtherThing);
-// 		AnotherSomeOtherThing()
-// 		{
-// 		}
-// 		virtual ~AnotherSomeOtherThing() override {};
-// 	};
-// }
+#define RTTI_ROOT_DECLARATION(Base)  RTTI_IMPLEMENT_CREATE(Base, Base) RTTI_ROOT_ADVANCED_DECLARATION(Base, #Base) RTTI_IMPLEMENT_THIS_RTTI(Base, Base)
+#define RTTI_DECLARATION(Base, Self, Parent) RTTI_IMPLEMENT_CREATE(Base, Self) RTTI_ADVANCED_DECLARATION(Base, Self, #Self, Parent) RTTI_IMPLEMENT_THIS_RTTI(Base, Self)

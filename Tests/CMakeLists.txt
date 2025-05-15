@@ -15,6 +15,7 @@ set(MGN_TESTS_SOURCES
 	Sources/TestCoreHeapArray.cpp
 		Sources/TestCoreSparseSet.cpp
 		Sources/GlobalUsefullTests.hpp
+		Sources/TestRTTI.cpp
 )
 
 add_executable(MGN_Tests ${MGN_TESTS_SOURCES})
