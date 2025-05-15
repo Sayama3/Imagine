@@ -57,6 +57,8 @@ namespace Imagine::Core
                 elements[i].~T();
             }
             elements.clear();
+            dense.clear();
+            sparse.clear();
         }
 
         [[nodiscard]] bool Exist(const UnsignedInteger id) const {
@@ -70,7 +72,7 @@ namespace Imagine::Core
             if (!RawCreate(id)) return false;
 
             // Initialise the data.
-            new (&elements[sparse[id]]) T();
+            new (&elements[sparse[id]]) T ();
 
             return true;
         }
@@ -118,6 +120,12 @@ namespace Imagine::Core
             sparse[id] = -1;
         }
 
+        virtual void Clear() {
+            for (int i = dense.size() - 1; i >= 0; --i) {
+                Remove(dense[i]);
+            }
+        }
+
         [[nodiscard]] virtual T* TryGet(const UnsignedInteger id) {
             if (!Exist(id)) return nullptr;
             return &elements[sparse[id]];
@@ -149,7 +157,7 @@ namespace Imagine::Core
             return dense.capacity();
         }
 
-    private:
+    protected:
         HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
         HeapArray<UnsignedInteger, UnsignedInteger> dense{};
         HeapArray<T, UnsignedInteger> elements{};
@@ -162,7 +170,6 @@ namespace Imagine::Core
         AutoIdSparseSet() : SparseSet<T, UnsignedInteger>() {FreeList.reserve(256); FreeList.reserve(256);}
         explicit AutoIdSparseSet(const UnsignedInteger capacity) : SparseSet<T, UnsignedInteger>(capacity) {FreeList.reserve(capacity); FreeList.reserve(capacity);}
         virtual ~AutoIdSparseSet() override = default;
-
     private:
         UnsignedInteger CreateID() {
             UnsignedInteger id;
@@ -196,33 +203,47 @@ namespace Imagine::Core
             }
         }
     public:
+        static constexpr UnsignedInteger NullId{std::numeric_limits<UnsignedInteger>::max()};
+    public:
         virtual UnsignedInteger Create() {
             const UnsignedInteger id = CreateID();
             const bool result = SparseSet<T, UnsignedInteger>::Create(id);
-            return result ? id : -1;
+            return result ? id : NullId;
         }
 
         virtual UnsignedInteger Create(const T& data) {
             const UnsignedInteger id = CreateID();
             const bool result = SparseSet<T, UnsignedInteger>::Create(id, data);
-            return result ? id : -1;
+            return result ? id : NullId;
         }
 
         virtual bool Create(const UnsignedInteger id) override {
+            if (id == NullId) return false;
             EnsureFreelistContinuityOnCreate(id);
             return SparseSet<T, UnsignedInteger>::Create(id);
         }
 
         virtual bool Create(const UnsignedInteger id, const T& data) override {
+            if (id == NullId) return false;
             EnsureFreelistContinuityOnCreate(id);
             return SparseSet<T, UnsignedInteger>::Create(id, data);
         }
 
         virtual void Remove(const UnsignedInteger id) override {
-            if (SparseSet<T, UnsignedInteger>::Exist(id)) {
-                FreeList.push_back(id);
+            if (id == NullId) return;
+            if (!SparseSet<T, UnsignedInteger>::Exist(id)) {
+                return;
             }
+            FreeList.push_back(id);
             SparseSet<T, UnsignedInteger>::Remove(id);
+        }
+
+        virtual void Clear() override {
+            for (int i = SparseSet<T, UnsignedInteger>::dense.size() - 1; i >= 0; --i) {
+                const auto id = SparseSet<T, UnsignedInteger>::dense[i];
+                FreeList.push_back(id);
+                SparseSet<T, UnsignedInteger>::Remove(id);
+            }
         }
     protected:
         HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger>::c_OverheadResize};

@@ -63,15 +63,21 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 2);
 
-	heapArray.reserve(5);
+	heapArray.reserve(6);
 	ASSERT_EQ(heapArray.size(), 0);
-	ASSERT_EQ(heapArray.capacity(), 5);
+	ASSERT_EQ(heapArray.capacity(), 6);
+	for (int i = 0; i < 5; ++i) {
+		const int n = i+1;
+		heapArray.push_back(n);
+		ASSERT_EQ(heapArray.size(), n);
+		ASSERT_EQ(heapArray.back(), n);
+		ASSERT_EQ(heapArray.get(i), n);
+	}
 
 	heapArray.prepare(5);
-	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.size(), 5);
 	ASSERT_EQ(heapArray.capacity(), 10);
-
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 5; i < 10; ++i) {
 		const int n = i+1;
 		heapArray.push_back(n);
 		ASSERT_EQ(heapArray.size(), n);
@@ -162,15 +168,21 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 2);
 
-	heapArray.reserve(5);
+	heapArray.reserve(6);
 	ASSERT_EQ(heapArray.size(), 0);
-	ASSERT_EQ(heapArray.capacity(), 5);
+	ASSERT_EQ(heapArray.capacity(), 6);
+	for (int i = 0; i < 5; ++i) {
+		const int n = i+1;
+		heapArray.push_back(&n, sizeof(int));
+		ASSERT_EQ(heapArray.size(), n);
+		ASSERT_EQ(*static_cast<int*>(heapArray.back()), n);
+		ASSERT_EQ(*static_cast<int*>(heapArray.get(i)), n);
+	}
 
 	heapArray.prepare(5);
-	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.size(), 5);
 	ASSERT_EQ(heapArray.capacity(), 10);
-
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 5; i < 10; ++i) {
 		const int n = i+1;
 		heapArray.push_back(&n, sizeof(int));
 		ASSERT_EQ(heapArray.size(), n);

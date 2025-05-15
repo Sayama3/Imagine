@@ -13,6 +13,8 @@ FetchContent_MakeAvailable(googletest)
 
 set(MGN_TESTS_SOURCES
 	Sources/TestCoreHeapArray.cpp
+		Sources/TestCoreSparseSet.cpp
+		Sources/GlobalUsefullTests.hpp
 )
 
 add_executable(MGN_Tests ${MGN_TESTS_SOURCES})

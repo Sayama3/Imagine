@@ -34,3 +34,89 @@ using namespace Imagine;
 	#endif
 
 #endif
+
+
+template<typename T>
+class TmpAtomicInstanceCount {
+public:
+	inline static volatile std::atomic_uint32_t s_InstanceCount{0};
+
+	TmpAtomicInstanceCount() {
+		s_InstanceCount.fetch_add(1, std::memory_order::relaxed);
+	}
+
+	TmpAtomicInstanceCount(const T& data) : data(data) {
+		s_InstanceCount.fetch_add(1, std::memory_order::relaxed);
+	}
+
+	~TmpAtomicInstanceCount() {
+		s_InstanceCount.fetch_sub(1, std::memory_order::relaxed);
+	}
+
+	TmpAtomicInstanceCount(const TmpAtomicInstanceCount& other) : data(other.data) {
+		s_InstanceCount.fetch_add(1, std::memory_order::relaxed);
+	}
+
+	TmpAtomicInstanceCount& operator=(const TmpAtomicInstanceCount& other) {
+		data = other.data;
+		return *this;
+	}
+
+	TmpAtomicInstanceCount(TmpAtomicInstanceCount&& other) noexcept : data(other.data) {
+		s_InstanceCount.fetch_add(1, std::memory_order::relaxed);
+	}
+
+	TmpAtomicInstanceCount& operator=(TmpAtomicInstanceCount&& other) noexcept {
+		data = other.data;
+		return *this;
+	};
+
+	void swap(TmpAtomicInstanceCount& other) {
+		std::swap(data, other.data);
+	}
+
+	T data{0};
+};
+
+template<typename T>
+class TmpInstanceCount {
+public:
+	inline static volatile std::uint32_t s_InstanceCount{0};
+
+	TmpInstanceCount() {
+		s_InstanceCount += 1;
+	}
+
+	TmpInstanceCount(const T& data) : data(data) {
+		s_InstanceCount += 1;
+	}
+
+	~TmpInstanceCount() {
+		s_InstanceCount -= 1;
+	}
+
+	TmpInstanceCount(const TmpInstanceCount& other) : data(other.data) {
+		s_InstanceCount += 1;
+	}
+
+	TmpInstanceCount& operator=(const TmpInstanceCount& other) {
+		data = other.data;
+		return *this;
+	}
+
+	TmpInstanceCount(TmpInstanceCount&& other) noexcept {
+		s_InstanceCount += 1;
+		swap(other);
+	}
+
+	TmpInstanceCount& operator=(TmpInstanceCount&& other) noexcept {
+		swap(other);
+		return *this;
+	};
+
+	void swap(TmpInstanceCount& other) noexcept {
+		std::swap(data, other.data);
+	}
+
+	T data{0};
+};
