@@ -225,6 +225,18 @@ namespace Imagine::Core {
 			}
 		}
 
+		virtual void Reserve(const UnsignedInteger capacity) {
+			sparse.reserve(capacity);
+			dense.reserve(capacity);
+			elements.reserve(capacity);
+		}
+
+		virtual void Prepare(const UnsignedInteger additional_capacity) {
+			sparse.reserve(dense.size() + additional_capacity);
+			dense.prepare(additional_capacity);
+			elements.prepare(additional_capacity);
+		}
+
         [[nodiscard]] virtual void* TryGet(const UnsignedInteger id) {
             if (!Exist(id)) return nullptr;
             return elements.get(sparse[id]);

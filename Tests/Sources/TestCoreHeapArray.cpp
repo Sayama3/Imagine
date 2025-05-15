@@ -5,6 +5,7 @@
 #include "GlobalUsefullTests.hpp"
 
 TEST(CoreHeapArray, RAII) {
+	Log::Init();
 	HeapArray<Real> heapArray;
 	ASSERT_FALSE(heapArray.is_valid());
 
@@ -25,9 +26,11 @@ TEST(CoreHeapArray, RAII) {
 
 	heapArray.~HeapArray();
 	ASSERT_FALSE(heapArray.is_valid());
+	Log::Shutdown();
 }
 
 TEST(CoreHeapArray, PushPopRemoveAssertions) {
+	Log::Init();
 	HeapArray<int> heapArray{1};
 	ASSERT_TRUE(heapArray.is_valid());
 	ASSERT_EQ(heapArray.size(), 0);
@@ -104,9 +107,11 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 10);
 	ASSERT_TRUE(heapArray.empty());
+	Log::Shutdown();
 }
 
 TEST(CoreRawHeapArray, RAII) {
+	Log::Init();
 	RawHeapArray<uint32_t> heapArray;
 	ASSERT_FALSE(heapArray.is_valid());
 	heapArray = RawHeapArray<uint32_t>{sizeof(int)};
@@ -129,9 +134,11 @@ TEST(CoreRawHeapArray, RAII) {
 
 	heapArray.~RawHeapArray();
 	ASSERT_FALSE(heapArray.is_valid());
+	Log::Shutdown();
 }
 
 TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
+	Log::Init();
 	RawHeapArray<uint32_t> heapArray{sizeof(int), 1};
 	ASSERT_TRUE(heapArray.is_valid());
 	ASSERT_EQ(heapArray.size(), 0);
@@ -209,4 +216,5 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 10);
 	ASSERT_TRUE(heapArray.empty());
+	Log::Shutdown();
 }

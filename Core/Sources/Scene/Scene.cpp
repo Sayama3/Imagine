@@ -40,6 +40,13 @@ namespace Imagine::Core
         }
     }
 
+    void Scene::Clear() {
+        for (auto& [uuid, rawSparseSet]: m_CustomComponents) {
+            rawSparseSet.Clear();
+        }
+        m_SparseEntities.Clear();
+    }
+
     UUID Scene::AddComponentType(const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, ConstBufferView view))
     {
         UUID id{};
@@ -79,6 +86,27 @@ namespace Imagine::Core
         return {};
     }
 
+    BufferView Scene::AddComponent(const EntityID entityId, const UUID componentId, const ConstBufferView view) {
+        if (!m_CustomComponents.contains(componentId))
+        {
+            MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+            return BufferView{};
+        }
+
+        auto& components = m_CustomComponents.at(componentId);
+
+        if (components.Exist(entityId.id)) {
+            return {};
+        }
+
+        if(components.Create(entityId.id, view)) {
+            return BufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
+        }
+
+        MGN_CORE_ERROR("The component id {} already exist on the entity {}.", componentId.string(), entityId.string());
+        return {};
+    }
+
     BufferView Scene::GetComponent(const EntityID entityId, const UUID componentId)
     {
         if (!m_CustomComponents.contains(componentId))
@@ -91,6 +119,24 @@ namespace Imagine::Core
 
         if (components.Exist(entityId.id)) {
             return BufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
+        }
+
+        MGN_CORE_ERROR("The component id {} hasn't been added to the entity {}.", componentId.string(), entityId.string());
+        return {};
+    }
+
+    ConstBufferView Scene::GetComponent(const EntityID entityId, const UUID componentId) const
+    {
+        if (!m_CustomComponents.contains(componentId))
+        {
+            MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+            return ConstBufferView{};
+        }
+
+        auto& components = m_CustomComponents.at(componentId);
+
+        if (components.Exist(entityId.id)) {
+            return ConstBufferView{ components.Get(entityId.id), 0, components.GetDataSize() };
         }
 
         MGN_CORE_ERROR("The component id {} hasn't been added to the entity {}.", componentId.string(), entityId.string());

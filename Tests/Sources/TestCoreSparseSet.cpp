@@ -5,6 +5,7 @@
 #include "GlobalUsefullTests.hpp"
 
 TEST(CoreSparseSet, IntSparseSet) {
+	Log::Init();
 	uint64_t idGenerator{0};
 	{
 		SparseSet<int, uint64_t> sparseSet{};
@@ -68,9 +69,11 @@ TEST(CoreSparseSet, IntSparseSet) {
 
 	ASSERT_EQ(sparseSet.Count(), 0);
 	ASSERT_EQ(sparseSet.Capacity(), new_capacity);
+	Log::Shutdown();
 }
 
 TEST(CoreSparseSet, Vec4AutoSparseSet) {
+	Log::Init();
 	using AutoSparseSet = AutoIdSparseSet<Vec4, uint64_t>;
 	{
 		AutoSparseSet sparseSet{};
@@ -144,10 +147,12 @@ TEST(CoreSparseSet, Vec4AutoSparseSet) {
 
 	ASSERT_EQ(sparseSet.Count(), 0);
 	ASSERT_EQ(sparseSet.Capacity(), new_capacity);
+	Log::Shutdown();
 }
 
 
 TEST(CoreSparseSet, CounterSparseSet) {
+	Log::Init();
 	using InstanceCounter = InstanceCount<int>;
 	using AutoSparseSet = AutoIdSparseSet<InstanceCounter, uint64_t>;
 
@@ -184,4 +189,5 @@ TEST(CoreSparseSet, CounterSparseSet) {
 
 	sparseSet.~AutoSparseSet();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
+	Log::Shutdown();
 }

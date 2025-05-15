@@ -46,6 +46,8 @@ public:
 
 
 TEST(CoreRTTI, HeritageAssertions) {
+	Log::Init();
+
 	ASSERT_TRUE(Something::rtti.IsRoot());
 	ASSERT_EQ(Something::rtti.parent, nullptr);
 	ASSERT_STREQ(Something::rtti.type.c_str(), "Something");
@@ -89,10 +91,14 @@ TEST(CoreRTTI, HeritageAssertions) {
 	ASSERT_FALSE(SomeAnotherSomeOtherThing::rtti.IsA(AnotherThing::rtti));
 	SomeAnotherSomeOtherThing _SomeAnotherSomeOtherThing{};
 	ASSERT_EQ(&(_SomeAnotherSomeOtherThing).get_rtti(), &SomeAnotherSomeOtherThing::rtti);;
+
+	Log::Shutdown();
 }
 
 
 TEST(CoreRTTI, FactoryAssertions) {
+	Log::Init();
+
 	Something* _Something = RTTISomething::FactoryCreate(Something::rtti.type);
 	ASSERT_TRUE(_Something->get_rtti().IsExactlyA(Something::rtti));
 	ASSERT_EQ(&_Something->get_rtti(), &Something::rtti);
@@ -156,4 +162,6 @@ TEST(CoreRTTI, FactoryAssertions) {
 	Something* ___SomeAnotherSomeOtherThing = RTTISomething::FactoryCreate<SomeAnotherSomeOtherThing>();
 	ASSERT_TRUE(___SomeAnotherSomeOtherThing->get_rtti().IsExactlyA(SomeAnotherSomeOtherThing::rtti));
 	ASSERT_EQ(&___SomeAnotherSomeOtherThing->get_rtti(), &SomeAnotherSomeOtherThing::rtti);
+
+	Log::Shutdown();
 }
