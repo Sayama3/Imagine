@@ -47,6 +47,47 @@ namespace Imagine::Core {
 			Capacity = 0;
 		}
 
+		RawHeapArray(const RawHeapArray& other) {
+			if (this == &other) return;
+			if (!other.is_valid()) return;
+
+			DataSize = other.DataSize;
+			Count = other.Count;
+			Capacity = other.Capacity;
+
+			data = malloc(Capacity*DataSize);
+
+			memcpy(data, other.data, Count*DataSize);
+		}
+
+		RawHeapArray& operator=(const RawHeapArray& other) {
+			if (this == &other) return *this;
+
+			// Fast exist if the other is invalid. We just become invalid too. Like a NaN propagation.
+			if (!other.is_valid()) {
+				free(data);
+				data = nullptr;
+				Count = 0;
+				Capacity = 0;
+				return *this;
+			}
+
+			// reallocation only if necessary because we might just be good.
+			if (Capacity*DataSize != other.Capacity*other.DataSize) {
+				free(data);
+				data = malloc(other.Capacity*other.DataSize);
+			}
+
+			Capacity = other.Capacity;
+			DataSize = other.DataSize;
+			Count = other.Count;
+
+			// Only copy the necessary. The rest is just garbage anyway.
+			memcpy(data, other.data, Count*DataSize);
+
+			return *this;
+		}
+
 		RawHeapArray(RawHeapArray&& other) noexcept {swap(other);}
 		RawHeapArray& operator=(RawHeapArray&& other) noexcept {swap(other); return *this;}
 		void swap(RawHeapArray& other) noexcept {

@@ -153,7 +153,6 @@ namespace Imagine::Core {
             if (copy_constructor) {
                 copy_constructor(elements.get(sparse[id]), GetDataSize(), view);
             } else {
-                MGN_CORE_WARN("No copy constructors found. Just copying the memory.");
 	            memcpy(elements.get(sparse[id]), view.Get(), std::min(view.Size(), static_cast<uint64_t>(GetDataSize())));
             }
 
@@ -174,9 +173,8 @@ namespace Imagine::Core {
 
             // Initialise the data.
             if (copy_constructor) {
-                copy_constructor(elements.get(sparse[id]), GetDataSize(), ConstBufferView{buffer,0,buffer.Size()});
+                copy_constructor(elements.get(sparse[id]), GetDataSize(), ConstBufferView::MakeSlice(&buffer,0,buffer.Size()));
             } else {
-                MGN_CORE_WARN("No copy constructors found. Just copying the memory.");
 	            memcpy(elements.get(sparse[id]), buffer.Get(), std::min(buffer.Size(), static_cast<uint64_t>(GetDataSize())));
             }
 
@@ -328,10 +326,11 @@ namespace Imagine::Core {
 			dense[index] = id;
 			return true;
 		}
-	private:
+	protected:
 		HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
 		HeapArray<UnsignedInteger, UnsignedInteger> dense{};
 		RawHeapArray<UnsignedInteger> elements{};
+	private:
         void(*constructor)(void*, UnsignedInteger) = nullptr;
         void(*destructor)(void*, UnsignedInteger) = nullptr;
         void(*copy_constructor)(void*, UnsignedInteger, ConstBufferView view) = nullptr;
@@ -343,10 +342,37 @@ namespace Imagine::Core {
 	 */
 	template<typename UnsignedInteger = uint32_t>
 	class AutoIdRawSparseSet : public RawSparseSet<UnsignedInteger> {
-public:
-        AutoIdRawSparseSet() : RawSparseSet<UnsignedInteger>() {FreeList.reserve(256); FreeList.reserve(256);}
-        explicit AutoIdRawSparseSet(const UnsignedInteger capacity) : RawSparseSet<UnsignedInteger>(capacity) {FreeList.reserve(capacity); FreeList.reserve(capacity);}
-        virtual ~AutoIdRawSparseSet() override = default;
+	public:
+
+		template<typename T>
+		inline static AutoIdRawSparseSet Instantiate() {
+			AutoIdRawSparseSet sparseSet = AutoIdRawSparseSet<UnsignedInteger>{sizeof(T)};
+
+			sparseSet.SetConstructor([](void* data, const UnsignedInteger size){new(data) T();});
+			sparseSet.SetDestructor([](void* data, const UnsignedInteger size){reinterpret_cast<T*>(data)->~T();});
+			sparseSet.SetCopyConstructor([](void* data, const UnsignedInteger size, ConstBufferView view){new (data) T(view.As<T>());});
+
+			return sparseSet;
+		}
+
+		template<typename T>
+		inline static AutoIdRawSparseSet Instantiate(const UnsignedInteger capacity) {
+			AutoIdRawSparseSet sparseSet = AutoIdRawSparseSet<UnsignedInteger>{sizeof(T), capacity};
+
+			sparseSet.SetConstructor([](void* data, const UnsignedInteger size){new(data) T();});
+			sparseSet.SetDestructor([](void* data, const UnsignedInteger size){reinterpret_cast<T*>(data)->~T();});
+			sparseSet.SetCopyConstructor([](void* data, const UnsignedInteger size, ConstBufferView view){new (data) T(view.As<T>());});
+
+			return sparseSet;
+		}
+	public:
+        AutoIdRawSparseSet() : RawSparseSet<UnsignedInteger>() {}
+        explicit AutoIdRawSparseSet(const UnsignedInteger dataSize) : RawSparseSet<UnsignedInteger>(dataSize) {FreeList.reserve(256); FreeList.reserve(256);}
+        explicit AutoIdRawSparseSet(const UnsignedInteger dataSize, const UnsignedInteger capacity) : RawSparseSet<UnsignedInteger>(dataSize, capacity) {FreeList.reserve(capacity); FreeList.reserve(capacity);}
+        virtual ~AutoIdRawSparseSet() override {
+	        FreeList.clear();
+        	IDs = 0;
+        }
     private:
         UnsignedInteger CreateID() {
             UnsignedInteger id;
@@ -406,6 +432,20 @@ public:
         virtual UnsignedInteger Create(const ConstBufferView& view) {
             const UnsignedInteger id = CreateID();
             const bool result = RawSparseSet<UnsignedInteger>::Create(id, view);
+            return result ? id : NullId;
+        }
+
+		/**
+		 * Allocate a bloc of memory and initialize it with the memory view if the function as been passed down.
+		 * Copy a maximum of memory if no function is found.
+		 * It won't call the default constructor function either, just copying the memory where it should be.
+		 * It will also create and assign an available ID. It will re-use the returned ID.
+		 * @param buffer A buffer of some arbitrary data in memory.
+		 * @return The ID created if it was successful. NullId else.
+		 */
+        virtual UnsignedInteger Create(const Buffer& buffer) {
+            const UnsignedInteger id = CreateID();
+            const bool result = RawSparseSet<UnsignedInteger>::Create(id, buffer);
             return result ? id : NullId;
         }
 

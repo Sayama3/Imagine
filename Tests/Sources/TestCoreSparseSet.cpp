@@ -70,7 +70,7 @@ TEST(CoreSparseSet, IntSparseSet) {
 	ASSERT_EQ(sparseSet.Capacity(), new_capacity);
 }
 
-TEST(CoreSparseSet, IntAutoSparseSet) {
+TEST(CoreSparseSet, Vec4AutoSparseSet) {
 	using AutoSparseSet = AutoIdSparseSet<Vec4, uint64_t>;
 	{
 		AutoSparseSet sparseSet{};

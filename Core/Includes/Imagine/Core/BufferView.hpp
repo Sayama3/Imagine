@@ -91,17 +91,18 @@ namespace Imagine::Core
     {
     public:
         template<typename T>
-        static ConstBufferView MakeSlice(Buffer* buffer, const uint64_t index)
+        static ConstBufferView MakeSlice(const Buffer* buffer, const uint64_t index)
         {
+            return MakeSlice(buffer, index * sizeof(T),sizeof(T));
+        }
+
+        inline static ConstBufferView MakeSlice(const Buffer* buffer, const uint64_t offset, const uint64_t size) {
             if (!buffer) return ConstBufferView{};
-            constexpr uint64_t size = sizeof(T);
-            const uint64_t offset = index * size;
             if (offset + size > buffer->Size()) return ConstBufferView{};
             return ConstBufferView{buffer->Get(), offset, size};
         }
     public:
         ConstBufferView();
-        ConstBufferView(const Buffer& buffer, uint64_t offset, uint64_t size);
         ConstBufferView(const void* buffer, uint64_t offset, uint64_t size);
         ConstBufferView(const BufferView& view);
         ConstBufferView& operator=(const BufferView& view);

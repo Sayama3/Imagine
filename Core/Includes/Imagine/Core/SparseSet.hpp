@@ -173,7 +173,10 @@ namespace Imagine::Core
     public:
         AutoIdSparseSet() : SparseSet<T, UnsignedInteger>() {FreeList.reserve(256); FreeList.reserve(256);}
         explicit AutoIdSparseSet(const UnsignedInteger capacity) : SparseSet<T, UnsignedInteger>(capacity) {FreeList.reserve(capacity); FreeList.reserve(capacity);}
-        virtual ~AutoIdSparseSet() override = default;
+        virtual ~AutoIdSparseSet() override {
+            FreeList.clear();
+            IDs = 0;
+        }
     private:
         UnsignedInteger CreateID() {
             UnsignedInteger id;
