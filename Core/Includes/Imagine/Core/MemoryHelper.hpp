@@ -9,7 +9,7 @@ namespace Imagine::Core::MemoryHelper {
 		//TODO: Optimize ?
 		void* tmp = malloc(size);
 		memcpy(tmp, id1, size);
-		memcpy(id1, id2, size);
+		memmove(id1, id2, size);
 		memcpy(id2, tmp, size);
 		free(tmp);
 	}
