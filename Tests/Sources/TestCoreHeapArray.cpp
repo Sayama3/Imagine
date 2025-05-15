@@ -63,7 +63,11 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 2);
 
-	heapArray.reserve(10);
+	heapArray.reserve(5);
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 5);
+
+	heapArray.prepare(5);
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 10);
 
@@ -158,7 +162,11 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 2);
 
-	heapArray.reserve(10);
+	heapArray.reserve(5);
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 5);
+
+	heapArray.prepare(5);
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 10);
 

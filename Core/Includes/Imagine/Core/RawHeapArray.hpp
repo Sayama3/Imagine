@@ -102,10 +102,25 @@ namespace Imagine::Core {
 		[[nodiscard]] UnsignedInteger capacity() const {return Capacity;}
 		[[nodiscard]] bool empty() const {return Count == 0;}
 
+		/**
+		 * Will reallocate the array if the desired capacity exceeds the one we have.
+		 * @param capacity The new capacity of the array
+		 */
 		void reserve(const UnsignedInteger capacity) {
 			if (capacity > Capacity) {
 				reallocate_and_copy(capacity);
 			}
+		}
+
+		/**
+		 * QOL Function made to be able to ensure the array will be able to hold some additional_capacity without reallocating.
+		 * The function will simply call the reserve function with size() + 'additional_capacity'.
+		 * It's just a function I wish I add in the std::vector, so I added it.
+		 * @param additional_capacity The number of elements we might add
+		 */
+		void prepare(const UnsignedInteger additional_capacity) {
+			const UnsignedInteger capacity = Count + additional_capacity;
+			reserve(capacity);
 		}
 
 		/**
