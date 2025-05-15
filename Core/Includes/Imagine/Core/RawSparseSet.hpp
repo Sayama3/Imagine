@@ -7,6 +7,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/RawHeapArray.hpp"
+#include "Imagine/Core/HeapArray.hpp"
 
 namespace Imagine::Core {
 
@@ -16,7 +17,8 @@ namespace Imagine::Core {
 	public:
 		static inline constexpr UnsignedInteger c_OverheadResize = 64;
 	public:
-		RawSparseSet(const UnsignedInteger dataSize) : sparse(256), dense(256), elements(dataSize, 256) { sparse.redimension(256);}
+		RawSparseSet() noexcept {}
+		explicit RawSparseSet(const UnsignedInteger dataSize) : sparse(256), dense(256), elements(dataSize, 256) { sparse.redimension(256);}
 		RawSparseSet(const UnsignedInteger dataSize, const UnsignedInteger capacity) : sparse(capacity), dense(capacity), elements(dataSize, capacity) { sparse.redimension(capacity); }
 		virtual ~RawSparseSet() {
             if (destructor)
@@ -27,6 +29,23 @@ namespace Imagine::Core {
                 }
             }
 			elements.clear();
+		}
+
+		RawSparseSet(const RawSparseSet& other) : sparse(other.sparse), dense(other.dense), elements(other.elements) {}
+		RawSparseSet& operator=(const RawSparseSet& other) {
+			sparse = other.sparse;
+			dense = other.dense;
+			elements = other.elements;
+			return *this;
+		}
+
+		RawSparseSet(RawSparseSet&& other) noexcept : sparse(), dense(), elements() {swap(other);}
+		RawSparseSet& operator=(RawSparseSet&& other) noexcept {swap(other); return *this;}
+
+		void swap(RawSparseSet& other) noexcept {
+			sparse.swap(other.sparse);
+			dense.swap(other.dense);
+			elements.swap(other.elements);
 		}
 	public:
         /// <summary>

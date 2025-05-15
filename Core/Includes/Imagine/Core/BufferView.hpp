@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Buffer.hpp"
+#include "Imagine/Core/Macros.hpp"
 
 namespace Imagine::Core
 {
@@ -61,7 +62,7 @@ namespace Imagine::Core
 
     private:
         void* m_Buffer{nullptr};
-        const uint64_t m_Offset;
-        const uint64_t m_Size;
+        uint64_t m_Offset;
+        uint64_t m_Size;
     };
 }

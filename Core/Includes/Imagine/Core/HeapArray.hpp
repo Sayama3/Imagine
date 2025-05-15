@@ -20,7 +20,7 @@ namespace Imagine::Core
     template<typename T, typename UnsignedInteger = uint64_t>
     class HeapArray {
     public:
-        HeapArray() = default;
+        HeapArray() noexcept {}
         explicit HeapArray(const UnsignedInteger capacity) {
             reserve(capacity);
         }
@@ -30,6 +30,35 @@ namespace Imagine::Core
             data = nullptr;
             Count = 0;
             Capacity = 0;
+        }
+
+        HeapArray(const HeapArray<T,UnsignedInteger>& other) : Count{other.Count}, Capacity{other.Capacity} {
+            data = reinterpret_cast<T*>(malloc(sizeof(T) * Capacity));
+            if (!other.data) return;
+            memcpy(data, other.data, Count * sizeof(T));
+        }
+
+        HeapArray& operator=(const HeapArray<T,UnsignedInteger>& other) {
+            if (other.Capacity != Capacity)
+            {
+                free(data);
+                Capacity = other.Capacity;
+                data = malloc(sizeof(T)*Capacity);
+            }
+            Count = other.Count;
+            if (other.data) {
+                memcpy(data, other.data, Count * sizeof(T));
+            }
+            return *this;
+        }
+
+        HeapArray(HeapArray<T,UnsignedInteger>&& other) noexcept {swap(other);}
+        HeapArray& operator=(HeapArray<T,UnsignedInteger>&& other) noexcept {swap(other); return *this;}
+
+        void swap(HeapArray<T,UnsignedInteger>& other) noexcept {
+            std::swap(data, other.data);
+            std::swap(Count, other.Count);
+            std::swap(Capacity, other.Capacity);
         }
     private:
         void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2)

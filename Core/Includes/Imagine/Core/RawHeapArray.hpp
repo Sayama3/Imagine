@@ -22,28 +22,38 @@ namespace Imagine::Core {
 	private:
 
 		void* GetPtr(const UnsignedInteger index) {
-			return reinterpret_cast<uint8_t>(data) + (DataSize * index);
+			return reinterpret_cast<uint8_t*>(data) + (DataSize * index);
 		}
 
 		const void* GetPtr(const UnsignedInteger index) const {
-			return reinterpret_cast<uint8_t>(data) + (DataSize * index);
+			return reinterpret_cast<uint8_t*>(data) + (DataSize * index);
 		}
 
 		UnsignedInteger GetByteCapacity() const { return Capacity * DataSize; }
 		UnsignedInteger GetByteCount() const { return Count * DataSize; }
 
 	public:
+		RawHeapArray() noexcept {}
 		/**
 		 * Construct the RawHeapArray and set the data size that will be used for the rest of it's lifetime.
 		 * @param dataSize The size of the component the array will use. Can only be set once.
 		 */
-		explicit RawHeapArray(const UnsignedInteger dataSize) : DataSize(dataSize) {}
+		explicit RawHeapArray(const UnsignedInteger dataSize) noexcept : DataSize(dataSize) {}
 		RawHeapArray(const UnsignedInteger dataSize, const UnsignedInteger capacity) : DataSize(dataSize) { reserve(capacity); }
 		~RawHeapArray() {
 			free(data);
 			data = nullptr;
 			Count = 0;
 			Capacity = 0;
+		}
+
+		RawHeapArray(RawHeapArray&& other) noexcept {swap(other);}
+		RawHeapArray& operator=(RawHeapArray&& other) noexcept {swap(other); return *this;}
+		void swap(RawHeapArray& other) noexcept {
+			std::swap(data, other.data);
+			std::swap(Count, other.Count);
+			std::swap(Capacity, other.Capacity);
+			std::swap(DataSize, other.DataSize);
 		}
 	private:
 		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2)
@@ -220,6 +230,6 @@ namespace Imagine::Core {
 		 * This is the size of one element as passed at the constructor of the array.
 		 * The memory alignment, etc. Is for the user to handle before that.
 		 */
-		const UnsignedInteger DataSize;
+		UnsignedInteger DataSize{0};
 	};
 }

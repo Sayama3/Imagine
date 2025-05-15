@@ -10,7 +10,7 @@ namespace Imagine::Core
     {
     }
 
-    BufferView::BufferView(Buffer* buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer), m_Offset(offset), m_Size(size)
+    BufferView::BufferView(void* buffer, const uint64_t offset, const uint64_t size) : m_Buffer(buffer), m_Offset(offset), m_Size(size)
     {
     }
 
@@ -26,6 +26,7 @@ namespace Imagine::Core
         m_Buffer = other.m_Buffer;
         m_Offset = other.m_Offset;
         m_Size = other.m_Size;
+        return *this;
     }
 
     bool BufferView::IsValid() const
@@ -48,13 +49,13 @@ namespace Imagine::Core
     void* BufferView::Get()
     {
         if (!m_Buffer) return nullptr;
-        return reinterpret_cast<uint8_t*>(m_Buffer->Get()) + m_Offset;
+        return reinterpret_cast<uint8_t*>(m_Buffer) + m_Offset;
     }
 
     const void* BufferView::Get() const
     {
         if (!m_Buffer) return nullptr;
-        return reinterpret_cast<uint8_t*>(m_Buffer->Get()) + m_Offset;
+        return reinterpret_cast<uint8_t*>(m_Buffer) + m_Offset;
     }
 
     uint64_t BufferView::Size() const

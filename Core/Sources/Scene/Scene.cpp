@@ -19,7 +19,7 @@ namespace Imagine::Core
     EntityID Scene::CreateEntity()
     {
         const EntityID id = { m_SparseEntities.Create() };
-        m_SparseEntities.Get(id).Id = id;
+        m_SparseEntities.Get(id.id).Id = id;
         return id;
     }
 
@@ -36,22 +36,22 @@ namespace Imagine::Core
     void Scene::DestroyEntity(const EntityID id)
     {
         m_SparseEntities.Remove(id.id);
-        for each (auto& [uuid, rawSparseSet] in m_CustomComponents)
+        for (auto& [uuid, rawSparseSet] : m_CustomComponents)
         {
             rawSparseSet.Remove(id.id);
         }
     }
 
-    UUID Scene::AddComponentType(const uint64_t size, void(*constructor)(void*, UnsignedInteger), void(*destructor)(void*, UnsignedInteger), void(*copy_constructor)(void*, UnsignedInteger, BufferView view))
+    UUID Scene::AddComponentType(const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, BufferView view))
     {
         UUID id{};
         AddComponentType(id, size, constructor, destructor, copy_constructor);
         return id;
     }
 
-    void Scene::AddComponentType(const EntityID componentId, const uint64_t size, void(*constructor)(void*, UnsignedInteger), void(*destructor)(void*, UnsignedInteger), void(*copy_constructor)(void*, UnsignedInteger, BufferView view))
+    void Scene::AddComponentType(const UUID componentId, const uint64_t size, void(*constructor)(void*, uint32_t), void(*destructor)(void*, uint32_t), void(*copy_constructor)(void*, uint32_t, BufferView view))
     {
-        m_CustomComponents[componentId] = RawSparseSet<uint32_t>{size, c_EntityPrepareCount};
+        m_CustomComponents[componentId] = RawSparseSet<uint32_t>{static_cast<uint32_t>(size), c_EntityPrepareCount};
         auto& components = m_CustomComponents.at(componentId);
         if (constructor) components.SetConstructor(constructor);
         if (destructor) components.SetDestructor(destructor);

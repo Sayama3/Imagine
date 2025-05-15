@@ -36,10 +36,9 @@ namespace Imagine::Core
 
     void Buffer::Reallocate(const uint64_t size)
     {
-        Release(false);
+        Release();
         m_Data = malloc(size);
         m_Size = size;
-        ChangeSize(size);
     }
 
     void Buffer::Release()
