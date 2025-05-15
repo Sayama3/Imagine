@@ -32,7 +32,7 @@ namespace Imagine::Core {
 		template<typename T>
 		inline T*GetLayer()
 		{
-			VXM_PROFILE_FUNCTION();
+			/*MGN_PROFILE_FUNCTION();*/
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 					return static_cast<T *>(layer);
@@ -43,7 +43,7 @@ namespace Imagine::Core {
 		template<typename T>
 		inline const T* GetLayer() const
 		{
-			VXM_PROFILE_FUNCTION();
+			/*MGN_PROFILE_FUNCTION();*/
 			for (Layer* layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 					return static_cast<const T *>(layer);
@@ -54,7 +54,7 @@ namespace Imagine::Core {
 		template<typename T>
 		inline bool TryGetLayer(T*& ptr)
 		{
-			VXM_PROFILE_FUNCTION();
+			/*MGN_PROFILE_FUNCTION();*/
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 				{
@@ -68,7 +68,7 @@ namespace Imagine::Core {
 		template<typename T>
 		inline const bool TryGetLayer(const T*& ptr) const
 		{
-			VXM_PROFILE_FUNCTION();
+			/*MGN_PROFILE_FUNCTION();*/
 			for (Layer* layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 				{
@@ -82,7 +82,7 @@ namespace Imagine::Core {
 		template<typename T>
 		inline size_t GetLayerIndex() const
 		{
-			VXM_PROFILE_FUNCTION();
+			/*MGN_PROFILE_FUNCTION();*/
 			for (size_t i = 0; i < m_Layers.size(); ++i) {
 				if (typeid(*(m_Layers[i])) == typeid(T))
 				{

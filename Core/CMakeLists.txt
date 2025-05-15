@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 set(CORE_SRC_FILES
-		Includes/Core.hpp
+		Includes/Imagine/Core.hpp
 		Sources/Core.cpp
 		Includes/Imagine/Application/Application.hpp
 		Sources/Application/Application.cpp
@@ -113,11 +113,8 @@ add_library(Imagine::Core ALIAS Core)
 
 add_subdirectory(Platform)
 
-if(MGN_IMGUI AND NOT MGN_NO_IMGUI)
-	message(NOTICE "Add ImGui")
+if(MGN_IMGUI)
 	target_link_libraries(Core PUBLIC imgui)
-else()
-	message(NOTICE "Don't have ImGui")
 endif()
 
 

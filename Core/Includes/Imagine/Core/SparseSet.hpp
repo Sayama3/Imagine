@@ -145,7 +145,7 @@ namespace Imagine::Core
             return dense.size();
         }
 
-        [[nodisard]] UnsignedInteger Capacity() const{
+        [[nodiscard]] UnsignedInteger Capacity() const {
             return dense.capacity();
         }
 

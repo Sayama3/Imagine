@@ -169,7 +169,7 @@ namespace Imagine::Core {
             return dense.size();
         }
 
-        [[nodisard]] UnsignedInteger Capacity() const{
+        [[nodiscard]] UnsignedInteger Capacity() const {
             return dense.capacity();
         }
 
@@ -198,6 +198,7 @@ namespace Imagine::Core {
 			// Set the elements two-way connection
 			sparse[id] = index;
 			dense[index] = id;
+			return true;
 		}
 	private:
 		HeapArray<UnsignedInteger, UnsignedInteger> sparse{};

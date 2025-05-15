@@ -66,7 +66,7 @@
 
 #define MGN_SQR(a) (a * a)
 
-namespace Imagine::Core
+namespace Imagine
 {
 	// Using Float for now. Adding 'typedef' to ease to transition if I ever want to go higher byte.
 	//TODO: Search and replace the whole engine with this values.
@@ -447,6 +447,11 @@ namespace Imagine::Core
 
 
 } // Imagine::Core
+
+namespace Imagine::Literal {
+		constexpr Real operator ""_r(const unsigned long long int value) {return static_cast<Real>(value);}
+		constexpr Real operator ""_r(const long double value) {return static_cast<Real>(value);}
+} // Imagine::Literal
 
 template<glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
 inline std::ostream& operator << (std::ostream & os, const glm::mat<C,R,T,Q>& value){
