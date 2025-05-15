@@ -60,7 +60,7 @@ namespace Imagine::Core {
 		{
 			MGN_CORE_ASSERT(id1 < Capacity, "THe index {} is out of bound.", id1);
 			MGN_CORE_ASSERT(id2 < Capacity, "THe index {} is out of bound.", id2);
-			MemoryHelper::c_swap_memory(&data[id1], &data[id2], DataSize);
+			MemoryHelper::c_swap_memory(&reinterpret_cast<uint8_t*>(data)[id1*DataSize], &reinterpret_cast<uint8_t*>(data)[id2*DataSize], DataSize);
 		}
 		void reallocate_and_copy(const UnsignedInteger size)
 		{
@@ -80,7 +80,24 @@ namespace Imagine::Core {
 				reallocate_and_copy(minimumCapacity);
 			}
 		}
+
+		template <typename... Args>
+		void raw_push_back(const void* data, const uint64_t size, spdlog::format_string_t<Args...> fmt, Args &&...args) {
+			const UnsignedInteger index = Count++;
+			reallocate_if_necessary(Count);
+
+			if (!data)
+			{
+				return;
+			}
+
+			MGN_CORE_CHECK(size == DataSize, fmt, std::forward<Args>(args)...);
+
+			memcpy(GetPtr(index), data, std::min(size, static_cast<uint64_t>(DataSize)));
+
+		}
 	public:
+		[[nodiscard]] UnsignedInteger is_valid() const {return data && DataSize>0;}
 		[[nodiscard]] UnsignedInteger size() const {return Count;}
 		[[nodiscard]] UnsignedInteger capacity() const {return Capacity;}
 		[[nodiscard]] bool empty() const {return Count == 0;}
@@ -165,17 +182,20 @@ namespace Imagine::Core {
 		}
 
 		void push_back(const BufferView& view) {
-			const UnsignedInteger index = Count++;
-			reallocate_if_necessary(Count);
+			raw_push_back(view.Get(), view.Size(), "The BufferView sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", view.Size(), DataSize);
+		}
 
-			if (!view)
-			{
-				return;
-			}
+		void push_back(const Buffer& buffer) {
+			raw_push_back(buffer.Get(), buffer.Size(), "The Buffer sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", buffer.Size(), DataSize);
+		}
 
-			MGN_CORE_CHECK(view.Size() == DataSize, "The buffer view given in parameter is not the same size as the DataSize. We will copy what we can.")
+		void push_back(const void* ptr, const uint64_t size) {
+			raw_push_back(ptr, size, "The pointer sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", size, DataSize);
+		}
 
-			memcpy(GetPtr(index), view.Get(), std::min(view.Size(), static_cast<uint64_t>(DataSize)));
+		template<typename T>
+		void push_back(const T& data) {
+			raw_push_back(&data, sizeof(T), "The Type '{}' sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", typeid(T).name(), sizeof(T), DataSize);
 		}
 
 		void emplace_back() {
@@ -184,6 +204,10 @@ namespace Imagine::Core {
 		}
 
 		void* back() {
+			return GetPtr(Count - 1);
+		}
+
+		const void* back() const {
 			return GetPtr(Count - 1);
 		}
 

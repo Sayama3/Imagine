@@ -86,6 +86,9 @@ namespace Imagine::Core
             }
         }
     public:
+        [[nodiscard]] bool is_valid() const {
+            return data;
+        }
         [[nodiscard]] UnsignedInteger size() const {return Count;}
         [[nodiscard]] UnsignedInteger capacity() const {return Capacity;}
         [[nodiscard]] bool empty() const {return Count == 0;}

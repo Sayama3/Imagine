@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 using namespace Imagine::Literal;
+using namespace Imagine::Core;
 using namespace Imagine;
 
 #ifdef MGN_DOUBLE
@@ -16,10 +17,189 @@ using namespace Imagine;
 	#define ASSERT_REAL_EQ(val1, val2) ASSERT_FLOAT_EQ(val1, val2)
 #endif
 
-// Demonstrate some basic assertions.
-TEST(CoreBasicsTests, BasicAssertions) {
-	// Expect two strings not to be equal.
-	EXPECT_STRNE("hello", "world");
-	// Expect equality.
-	EXPECT_REAL_EQ(7_r * 6_r, 42.0_r);
+TEST(CoreHeapArray, RAII) {
+	HeapArray<Real> heapArray;
+	ASSERT_FALSE(heapArray.is_valid());
+
+	heapArray.resize(10);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 10);
+	ASSERT_EQ(heapArray.capacity(), 10);
+
+	heapArray.redimension(5);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 5);
+	ASSERT_EQ(heapArray.capacity(), 10);
+
+	heapArray.resize(5);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 5);
+	ASSERT_EQ(heapArray.capacity(), 5);
+
+	heapArray.~HeapArray();
+	ASSERT_FALSE(heapArray.is_valid());
+}
+
+TEST(CoreHeapArray, PushPopRemoveAssertions) {
+	HeapArray<int> heapArray{1};
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 1);
+	ASSERT_TRUE(heapArray.empty());
+
+	heapArray.push_back(-1);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_FALSE(heapArray.empty());
+	ASSERT_EQ(heapArray.back(), -1);
+	ASSERT_EQ(heapArray.get(0), -1);
+	ASSERT_EQ(heapArray.size(), 1);
+	ASSERT_EQ(heapArray.capacity(), 1);
+
+	heapArray.emplace_back();
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 2);
+	ASSERT_EQ(heapArray.capacity(), 2);
+
+	heapArray.back() = 1;
+	ASSERT_EQ(heapArray.back(), 1);
+	ASSERT_EQ(heapArray.get(1), 1);
+
+	heapArray.pop_back();
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 1);
+	ASSERT_EQ(heapArray.capacity(), 2);
+	ASSERT_EQ(heapArray.back(), -1);
+	ASSERT_EQ(heapArray.get(0), -1);
+
+	heapArray.pop_back();
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 2);
+
+	heapArray.reserve(10);
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 10);
+
+	for (int i = 0; i < 10; ++i) {
+		const int n = i+1;
+		heapArray.push_back(n);
+		ASSERT_EQ(heapArray.size(), n);
+		ASSERT_EQ(heapArray.back(), n);
+		ASSERT_EQ(heapArray.get(i), n);
+	}
+
+	heapArray.remove(0);
+	ASSERT_EQ(heapArray.size(), 9);
+	ASSERT_EQ(heapArray.capacity(), 10);
+	ASSERT_EQ(heapArray.back(), 10);
+	ASSERT_EQ(heapArray.back(), heapArray.get(8));
+	for (int i = 0; i < 9; ++i) {
+		ASSERT_EQ(heapArray.get(i), i+2);
+	}
+
+	heapArray.swap_and_remove(3);
+	ASSERT_EQ(heapArray.size(), 8);
+	ASSERT_EQ(heapArray.capacity(), 10);
+	ASSERT_EQ(heapArray.back(), 9);
+	ASSERT_EQ(heapArray.get(3), 10);
+
+	heapArray.clear();
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 10);
+	ASSERT_TRUE(heapArray.empty());
+}
+
+TEST(CoreRawHeapArray, RAII) {
+	RawHeapArray<uint32_t> heapArray;
+	ASSERT_FALSE(heapArray.is_valid());
+	heapArray = RawHeapArray<uint32_t>{sizeof(int)};
+	ASSERT_FALSE(heapArray.is_valid());
+
+	heapArray.resize(10);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 10);
+	ASSERT_EQ(heapArray.capacity(), 10);
+
+	heapArray.redimension(5);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 5);
+	ASSERT_EQ(heapArray.capacity(), 10);
+
+	heapArray.resize(5);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 5);
+	ASSERT_EQ(heapArray.capacity(), 5);
+
+	heapArray.~RawHeapArray();
+	ASSERT_FALSE(heapArray.is_valid());
+}
+
+TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
+	RawHeapArray<uint32_t> heapArray{sizeof(int), 1};
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 1);
+	ASSERT_TRUE(heapArray.empty());
+
+	heapArray.push_back(-1);
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_FALSE(heapArray.empty());
+	ASSERT_EQ(*reinterpret_cast<int*>(heapArray.back()), -1);
+	ASSERT_EQ(*reinterpret_cast<int*>(heapArray.get(0)), -1);
+	ASSERT_EQ(heapArray.size(), 1);
+	ASSERT_EQ(heapArray.capacity(), 1);
+
+	heapArray.emplace_back();
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 2);
+	ASSERT_EQ(heapArray.capacity(), 2);
+
+	int data2 = 1;
+	memcpy(heapArray.back(), &data2, sizeof(int));
+	ASSERT_EQ(*static_cast<int*>(heapArray.back()), 1);
+	ASSERT_EQ(*static_cast<int*>(heapArray.get(1)), 1);
+
+	heapArray.pop_back();
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 1);
+	ASSERT_EQ(heapArray.capacity(), 2);
+	ASSERT_EQ(*static_cast<int*>(heapArray.back()), -1);
+	ASSERT_EQ(*static_cast<int*>(heapArray.get(0)), -1);
+
+	heapArray.pop_back();
+	ASSERT_TRUE(heapArray.is_valid());
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 2);
+
+	heapArray.reserve(10);
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 10);
+
+	for (int i = 0; i < 10; ++i) {
+		const int n = i+1;
+		heapArray.push_back(&n, sizeof(int));
+		ASSERT_EQ(heapArray.size(), n);
+		ASSERT_EQ(*static_cast<int*>(heapArray.back()), n);
+		ASSERT_EQ(*static_cast<int*>(heapArray.get(i)), n);
+	}
+
+	heapArray.remove(0);
+	ASSERT_EQ(heapArray.size(), 9);
+	ASSERT_EQ(heapArray.capacity(), 10);
+	ASSERT_EQ(*static_cast<int*>(heapArray.back()), 10);
+	ASSERT_EQ(*static_cast<int*>(heapArray.back()), *static_cast<int*>(heapArray.get(8)));
+	for (int i = 0; i < 9; ++i) {
+		ASSERT_EQ(*static_cast<int*>(heapArray.get(i)), i+2);
+	}
+
+	heapArray.swap_and_remove(3);
+	ASSERT_EQ(heapArray.size(), 8);
+	ASSERT_EQ(heapArray.capacity(), 10);
+	ASSERT_EQ(*static_cast<int*>(heapArray.back()), 9);
+	ASSERT_EQ(*static_cast<int*>(heapArray.get(3)), 10);
+
+	heapArray.clear();
+	ASSERT_EQ(heapArray.size(), 0);
+	ASSERT_EQ(heapArray.capacity(), 10);
+	ASSERT_TRUE(heapArray.empty());
 }
