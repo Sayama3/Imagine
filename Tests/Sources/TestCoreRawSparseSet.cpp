@@ -13,7 +13,7 @@ TEST(CoreRawSparseSet, IntRawSparseSet) {
 		ASSERT_EQ(rawSparseSet.Count(), 0);
 	}
 
-	RawSparseSet rawSparseSet = RawSparseSet<>::Instantiate<int>(32);
+	RawSparseSet rawSparseSet = RawSparseSet<>(sizeof(int), 32);
 
 	ASSERT_EQ(rawSparseSet.Count(), 0);
 	ASSERT_EQ(rawSparseSet.Capacity(), 32);

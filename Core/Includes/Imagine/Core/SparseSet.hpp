@@ -9,7 +9,7 @@
 namespace Imagine::Core
 {
     /**
-     * This is a sparse set maybe using HeapArray that suppose the ids will come incrementally from 0 (and may get re-used)
+     * This is a sparse set using HeapArray that suppose the ids will come incrementally from 0 (and may get re-used)
      * as it's based on this to re-allocate the array of ids inside. Adding the element ID 18000 WILL reallocate the whole
      * data structure to be able to handle 18000 elements at least (Some overhead included). Be careful when using it.
      *
@@ -164,6 +164,10 @@ namespace Imagine::Core
     };
 
 
+    /**
+     * A Raw Sparse Set where we manage the IDs inside the Data Structure using a FreeList and incremental IDs.
+     * @tparam UnsignedInteger The unsigned integer used to count, measure, etc. wherever it's necessary.
+     */
     template<typename T, typename UnsignedInteger = uint32_t>
     class AutoIdSparseSet : public SparseSet<T, UnsignedInteger> {
     public:
