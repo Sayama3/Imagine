@@ -76,7 +76,7 @@ public:
 		return *this;
 	};
 
-	void swap(AtomicInstanceCount& other) {
+	void swap(AtomicInstanceCount& other) noexcept {
 		std::swap(data, other.data);
 	}
 
@@ -136,7 +136,7 @@ template<typename T>
 class ScopePtr {
 public:
 	ScopePtr() : ptr(nullptr) {}
-	ScopePtr(T* ptr) : ptr(ptr) {}
+	explicit ScopePtr(T* ptr) : ptr(ptr) {}
 	~ScopePtr() {Release();}
 
 	ScopePtr(const ScopePtr&) = delete;
