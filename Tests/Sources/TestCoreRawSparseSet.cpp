@@ -5,7 +5,7 @@
 #include "GlobalUsefullTests.hpp"
 
 TEST(CoreRawSparseSet, IDAndPersistence) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 
 	uint64_t idGenerator{0};
 	{
@@ -85,7 +85,7 @@ TEST(CoreRawSparseSet, IDAndPersistence) {
 }
 
 TEST(CoreRawSparseSet, AutoIDAndPersistence) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 
 	using AutoRawSparseSet = AutoIdRawSparseSet<uint32_t>;
 	{
@@ -166,7 +166,7 @@ TEST(CoreRawSparseSet, AutoIDAndPersistence) {
 
 
 TEST(CoreRawSparseSet, RAII) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	using InstanceCounter = InstanceCount<int>;
 	using AutoRawSparseSet = AutoIdRawSparseSet<uint64_t>;
 	using ScopeAutoRawSparseSet = ScopePtr<AutoRawSparseSet>;

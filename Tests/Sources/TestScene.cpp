@@ -24,7 +24,7 @@ struct Render {
 using RenderCounter = InstanceCount<Render>;
 
 TEST(CoreScene, RAII) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 
 	ScopePtr<Scene> scene = new Scene();
 
@@ -117,7 +117,7 @@ TEST(CoreScene, RAII) {
 
 
 TEST(CoreScene, Persistence) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 
 	Scene scene;
 

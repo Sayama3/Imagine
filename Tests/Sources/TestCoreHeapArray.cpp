@@ -5,7 +5,7 @@
 #include "GlobalUsefullTests.hpp"
 
 TEST(CoreHeapArray, Redimensionning) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	ScopePtr<HeapArray<Real>> heapArray = ScopePtr<HeapArray<Real>>::Create();
 	ASSERT_FALSE(heapArray->is_valid());
 
@@ -29,7 +29,7 @@ TEST(CoreHeapArray, Redimensionning) {
 }
 
 TEST(CoreHeapArray, PushPopRemoveAssertions) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	HeapArray<int> heapArray{1};
 	ASSERT_TRUE(heapArray.is_valid());
 	ASSERT_EQ(heapArray.size(), 0);
@@ -110,7 +110,7 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 }
 
 TEST(CoreRawHeapArray, Redimensionning) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	RawHeapArray<uint32_t> heapArray;
 	ASSERT_FALSE(heapArray.is_valid());
 	heapArray = RawHeapArray<uint32_t>{sizeof(int)};
@@ -135,7 +135,7 @@ TEST(CoreRawHeapArray, Redimensionning) {
 }
 
 TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	RawHeapArray<uint32_t> heapArray{sizeof(int), 1};
 	ASSERT_TRUE(heapArray.is_valid());
 	ASSERT_EQ(heapArray.size(), 0);

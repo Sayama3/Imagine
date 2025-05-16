@@ -5,7 +5,7 @@
 #include "GlobalUsefullTests.hpp"
 
 TEST(CoreSparseSet, IntSparseSet) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	uint64_t idGenerator{0};
 	{
 		SparseSet<int, uint64_t> sparseSet{};
@@ -73,7 +73,7 @@ TEST(CoreSparseSet, IntSparseSet) {
 }
 
 TEST(CoreSparseSet, Vec4AutoSparseSet) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	using AutoSparseSet = AutoIdSparseSet<Vec4, uint64_t>;
 	{
 		AutoSparseSet sparseSet{};
@@ -152,7 +152,7 @@ TEST(CoreSparseSet, Vec4AutoSparseSet) {
 
 
 TEST(CoreSparseSet, CounterSparseSet) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	using InstanceCounter = InstanceCount<int>;
 	using AutoSparseSet = AutoIdSparseSet<InstanceCounter, uint64_t>;
 	using ScopeAutoSparseSet = ScopePtr<AutoSparseSet>;

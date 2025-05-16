@@ -12,7 +12,15 @@ int main(int argc, char** argv)
 {
 	using namespace Imagine;
 	using namespace Imagine::Core;
-	Imagine::Core::Log::Init();
+
+	Imagine::Core::Log::Init({
+			LogFileParameter{
+			"Imagine.log",
+			"Imagine.old.log",
+		},
+		c_DefaultLogPattern,
+		true,
+	});
 
 	ApplicationParameters params {
 		std::string{"Imagine"},

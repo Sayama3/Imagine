@@ -46,7 +46,7 @@ public:
 
 
 TEST(CoreRTTI, HeritageAssertions) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 
 	ASSERT_TRUE(Something::rtti.IsRoot());
 	ASSERT_EQ(Something::rtti.parent, nullptr);
@@ -97,7 +97,7 @@ TEST(CoreRTTI, HeritageAssertions) {
 
 
 TEST(CoreRTTI, FactoryAssertions) {
-	Log::Init();
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 
 	Something* _Something = RTTISomething::FactoryCreate(Something::rtti.type);
 	ASSERT_TRUE(_Something->get_rtti().IsExactlyA(Something::rtti));

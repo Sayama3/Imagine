@@ -13,6 +13,19 @@
 
 namespace Imagine::Core {
 
+	static constexpr const char* const c_DefaultLogPattern = "%^[%T] [%l] %n (%s:%#->%!): %v%$";
+
+    struct LogFileParameter {
+        std::filesystem::path LogFilePath = "Imagine.log";
+        std::optional<std::filesystem::path> OldLogFilePath = "Imagine.old.log";
+    };
+
+    struct LogParameters {
+        std::optional<LogFileParameter> LogFileParameters = LogFileParameter{};
+        std::string LogPattern = c_DefaultLogPattern;
+        bool LogToConsole = true;
+    };
+
     class Log {
     public:
         enum Level {
@@ -32,7 +45,7 @@ namespace Imagine::Core {
         inline static constexpr uint64_t MessageBufferCount = 100;
         using MessageBuffer = LoopBackBuffer<Message, MessageBufferCount>;
     public:
-        static void Init();
+        static void Init(const LogParameters &parameters = {});
         static void Shutdown();
         inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
         inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
