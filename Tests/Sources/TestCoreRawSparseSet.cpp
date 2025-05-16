@@ -4,7 +4,7 @@
 
 #include "GlobalUsefullTests.hpp"
 
-TEST(CoreRawSparseSet, IntRawSparseSet) {
+TEST(CoreRawSparseSet, IDAndPersistence) {
 	Log::Init();
 
 	uint64_t idGenerator{0};
@@ -84,7 +84,7 @@ TEST(CoreRawSparseSet, IntRawSparseSet) {
 	Log::Shutdown();
 }
 
-TEST(CoreRawSparseSet, Vec4AutoRawSparseSet) {
+TEST(CoreRawSparseSet, AutoIDAndPersistence) {
 	Log::Init();
 
 	using AutoRawSparseSet = AutoIdRawSparseSet<uint32_t>;
@@ -165,48 +165,54 @@ TEST(CoreRawSparseSet, Vec4AutoRawSparseSet) {
 }
 
 
-TEST(CoreRawSparseSet, CounterRawSparseSet) {
+TEST(CoreRawSparseSet, RAII) {
 	Log::Init();
 	using InstanceCounter = InstanceCount<int>;
 	using AutoRawSparseSet = AutoIdRawSparseSet<uint64_t>;
+	using ScopeAutoRawSparseSet = ScopePtr<AutoRawSparseSet>;
 
 	{
-		AutoRawSparseSet rawSparseSet = AutoRawSparseSet::Instantiate<InstanceCounter>();
+		const AutoRawSparseSet rawSparseSet = AutoRawSparseSet::Instantiate<InstanceCounter>();
 		ASSERT_EQ(rawSparseSet.Count(), 0);
 	}
 
-	AutoRawSparseSet rawSparseSet = AutoRawSparseSet::Instantiate<InstanceCounter>(32);
+	ScopeAutoRawSparseSet rawSparseSet = ScopeAutoRawSparseSet::Create(sizeof(InstanceCounter), 32);
+
+	rawSparseSet->SetConstructor([](void* data, const uint64_t size){new(data) InstanceCounter();});
+	rawSparseSet->SetDestructor([](void* data, const uint64_t size){reinterpret_cast<InstanceCounter*>(data)->~InstanceCounter();});
+	rawSparseSet->SetCopyConstructor([](void* data, const uint64_t size, ConstBufferView view){new (data) InstanceCounter(view.As<InstanceCounter>());});
+
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
 
-	const auto id1 = rawSparseSet.Create();
+	const auto id1 = rawSparseSet->Create();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
 
-	rawSparseSet.Create();
+	rawSparseSet->Create();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 2);
 
-	rawSparseSet.Remove(id1);
+	rawSparseSet->Remove(id1);
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
 
-	rawSparseSet.Create();
+	rawSparseSet->Create();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 2);
 
-	while (rawSparseSet.Count() < 32) {
-		rawSparseSet.Create();
+	while (rawSparseSet->Count() < 32) {
+		rawSparseSet->Create();
 	}
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 32);
 
-	rawSparseSet.Create(64);
+	rawSparseSet->Create(64);
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
 
-	rawSparseSet.Clear();
+	rawSparseSet->Clear();
 
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
 	for (int i = 0; i < 10; ++i) {
-		rawSparseSet.Create();
+		rawSparseSet->Create();
 	}
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 10);
 
-	rawSparseSet.~AutoRawSparseSet();
+	rawSparseSet.Release();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
 
 	Log::Shutdown();

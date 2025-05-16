@@ -4,28 +4,27 @@
 
 #include "GlobalUsefullTests.hpp"
 
-TEST(CoreHeapArray, RAII) {
+TEST(CoreHeapArray, Redimensionning) {
 	Log::Init();
-	HeapArray<Real> heapArray;
-	ASSERT_FALSE(heapArray.is_valid());
+	ScopePtr<HeapArray<Real>> heapArray = ScopePtr<HeapArray<Real>>::Create();
+	ASSERT_FALSE(heapArray->is_valid());
 
-	heapArray.resize(10);
-	ASSERT_TRUE(heapArray.is_valid());
-	ASSERT_EQ(heapArray.size(), 10);
-	ASSERT_EQ(heapArray.capacity(), 10);
+	heapArray->resize(10);
+	ASSERT_TRUE(heapArray->is_valid());
+	ASSERT_EQ(heapArray->size(), 10);
+	ASSERT_EQ(heapArray->capacity(), 10);
 
-	heapArray.redimension(5);
-	ASSERT_TRUE(heapArray.is_valid());
-	ASSERT_EQ(heapArray.size(), 5);
-	ASSERT_EQ(heapArray.capacity(), 10);
+	heapArray->redimension(5);
+	ASSERT_TRUE(heapArray->is_valid());
+	ASSERT_EQ(heapArray->size(), 5);
+	ASSERT_EQ(heapArray->capacity(), 10);
 
-	heapArray.resize(5);
-	ASSERT_TRUE(heapArray.is_valid());
-	ASSERT_EQ(heapArray.size(), 5);
-	ASSERT_EQ(heapArray.capacity(), 5);
+	heapArray->resize(5);
+	ASSERT_TRUE(heapArray->is_valid());
+	ASSERT_EQ(heapArray->size(), 5);
+	ASSERT_EQ(heapArray->capacity(), 5);
 
-	heapArray.~HeapArray();
-	ASSERT_FALSE(heapArray.is_valid());
+	heapArray.Release();
 	Log::Shutdown();
 }
 
@@ -110,7 +109,7 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	Log::Shutdown();
 }
 
-TEST(CoreRawHeapArray, RAII) {
+TEST(CoreRawHeapArray, Redimensionning) {
 	Log::Init();
 	RawHeapArray<uint32_t> heapArray;
 	ASSERT_FALSE(heapArray.is_valid());
@@ -132,8 +131,6 @@ TEST(CoreRawHeapArray, RAII) {
 	ASSERT_EQ(heapArray.size(), 5);
 	ASSERT_EQ(heapArray.capacity(), 5);
 
-	heapArray.~RawHeapArray();
-	ASSERT_FALSE(heapArray.is_valid());
 	Log::Shutdown();
 }
 
@@ -216,5 +213,6 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 10);
 	ASSERT_TRUE(heapArray.empty());
+
 	Log::Shutdown();
 }

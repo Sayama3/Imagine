@@ -155,39 +155,45 @@ TEST(CoreSparseSet, CounterSparseSet) {
 	Log::Init();
 	using InstanceCounter = InstanceCount<int>;
 	using AutoSparseSet = AutoIdSparseSet<InstanceCounter, uint64_t>;
+	using ScopeAutoSparseSet = ScopePtr<AutoSparseSet>;
 
-	AutoSparseSet sparseSet{32};
+	{
+		AutoSparseSet rawSparseSet = AutoSparseSet();
+		ASSERT_EQ(rawSparseSet.Count(), 0);
+	}
+
+	ScopeAutoSparseSet sparseSet = ScopeAutoSparseSet::Create(32);
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
 
-	const auto id1 = sparseSet.Create();
+	const auto id1 = sparseSet->Create();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
 
-	sparseSet.Create();
+	sparseSet->Create();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 2);
 
-	sparseSet.Remove(id1);
+	sparseSet->Remove(id1);
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
 
-	sparseSet.Create();
+	sparseSet->Create();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 2);
 
-	while (sparseSet.Count() < 32) {
-		sparseSet.Create();
+	while (sparseSet->Count() < 32) {
+		sparseSet->Create();
 	}
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 32);
 
-	sparseSet.Create(64);
+	sparseSet->Create(64);
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
 
-	sparseSet.Clear();
+	sparseSet->Clear();
 
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
 	for (int i = 0; i < 10; ++i) {
-		sparseSet.Create();
+		sparseSet->Create();
 	}
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 10);
 
-	sparseSet.~AutoSparseSet();
+	sparseSet.Release();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
 	Log::Shutdown();
 }

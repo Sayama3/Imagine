@@ -135,6 +135,11 @@ public:
 template<typename T>
 class ScopePtr {
 public:
+	template<typename... Args>
+	inline static ScopePtr<T> Create(Args&&... args) {
+		return ScopePtr(new T(std::forward<Args>(args)...));
+	}
+public:
 	ScopePtr() : ptr(nullptr) {}
 	ScopePtr(T* ptr) : ptr(ptr) {}
 	~ScopePtr() {Release();}
@@ -152,7 +157,7 @@ public:
 
 	[[nodiscard]] T* operator->() {return ptr;}
 	[[nodiscard]] const T* operator->() const {return ptr;}
-	[[nodiscard]] operator bool() const {return ptr != nullptr;}
+	[[nodiscard]] explicit operator bool() const {return ptr != nullptr;}
 
 	void swap(ScopePtr& other) noexcept {
 		std::swap(ptr, other.ptr);
