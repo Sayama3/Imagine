@@ -136,7 +136,7 @@ template<typename T>
 class ScopePtr {
 public:
 	ScopePtr() : ptr(nullptr) {}
-	explicit ScopePtr(T* ptr) : ptr(ptr) {}
+	ScopePtr(T* ptr) : ptr(ptr) {}
 	~ScopePtr() {Release();}
 
 	ScopePtr(const ScopePtr&) = delete;
