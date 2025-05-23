@@ -21,6 +21,7 @@ namespace Imagine::Core {
 		UUID();
 		constexpr explicit UUID(const uint64_t id) : m_UUID1(id), m_UUID2(id) {}
 		constexpr explicit UUID(const uint64_t id1, const uint64_t id2) : m_UUID1(id1), m_UUID2(id2) {}
+
 		UUID(const UUID&) = default;
 		UUID& operator=(const UUID&) = default;
 

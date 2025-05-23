@@ -47,6 +47,10 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/RawSparseSet.hpp
 		Includes/Imagine/Events/Event.hpp
 		Sources/Layers/Layer.cpp
+		Includes/Imagine/Core/TypeDefinition.hpp
+		Sources/Core/TypeDefinition.cpp
+		Includes/Imagine/Scene/Terrain.hpp
+		Sources/Scene/Terrain.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -95,6 +99,7 @@ target_precompile_headers(Core PUBLIC
 		<tuple>
 
 		# C-Types Helpers
+		<cstdlib>
 		<cstdint>
 		<cstring>
 		<cmath>
@@ -126,5 +131,6 @@ elseif(CMAKE_BUILD_TYPE MATCHES "[Dd][Ii][Ss][Tt]")
 	target_compile_definitions(Core PUBLIC MGN_RELEASE=1)
 	target_compile_definitions(Core PUBLIC MGN_DIST=1)
 else()
-	message(FATAL_ERROR "Unknown cmake build type '${CMAKE_BUILD_TYPE}'")
+	message(WARNING "Unknown cmake build type '${CMAKE_BUILD_TYPE}'. Assuming Release mode.")
+	target_compile_definitions(Core PUBLIC MGN_RELEASE=1)
 endif()

@@ -105,14 +105,12 @@ namespace Imagine::Core {
 		}
 		void reallocate_and_copy(const UnsignedInteger size)
 		{
-			void* tmpBuffer = malloc(DataSize * size);
-			if (data)
-			{
-				memcpy(tmpBuffer, data, std::min(Count, size)*DataSize);
+			void* new_data = realloc(data, DataSize * size)
+			MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
+			if (new_data) {
+				data = new_data;
+				Capacity = size;
 			}
-			std::swap(data, tmpBuffer);
-			free(tmpBuffer);
-			Capacity = size;
 		}
 		void reallocate_if_necessary(const UnsignedInteger minimumCapacity)
 		{

@@ -153,6 +153,6 @@ namespace Imagine::Core
     public:
     private:
         void* m_Data{nullptr};
-        uint64_t m_Size;
+        uint64_t m_Size{ 0 };
     };
 }

@@ -63,21 +63,21 @@ namespace Imagine::Core
     private:
         void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2)
         {
-            MGN_CORE_ASSERT(id1 < Capacity, "THe index {} is out of bound.", id1);
-            MGN_CORE_ASSERT(id2 < Capacity, "THe index {} is out of bound.", id2);
+            MGN_CORE_ASSERT(id1 < Capacity, "The index {} is out of bound.", id1);
+            MGN_CORE_ASSERT(id2 < Capacity, "The index {} is out of bound.", id2);
             MemoryHelper::c_swap_memory(&data[id1], &data[id2]);
         }
+
         void reallocate_and_copy(const UnsignedInteger size)
         {
-            T* tmpBuffer = reinterpret_cast<T*>(malloc(sizeof(T) * size));
-            if (data)
-            {
-                memcpy(tmpBuffer, data, std::min(Count, size)*sizeof(T));
+            void* new_data = realloc(data, sizeof(T) * size)
+            MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
+            if (new_data) {
+                data = reinterpret_cast<T*>(new_data);
+                Capacity = size;
             }
-            std::swap(data, tmpBuffer);
-            free(tmpBuffer);
-            Capacity = size;
         }
+
         void reallocate_if_necessary(const UnsignedInteger minimumCapacity)
         {
             if (Capacity < minimumCapacity)
