@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.25)
 target_include_directories(Core PRIVATE Sources)
 
 set(CPU_RENDERER_SOURCES
-	Sources/CPURenderer.hpp
-	Sources/CPURenderer.cpp
+		Sources/Imagine/CPU/CPURenderer.hpp
+		Sources/Imagine/CPU/CPURenderer.cpp
 )
 
 target_sources(Core PRIVATE

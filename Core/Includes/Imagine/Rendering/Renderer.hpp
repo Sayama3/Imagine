@@ -9,8 +9,11 @@ namespace Imagine::Core {
 	public:
 		static Renderer* CreateRenderer();
 	public:
+		Renderer() = default;
 		virtual ~Renderer() {}
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
+	public:
+
 	};
 }

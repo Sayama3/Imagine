@@ -6,8 +6,8 @@ target_link_libraries(Core PUBLIC Vulkan::Vulkan)
 target_include_directories(Core PRIVATE Sources)
 
 set(VULKAN_SOURCES
-		Sources/VulkanRenderer.hpp
-		Sources/VulkanRenderer.cpp
+		Sources/Imagine/Vulkan/VulkanRenderer.hpp
+		Sources/Imagine/Vulkan/VulkanRenderer.cpp
 )
 
 target_sources(Core PRIVATE

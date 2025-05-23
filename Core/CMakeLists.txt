@@ -15,10 +15,10 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Layers/LayerStack.hpp
 		Includes/Imagine/Application/ApplicationParameters.hpp
 		Includes/Imagine/Application/Window.hpp
-		Includes/Imagine/Application/Renderer.hpp
+		Includes/Imagine/Rendering/Renderer.hpp
 		Includes/Imagine/Application/WindowParameters.hpp
 		Sources/Application/Window.cpp
-		Sources/Application/Renderer.cpp
+		Sources/Rendering/Renderer.cpp
 		Sources/Scene/Scene.cpp
 		Includes/Imagine/Scene/Scene.hpp
 		Sources/Scene/Entity.cpp
@@ -51,6 +51,8 @@ set(CORE_SRC_FILES
 		Sources/Core/TypeDefinition.cpp
 		Includes/Imagine/Scene/Terrain.hpp
 		Sources/Scene/Terrain.cpp
+		Sources/Core/FileSystem.cpp
+		Includes/Imagine/Core/FileSystem.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -77,6 +79,10 @@ target_precompile_headers(Core PUBLIC
 		<bitset>
 		<execution>
 
+		# Stream related
+		<fstream>
+		<iostream>
+
 		# Exception related stuff
 		<exception>
 		<stdexcept>
@@ -99,6 +105,7 @@ target_precompile_headers(Core PUBLIC
 		<tuple>
 
 		# C-Types Helpers
+		<cstdio>
 		<cstdlib>
 		<cstdint>
 		<cstring>

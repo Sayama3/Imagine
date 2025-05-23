@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ApplicationParameters.hpp"
-#include "Renderer.hpp"
+#include "../Rendering/Renderer.hpp"
 #include "Window.hpp"
 
 namespace Imagine::Core {
