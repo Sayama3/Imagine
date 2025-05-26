@@ -70,7 +70,7 @@ namespace Imagine::Core
 
         void reallocate_and_copy(const UnsignedInteger size)
         {
-            void* new_data = realloc(data, sizeof(T) * size)
+            void* new_data = realloc(data, sizeof(T) * size);
             MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
             if (new_data) {
                 data = reinterpret_cast<T*>(new_data);

@@ -105,7 +105,7 @@ namespace Imagine::Core {
 		}
 		void reallocate_and_copy(const UnsignedInteger size)
 		{
-			void* new_data = realloc(data, DataSize * size)
+			void* new_data = realloc(data, DataSize * size);
 			MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
 			if (new_data) {
 				data = new_data;
