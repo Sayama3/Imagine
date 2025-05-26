@@ -24,6 +24,14 @@ namespace Imagine::Core {
 		}
 	};
 
+
+	Application* Application::s_Instance{nullptr};
+
+	Application* Application::Get()
+	{
+		return s_Instance;
+	}
+
 	Application::Application(const ApplicationParameters& parameters) : m_Parameters(parameters) {
 		m_ShouldStop = false;
 		m_LastFrame = m_Start = std::chrono::high_resolution_clock::now();
@@ -34,18 +42,29 @@ namespace Imagine::Core {
 		}
 
 		if (parameters.UseRenderer) {
-			Renderer::Initialize(RendererParameters{},parameters);
+			m_Renderer = Renderer::Initialize(RendererParameters{},parameters);
+		}
+
+		if (!s_Instance)
+		{
+			s_Instance = this;
 		}
 	}
 
 	Application::~Application() {
 		if (m_Parameters.UseRenderer) {
+			m_Renderer = nullptr;
 			Renderer::Shutdown();
 		}
 
 		if (m_Parameters.Window) {
 			m_Window = nullptr;
 			Window::Shutdown();
+		}
+
+		if (s_Instance == this)
+		{
+			s_Instance = nullptr;
 		}
 	}
 
@@ -58,6 +77,11 @@ namespace Imagine::Core {
 			if (m_Window) {
 				m_Window->Update();
 				m_ShouldStop |= m_Window->ShouldClose();
+			}
+
+			if (m_Renderer)
+			{
+				m_Renderer->Draw();
 			}
 
 			std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();

@@ -3,6 +3,7 @@
 //
 
 // --- other includes ---
+
 #include <vulkan/vk_enum_string_helper.h>
 #include <vk_mem_alloc.h>
 
@@ -10,9 +11,16 @@
 #include <VkBootstrap.h>
 
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
+
+#include "Imagine/Application/Application.hpp"
+#include "Imagine/Vulkan/VulkanInitializer.hpp"
+#include "Imagine/Vulkan/VulkanUtils.hpp"
+#include "Imagine/Vulkan/VulkanMacros.hpp"
+
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Application/Window.hpp"
 
+// Window Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
 #if defined(MGN_WINDOW_SDL3)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -21,16 +29,6 @@
 #else
 #error "Vulkan Rendering without window is not implemented yet."
 #endif
-
-#define VK_CHECK(vk_func) \
-{\
-    VkResult err = vk_func; \
-    if(err) { \
-        const std::string vulkan_error_str = std::string{"[Vulkan] Detected error: "} + std::string{string_VkResult(err)};\
-        MGN_CORE_ERROR(vulkan_error_str); \
-        throw std::runtime_error(vulkan_error_str);\
-    }\
-}\
 
 using namespace Imagine::Core;
 
@@ -127,23 +125,14 @@ namespace Imagine::Vulkan
     {
         //create a command pool for commands submitted to the graphics queue.
         //we also want the pool to allow for resetting of individual command buffers
-        VkCommandPoolCreateInfo commandPoolInfo = {};
-        commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        commandPoolInfo.pNext = nullptr;
-        commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        commandPoolInfo.queueFamilyIndex = m_GraphicsQueueFamily;
+        VkCommandPoolCreateInfo commandPoolInfo = Initializer::CommandPoolCreateInfo(m_GraphicsQueueFamily,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
         for (int i = 0; i < m_RenderParams.NbrFrameInFlight; i++)
         {
             VK_CHECK(vkCreateCommandPool(m_Device, &commandPoolInfo, nullptr, &m_Frames[i].m_CommandPool));
 
             // allocate the default command buffer that we will use for rendering
-            VkCommandBufferAllocateInfo cmdAllocInfo = {};
-            cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            cmdAllocInfo.pNext = nullptr;
-            cmdAllocInfo.commandPool = m_Frames[i].m_CommandPool;
-            cmdAllocInfo.commandBufferCount = 1;
-            cmdAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            VkCommandBufferAllocateInfo cmdAllocInfo = Initializer::CommandBufferAllocateInfo(m_Frames[i].m_CommandPool, 1);
 
             VK_CHECK(vkAllocateCommandBuffers(m_Device, &cmdAllocInfo, &m_Frames[i].m_MainCommandBuffer));
         }
@@ -151,6 +140,19 @@ namespace Imagine::Vulkan
 
     void VulkanRenderer::InitializeSyncStructures()
     {
+        //create synchronization structures
+        //one fence to control when the gpu has finished rendering the frame,
+        //and 2 semaphores to synchronize rendering with swapchain
+        //we want the fence to start signalled so we can wait on it on the first frame
+        const VkFenceCreateInfo fenceCreateInfo = Initializer::FenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+        const VkSemaphoreCreateInfo semaphoreCreateInfo = Initializer::SemaphoreCreateInfo();
+
+        for (auto& frame : m_Frames)
+        {
+            VK_CHECK(vkCreateFence(m_Device, &fenceCreateInfo, nullptr, &frame.m_RenderFence));
+            VK_CHECK(vkCreateSemaphore(m_Device, &semaphoreCreateInfo, nullptr, &frame.m_SwapchainSemaphore));
+            VK_CHECK(vkCreateSemaphore(m_Device, &semaphoreCreateInfo, nullptr, &frame.m_RenderSemaphore));
+        }
     }
 
     void VulkanRenderer::CreateSwapChain(const uint32_t width, const uint32_t height)
@@ -187,9 +189,9 @@ namespace Imagine::Vulkan
         m_Swapchain = nullptr;
 
         // destroy swapchain resources
-        for (int i = 0; i < m_SwapchainImageViews.size(); i++)
+        for (auto& m_SwapchainImageView : m_SwapchainImageViews)
         {
-            vkDestroyImageView(m_Device, m_SwapchainImageViews[i], nullptr);
+            vkDestroyImageView(m_Device, m_SwapchainImageView, nullptr);
         }
         m_SwapchainImages.clear();
         m_SwapchainImageViews.clear();
@@ -197,6 +199,18 @@ namespace Imagine::Vulkan
 
     void VulkanRenderer::ShutdownVulkan()
     {
+        vkDeviceWaitIdle(m_Device);
+
+        for (auto& frame : m_Frames) {
+            vkDestroyCommandPool(m_Device, frame.m_CommandPool, nullptr);
+
+            //destroy sync objects
+            vkDestroyFence(m_Device,  frame.m_RenderFence, nullptr);
+            vkDestroySemaphore(m_Device,  frame.m_RenderSemaphore, nullptr);
+            vkDestroySemaphore(m_Device , frame.m_SwapchainSemaphore, nullptr);
+        }
+        m_Frames.clear();
+
         DestroySwapChain();
 
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
@@ -204,5 +218,82 @@ namespace Imagine::Vulkan
 
         vkb::destroy_debug_utils_messenger(m_Instance, m_DebugMessenger);
         vkDestroyInstance(m_Instance, nullptr);
+    }
+
+    FrameData& VulkanRenderer::GetCurrentFrame()
+    {
+        return m_Frames[m_FrameIndex];
+    }
+
+    void VulkanRenderer::Draw()
+    {
+        // wait until the gpu has finished rendering the last frame. Timeout of 1
+        // second
+        VK_CHECK(vkWaitForFences(m_Device, 1, &GetCurrentFrame().m_RenderFence, true, 1000000000));
+        VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
+
+        //request image from the swapchain
+        uint32_t swapchainImageIndex;
+        VK_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex));
+
+        auto cmd = GetCurrentFrame().m_MainCommandBuffer;
+        VK_CHECK(vkResetCommandBuffer(cmd, 0));
+
+        const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+
+        //make the swapchain image into writeable mode before rendering
+        //TODO: See if the layout is the most optimal
+        Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+
+        //make a clear-color from frame number. This will flash with a 120 frame period.
+        VkClearColorValue clearValue;
+        float flash = std::abs(std::sin(Application::Get()->Time()));
+        clearValue = { { 0.0f, 0.0f, flash, 1.0f } };
+
+        VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+
+        //clear image
+        vkCmdClearColorImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+
+        //make the swapchain image into presentable mode
+        Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex],VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+        //finalize the command buffer (we can no longer add commands, but it can now be executed)
+        VK_CHECK(vkEndCommandBuffer(cmd));
+
+        //prepare the submission to the queue.
+        //we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
+        //we will signal the _renderSemaphore, to signal that rendering has finished
+
+        VkCommandBufferSubmitInfo cmdinfo = Initializer::CommandBufferSubmitInfo(cmd);
+
+        VkSemaphoreSubmitInfo waitInfo = Initializer::SemaphoreSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,GetCurrentFrame().m_SwapchainSemaphore);
+        VkSemaphoreSubmitInfo signalInfo = Initializer::SemaphoreSubmitInfo(VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, GetCurrentFrame().m_RenderSemaphore);
+
+        VkSubmitInfo2 submit = Initializer::SubmitInfo(&cmdinfo,&signalInfo,&waitInfo);
+
+        //submit command buffer to the queue and execute it.
+        // _renderFence will now block until the graphic commands finish execution
+        VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, GetCurrentFrame().m_RenderFence));
+
+        //prepare present
+        // this will put the image we just rendered to into the visible window.
+        // we want to wait on the _renderSemaphore for that,
+        // as its necessary that drawing commands have finished before the image is displayed to the user
+        VkPresentInfoKHR presentInfo = {};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.pNext = nullptr;
+        presentInfo.pSwapchains = &m_Swapchain;
+        presentInfo.swapchainCount = 1;
+
+        presentInfo.pWaitSemaphores = &GetCurrentFrame().m_RenderSemaphore;
+        presentInfo.waitSemaphoreCount = 1;
+
+        presentInfo.pImageIndices = &swapchainImageIndex;
+
+        VK_CHECK(vkQueuePresentKHR(m_GraphicsQueue, &presentInfo));
+
+        m_FrameIndex = (m_FrameIndex + 1) % m_RenderParams.NbrFrameInFlight;
     }
 }

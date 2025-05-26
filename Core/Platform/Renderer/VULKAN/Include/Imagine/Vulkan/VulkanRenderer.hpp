@@ -15,6 +15,8 @@ namespace Imagine::Vulkan {
 	struct FrameData {
 		VkCommandPool m_CommandPool;
 		VkCommandBuffer m_MainCommandBuffer;
+		VkSemaphore m_SwapchainSemaphore, m_RenderSemaphore;
+		VkFence m_RenderFence;
 	};
 
 	class VulkanRenderer final : public Core::Renderer {
@@ -37,7 +39,10 @@ private:
 		void DestroySwapChain();
 private:
 		void ShutdownVulkan();
-private:
+		FrameData& GetCurrentFrame();
+	public:
+		void Draw() override;
+	private:
 		VkInstance m_Instance;// Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger;// Vulkan debug output handle
 		VkPhysicalDevice m_ChosenGPU;// GPU chosen as the default device
@@ -53,6 +58,7 @@ private:
 		VkExtent2D m_SwapchainExtent;
 
 		std::vector<FrameData> m_Frames;
+		uint32_t m_FrameIndex{0};
 		VkQueue m_GraphicsQueue{nullptr};
 		uint32_t m_GraphicsQueueFamily{0};
 

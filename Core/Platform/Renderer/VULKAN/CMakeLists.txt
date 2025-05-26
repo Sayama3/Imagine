@@ -12,9 +12,11 @@ target_include_directories(Core PRIVATE Sources)
 target_include_directories(Core PRIVATE Include)
 
 set(VULKAN_SOURCES
-		Include/Imagine/Vulkan/VulkanInitializer.hpp
 		Include/Imagine/Vulkan/VulkanRenderer.hpp
 		Sources/VulkanRenderer.cpp
+		Include/Imagine/Vulkan/VulkanInitializer.hpp
+		Include/Imagine/Vulkan/VulkanUtils.hpp
+		Include/Imagine/Vulkan/VulkanMacros.hpp
 )
 
 target_sources(Core PRIVATE

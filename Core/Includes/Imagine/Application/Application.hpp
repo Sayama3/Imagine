@@ -11,6 +11,10 @@
 namespace Imagine::Core {
 
 	class Application {
+	private:
+		static Application* s_Instance;
+	public:
+		static Application* Get();
 	public:
 		Application(const ApplicationParameters& parameters);
 		~Application();

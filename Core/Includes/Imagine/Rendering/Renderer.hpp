@@ -31,6 +31,6 @@ namespace Imagine::Core {
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
 	public:
-
+		virtual void Draw() = 0;
 	};
 }
