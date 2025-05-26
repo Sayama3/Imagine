@@ -30,11 +30,11 @@ namespace Imagine::Core {
 		m_DeltaTime = 0.01666666f;
 
 		if (parameters.Window) {
-			m_Window = Window::Initialise(parameters.AppName, parameters.Window.value());
+			m_Window = Window::Initialize(parameters.AppName, parameters.Window.value());
 		}
 
 		if (parameters.UseRenderer) {
-			Renderer::Initialise(RendererParameters{},parameters);
+			Renderer::Initialize(RendererParameters{},parameters);
 		}
 	}
 

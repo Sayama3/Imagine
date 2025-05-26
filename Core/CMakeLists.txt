@@ -114,6 +114,7 @@ target_precompile_headers(Core PUBLIC
 
 target_compile_definitions(Core PUBLIC GLM_ENABLE_EXPERIMENTAL=1)
 
+target_include_directories(Core PUBLIC IncludesExternals)
 target_include_directories(Core PUBLIC Includes)
 target_include_directories(Core PRIVATE Sources)
 

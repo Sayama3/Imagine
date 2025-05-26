@@ -20,7 +20,7 @@ namespace Imagine::Core {
 
 	class Renderer {
 	public:
-		static Renderer* Initialise(const RendererParameters& renderParams, const ApplicationParameters& appParams);
+		static Renderer* Initialize(const RendererParameters& renderParams, const ApplicationParameters& appParams);
 		static void Shutdown();
 		static Renderer* Get();
 	private:

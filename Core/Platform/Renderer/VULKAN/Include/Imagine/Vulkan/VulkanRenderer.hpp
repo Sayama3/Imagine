@@ -11,6 +11,12 @@
 #include "Imagine/Rendering/Renderer.hpp"
 
 namespace Imagine::Vulkan {
+
+	struct FrameData {
+		VkCommandPool m_CommandPool;
+		VkCommandBuffer m_MainCommandBuffer;
+	};
+
 	class VulkanRenderer final : public Core::Renderer {
 	public:
 		inline static constexpr uint16_t MAX_FRAMES_IN_FLIGHT = 2;
@@ -22,10 +28,10 @@ public:
 		virtual ~VulkanRenderer() override;
 public:
 private:
-		void InitialiseVulkan();
-		void InitialiseSwapchain();
-		void InitialiseCommands();
-		void InitialiseSyncStructures();
+		void InitializeVulkan();
+		void InitializeSwapchain();
+		void InitializeCommands();
+		void InitializeSyncStructures();
 
 		void CreateSwapChain(uint32_t width, uint32_t height);
 		void DestroySwapChain();
@@ -45,6 +51,10 @@ private:
 		std::vector<VkImage> m_SwapchainImages;
 		std::vector<VkImageView> m_SwapchainImageViews;
 		VkExtent2D m_SwapchainExtent;
+
+		std::vector<FrameData> m_Frames;
+		VkQueue m_GraphicsQueue{nullptr};
+		uint32_t m_GraphicsQueueFamily{0};
 
 		Core::RendererParameters m_RenderParams;
 		Core::ApplicationParameters m_AppParams;

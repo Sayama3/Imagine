@@ -14,7 +14,7 @@ namespace Imagine::Core {
 
 	Renderer* Renderer::s_Renderer{nullptr};
 
-	Renderer* Renderer::Initialise(const RendererParameters& renderParams, const ApplicationParameters& appParams) {
+	Renderer* Renderer::Initialize(const RendererParameters& renderParams, const ApplicationParameters& appParams) {
 		if (s_Renderer) return s_Renderer;
 
 #if defined(MGN_RENDERER_VULKAN)

@@ -9,7 +9,7 @@ namespace Imagine::Core {
 
 	class Window {
 	public:
-		static Window* Initialise(const std::string &windowName, WindowParameters parameters);
+		static Window* Initialize(const std::string &windowName, WindowParameters parameters);
 		static void Shutdown();
 		static Window* Get();
 	private:

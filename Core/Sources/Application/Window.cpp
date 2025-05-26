@@ -16,7 +16,7 @@ namespace Imagine::Core {
 
 	Window* Window::s_Window{nullptr};
 
-	Window* Window::Initialise(const std::string &windowName, WindowParameters parameters) {
+	Window* Window::Initialize(const std::string &windowName, WindowParameters parameters) {
 			if (s_Window) return s_Window;
 #if defined(MGN_WINDOW_GLFW)
 			s_Window = new GLFWWindow(windowName, std::move(parameters));

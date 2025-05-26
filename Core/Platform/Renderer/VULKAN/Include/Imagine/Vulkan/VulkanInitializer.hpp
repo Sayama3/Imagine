@@ -1,0 +1,8 @@
+//
+// Created by Iannis on 26/05/2025.
+//
+
+#ifndef VULKANINITIALISER_HPP
+#define VULKANINITIALISER_HPP
+
+#endif //VULKANINITIALISER_HPP

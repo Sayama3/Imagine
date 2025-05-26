@@ -130,7 +130,7 @@ namespace Imagine::Core {
 		virtual bool Create(const UnsignedInteger id) {
             if (!RawCreate(id)) return false;
 
-            // Initialise the data.
+            // Initialize the data.
             if (constructor) {
                 constructor(elements.get(sparse[id]), GetDataSize());
             }
@@ -149,7 +149,7 @@ namespace Imagine::Core {
 		virtual bool Create(const UnsignedInteger id, const ConstBufferView& view) {
             if (!RawCreate(id)) return false;
 
-            // Initialise the data.
+            // Initialize the data.
             if (copy_constructor) {
                 copy_constructor(elements.get(sparse[id]), GetDataSize(), view);
             } else {
@@ -171,7 +171,7 @@ namespace Imagine::Core {
         virtual bool Create(const UnsignedInteger id, const Buffer& buffer) {
             if (!RawCreate(id)) return false;
 
-            // Initialise the data.
+            // Initialize the data.
             if (copy_constructor) {
                 copy_constructor(elements.get(sparse[id]), GetDataSize(), ConstBufferView::MakeSlice(&buffer,0,buffer.Size()));
             } else {

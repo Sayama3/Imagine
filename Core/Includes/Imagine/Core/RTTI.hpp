@@ -18,18 +18,18 @@ namespace Imagine::Core {
  		template<typename Self>
  		inline RTTI() : type(typeid(Self).name()), parent(nullptr), createFunc(Self::Create) {
  			// MGN_TRACE(type);
- 			Initialise();
+ 			Initialize();
  		}
 
  		template<typename Self, typename ParentType>
  		inline RTTI() : type(typeid(Self).name()), parent(ParentType::rtti), createFunc(Self::Create) {
  			// MGN_TRACE(type);
- 			Initialise();
+ 			Initialize();
  		}
 
  		inline explicit RTTI(std::string name, Base*(*createFunc)(), const RTTI<Base>* parent_rtti) : type(std::move(name)), parent(parent_rtti), createFunc(createFunc) {
  			// MGN_TRACE(type);
- 			Initialise();
+ 			Initialize();
  		}
 
  		bool IsRoot() const {return !parent || parent==this;}
@@ -67,7 +67,7 @@ namespace Imagine::Core {
  			return FactoryCreate(T::rtti.type);
  		}
  	private:
- 		void Initialise()
+ 		void Initialize()
  		{
  			Factory.insert({type, createFunc});
  		}

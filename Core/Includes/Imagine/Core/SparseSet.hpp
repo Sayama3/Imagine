@@ -71,7 +71,7 @@ namespace Imagine::Core
         virtual bool Create(const UnsignedInteger id) {
             if (!RawCreate(id)) return false;
 
-            // Initialise the data.
+            // Initialize the data.
             new (&elements[sparse[id]]) T ();
 
             return true;
@@ -80,7 +80,7 @@ namespace Imagine::Core
         virtual bool Create(const UnsignedInteger id, const T& data) {
             if (!RawCreate(id)) return false;
 
-            // Initialise the data.
+            // Initialize the data.
             new (&elements[sparse[id]]) T(data);
 
             return true;
