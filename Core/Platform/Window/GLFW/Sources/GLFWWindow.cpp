@@ -26,7 +26,7 @@ namespace Imagine::Core {
 
 	GLFWWindow::GLFWWindow(const std::string& windowName, const WindowParameters parameters) : Window{} {
 		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //TODO: See if I want the No API by default.
 		glfwWindowHint(GLFW_RESIZABLE, parameters.Resizable ? GLFW_TRUE : GLFW_FALSE);
 		m_Window = glfwCreateWindow(parameters.Width, parameters.Height, windowName.c_str(), nullptr, nullptr);
 		glfwSetWindowUserPointer(static_cast<GLFWwindow *>(m_Window), this);
