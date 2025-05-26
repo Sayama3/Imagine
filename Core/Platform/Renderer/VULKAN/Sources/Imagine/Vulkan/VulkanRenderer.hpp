@@ -33,10 +33,11 @@ private:
 private:
 		bool CheckValidationLayerSupport();
 private:
-		vk::Instance m_Instance;
-		vk::PhysicalDevice m_PhysicalDevice;
-		vk::Device m_Device;
-		vk::SurfaceKHR m_Surface;
+		VkInstance m_Instance;// Vulkan library handle
+		VkDebugUtilsMessengerEXT m_DebugMessenger;// Vulkan debug output handle
+		VkPhysicalDevice m_ChosenGPU;// GPU chosen as the default device
+		VkDevice m_Device; // Vulkan device for commands
+		VkSurfaceKHR m_Surface;// Vulkan window surface
 
 		Core::RendererParameter m_Parameters;
 	};

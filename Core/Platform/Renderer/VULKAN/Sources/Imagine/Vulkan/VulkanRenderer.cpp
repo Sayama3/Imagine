@@ -2,6 +2,12 @@
 // Created by Sayama on 23/05/2025.
 //
 
+// --- other includes ---
+// #include <vk_types.h>
+// #include <vk_initializers.h>
+
+//bootstrap library
+#include <VkBootstrap.h>
 
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 #include "Imagine/Core/FileSystem.hpp"
