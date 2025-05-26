@@ -18,20 +18,19 @@ namespace Imagine::Vulkan {
 		inline static const std::vector<const char*> c_DeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 public:
-		VulkanRenderer(const Core::RendererParameter& renderParams, const Core::ApplicationParameters& appParams);
+		VulkanRenderer(const Core::RendererParameters& renderParams, const Core::ApplicationParameters& appParams);
 		virtual ~VulkanRenderer() override;
 public:
 private:
 		void InitialiseVulkan();
-		void CleanupVulkan();
+		void InitialiseSwapchain();
+		void InitialiseCommands();
+		void InitialiseSyncStructures();
+
+		void CreateSwapChain(uint32_t width, uint32_t height);
+		void DestroySwapChain();
 private:
-		void CreateInstance();
-		void SetupDebugger();
-		void CreateSurface();
-		void PickPhysicalDevice();
-		void CreateLogicalDevice();
-private:
-		bool CheckValidationLayerSupport();
+		void ShutdownVulkan();
 private:
 		VkInstance m_Instance;// Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger;// Vulkan debug output handle
@@ -39,6 +38,15 @@ private:
 		VkDevice m_Device; // Vulkan device for commands
 		VkSurfaceKHR m_Surface;// Vulkan window surface
 
-		Core::RendererParameter m_Parameters;
+
+		VkSwapchainKHR m_Swapchain;
+		VkFormat m_SwapchainImageFormat;
+
+		std::vector<VkImage> m_SwapchainImages;
+		std::vector<VkImageView> m_SwapchainImageViews;
+		VkExtent2D m_SwapchainExtent;
+
+		Core::RendererParameters m_RenderParams;
+		Core::ApplicationParameters m_AppParams;
 	};
 }

@@ -11,11 +11,29 @@
 #endif
 
 namespace Imagine::Core {
-	Renderer* Renderer::CreateRenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams) {
+
+	Renderer* Renderer::s_Renderer{nullptr};
+
+	Renderer* Renderer::Initialise(const RendererParameters& renderParams, const ApplicationParameters& appParams) {
+		if (s_Renderer) return s_Renderer;
+
 #if defined(MGN_RENDERER_VULKAN)
-		return new Vulkan::VulkanRenderer(renderParams, appParams);
+		s_Renderer = new Vulkan::VulkanRenderer(renderParams, appParams);
 #else
-		return new CPU::CPURenderer(renderParams, appParams);
+		s_Renderer = new CPU::CPURenderer(renderParams, appParams);
 #endif
+
+		return s_Renderer;
+	}
+
+	void Renderer::Shutdown()
+	{
+		delete s_Renderer;
+		s_Renderer = nullptr;
+	}
+
+	Renderer* Renderer::Get()
+	{
+		return s_Renderer;
 	}
 }

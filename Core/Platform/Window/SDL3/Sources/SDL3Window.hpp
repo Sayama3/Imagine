@@ -19,6 +19,8 @@ namespace Imagine::Core {
 
 		bool WindowHasResized() override;
 		bool ShouldClose() override;
+
+		void* GetWindowPtr() override;
 	private:
 		static void framebufferResizeCallback(void* window, int width, int height);
 

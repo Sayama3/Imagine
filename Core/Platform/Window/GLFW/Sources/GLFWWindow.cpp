@@ -2,7 +2,6 @@
 // Created by Sayama on 29/04/2025.
 //
 
-#include <GLFW/glfw3.h>
 
 #include "GLFWWindow.hpp"
 
@@ -17,6 +16,11 @@ namespace Imagine::Core {
 
 	bool GLFWWindow::ShouldClose() {
 		return glfwWindowShouldClose(static_cast<GLFWwindow *>(m_Window));
+	}
+
+	void* GLFWWindow::GetWindowPtr()
+	{
+		return m_Window;
 	}
 
 	void GLFWWindow::framebufferResizeCallback(void* window, int width, int height) {

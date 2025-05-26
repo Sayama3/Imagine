@@ -1,5 +1,7 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
+
 #include "Imagine/Application/Window.hpp"
 
 namespace Imagine::Core {
@@ -19,11 +21,13 @@ namespace Imagine::Core {
 
 		bool WindowHasResized() override;
 		bool ShouldClose() override;
+
+		void* GetWindowPtr() override;
 	private:
 		static void framebufferResizeCallback(void* window, int width, int height);
 
 	private:
-		void* m_Window;
+		struct GLFWwindow* m_Window{nullptr}; //TODO: Change the window type to GLFW
 		bool frameBufferResized = false;
 	};
 }

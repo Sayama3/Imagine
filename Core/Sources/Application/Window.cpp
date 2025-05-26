@@ -13,14 +13,29 @@
 #endif
 
 namespace Imagine::Core {
-	Window* Window::Create(const std::string &windowName, WindowParameters parameters) {
+
+	Window* Window::s_Window{nullptr};
+
+	Window* Window::Initialise(const std::string &windowName, WindowParameters parameters) {
+			if (s_Window) return s_Window;
 #if defined(MGN_WINDOW_GLFW)
-			return new GLFWWindow(windowName, std::move(parameters));
+			s_Window = new GLFWWindow(windowName, std::move(parameters));
 #elif defined(MGN_WINDOW_SDL3)
-			return new SDL3Window(windowName, std::move(parameters));
+			s_Window = new SDL3Window(windowName, std::move(parameters));
 #else
-			return new HeadLessWindow(windowName, std::move(parameters));
+			s_Window = new HeadLessWindow(windowName, std::move(parameters));
 #endif
+		return s_Window;
 	}
 
+	void Window::Shutdown()
+	{
+		delete s_Window;
+		s_Window = nullptr;
+	}
+
+	Window* Window::Get()
+	{
+		return s_Window;
+	}
 }

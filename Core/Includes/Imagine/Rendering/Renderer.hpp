@@ -12,7 +12,7 @@ namespace Imagine::Core {
 	inline static constexpr bool c_DefaultDebugRendering = false;
 #endif
 
-	struct RendererParameter
+	struct RendererParameters
 	{
 		uint16_t NbrFrameInFlight = 2;
 		bool EnableDebug = c_DefaultDebugRendering;
@@ -20,7 +20,11 @@ namespace Imagine::Core {
 
 	class Renderer {
 	public:
-		static Renderer* CreateRenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams);
+		static Renderer* Initialise(const RendererParameters& renderParams, const ApplicationParameters& appParams);
+		static void Shutdown();
+		static Renderer* Get();
+	private:
+		static Renderer* s_Renderer;
 	public:
 		Renderer() = default;
 		virtual ~Renderer() {}

@@ -24,6 +24,11 @@ namespace Imagine::Core {
 		return m_ShouldClose;
 	}
 
+	void* SDL3Window::GetWindowPtr()
+	{
+		return m_Window;
+	}
+
 	void SDL3Window::framebufferResizeCallback(void* window, int width, int height) {
 	}
 
@@ -40,7 +45,6 @@ namespace Imagine::Core {
 
 		//TODO: Use `parameters.Resizable`.
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
-
 	}
 
 	SDL3Window::~SDL3Window() {

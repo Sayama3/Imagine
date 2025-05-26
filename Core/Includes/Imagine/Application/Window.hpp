@@ -9,7 +9,11 @@ namespace Imagine::Core {
 
 	class Window {
 	public:
-		static Window* Create(const std::string &windowName, WindowParameters parameters);
+		static Window* Initialise(const std::string &windowName, WindowParameters parameters);
+		static void Shutdown();
+		static Window* Get();
+	private:
+		static Window* s_Window;
 	protected:
 		Window() {}
 	public:;
@@ -29,6 +33,12 @@ namespace Imagine::Core {
 		virtual void* GetNativeWindow() = 0;
 		virtual bool WindowHasResized() = 0;
 		virtual bool ShouldClose() = 0;
+
+		/**
+		 * This function allow to obtain a pointer to the SDL3 or GLFW window. NOT the native window ptr.
+		 * @return The pointer of the window
+		 */
+		virtual void* GetWindowPtr() = 0;
 	};
 
 }
