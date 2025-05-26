@@ -10,6 +10,7 @@ using namespace Imagine::Core;
 namespace Imagine::CPU {
 
 	CPURenderer::CPURenderer() : Renderer() {}
+	CPURenderer::CPURenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams) : Renderer() {}
 
 	CPURenderer::~CPURenderer() {}
 }

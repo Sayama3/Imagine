@@ -14,9 +14,8 @@ set(CPP_RTTI_ENABLED ON)
 set(BUILD_SHARED_LIBS OFF)
 
 # No window backend start the application in headless
-option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backend" ON)
-#TODO: Implement SDL3 backend
-#option(MGN_WINDOW_SDL3 "Launch the application with a window and SDL3 as a backend" ON)
+option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backend" OFF)
+option(MGN_WINDOW_SDL3 "Launch the application with a window and SDL3 as a backend" ON)
 
 # No renderer backend start the application in CPU mode.
 option(MGN_RENDERER_VULKAN "Launch the application with Vulkan as a render and compute backend." ON)
@@ -27,6 +26,7 @@ option(MGN_IMGUI "Add ImGui to the Core application" ON)
 option(MGN_TESTS "Add Tests" ON)
 
 if(MGN_WINDOW_GLFW)
+elseif(MGN_WINDOW_SDL3)
 else()
 	set(MGN_IMGUI OFF)
 endif()

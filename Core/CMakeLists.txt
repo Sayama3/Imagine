@@ -119,7 +119,7 @@ target_include_directories(Core PRIVATE Sources)
 
 target_compile_features(Core PUBLIC cxx_std_20)
 
-target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient)
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp)
 
 add_library(Imagine::Core ALIAS Core)
 
@@ -129,6 +129,7 @@ if(MGN_IMGUI)
 	target_link_libraries(Core PUBLIC imgui)
 endif()
 
+target_compile_definitions(Core PUBLIC NOMINMAX=1)
 
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
 	target_compile_definitions(Core PUBLIC MGN_DEBUG=1)

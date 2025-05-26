@@ -19,7 +19,7 @@ struct Render {
 	~Render() = default;
 	Render(const Render&) = default;
 	Render& operator=(const Render&) = default;
-	UUID meshId{};
+	Core::UUID meshId{};
 };
 using RenderCounter = InstanceCount<Render>;
 
@@ -82,27 +82,27 @@ TEST(CoreScene, RAII) {
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 0);
 
 	for (int i = 0; i < 20; ++i) {
-		scene->AddComponent(ids[i], UUID::FromType<PhyscsCounter>());
+		scene->AddComponent(ids[i], Core::UUID::FromType<PhyscsCounter>());
 	}
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 20);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 0);
 
 	for (int i = 20; i < 40; ++i) {
-		scene->AddComponent(ids[i], UUID::FromType<RenderCounter>());
+		scene->AddComponent(ids[i], Core::UUID::FromType<RenderCounter>());
 	}
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 20);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 20);
 
 	for (int i = 40; i < 50; ++i) {
-		scene->AddComponent(ids[i], UUID::FromType<PhyscsCounter>());
-		scene->AddComponent(ids[i], UUID::FromType<RenderCounter>());
+		scene->AddComponent(ids[i], Core::UUID::FromType<PhyscsCounter>());
+		scene->AddComponent(ids[i], Core::UUID::FromType<RenderCounter>());
 	}
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 30);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 30);
 
 	for (int i = 15; i < 25; ++i) {
-		scene->GetOrAddComponent(ids[i], UUID::FromType<PhyscsCounter>());
-		scene->GetOrAddComponent(ids[i], UUID::FromType<RenderCounter>());
+		scene->GetOrAddComponent(ids[i], Core::UUID::FromType<PhyscsCounter>());
+		scene->GetOrAddComponent(ids[i], Core::UUID::FromType<RenderCounter>());
 	}
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 35);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 35);

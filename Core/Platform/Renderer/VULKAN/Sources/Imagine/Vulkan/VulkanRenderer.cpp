@@ -10,7 +10,9 @@ using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
 
-	VulkanRenderer::VulkanRenderer() : Renderer() {}
+	VulkanRenderer::VulkanRenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams) : Renderer(), m_Parameters(renderParams)
+	{
+	}
 
 	VulkanRenderer::~VulkanRenderer() {}
 
@@ -22,9 +24,12 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::CreateInstance() {
 		// ==================== Validating Vulkan Drivers ====================
-		if constexpr (c_EnableValidationLayers) {
+		if (m_Parameters.EnableDebug) {
 			MGN_CORE_ASSERT(CheckValidationLayerSupport(), "validation layers requested, but not available!");
 		}
+
+		vk::ApplicationInfo appInfo {
+		};
 	}
 
 	void VulkanRenderer::SetupDebugger() {

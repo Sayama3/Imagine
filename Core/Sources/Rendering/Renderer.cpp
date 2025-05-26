@@ -11,11 +11,11 @@
 #endif
 
 namespace Imagine::Core {
-	Renderer* Renderer::CreateRenderer() {
+	Renderer* Renderer::CreateRenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams) {
 #if defined(MGN_RENDERER_VULKAN)
-		return new Vulkan::VulkanRenderer();
+		return new Vulkan::VulkanRenderer(renderParams, appParams);
 #else
-		return new CPU::CPURenderer();
+		return new CPU::CPURenderer(renderParams, appParams);
 #endif
 	}
 }

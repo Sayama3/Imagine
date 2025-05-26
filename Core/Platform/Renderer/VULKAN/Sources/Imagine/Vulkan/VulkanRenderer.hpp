@@ -16,13 +16,9 @@ namespace Imagine::Vulkan {
 		inline static constexpr uint16_t MAX_FRAMES_IN_FLIGHT = 2;
 		inline static const std::vector<const char *> c_ValidationLayers {"VK_LAYER_KHRONOS_validation",};
 		inline static const std::vector<const char*> c_DeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-#ifdef MGN_DEBUG
-		static constexpr bool c_EnableValidationLayers = true;
-#else
-		static constexpr bool c_EnableValidationLayers = false;
-#endif
+
 public:
-		VulkanRenderer();
+		VulkanRenderer(const Core::RendererParameter& renderParams, const Core::ApplicationParameters& appParams);
 		virtual ~VulkanRenderer() override;
 public:
 private:
@@ -41,5 +37,7 @@ private:
 		vk::PhysicalDevice m_PhysicalDevice;
 		vk::Device m_Device;
 		vk::SurfaceKHR m_Surface;
+
+		Core::RendererParameter m_Parameters;
 	};
 }

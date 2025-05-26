@@ -36,7 +36,7 @@ namespace Imagine::Core {
 	class FileSystem {
 	public:
 		inline static std::vector<char> readFile(const std::filesystem::path& filePath) {
-			std::string fileStr = filename.string();
+			std::string fileStr = filePath.string();
 			return readFile(fileStr.c_str());
 		}
 

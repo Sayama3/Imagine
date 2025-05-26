@@ -30,7 +30,7 @@ namespace Imagine::Core {
 		m_DeltaTime = 0.01666666f;
 
 		if (parameters.Window) {
-			m_Window = Window::Create(parameters.Name, parameters.Window.value());
+			m_Window = Window::Create(parameters.AppName, parameters.Window.value());
 		}
 
 		if (parameters.UseRenderer) {

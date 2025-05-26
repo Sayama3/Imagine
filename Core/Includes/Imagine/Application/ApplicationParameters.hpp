@@ -8,7 +8,8 @@
 namespace Imagine::Core {
 
 	struct ApplicationParameters {
-		std::string Name;
+		static inline constexpr std::string EngineName{"Imagine"};
+		std::string AppName;
 		std::optional<WindowParameters> Window;
 		bool UseRenderer;
 	};
