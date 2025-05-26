@@ -3,7 +3,7 @@
 #include "Imagine/Application/Window.hpp"
 
 namespace Imagine::Core {
-	class SDL3Window : public Window {
+	class SDL3Window final : public Window {
 	public:
 		SDL3Window(const std::string& windowName, const WindowParameters parameters);
 		~SDL3Window() override;
@@ -23,7 +23,9 @@ namespace Imagine::Core {
 		static void framebufferResizeCallback(void* window, int width, int height);
 
 	private:
-		void* m_Window;
+		struct SDL_Window* m_Window{nullptr};
 		bool frameBufferResized = false;
+		bool m_ShouldClose= false;
+		bool m_Minimized = false;
 	};
 }
