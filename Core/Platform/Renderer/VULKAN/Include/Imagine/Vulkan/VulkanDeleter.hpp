@@ -11,6 +11,7 @@
 namespace Imagine::Vulkan {
 	struct Deleter {
 
+
 		template<typename VmaType>
 		struct VmaObject {
 			VmaAllocator allocator;
@@ -27,6 +28,7 @@ namespace Imagine::Vulkan {
 		}
 
 		void flush() {
+			MGN_CORE_ASSERT(m_Device, "Vulkan Device is not set in the Vulkan Deleter.");
 			// reverse iterate the deletion queue to execute all the functions
 			for (auto it = m_ToDelete.rbegin(); it != m_ToDelete.rend(); ++it) {
 				VkType& type = *it;

@@ -99,7 +99,6 @@ namespace Imagine::Vulkan
 
         //create the final vulkan device
         vkb::DeviceBuilder deviceBuilder{physicalDevice};
-
         vkb::Device vkbDevice = deviceBuilder.build().value();
 
         // Get the VkDevice handle used in the rest of a vulkan application
@@ -107,6 +106,9 @@ namespace Imagine::Vulkan
         m_ChosenGPU = physicalDevice.physical_device;
 
         m_Frames.resize(m_RenderParams.NbrFrameInFlight);
+    	for (auto& frame : m_Frames) {
+    		frame.m_DeletionQueue.m_Device = m_Device;
+    	}
 
         m_GraphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
         m_GraphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
@@ -119,6 +121,7 @@ namespace Imagine::Vulkan
         allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
         vmaCreateAllocator(&allocatorInfo, &m_Allocator);
 
+    	m_MainDeletionQueue.m_Device = m_Device;
         m_MainDeletionQueue.push_back(m_Allocator);
     }
 
@@ -159,10 +162,10 @@ namespace Imagine::Vulkan
 
         VK_CHECK(vkCreateImageView(m_Device, &rview_info, nullptr, &m_DrawImage.imageView));
 
-        //add to deletion queues
-        m_MainDeletionQueue.push_back(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
-        m_MainDeletionQueue.push_back(m_DrawImage.imageView);
-    }
+        // add to deletion queues
+		m_MainDeletionQueue.push_back(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
+		m_MainDeletionQueue.push_back(m_DrawImage.imageView);
+	}
 
     void VulkanRenderer::InitializeCommands()
     {
@@ -172,9 +175,8 @@ namespace Imagine::Vulkan
 
         for (int i = 0; i < m_RenderParams.NbrFrameInFlight; i++)
         {
-            VK_CHECK(vkCreateCommandPool(m_Device, &commandPoolInfo, nullptr, &m_Frames[i].m_CommandPool));
-
-            // allocate the default command buffer that we will use for rendering
+			VK_CHECK(vkCreateCommandPool(m_Device, &commandPoolInfo, nullptr, &m_Frames[i].m_CommandPool));
+			// allocate the default command buffer that we will use for rendering
             VkCommandBufferAllocateInfo cmdAllocInfo = Initializer::CommandBufferAllocateInfo(m_Frames[i].m_CommandPool, 1);
 
             VK_CHECK(vkAllocateCommandBuffers(m_Device, &cmdAllocInfo, &m_Frames[i].m_MainCommandBuffer));
@@ -232,9 +234,9 @@ namespace Imagine::Vulkan
         m_Swapchain = nullptr;
 
         // destroy swapchain resources
-        for (auto& m_SwapchainImageView : m_SwapchainImageViews)
+        for (auto& swapchainImageView : m_SwapchainImageViews)
         {
-            vkDestroyImageView(m_Device, m_SwapchainImageView, nullptr);
+            vkDestroyImageView(m_Device, swapchainImageView, nullptr);
         }
         m_SwapchainImages.clear();
         m_SwapchainImageViews.clear();
