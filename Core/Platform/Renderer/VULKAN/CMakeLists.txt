@@ -23,6 +23,10 @@ set(VULKAN_SOURCES
 		Include/Imagine/Vulkan/VulkanDeleter.hpp
 		Include/Imagine/Vulkan/AllocatedImage.hpp
 		Sources/AllocatedImage.cpp
+		Include/Imagine/Vulkan/DescriptorLayoutBuilder.hpp
+		Sources/DescriptorLayoutBuilder.cpp
+		Include/Imagine/Vulkan/DescriptorAllocator.hpp
+		Sources/DescriptorAllocator.cpp
 )
 
 target_sources(Core PRIVATE

@@ -14,8 +14,9 @@
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 #include "Imagine/Vulkan/VulkanMacros.hpp"
 
-#include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Application/Window.hpp"
+#include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Vulkan/DescriptorLayoutBuilder.hpp"
 
 // Window-Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
 #if defined(MGN_WINDOW_SDL3)
@@ -31,12 +32,14 @@ using namespace Imagine::Core;
 
 namespace Imagine::Vulkan
 {
-    VulkanRenderer::VulkanRenderer(const ApplicationParameters& appParams) : Renderer(), m_RenderParams(appParams.Renderer.value()), m_AppParams(appParams)
+    VulkanRenderer::VulkanRenderer(const ApplicationParameters& appParams) : Renderer(), m_AppParams(appParams)
     {
         InitializeVulkan();
         InitializeSwapChain();
         InitializeCommands();
         InitializeSyncStructures();
+    	InitializeDescriptors();
+    	InitializePipelines();
     }
 
     VulkanRenderer::~VulkanRenderer()
@@ -51,7 +54,7 @@ namespace Imagine::Vulkan
         //make the vulkan instance, with basic debug features
         auto inst_ret = builder.set_app_name(m_AppParams.AppName.c_str())
                                .set_engine_name(ApplicationParameters::EngineName)
-                               .request_validation_layers(m_RenderParams.EnableDebug)
+                               .request_validation_layers(GetRenderParams().EnableDebug)
                                .use_default_debug_messenger()
                                .require_api_version(1, 3, 0) // TODO? See if I better use the 1.2.0 vulkan version.
                                .build();
@@ -105,10 +108,7 @@ namespace Imagine::Vulkan
         m_Device = vkbDevice.device;
         m_ChosenGPU = physicalDevice.physical_device;
 
-        m_Frames.resize(m_RenderParams.NbrFrameInFlight);
-    	for (auto& frame : m_Frames) {
-    		frame.m_DeletionQueue.m_Device = m_Device;
-    	}
+        m_Frames.resize(GetRenderParams().NbrFrameInFlight);
 
         m_GraphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
         m_GraphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
@@ -121,8 +121,7 @@ namespace Imagine::Vulkan
         allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
         vmaCreateAllocator(&allocatorInfo, &m_Allocator);
 
-    	m_MainDeletionQueue.m_Device = m_Device;
-        m_MainDeletionQueue.push_back(m_Allocator);
+        m_MainDeletionQueue.push(m_Allocator);
     }
 
     void VulkanRenderer::InitializeSwapChain()
@@ -137,7 +136,7 @@ namespace Imagine::Vulkan
             1
         };
 
-        //hardcoding the draw format to 32 bit float
+        //hardcoding the draw format to 16-bit float
         m_DrawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
         m_DrawImage.imageExtent = drawImageExtent;
 
@@ -163,8 +162,8 @@ namespace Imagine::Vulkan
         VK_CHECK(vkCreateImageView(m_Device, &rview_info, nullptr, &m_DrawImage.imageView));
 
         // add to deletion queues
-		m_MainDeletionQueue.push_back(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
-		m_MainDeletionQueue.push_back(m_DrawImage.imageView);
+		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
+		m_MainDeletionQueue.push(m_DrawImage.imageView);
 	}
 
     void VulkanRenderer::InitializeCommands()
@@ -173,7 +172,7 @@ namespace Imagine::Vulkan
         //we also want the pool to allow for resetting of individual command buffers
         VkCommandPoolCreateInfo commandPoolInfo = Initializer::CommandPoolCreateInfo(m_GraphicsQueueFamily,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-        for (int i = 0; i < m_RenderParams.NbrFrameInFlight; i++)
+        for (int i = 0; i < GetRenderParams().NbrFrameInFlight; i++)
         {
 			VK_CHECK(vkCreateCommandPool(m_Device, &commandPoolInfo, nullptr, &m_Frames[i].m_CommandPool));
 			// allocate the default command buffer that we will use for rendering
@@ -200,7 +199,89 @@ namespace Imagine::Vulkan
         }
     }
 
-    void VulkanRenderer::CreateSwapChain(const uint32_t width, const uint32_t height)
+	void VulkanRenderer::InitializeDescriptors() {
+
+		// create a descriptor pool that will hold 10 sets with 1 image each
+		std::vector<DescriptorAllocator::PoolSizeRatio> sizes =
+				{
+						{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}};
+		m_GlobalDescriptorAllocator.InitPool(m_Device, 10, sizes);
+
+		// make the descriptor set layout for our compute draw
+		{
+			DescriptorLayoutBuilder builder;
+			builder.AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+			m_DrawImageDescriptorLayout = builder.Build(m_Device, VK_SHADER_STAGE_COMPUTE_BIT);
+		}
+
+		// allocate a descriptor set for our draw image
+		m_DrawImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_DrawImageDescriptorLayout);
+
+		VkDescriptorImageInfo imgInfo{};
+		imgInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		imgInfo.imageView = m_DrawImage.imageView;
+
+		VkWriteDescriptorSet drawImageWrite = {};
+		drawImageWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		drawImageWrite.pNext = nullptr;
+
+		drawImageWrite.dstBinding = 0;
+		drawImageWrite.dstSet = m_DrawImageDescriptors;
+		drawImageWrite.descriptorCount = 1;
+		drawImageWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+		drawImageWrite.pImageInfo = &imgInfo;
+
+		vkUpdateDescriptorSets(m_Device, 1, &drawImageWrite, 0, nullptr);
+
+		// make sure both the descriptor allocator and the new layout get cleaned up properly
+		m_MainDeletionQueue.push(m_DrawImageDescriptorLayout);
+		m_MainDeletionQueue.push(m_GlobalDescriptorAllocator);
+	}
+
+	void VulkanRenderer::InitializePipelines() {
+		InitGradientPipeline();
+	}
+
+	void VulkanRenderer::InitGradientPipeline() {
+    	VkPipelineLayoutCreateInfo computeLayout{};
+    	computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    	computeLayout.pNext = nullptr;
+    	computeLayout.pSetLayouts = &m_DrawImageDescriptorLayout;
+    	computeLayout.setLayoutCount = 1;
+
+    	VK_CHECK(vkCreatePipelineLayout(m_Device, &computeLayout, nullptr, &m_GradientPipelineLayout));
+
+    	//layout code
+    	VkShaderModule computeDrawShader;
+    	//TODO: Replace by a real shader loading pipeline with glslc and spirv cache loading.
+    	if (!Utils::LoadShaderModule("Assets/gradient.comp.spv", m_Device, &computeDrawShader))
+    	{
+    		MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "Assets/gradient.comp.spv");
+    	}
+
+    	VkPipelineShaderStageCreateInfo stageinfo{};
+    	stageinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    	stageinfo.pNext = nullptr;
+    	stageinfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    	stageinfo.module = computeDrawShader;
+    	stageinfo.pName = "main";
+
+    	VkComputePipelineCreateInfo computePipelineCreateInfo{};
+    	computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    	computePipelineCreateInfo.pNext = nullptr;
+    	computePipelineCreateInfo.layout = m_GradientPipelineLayout;
+    	computePipelineCreateInfo.stage = stageinfo;
+
+    	VK_CHECK(vkCreateComputePipelines(m_Device, nullptr,1, &computePipelineCreateInfo, nullptr, &m_GradientPipeline));
+
+    	// Not needed anymore.
+    	vkDestroyShaderModule(m_Device, computeDrawShader, nullptr);
+
+		m_MainDeletionQueue.push(m_GradientPipelineLayout);
+		m_MainDeletionQueue.push(m_GradientPipeline);
+	}
+
+	void VulkanRenderer::CreateSwapChain(const uint32_t width, const uint32_t height)
     {
         vkb::SwapchainBuilder swapchainBuilder{m_ChosenGPU, m_Device, m_Surface};
 
@@ -254,11 +335,11 @@ namespace Imagine::Vulkan
             vkDestroySemaphore(m_Device,  frame.m_RenderSemaphore, nullptr);
             vkDestroySemaphore(m_Device , frame.m_SwapchainSemaphore, nullptr);
 
-            frame.m_DeletionQueue.flush();
+            frame.m_DeletionQueue.flush(m_Device);
         }
         m_Frames.clear();
 
-        m_MainDeletionQueue.flush();
+        m_MainDeletionQueue.flush(m_Device);
 
         DestroySwapChain();
 
@@ -269,19 +350,22 @@ namespace Imagine::Vulkan
         vkDestroyInstance(m_Instance, nullptr);
     }
 
-    VulkanFrameData& VulkanRenderer::GetCurrentFrame()
-    {
-        return m_Frames[m_FrameIndex];
-    }
+    VulkanFrameData &VulkanRenderer::GetCurrentFrame() {
+		return m_Frames[m_FrameIndex];
+	}
 
-    void VulkanRenderer::Draw() {
+	const Core::RendererParameters &VulkanRenderer::GetRenderParams() const {
+    	return m_AppParams.Renderer.value();
+	}
+
+	void VulkanRenderer::Draw() {
 
 		// wait until the gpu has finished rendering the last frame. Timeout of 1
 		// second
 		VK_CHECK(vkWaitForFences(m_Device, 1, &GetCurrentFrame().m_RenderFence, true, 1000000000));
 		VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
 
-		GetCurrentFrame().m_DeletionQueue.flush();
+		GetCurrentFrame().m_DeletionQueue.flush(m_Device);
 
 		// request image from the swapchain
 		uint32_t swapchainImageIndex;
@@ -290,6 +374,9 @@ namespace Imagine::Vulkan
     	VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 		VK_CHECK(vkResetCommandBuffer(cmd, 0));
+
+    	m_DrawExtent.width = m_DrawImage.imageExtent.width;
+    	m_DrawExtent.height = m_DrawImage.imageExtent.height;
 
 		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
@@ -346,18 +433,27 @@ namespace Imagine::Vulkan
 
 		VK_CHECK(vkQueuePresentKHR(m_GraphicsQueue, &presentInfo));
 
-		m_FrameIndex = (m_FrameIndex + 1) % m_RenderParams.NbrFrameInFlight;
+		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
-    	// make a clear-color from Time.
-    	VkClearColorValue clearValue;
-    	float flash = std::abs(std::sin(static_cast<float>(Application::Get()->Time())));
-    	clearValue = {{0.0f, 0.0f, flash, 1.0f}};
+//    	// make a clear-color from Time.
+//    	VkClearColorValue clearValue;
+//    	float flash = std::abs(std::sin(static_cast<float>(Application::Get()->Time())));
+//    	clearValue = {{0.0f, 0.0f, flash, 1.0f}};
+//
+//    	VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+//
+//    	// clear image
+//    	vkCmdClearColorImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
 
-    	VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+    	// bind the gradient drawing compute pipeline
+    	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipeline);
 
-    	// clear image
-    	vkCmdClearColorImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+    	// bind the descriptor set containing the draw image for the compute pipeline
+    	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipelineLayout, 0, 1, &m_DrawImageDescriptors, 0, nullptr);
+
+    	// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
+    	vkCmdDispatch(cmd, std::ceil(m_DrawExtent.width / 16.0), std::ceil(m_DrawExtent.height / 16.0), 1);
 	}
 } // namespace Imagine::Vulkan

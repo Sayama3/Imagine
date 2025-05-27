@@ -11,3 +11,5 @@
 
 //bootstrap library
 #include <VkBootstrap.h>
+
+#include "VulkanMacros.hpp"

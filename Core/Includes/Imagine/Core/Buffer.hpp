@@ -122,7 +122,7 @@ namespace Imagine::Core
         template<typename T>
         uint64_t Count() const
         {
-            static_assert(m_Size % sizeof(T) == 0);
+            MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "The size of '{}' cannot give a whole number of object.", typeid(T).name());
             if (!m_Data) return 0;
             return m_Size / sizeof(T);
         }

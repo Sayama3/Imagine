@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Imagine/Core/Macros.hpp"
 
 #define VK_CHECK(vk_func) \
 {\

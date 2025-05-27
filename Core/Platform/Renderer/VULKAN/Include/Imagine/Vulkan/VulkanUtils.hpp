@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
 
 namespace Imagine::Vulkan
@@ -74,6 +75,36 @@ namespace Imagine::Vulkan
         	blitInfo.pRegions = &blitRegion;
 
         	vkCmdBlitImage2(cmd, &blitInfo);
+        }
+    	inline static bool LoadShaderModule(const Core::Buffer& shaderBuffer, VkDevice device, VkShaderModule* outShaderModule) {
+
+        	// create a new shader module, using the buffer we loaded
+        	VkShaderModuleCreateInfo createInfo = {};
+        	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        	createInfo.pNext = nullptr;
+
+        	// codeSize has to be in bytes
+        	createInfo.codeSize = shaderBuffer.Size();
+        	createInfo.pCode = shaderBuffer.Get<uint32_t>();
+
+        	// check that the creation goes well.
+        	VkShaderModule shaderModule;
+			VkResult err = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
+        	if (err != VK_SUCCESS) {
+        		MGN_CORE_ERROR("[Vulkan] Shader Loading Failed : {}", string_VkResult(err));
+        		return false;
+        	}
+        	*outShaderModule = shaderModule;
+        }
+
+    	inline static bool LoadShaderModule(const char* filePath, VkDevice device, VkShaderModule* outShaderModule) {
+        	const Core::Buffer buffer = Core::FileSystem::readBinaryFile(filePath);
+        	return LoadShaderModule(buffer, device, outShaderModule);
+        }
+
+    	inline static bool LoadShaderModule(const std::filesystem::path& filePath, VkDevice device, VkShaderModule* outShaderModule) {
+        	const Core::Buffer buffer = Core::FileSystem::readBinaryFile(filePath);
+        	return LoadShaderModule(buffer, device, outShaderModule);
         }
     }
 }

@@ -103,6 +103,7 @@ target_precompile_headers(Core PUBLIC
 		<unordered_map>
 		<map>
 		<any>
+		<span>
 		<variant>
 		<optional>
 		<tuple>

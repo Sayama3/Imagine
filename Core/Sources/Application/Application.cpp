@@ -95,9 +95,9 @@ namespace Imagine::Core {
 			m_DeltaTime = std::chrono::duration<double, std::chrono::seconds::period>(newFrame - m_LastFrame).count();
 			m_LastFrame = newFrame;
 
-			MGN_CORE_INFO("Frame #{}", m_CurrentFrame);
-			MGN_CORE_INFO("DeltaTime #{}", m_DeltaTime);
-			MGN_CORE_INFO("Time #{}", Time());
+			// MGN_CORE_INFO("Frame #{}", m_CurrentFrame);
+			// MGN_CORE_INFO("DeltaTime #{}", m_DeltaTime);
+			// MGN_CORE_INFO("Time #{}", Time());
 
 			m_CurrentFrame += 1;
 		}

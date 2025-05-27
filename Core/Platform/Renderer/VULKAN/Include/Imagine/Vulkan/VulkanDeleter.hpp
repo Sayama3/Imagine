@@ -21,29 +21,43 @@ namespace Imagine::Vulkan {
 
 		using VmaImage = VmaObject<VkImage>;
 
-		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VkImageView>;
+		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout>;
 
-		void push_back(VkType data) {
+		/**
+		 * Function that will add an object in the list of object to destroy.
+		 * Add them in the order you allocated them as the Deleter will destroy them in the reverse order.
+		 * (So the same way a normal stack allocation works).
+		 * @param data The type to add. Will be transformed into a VkType if handled.
+		 */
+		void push(VkType data) {
 			m_ToDelete.push_back(std::move(data));
 		}
 
-		void flush() {
-			MGN_CORE_ASSERT(m_Device, "Vulkan Device is not set in the Vulkan Deleter.");
+		void flush(VkDevice device) {
+			MGN_CORE_ASSERT(device, "Vulkan Device is not set in the Vulkan Deleter.");
 			// reverse iterate the deletion queue to execute all the functions
 			for (auto it = m_ToDelete.rbegin(); it != m_ToDelete.rend(); ++it) {
 				VkType& type = *it;
 				if (VmaAllocator* vmaAllocator = std::get_if<VmaAllocator>(&type)) {
 					vmaDestroyAllocator(*vmaAllocator);
 				} else if (VkFence* fence = std::get_if<VkFence>(&type)) {
-					vkDestroyFence(m_Device,  *fence, nullptr);
+					vkDestroyFence(device,  *fence, nullptr);
 				} else if (VkSemaphore* semaphore = std::get_if<VkSemaphore>(&type)) {
-					vkDestroySemaphore(m_Device,  *semaphore, nullptr);
+					vkDestroySemaphore(device,  *semaphore, nullptr);
 				} else if (VkCommandPool* vkCommandPool = std::get_if<VkCommandPool>(&type)) {
-					vkDestroyCommandPool(m_Device, *vkCommandPool, nullptr);
+					vkDestroyCommandPool(device, *vkCommandPool, nullptr);
 				} else if (VkImageView* vmaImageView = std::get_if<VkImageView>(&type)) {
-					vkDestroyImageView(m_Device, *vmaImageView, nullptr);
+					vkDestroyImageView(device, *vmaImageView, nullptr);
 				} else if (VmaImage* vmaImage = std::get_if<VmaImage>(&type)) {
 					vmaDestroyImage(vmaImage->allocator, vmaImage->data, vmaImage->allocation);
+				} else if (VkDescriptorSetLayout* descriptorSetLayout = std::get_if<VkDescriptorSetLayout>(&type)) {
+					vkDestroyDescriptorSetLayout(device, *descriptorSetLayout, nullptr);
+				} else if (DescriptorAllocator* descriptorAllocator = std::get_if<DescriptorAllocator>(&type)) {
+					descriptorAllocator->DestroyPool(device);
+				} else if (VkPipeline* pipeline = std::get_if<VkPipeline>(&type)) {
+					vkDestroyPipeline(device, *pipeline, nullptr);
+				} else if (VkPipelineLayout* pipelineLayout = std::get_if<VkPipelineLayout>(&type)) {
+					vkDestroyPipelineLayout(device, *pipelineLayout, nullptr);
 				} else { // std::monostate
 					MGN_CORE_ERROR("[Vulkan] Type at index {} not handled.", type.index());
 				}
@@ -53,6 +67,5 @@ namespace Imagine::Vulkan {
 		}
 
 		std::deque<VkType> m_ToDelete;
-		VkDevice m_Device{nullptr};
 	};
 }
