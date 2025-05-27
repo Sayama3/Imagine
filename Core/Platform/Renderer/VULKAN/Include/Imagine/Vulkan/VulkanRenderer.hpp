@@ -4,34 +4,22 @@
 
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan.h>
-#include <vector>
-
 #include "Imagine/Rendering/Renderer.hpp"
 
+#include "Imagine/Vulkan/Vulkan.hpp"
+#include "Imagine/Vulkan/VulkanDeleter.hpp"
+#include "Imagine/Vulkan/VulkanFrameData.hpp"
+#include "Imagine/Vulkan/AllocatedImage.hpp"
+
 namespace Imagine::Vulkan {
-
-	struct FrameData {
-		VkCommandPool m_CommandPool;
-		VkCommandBuffer m_MainCommandBuffer;
-		VkSemaphore m_SwapchainSemaphore, m_RenderSemaphore;
-		VkFence m_RenderFence;
-	};
-
 	class VulkanRenderer final : public Core::Renderer {
-	public:
-		inline static constexpr uint16_t MAX_FRAMES_IN_FLIGHT = 2;
-		inline static const std::vector<const char *> c_ValidationLayers {"VK_LAYER_KHRONOS_validation",};
-		inline static const std::vector<const char*> c_DeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
 public:
-		VulkanRenderer(const Core::RendererParameters& renderParams, const Core::ApplicationParameters& appParams);
+		explicit VulkanRenderer(const Core::ApplicationParameters& appParams);
 		virtual ~VulkanRenderer() override;
 public:
 private:
 		void InitializeVulkan();
-		void InitializeSwapchain();
+		void InitializeSwapChain();
 		void InitializeCommands();
 		void InitializeSyncStructures();
 
@@ -39,29 +27,39 @@ private:
 		void DestroySwapChain();
 private:
 		void ShutdownVulkan();
-		FrameData& GetCurrentFrame();
+		VulkanFrameData& GetCurrentFrame();
 	public:
-		void Draw() override;
+		virtual void Draw() override;
+		void DrawBackground(VkCommandBuffer cmd);
 	private:
-		VkInstance m_Instance;// Vulkan library handle
-		VkDebugUtilsMessengerEXT m_DebugMessenger;// Vulkan debug output handle
-		VkPhysicalDevice m_ChosenGPU;// GPU chosen as the default device
-		VkDevice m_Device; // Vulkan device for commands
-		VkSurfaceKHR m_Surface;// Vulkan window surface
+		VkInstance m_Instance{nullptr};// Vulkan library handle
+		VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr};// Vulkan debug output handle
+		VkPhysicalDevice m_ChosenGPU{nullptr};// GPU chosen as the default device
+		VkDevice m_Device{nullptr}; // Vulkan device for commands
+		VkSurfaceKHR m_Surface{nullptr};// Vulkan window surface
 
 
-		VkSwapchainKHR m_Swapchain;
+		VkSwapchainKHR m_Swapchain{nullptr};
 		VkFormat m_SwapchainImageFormat;
 
-		std::vector<VkImage> m_SwapchainImages;
-		std::vector<VkImageView> m_SwapchainImageViews;
-		VkExtent2D m_SwapchainExtent;
+		std::vector<VkImage> m_SwapchainImages{};
+		std::vector<VkImageView> m_SwapchainImageViews{};
+		VkExtent2D m_SwapchainExtent{};
 
-		std::vector<FrameData> m_Frames;
+		std::vector<VulkanFrameData> m_Frames{};
 		uint32_t m_FrameIndex{0};
 		VkQueue m_GraphicsQueue{nullptr};
 		uint32_t m_GraphicsQueueFamily{0};
 
+		// Image onto which we'll draw each frame before sending it to the framebuffer.
+		AllocatedImage m_DrawImage{};
+		VkExtent2D m_DrawExtent{0,0};
+
+		VmaAllocator m_Allocator{nullptr};
+
+		// TODO: Replace the deletion queue with a list of handle to delete through a std::variant of some of the Vulkan
+		//  possible objects to delete.
+		Deleter m_MainDeletionQueue;
 		Core::RendererParameters m_RenderParams;
 		Core::ApplicationParameters m_AppParams;
 	};

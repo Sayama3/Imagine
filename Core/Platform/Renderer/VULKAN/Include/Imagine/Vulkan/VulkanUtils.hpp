@@ -38,5 +38,42 @@ namespace Imagine::Vulkan
 
             vkCmdPipelineBarrier2(cmd, &depInfo);
         }
+
+    	//TODO: Make my own version using compute shaders. Only used to setup the engine with something working.
+    	inline static void CopyImageToImage(VkCommandBuffer cmd, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize, VkImageAspectFlags aspectMask) {
+        	VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
+
+        	//TODO: Check if we shouldn't use the index 0.
+        	blitRegion.srcOffsets[1].x = srcSize.width;
+        	blitRegion.srcOffsets[1].y = srcSize.height;
+        	blitRegion.srcOffsets[1].z = 1;
+
+        	blitRegion.dstOffsets[1].x = dstSize.width;
+        	blitRegion.dstOffsets[1].y = dstSize.height;
+        	blitRegion.dstOffsets[1].z = 1;
+
+        	//TODO: Take into account the mip maps if created.
+        	blitRegion.srcSubresource.aspectMask = aspectMask;
+        	blitRegion.srcSubresource.baseArrayLayer = 0;
+        	blitRegion.srcSubresource.layerCount = 1;
+        	blitRegion.srcSubresource.mipLevel = 0;
+
+        	//TODO: Take into account the mip maps if created.
+        	blitRegion.dstSubresource.aspectMask = aspectMask;
+        	blitRegion.dstSubresource.baseArrayLayer = 0;
+        	blitRegion.dstSubresource.layerCount = 1;
+        	blitRegion.dstSubresource.mipLevel = 0;
+
+        	VkBlitImageInfo2 blitInfo{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = nullptr };
+        	blitInfo.dstImage = destination;
+        	blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        	blitInfo.srcImage = source;
+        	blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        	blitInfo.filter = VK_FILTER_LINEAR;
+        	blitInfo.regionCount = 1;
+        	blitInfo.pRegions = &blitRegion;
+
+        	vkCmdBlitImage2(cmd, &blitInfo);
+        }
     }
 }

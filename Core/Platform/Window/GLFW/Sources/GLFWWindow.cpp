@@ -58,6 +58,12 @@ namespace Imagine::Core {
 		return height;
 	}
 
+	Size2 GLFWWindow::GetWindowSize() {
+		int width, height;
+		glfwGetWindowSize(static_cast<GLFWwindow *>(m_Window), &width, &height);
+		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+	}
+
 	uint32_t GLFWWindow::GetFramebufferWidth() {
 		int width, height;
 		glfwGetFramebufferSize(static_cast<GLFWwindow *>(m_Window), &width, &height);
@@ -68,5 +74,11 @@ namespace Imagine::Core {
 		int width, height;
 		glfwGetFramebufferSize(static_cast<GLFWwindow *>(m_Window), &width, &height);
 		return height;
+	}
+
+	Size2 GLFWWindow::GetFramebufferSize() {
+		int width, height;
+		glfwGetFramebufferSize(static_cast<GLFWwindow *>(m_Window), &width, &height);
+		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 	}
 }

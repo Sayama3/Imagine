@@ -27,6 +27,23 @@ namespace Imagine::Core {
 
 	Application* Application::s_Instance{nullptr};
 
+	Application * Application::Create(const ApplicationParameters &parameters) {
+		Application* application{nullptr};
+		application = new Application(parameters);
+		return application;
+	}
+
+	Application * Application::Initialize(const ApplicationParameters &parameters) {
+		if (s_Instance) return s_Instance;
+		s_Instance = Application::Create(parameters);
+		return s_Instance;
+	}
+
+	void Application::Shutdown() {
+		delete s_Instance;
+		s_Instance = nullptr;
+	}
+
 	Application* Application::Get()
 	{
 		return s_Instance;
@@ -41,30 +58,20 @@ namespace Imagine::Core {
 			m_Window = Window::Initialize(parameters.AppName, parameters.Window.value());
 		}
 
-		if (parameters.UseRenderer) {
-			m_Renderer = Renderer::Initialize(RendererParameters{},parameters);
-		}
-
-		if (!s_Instance)
-		{
-			s_Instance = this;
+		if (parameters.Renderer) {
+			m_Renderer = Renderer::Initialize(parameters);
 		}
 	}
 
 	Application::~Application() {
-		if (m_Parameters.UseRenderer) {
+		if (m_Renderer) {
 			m_Renderer = nullptr;
 			Renderer::Shutdown();
 		}
 
-		if (m_Parameters.Window) {
+		if (m_Window) {
 			m_Window = nullptr;
 			Window::Shutdown();
-		}
-
-		if (s_Instance == this)
-		{
-			s_Instance = nullptr;
 		}
 	}
 

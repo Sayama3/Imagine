@@ -14,15 +14,24 @@ namespace Imagine::Core {
 
 	Renderer* Renderer::s_Renderer{nullptr};
 
-	Renderer* Renderer::Initialize(const RendererParameters& renderParams, const ApplicationParameters& appParams) {
-		if (s_Renderer) return s_Renderer;
+	Renderer * Renderer::Create(ApplicationParameters appParams) {
+		Renderer* renderer{nullptr};
+		if (!appParams.Renderer) {
+			return nullptr;
+		}
 
 #if defined(MGN_RENDERER_VULKAN)
-		s_Renderer = new Vulkan::VulkanRenderer(renderParams, appParams);
+		renderer = new Vulkan::VulkanRenderer(appParams);
 #else
-		s_Renderer = new CPU::CPURenderer(renderParams, appParams);
+		renderer = new CPU::CPURenderer(appParams);
 #endif
 
+		return renderer;
+	}
+
+	Renderer * Renderer::Initialize(ApplicationParameters appParams) {
+		if (s_Renderer) return s_Renderer;
+		s_Renderer = Renderer::Create(std::move(appParams));
 		return s_Renderer;
 	}
 

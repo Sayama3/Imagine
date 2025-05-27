@@ -3,12 +3,15 @@
 //
 
 #pragma once
+
 #include "WindowParameters.hpp"
+#include "Imagine/Core/Size.hpp"
 
 namespace Imagine::Core {
 
 	class Window {
 	public:
+		static Window* Create(const std::string &windowName, WindowParameters parameters);
 		static Window* Initialize(const std::string &windowName, WindowParameters parameters);
 		static void Shutdown();
 		static Window* Get();
@@ -26,9 +29,11 @@ namespace Imagine::Core {
 	public:
 		virtual uint32_t GetWindowWidth() = 0;
 		virtual uint32_t GetWindowHeight() = 0;
+		virtual Size2 GetWindowSize() = 0;
 
 		virtual uint32_t GetFramebufferWidth() = 0;
 		virtual uint32_t GetFramebufferHeight() = 0;
+		virtual Size2 GetFramebufferSize() = 0;
 
 		virtual void* GetNativeWindow() = 0;
 		virtual bool WindowHasResized() = 0;

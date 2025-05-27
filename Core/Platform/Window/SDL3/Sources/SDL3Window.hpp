@@ -12,9 +12,11 @@ namespace Imagine::Core {
 
 		uint32_t GetWindowWidth() override;
 		uint32_t GetWindowHeight() override;
+		Size2 GetWindowSize() override;
 
 		uint32_t GetFramebufferWidth() override;
 		uint32_t GetFramebufferHeight() override;
+		Size2 GetFramebufferSize() override;
 		void * GetNativeWindow() override;
 
 		bool WindowHasResized() override;

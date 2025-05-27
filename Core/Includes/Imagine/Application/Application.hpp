@@ -14,6 +14,9 @@ namespace Imagine::Core {
 	private:
 		static Application* s_Instance;
 	public:
+		static Application* Create(const ApplicationParameters& parameters);
+		static Application* Initialize(const ApplicationParameters& parameters);
+		static void Shutdown();
 		static Application* Get();
 	public:
 		Application(const ApplicationParameters& parameters);

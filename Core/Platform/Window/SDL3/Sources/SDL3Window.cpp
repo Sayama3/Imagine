@@ -84,6 +84,12 @@ namespace Imagine::Core {
 		return height;
 	}
 
+	Size2 SDL3Window::GetWindowSize() {
+		int width, height;
+		SDL_GetWindowSize(m_Window, &width,&height);
+		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+	}
+
 	uint32_t SDL3Window::GetFramebufferWidth() {
 		int width;
 		SDL_GetWindowSizeInPixels(m_Window, &width,nullptr);
@@ -94,5 +100,11 @@ namespace Imagine::Core {
 		int height;
 		SDL_GetWindowSizeInPixels(m_Window, nullptr,&height);
 		return height;
+	}
+
+	Size2 SDL3Window::GetFramebufferSize() {
+		int width, height;
+		SDL_GetWindowSizeInPixels(m_Window, &width,&height);
+		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 	}
 }

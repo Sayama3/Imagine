@@ -17,15 +17,16 @@ set(VULKAN_SOURCES
 		Include/Imagine/Vulkan/VulkanInitializer.hpp
 		Include/Imagine/Vulkan/VulkanUtils.hpp
 		Include/Imagine/Vulkan/VulkanMacros.hpp
+		Include/Imagine/Vulkan/VulkanFrameData.hpp
+		Include/Imagine/Vulkan/Vulkan.hpp
+		Sources/Vulkan.cpp
+		Include/Imagine/Vulkan/VulkanDeleter.hpp
+		Include/Imagine/Vulkan/AllocatedImage.hpp
+		Sources/AllocatedImage.cpp
 )
 
 target_sources(Core PRIVATE
 	${VULKAN_SOURCES}
-)
-
-target_precompile_headers(Core PRIVATE
-	<vulkan/vulkan.h>
-	<vulkan/vulkan.hpp>
 )
 
 target_compile_definitions(Core PUBLIC MGN_RENDERER_VULKAN=1)

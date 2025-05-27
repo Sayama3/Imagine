@@ -94,6 +94,16 @@
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 #endif
 
+// Encode a version in a single uint32_t. Stollen from <vulkan/vulkan.h>
+#define MGN_MAKE_VERSION(major, minor, patch) ((((uint32_t)(major)) << 22U) | (((uint32_t)(minor)) << 12U) | ((uint32_t)(patch)))
+
+// Fetch the Major Version in a single uint32_t. Stollen from <vulkan/vulkan.h>
+#define MGN_VERSION_MAJOR(version) ((uint32_t)(version) >> 22U)
+// Fetch the Minor Version in a single uint32_t. Stollen from <vulkan/vulkan.h>
+#define MGN_VERSION_MINOR(version) (((uint32_t)(version) >> 12U) & 0x3FFU)
+// Fetch the Patch Version in a single uint32_t. Stollen from <vulkan/vulkan.h>
+#define MGN_VERSION_PATCH(version) ((uint32_t)(version) & 0xFFFU)
+
 #ifndef MGN_NO_LOG
 #include "Logger.hpp"
 

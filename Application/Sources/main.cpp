@@ -24,27 +24,30 @@ int main(int argc, char** argv)
 
 	ApplicationParameters params {
 		std::string{"Imagine"},
+		MGN_MAKE_VERSION(0,0,1),
 		WindowParameters {
 			900,
 			600,
-			true
+			true,
 		},
-		true,
+		RendererParameters{
+			2,
+			c_DefaultDebugRendering,
+		},
 	};
 
 	// ApplicationParameters params {
 	// 	std::string{"Imagine"},
+	// MGN_MAKE_VERSION(0,0,1),
 	// 	std::nullopt,
-	// 	true,
+	// 	std::nullopt,
 	// };
 
-	Application* application = new Application(params);
+	Application* application = Application::Initialize(params);
 
 	application->Run();
 
-	delete application;
-	application = nullptr;
-
+	Application::Shutdown();
 	Imagine::Core::Log::Shutdown();
 
 	return 0;

@@ -4,14 +4,11 @@
 
 // --- other includes ---
 
-#include <vulkan/vk_enum_string_helper.h>
-#include <vk_mem_alloc.h>
 
 //bootstrap library
 #include <VkBootstrap.h>
 
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
-
 #include "Imagine/Application/Application.hpp"
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
 #include "Imagine/Vulkan/VulkanUtils.hpp"
@@ -20,7 +17,7 @@
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Application/Window.hpp"
 
-// Window Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
+// Window-Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
 #if defined(MGN_WINDOW_SDL3)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -34,11 +31,10 @@ using namespace Imagine::Core;
 
 namespace Imagine::Vulkan
 {
-    VulkanRenderer::VulkanRenderer(const RendererParameters& renderParams, const ApplicationParameters& appParams) :
-        Renderer(), m_RenderParams(renderParams), m_AppParams(appParams)
+    VulkanRenderer::VulkanRenderer(const ApplicationParameters& appParams) : Renderer(), m_RenderParams(appParams.Renderer.value()), m_AppParams(appParams)
     {
         InitializeVulkan();
-        InitializeSwapchain();
+        InitializeSwapChain();
         InitializeCommands();
         InitializeSyncStructures();
     }
@@ -74,7 +70,7 @@ namespace Imagine::Vulkan
 #if defined(MGN_WINDOW_SDL3)
         SDL_Vulkan_CreateSurface(reinterpret_cast<struct SDL_Window*>(Core::Window::Get()->GetWindowPtr()), m_Instance,
                                  nullptr, &m_Surface);
-#elif
+#elif defined(MGN_WINDOW_GLFW)
 		glfwCreateWindowSurface(m_Instance, reinterpret_cast<struct GLFWwindow*>(Core::Window::Get()->GetWindowPtr()), nullptr, &m_Surface);
 #endif
 
@@ -114,11 +110,58 @@ namespace Imagine::Vulkan
 
         m_GraphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
         m_GraphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
+
+        // initialize the memory allocator
+        VmaAllocatorCreateInfo allocatorInfo = {};
+        allocatorInfo.physicalDevice = m_ChosenGPU;
+        allocatorInfo.device = m_Device;
+        allocatorInfo.instance = m_Instance;
+        allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        vmaCreateAllocator(&allocatorInfo, &m_Allocator);
+
+        m_MainDeletionQueue.push_back(m_Allocator);
     }
 
-    void VulkanRenderer::InitializeSwapchain()
+    void VulkanRenderer::InitializeSwapChain()
     {
-        CreateSwapChain(Window::Get()->GetFramebufferWidth(), Window::Get()->GetFramebufferHeight());
+        const Size2 framebufferSize = Window::Get()->GetFramebufferSize();
+        CreateSwapChain(framebufferSize.width, framebufferSize.height);
+
+        //draw image size will match the window
+        VkExtent3D drawImageExtent = {
+            framebufferSize.width,
+            framebufferSize.height,
+            1
+        };
+
+        //hardcoding the draw format to 32 bit float
+        m_DrawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_DrawImage.imageExtent = drawImageExtent;
+
+        VkImageUsageFlags drawImageUsages{};
+        drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
+        drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        VkImageCreateInfo rimg_info = Initializer::ImageCreateInfo2D(m_DrawImage.imageFormat, drawImageUsages, drawImageExtent);
+
+        //for the draw image, we want to allocate it from gpu local memory
+        VmaAllocationCreateInfo rimg_allocinfo = {};
+        rimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        //allocate and create the image
+        vmaCreateImage(m_Allocator, &rimg_info, &rimg_allocinfo, &m_DrawImage.image, &m_DrawImage.allocation, nullptr);
+
+        //build a image-view for the draw image to use for rendering
+        VkImageViewCreateInfo rview_info = Initializer::ImageViewCreateInfo2D(m_DrawImage.imageFormat, m_DrawImage.image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+        VK_CHECK(vkCreateImageView(m_Device, &rview_info, nullptr, &m_DrawImage.imageView));
+
+        //add to deletion queues
+        m_MainDeletionQueue.push_back(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
+        m_MainDeletionQueue.push_back(m_DrawImage.imageView);
     }
 
     void VulkanRenderer::InitializeCommands()
@@ -208,8 +251,12 @@ namespace Imagine::Vulkan
             vkDestroyFence(m_Device,  frame.m_RenderFence, nullptr);
             vkDestroySemaphore(m_Device,  frame.m_RenderSemaphore, nullptr);
             vkDestroySemaphore(m_Device , frame.m_SwapchainSemaphore, nullptr);
+
+            frame.m_DeletionQueue.flush();
         }
         m_Frames.clear();
+
+        m_MainDeletionQueue.flush();
 
         DestroySwapChain();
 
@@ -220,80 +267,95 @@ namespace Imagine::Vulkan
         vkDestroyInstance(m_Instance, nullptr);
     }
 
-    FrameData& VulkanRenderer::GetCurrentFrame()
+    VulkanFrameData& VulkanRenderer::GetCurrentFrame()
     {
         return m_Frames[m_FrameIndex];
     }
 
-    void VulkanRenderer::Draw()
-    {
-        // wait until the gpu has finished rendering the last frame. Timeout of 1
-        // second
-        VK_CHECK(vkWaitForFences(m_Device, 1, &GetCurrentFrame().m_RenderFence, true, 1000000000));
-        VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
+    void VulkanRenderer::Draw() {
 
-        //request image from the swapchain
-        uint32_t swapchainImageIndex;
-        VK_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex));
+		// wait until the gpu has finished rendering the last frame. Timeout of 1
+		// second
+		VK_CHECK(vkWaitForFences(m_Device, 1, &GetCurrentFrame().m_RenderFence, true, 1000000000));
+		VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
 
-        auto cmd = GetCurrentFrame().m_MainCommandBuffer;
-        VK_CHECK(vkResetCommandBuffer(cmd, 0));
+		GetCurrentFrame().m_DeletionQueue.flush();
 
-        const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-        VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+		// request image from the swapchain
+		uint32_t swapchainImageIndex;
+		VK_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex));
 
-        //make the swapchain image into writeable mode before rendering
-        //TODO: See if the layout is the most optimal
-        Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+    	VkCommandBuffer cmd{nullptr};
+		cmd = GetCurrentFrame().m_MainCommandBuffer;
+		VK_CHECK(vkResetCommandBuffer(cmd, 0));
 
-        //make a clear-color from frame number. This will flash with a 120 frame period.
-        VkClearColorValue clearValue;
-        float flash = std::abs(std::sin(Application::Get()->Time()));
-        clearValue = { { 0.0f, 0.0f, flash, 1.0f } };
+		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
 
-        VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+		// make the swapchain image into writeable mode before rendering
+		// TODO: See if the layout VK_IMAGE_LAYOUT_GENERAL is the most optimal
 
-        //clear image
-        vkCmdClearColorImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+    	// Prepare the image for the drawing
+		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-        //make the swapchain image into presentable mode
-        Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex],VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    	// ALl the draw command starting with the clearing of the background
+    	DrawBackground(cmd);
 
-        //finalize the command buffer (we can no longer add commands, but it can now be executed)
-        VK_CHECK(vkEndCommandBuffer(cmd));
+    	// Ending the drawing commands and copying the data into the swapchain image.
+		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    	Utils::CopyImageToImage(cmd, m_DrawImage.image, m_SwapchainImages[swapchainImageIndex], m_DrawExtent, m_SwapchainExtent, VK_IMAGE_ASPECT_COLOR_BIT);
 
-        //prepare the submission to the queue.
-        //we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
-        //we will signal the _renderSemaphore, to signal that rendering has finished
+    	// make the swapchain image into presentable mode
+    	Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        VkCommandBufferSubmitInfo cmdinfo = Initializer::CommandBufferSubmitInfo(cmd);
+		// finalize the command buffer (we can no longer add commands, but it can now be executed)
+		VK_CHECK(vkEndCommandBuffer(cmd));
 
-        VkSemaphoreSubmitInfo waitInfo = Initializer::SemaphoreSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,GetCurrentFrame().m_SwapchainSemaphore);
-        VkSemaphoreSubmitInfo signalInfo = Initializer::SemaphoreSubmitInfo(VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, GetCurrentFrame().m_RenderSemaphore);
+		// prepare the submission to the queue.
+		// we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
+		// we will signal the _renderSemaphore, to signal that rendering has finished
 
-        VkSubmitInfo2 submit = Initializer::SubmitInfo(&cmdinfo,&signalInfo,&waitInfo);
+		VkCommandBufferSubmitInfo cmdinfo = Initializer::CommandBufferSubmitInfo(cmd);
 
-        //submit command buffer to the queue and execute it.
-        // _renderFence will now block until the graphic commands finish execution
-        VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, GetCurrentFrame().m_RenderFence));
+		VkSemaphoreSubmitInfo waitInfo = Initializer::SemaphoreSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, GetCurrentFrame().m_SwapchainSemaphore);
+		VkSemaphoreSubmitInfo signalInfo = Initializer::SemaphoreSubmitInfo(VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, GetCurrentFrame().m_RenderSemaphore);
 
-        //prepare present
-        // this will put the image we just rendered to into the visible window.
-        // we want to wait on the _renderSemaphore for that,
-        // as its necessary that drawing commands have finished before the image is displayed to the user
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.pNext = nullptr;
-        presentInfo.pSwapchains = &m_Swapchain;
-        presentInfo.swapchainCount = 1;
+		VkSubmitInfo2 submit = Initializer::SubmitInfo(&cmdinfo, &signalInfo, &waitInfo);
 
-        presentInfo.pWaitSemaphores = &GetCurrentFrame().m_RenderSemaphore;
-        presentInfo.waitSemaphoreCount = 1;
+		// submit command buffer to the queue and execute it.
+		//  _renderFence will now block until the graphic commands finish execution
+		VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, GetCurrentFrame().m_RenderFence));
 
-        presentInfo.pImageIndices = &swapchainImageIndex;
+		// prepare present
+		//  this will put the image we just rendered to into the visible window.
+		//  we want to wait on the _renderSemaphore for that,
+		//  as its necessary that drawing commands have finished before the image is displayed to the user
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = nullptr;
+		presentInfo.pSwapchains = &m_Swapchain;
+		presentInfo.swapchainCount = 1;
 
-        VK_CHECK(vkQueuePresentKHR(m_GraphicsQueue, &presentInfo));
+		presentInfo.pWaitSemaphores = &GetCurrentFrame().m_RenderSemaphore;
+		presentInfo.waitSemaphoreCount = 1;
 
-        m_FrameIndex = (m_FrameIndex + 1) % m_RenderParams.NbrFrameInFlight;
-    }
-}
+		presentInfo.pImageIndices = &swapchainImageIndex;
+
+		VK_CHECK(vkQueuePresentKHR(m_GraphicsQueue, &presentInfo));
+
+		m_FrameIndex = (m_FrameIndex + 1) % m_RenderParams.NbrFrameInFlight;
+	}
+
+	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
+    	// make a clear-color from Time.
+    	VkClearColorValue clearValue;
+    	float flash = std::abs(std::sin(static_cast<float>(Application::Get()->Time())));
+    	clearValue = {{0.0f, 0.0f, flash, 1.0f}};
+
+    	VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+
+    	// clear image
+    	vkCmdClearColorImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+	}
+} // namespace Imagine::Vulkan

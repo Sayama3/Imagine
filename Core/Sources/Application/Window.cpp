@@ -16,15 +16,21 @@ namespace Imagine::Core {
 
 	Window* Window::s_Window{nullptr};
 
-	Window* Window::Initialize(const std::string &windowName, WindowParameters parameters) {
-			if (s_Window) return s_Window;
+	Window * Window::Create(const std::string &windowName, WindowParameters parameters) {
+		Window * window{nullptr};
 #if defined(MGN_WINDOW_GLFW)
-			s_Window = new GLFWWindow(windowName, std::move(parameters));
+		window = new GLFWWindow(windowName, std::move(parameters));
 #elif defined(MGN_WINDOW_SDL3)
-			s_Window = new SDL3Window(windowName, std::move(parameters));
+		window = new SDL3Window(windowName, std::move(parameters));
 #else
-			s_Window = new HeadLessWindow(windowName, std::move(parameters));
+		window = new HeadLessWindow(windowName, std::move(parameters));
 #endif
+		return window;
+	}
+
+	Window* Window::Initialize(const std::string &windowName, WindowParameters parameters) {
+		if (s_Window) return s_Window;
+		s_Window = Window::Create(windowName, std::move(parameters));
 		return s_Window;
 	}
 

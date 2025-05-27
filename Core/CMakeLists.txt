@@ -47,12 +47,14 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/RawSparseSet.hpp
 		Includes/Imagine/Events/Event.hpp
 		Sources/Layers/Layer.cpp
-		Includes/Imagine/Core/TypeDefinition.hpp
-		Sources/Core/TypeDefinition.cpp
 		Includes/Imagine/Scene/Terrain.hpp
 		Sources/Scene/Terrain.cpp
 		Sources/Core/FileSystem.cpp
 		Includes/Imagine/Core/FileSystem.hpp
+		Includes/Imagine/Core/DeletionQueue.hpp
+		Includes/Imagine/Core/Size.hpp
+		Includes/Imagine/Rendering/RendererParameters.hpp
+		Sources/Application/ApplicationParameters.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -93,6 +95,7 @@ target_precompile_headers(Core PUBLIC
 		<string_view>
 
 		# Containers
+		<deque>
 		<array>
 		<vector>
 		<unordered_set>
