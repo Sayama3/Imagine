@@ -67,7 +67,7 @@ namespace Imagine::Core
         const T* Get() const
         {
 #if MGN_DEBUG
-            MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
+            MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
 #endif
             // TODO: Maybe use "static_cast" ?
             return reinterpret_cast<const T*>(m_Data);
@@ -77,7 +77,7 @@ namespace Imagine::Core
         T& As()
         {
 #if MGN_DEBUG
-            MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
+            MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
 #endif
             // TODO: Maybe use "static_cast" ?
             return *reinterpret_cast<T*>(m_Data);
@@ -87,7 +87,7 @@ namespace Imagine::Core
         const T& As() const
         {
 #if MGN_DEBUG
-            MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
+            MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
 #endif
             // TODO: Maybe use "static_cast" ?
             return *reinterpret_cast<const T*>(m_Data);
@@ -97,8 +97,8 @@ namespace Imagine::Core
         T& Get(const uint64_t index)
         {
 #if MGN_DEBUG
-            MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
-            MGN_CORE_ASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), typeid(T).name(), index, Count<T>());
+            MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+            MGN_CORE_ASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), index, typeid(T).name(), Count<T>());
 #endif
             return reinterpret_cast<T*>(m_Data)[index];
         }
@@ -107,8 +107,8 @@ namespace Imagine::Core
         const T& Get(const uint64_t index) const
         {
 #if MGN_DEBUG
-            MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
-            MGN_CORE_ASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), typeid(T).name(), index, Count<T>());
+        	MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+        	MGN_CORE_ASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), index, typeid(T).name(), Count<T>());
 #endif
             return reinterpret_cast<const T*>(m_Data)[index];
         }
