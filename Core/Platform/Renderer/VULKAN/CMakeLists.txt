@@ -33,4 +33,10 @@ target_sources(Core PRIVATE
 	${VULKAN_SOURCES}
 )
 
+if(MGN_IMGUI)
+	target_sources(Core PRIVATE
+		Sources/VulkanImGui.cpp
+	)
+endif()
+
 target_compile_definitions(Core PUBLIC MGN_RENDERER_VULKAN=1)

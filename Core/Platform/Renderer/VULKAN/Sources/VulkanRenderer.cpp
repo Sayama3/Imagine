@@ -28,6 +28,11 @@
 #error "Vulkan Rendering without window is not implemented yet."
 #endif
 
+#ifdef MGN_IMGUI
+#include <imgui.h>
+#include <imgui_impl_vulkan.h>
+#endif
+
 using namespace Imagine::Core;
 
 namespace Imagine::Vulkan
@@ -180,6 +185,15 @@ namespace Imagine::Vulkan
 
             VK_CHECK(vkAllocateCommandBuffers(m_Device, &cmdAllocInfo, &m_Frames[i].m_MainCommandBuffer));
         }
+
+    	VK_CHECK(vkCreateCommandPool(m_Device, &commandPoolInfo, nullptr, &m_ImmCommandPool));
+
+    	// allocate the command buffer for immediate submits
+    	VkCommandBufferAllocateInfo cmdAllocInfo = Initializer::CommandBufferAllocateInfo(m_ImmCommandPool, 1);
+
+    	VK_CHECK(vkAllocateCommandBuffers(m_Device, &cmdAllocInfo, &m_ImmCommandBuffer));
+
+    	m_MainDeletionQueue.push(m_ImmCommandPool);
     }
 
     void VulkanRenderer::InitializeSyncStructures()
@@ -197,6 +211,9 @@ namespace Imagine::Vulkan
             VK_CHECK(vkCreateSemaphore(m_Device, &semaphoreCreateInfo, nullptr, &frame.m_SwapchainSemaphore));
             VK_CHECK(vkCreateSemaphore(m_Device, &semaphoreCreateInfo, nullptr, &frame.m_RenderSemaphore));
         }
+
+    	VK_CHECK(vkCreateFence(m_Device, &fenceCreateInfo, nullptr, &m_ImmFence));
+    	m_MainDeletionQueue.push(m_ImmFence);
     }
 
 	void VulkanRenderer::InitializeDescriptors() {
@@ -396,7 +413,9 @@ namespace Imagine::Vulkan
     	Utils::CopyImageToImage(cmd, m_DrawImage.image, m_SwapchainImages[swapchainImageIndex], m_DrawExtent, m_SwapchainExtent, VK_IMAGE_ASPECT_COLOR_BIT);
 
     	// make the swapchain image into presentable mode
-    	Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    	Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    	DrawImGui(cmd,m_SwapchainImageViews[swapchainImageIndex]);
+    	Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 		// finalize the command buffer (we can no longer add commands, but it can now be executed)
 		VK_CHECK(vkEndCommandBuffer(cmd));
@@ -437,23 +456,115 @@ namespace Imagine::Vulkan
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
-//    	// make a clear-color from Time.
-//    	VkClearColorValue clearValue;
-//    	float flash = std::abs(std::sin(static_cast<float>(Application::Get()->Time())));
-//    	clearValue = {{0.0f, 0.0f, flash, 1.0f}};
-//
-//    	VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
-//
-//    	// clear image
-//    	vkCmdClearColorImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+		//    	// make a clear-color from Time.
+		//    	VkClearColorValue clearValue;
+		//    	float flash = std::abs(std::sin(static_cast<float>(Application::Get()->Time())));
+		//    	clearValue = {{0.0f, 0.0f, flash, 1.0f}};
+		//
+		//    	VkImageSubresourceRange clearRange = Initializer::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+		//
+		//    	// clear image
+		//    	vkCmdClearColorImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
 
-    	// bind the gradient drawing compute pipeline
-    	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipeline);
+		// bind the gradient drawing compute pipeline
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipeline);
 
-    	// bind the descriptor set containing the draw image for the compute pipeline
-    	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipelineLayout, 0, 1, &m_DrawImageDescriptors, 0, nullptr);
+		// bind the descriptor set containing the draw image for the compute pipeline
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipelineLayout, 0, 1, &m_DrawImageDescriptors, 0, nullptr);
 
-    	// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
-    	vkCmdDispatch(cmd, std::ceil(m_DrawExtent.width / 16.0), std::ceil(m_DrawExtent.height / 16.0), 1);
+		// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
+		vkCmdDispatch(cmd, std::ceil(m_DrawExtent.width / 16.0), std::ceil(m_DrawExtent.height / 16.0), 1);
 	}
+
+	void VulkanRenderer::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function) {
+
+		VK_CHECK(vkResetFences(m_Device, 1, &m_ImmFence));
+		VK_CHECK(vkResetCommandBuffer(m_ImmCommandBuffer, 0));
+
+		VkCommandBuffer cmd = m_ImmCommandBuffer;
+
+		VkCommandBufferBeginInfo cmdBeginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+		VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+
+		function(cmd);
+
+		VK_CHECK(vkEndCommandBuffer(cmd));
+
+		VkCommandBufferSubmitInfo cmdinfo = Initializer::CommandBufferSubmitInfo(cmd);
+		VkSubmitInfo2 submit = Initializer::SubmitInfo(&cmdinfo, nullptr, nullptr);
+
+		// submit command buffer to the queue and execute it.
+		//  _renderFence will now block until the graphic commands finish execution
+		VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, m_ImmFence));
+
+		VK_CHECK(vkWaitForFences(m_Device, 1, &m_ImmFence, true, 9999999999));
+	}
+	void VulkanRenderer::InitializeImGui() {
+
+#ifdef MGN_IMGUI
+		// 1: create descriptor pool for IMGUI
+		//  the size of the pool is very oversize, but it's copied from imgui demo
+		//  itself.
+		VkDescriptorPoolSize pool_sizes[] = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+											 {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+											 {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+											 {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+											 {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+											 {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+											 {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+											 {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+											 {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+											 {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+											 {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
+
+		VkDescriptorPoolCreateInfo pool_info = {};
+		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		pool_info.maxSets = 1000;
+		pool_info.poolSizeCount = (uint32_t) std::size(pool_sizes);
+		pool_info.pPoolSizes = pool_sizes;
+
+		VkDescriptorPool imguiPool;
+		VK_CHECK(vkCreateDescriptorPool(m_Device, &pool_info, nullptr, &imguiPool));
+
+		// this initializes imgui for Vulkan
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.Instance = m_Instance;
+		init_info.PhysicalDevice = m_ChosenGPU;
+		init_info.Device = m_Device;
+		init_info.Queue = m_GraphicsQueue;
+		init_info.DescriptorPool = imguiPool;
+		init_info.MinImageCount = 3;
+		init_info.ImageCount = 3;
+		init_info.UseDynamicRendering = true;
+
+		// dynamic rendering parameters for imgui to use
+		init_info.PipelineRenderingCreateInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO};
+		init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+		init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &m_SwapchainImageFormat;
+
+
+		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+		ImGui_ImplVulkan_Init(&init_info);
+		ImGui_ImplVulkan_CreateFontsTexture();
+
+		m_MainDeletionQueue.push(imguiPool);
+		// m_MainDeletionQueue.push(ImGui_ImplVulkan_Shutdown);
+#endif
+	}
+	void VulkanRenderer::DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView) {
+#ifdef MGN_IMGUI
+    	VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(targetImageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    	VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_SwapchainExtent, &colorAttachment, nullptr);
+
+    	vkCmdBeginRendering(cmd, &renderInfo);
+
+    	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+
+    	vkCmdEndRendering(cmd);
+#endif
+	}
+
 } // namespace Imagine::Vulkan

@@ -11,6 +11,10 @@
 
 #include "SDL3Window.hpp"
 
+#ifdef MGN_IMGUI
+#include "Imagine/Rendering/MgnImGui.hpp"
+#endif
+
 namespace Imagine::Core {
 	void * SDL3Window::GetNativeWindow() {
 		return m_Window;
@@ -60,6 +64,10 @@ namespace Imagine::Core {
 
 		while (SDL_PollEvent(&e) != 0)
 		{
+#ifdef MGN_IMGUI
+			Imagine::Core::MgnImGui::WindowProcessEvents(&e);
+#endif
+
 			if (e.type == SDL_EVENT_QUIT) {
 				m_ShouldClose = true;
 			}

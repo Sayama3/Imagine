@@ -10,7 +10,13 @@ set(SDL3_WINDOW_SOURCES
 )
 
 target_sources(Core PRIVATE
-	${SDL3_WINDOW_SOURCES}
+		${SDL3_WINDOW_SOURCES}
 )
+
+if(MGN_IMGUI)
+	target_sources(Core PRIVATE
+			Sources/SDL3ImGui.cpp
+	)
+endif()
 
 target_compile_definitions(Core PUBLIC MGN_WINDOW_SDL3=1)

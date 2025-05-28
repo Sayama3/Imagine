@@ -8,7 +8,10 @@
 #include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/Scene.hpp"
 
-
+#ifdef MGN_IMGUI
+#include "Imagine/Rendering/MgnImGui.hpp"
+#include <imgui.h>
+#endif
 namespace Imagine::Core {
 
 	class TmpElement {
@@ -61,9 +64,19 @@ namespace Imagine::Core {
 		if (parameters.Renderer) {
 			m_Renderer = Renderer::Initialize(parameters);
 		}
+#ifdef MGN_IMGUI
+		MgnImGui::CreateContext();
+		MgnImGui::InitializeWindow();
+		MgnImGui::InitializeRenderer();
+#endif
 	}
 
 	Application::~Application() {
+#ifdef MGN_IMGUI
+		MgnImGui::ShutdownRenderer();
+		MgnImGui::ShutdownWindow();
+		MgnImGui::Shutdown();
+#endif
 		if (m_Renderer) {
 			m_Renderer = nullptr;
 			Renderer::Shutdown();
@@ -85,6 +98,19 @@ namespace Imagine::Core {
 				m_Window->Update();
 				m_ShouldStop |= m_Window->ShouldClose();
 			}
+
+#ifdef MGN_IMGUI
+			MgnImGui::NewRenderFrame();
+			MgnImGui::NewWindowFrame();
+			MgnImGui::NewFrame();
+
+			static bool open = true;
+			ImGui::ShowDemoWindow(&open);
+
+			//TODO: Other imgui rendering functions
+
+			MgnImGui::Render();
+#endif
 
 			if (m_Renderer)
 			{

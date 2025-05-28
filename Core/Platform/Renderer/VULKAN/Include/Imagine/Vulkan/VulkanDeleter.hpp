@@ -11,6 +11,7 @@
 namespace Imagine::Vulkan {
 	struct Deleter {
 
+		using ShutdownFunction = void (*)();
 
 		template<typename VmaType>
 		struct VmaObject {
@@ -21,7 +22,7 @@ namespace Imagine::Vulkan {
 
 		using VmaImage = VmaObject<VkImage>;
 
-		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout>;
+		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool>;
 
 		/**
 		 * Function that will add an object in the list of object to destroy.
@@ -58,6 +59,10 @@ namespace Imagine::Vulkan {
 					vkDestroyPipeline(device, *pipeline, nullptr);
 				} else if (VkPipelineLayout* pipelineLayout = std::get_if<VkPipelineLayout>(&type)) {
 					vkDestroyPipelineLayout(device, *pipelineLayout, nullptr);
+				}else if (VkDescriptorPool* descriptorPool = std::get_if<VkDescriptorPool>(&type)) {
+					vkDestroyDescriptorPool(device, *descriptorPool, nullptr);
+				} else if (ShutdownFunction* shutdown = std::get_if<ShutdownFunction>(&type)) {
+					(*shutdown)();
 				} else { // std::monostate
 					MGN_CORE_ERROR("[Vulkan] Type at index {} not handled.", type.index());
 				}

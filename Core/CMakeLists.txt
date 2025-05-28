@@ -55,6 +55,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/Size.hpp
 		Includes/Imagine/Rendering/RendererParameters.hpp
 		Sources/Application/ApplicationParameters.cpp
+		Includes/Imagine/Rendering/MgnImGui.hpp
+		Sources/Rendering/ImGui.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -130,11 +132,12 @@ add_library(Imagine::Core ALIAS Core)
 
 add_subdirectory(Platform)
 
+target_compile_definitions(Core PUBLIC NOMINMAX=1)
+
 if(MGN_IMGUI)
 	target_link_libraries(Core PUBLIC imgui)
+	target_compile_definitions(Core PUBLIC MGN_IMGUI=1)
 endif()
-
-target_compile_definitions(Core PUBLIC NOMINMAX=1)
 
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
 	target_compile_definitions(Core PUBLIC MGN_DEBUG=1)

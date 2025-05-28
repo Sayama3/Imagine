@@ -39,6 +39,11 @@ namespace Imagine::Vulkan {
 	public:
 		virtual void Draw() override;
 		void DrawBackground(VkCommandBuffer cmd);
+
+		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
+		void InitializeImGui();
+	private:
+		void DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView);
 	private:
 		VkInstance m_Instance{nullptr}; // Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr}; // Vulkan debug output handle
@@ -70,6 +75,13 @@ namespace Imagine::Vulkan {
 
 		VkPipeline m_GradientPipeline{nullptr};
 		VkPipelineLayout m_GradientPipelineLayout{nullptr};
+
+
+		// immediate submit structures
+		VkFence m_ImmFence{nullptr};
+		VkCommandBuffer m_ImmCommandBuffer{nullptr};
+		VkCommandPool m_ImmCommandPool{nullptr};
+
 
 		// TODO: Replace the deletion queue with a list of handle to delete through a std::variant of some of the Vulkan
 		//  possible objects to delete.

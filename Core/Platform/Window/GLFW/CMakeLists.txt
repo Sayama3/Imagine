@@ -10,7 +10,13 @@ set(GLFW_WINDOW_SOURCES
 )
 
 target_sources(Core PRIVATE
-	${GLFW_WINDOW_SOURCES}
+		${GLFW_WINDOW_SOURCES}
 )
+
+if(MGN_IMGUI)
+	target_sources(Core PRIVATE
+			Sources/GLFWImGui.cpp
+	)
+endif()
 
 target_compile_definitions(Core PUBLIC MGN_WINDOW_GLFW=1)
