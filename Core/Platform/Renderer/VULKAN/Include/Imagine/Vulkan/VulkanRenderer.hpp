@@ -19,6 +19,7 @@ namespace Imagine::Vulkan {
 		virtual ~VulkanRenderer() override;
 
 	public:
+		virtual void PrepareShutdown() override;
 	private:
 		void InitializeVulkan();
 		void InitializeSwapChain();

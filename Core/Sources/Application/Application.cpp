@@ -72,11 +72,16 @@ namespace Imagine::Core {
 	}
 
 	Application::~Application() {
+		if (m_Renderer) {
+			m_Renderer->PrepareShutdown();
+		}
+
 #ifdef MGN_IMGUI
 		MgnImGui::ShutdownRenderer();
 		MgnImGui::ShutdownWindow();
 		MgnImGui::Shutdown();
 #endif
+
 		if (m_Renderer) {
 			m_Renderer = nullptr;
 			Renderer::Shutdown();

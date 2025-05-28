@@ -24,5 +24,6 @@ namespace Imagine::Core {
 		Renderer& operator=(const Renderer&) = delete;
 	public:
 		virtual void Draw() = 0;
+		virtual void PrepareShutdown() = 0;
 	};
 }

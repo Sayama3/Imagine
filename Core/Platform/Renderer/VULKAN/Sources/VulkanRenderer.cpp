@@ -47,12 +47,15 @@ namespace Imagine::Vulkan
     	InitializePipelines();
     }
 
-    VulkanRenderer::~VulkanRenderer()
-    {
-        ShutdownVulkan();
+    VulkanRenderer::~VulkanRenderer() {
+    	PrepareShutdown();
+		ShutdownVulkan();
+	}
+	void VulkanRenderer::PrepareShutdown() {
+        vkDeviceWaitIdle(m_Device);
     }
 
-    void VulkanRenderer::InitializeVulkan()
+	void VulkanRenderer::InitializeVulkan()
     {
         vkb::InstanceBuilder builder;
 
@@ -342,8 +345,6 @@ namespace Imagine::Vulkan
 
     void VulkanRenderer::ShutdownVulkan()
     {
-        vkDeviceWaitIdle(m_Device);
-
         for (auto& frame : m_Frames) {
             vkDestroyCommandPool(m_Device, frame.m_CommandPool, nullptr);
 
