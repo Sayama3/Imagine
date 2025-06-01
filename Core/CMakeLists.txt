@@ -57,9 +57,13 @@ set(CORE_SRC_FILES
 		Sources/Application/ApplicationParameters.cpp
 		Includes/Imagine/Rendering/MgnImGui.hpp
 		Sources/Rendering/ImGui.cpp
-		Includes/Imagine/Rendering/HarcodedPushConstants.hpp
 		Sources/Rendering/Material.cpp
 		Includes/Imagine/Rendering/Material.hpp
+		Sources/Rendering/PushConstant.cpp
+		Includes/Imagine/Rendering/PushConstant.hpp
+		Sources/Rendering/Shader.cpp
+		Includes/Imagine/Rendering/Shader.hpp
+		Includes/Imagine/Rendering/ShaderStage.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
