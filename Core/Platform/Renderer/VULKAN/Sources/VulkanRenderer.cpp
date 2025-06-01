@@ -260,9 +260,74 @@ namespace Imagine::Vulkan
 
 	void VulkanRenderer::InitializePipelines() {
 		InitGradientPipeline();
+		InitSkyPipeline();
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
+    	ComputeEffect gradient;
+    	gradient.layout = nullptr;
+    	gradient.name = "gradient";
+    	gradient.data = {};
+
+    	// default colors
+    	gradient.data.data1 = glm::vec4(1, 0, 0, 1);
+    	gradient.data.data2 = glm::vec4(0, 0, 1, 1);
+
+		VkPushConstantRange pushConstant{};
+		pushConstant.offset = 0;
+		pushConstant.size = sizeof(ComputePushConstants);
+		pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
+		VkPipelineLayoutCreateInfo computeLayout{};
+		computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		computeLayout.pNext = nullptr;
+		computeLayout.pSetLayouts = &m_DrawImageDescriptorLayout;
+		computeLayout.setLayoutCount = 1;
+
+		computeLayout.pPushConstantRanges = &pushConstant;
+		computeLayout.pushConstantRangeCount = 1;
+
+		VK_CHECK(vkCreatePipelineLayout(m_Device, &computeLayout, nullptr, &gradient.layout));
+
+		// layout code
+		VkShaderModule gradientShader;
+		// TODO: Replace by a real shader loading pipeline with glslc and spirv cache loading.
+		if (!Utils::LoadShaderModule("Assets/gradient.comp.spv", m_Device, &gradientShader)) {
+			MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "Assets/gradient.comp.spv");
+		}
+
+		VkPipelineShaderStageCreateInfo stageinfo{};
+		stageinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		stageinfo.pNext = nullptr;
+		stageinfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		stageinfo.module = gradientShader;
+		stageinfo.pName = "main";
+
+		VkComputePipelineCreateInfo computePipelineCreateInfo{};
+		computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		computePipelineCreateInfo.pNext = nullptr;
+		computePipelineCreateInfo.layout = gradient.layout;
+		computePipelineCreateInfo.stage = stageinfo;
+
+
+		VK_CHECK(vkCreateComputePipelines(m_Device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &gradient.pipeline));
+
+		// add the 2 background effects into the array
+		m_BackgroundEffects.push_back(gradient);
+		// Not needed anymore.
+		vkDestroyShaderModule(m_Device, gradientShader, nullptr);
+
+		m_MainDeletionQueue.push(gradient.layout);
+		m_MainDeletionQueue.push(gradient.pipeline);
+	}
+
+	void VulkanRenderer::InitSkyPipeline() {
+    	ComputeEffect sky;
+    	sky.layout = nullptr;
+    	sky.name = "sky";
+    	sky.data = {};
+    	//default sky parameters
+    	sky.data.data1 = glm::vec4(0.1, 0.2, 0.4 ,0.97);
 
     	VkPushConstantRange pushConstant{};
     	pushConstant.offset = 0;
@@ -278,36 +343,39 @@ namespace Imagine::Vulkan
     	computeLayout.pPushConstantRanges = &pushConstant;
     	computeLayout.pushConstantRangeCount = 1;
 
-    	VK_CHECK(vkCreatePipelineLayout(m_Device, &computeLayout, nullptr, &m_GradientPipelineLayout));
+    	VK_CHECK(vkCreatePipelineLayout(m_Device, &computeLayout, nullptr, &sky.layout));
 
     	//layout code
-    	VkShaderModule computeDrawShader;
+    	VkShaderModule skyShader;
     	//TODO: Replace by a real shader loading pipeline with glslc and spirv cache loading.
-    	if (!Utils::LoadShaderModule("Assets/gradient.comp.spv", m_Device, &computeDrawShader))
+    	if (!Utils::LoadShaderModule("Assets/sky.comp.spv", m_Device, &skyShader))
     	{
-    		MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "Assets/gradient.comp.spv");
+    		MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "Assets/sky.comp.spv");
     	}
 
     	VkPipelineShaderStageCreateInfo stageinfo{};
     	stageinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     	stageinfo.pNext = nullptr;
     	stageinfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    	stageinfo.module = computeDrawShader;
+    	stageinfo.module = skyShader;
     	stageinfo.pName = "main";
 
     	VkComputePipelineCreateInfo computePipelineCreateInfo{};
     	computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
     	computePipelineCreateInfo.pNext = nullptr;
-    	computePipelineCreateInfo.layout = m_GradientPipelineLayout;
+    	computePipelineCreateInfo.layout = sky.layout;
     	computePipelineCreateInfo.stage = stageinfo;
 
-    	VK_CHECK(vkCreateComputePipelines(m_Device, nullptr,1, &computePipelineCreateInfo, nullptr, &m_GradientPipeline));
 
+    	VK_CHECK(vkCreateComputePipelines(m_Device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &sky.pipeline));
+
+    	//add the 2 background effects into the array
+    	m_BackgroundEffects.push_back(sky);
     	// Not needed anymore.
-    	vkDestroyShaderModule(m_Device, computeDrawShader, nullptr);
+    	vkDestroyShaderModule(m_Device, skyShader, nullptr);
 
-		m_MainDeletionQueue.push(m_GradientPipelineLayout);
-		m_MainDeletionQueue.push(m_GradientPipeline);
+		m_MainDeletionQueue.push(sky.layout);
+		m_MainDeletionQueue.push(sky.pipeline);
 	}
 
 	void VulkanRenderer::CreateSwapChain(const uint32_t width, const uint32_t height)
@@ -398,12 +466,12 @@ namespace Imagine::Vulkan
 		uint32_t swapchainImageIndex;
 		VK_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex));
 
-    	VkCommandBuffer cmd{nullptr};
+		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 		VK_CHECK(vkResetCommandBuffer(cmd, 0));
 
-    	m_DrawExtent.width = m_DrawImage.imageExtent.width;
-    	m_DrawExtent.height = m_DrawImage.imageExtent.height;
+		m_DrawExtent.width = m_DrawImage.imageExtent.width;
+		m_DrawExtent.height = m_DrawImage.imageExtent.height;
 
 		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
@@ -411,21 +479,21 @@ namespace Imagine::Vulkan
 		// make the swapchain image into writeable mode before rendering
 		// TODO: See if the layout VK_IMAGE_LAYOUT_GENERAL is the most optimal
 
-    	// Prepare the image for the drawing
+		// Prepare the image for the drawing
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-    	// ALl the draw command starting with the clearing of the background
-    	DrawBackground(cmd);
+		// ALl the draw command starting with the clearing of the background
+		DrawBackground(cmd);
 
-    	// Ending the drawing commands and copying the data into the swapchain image.
+		// Ending the drawing commands and copying the data into the swapchain image.
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    	Utils::CopyImageToImage(cmd, m_DrawImage.image, m_SwapchainImages[swapchainImageIndex], m_DrawExtent, m_SwapchainExtent, VK_IMAGE_ASPECT_COLOR_BIT);
+		Utils::CopyImageToImage(cmd, m_DrawImage.image, m_SwapchainImages[swapchainImageIndex], m_DrawExtent, m_SwapchainExtent, VK_IMAGE_ASPECT_COLOR_BIT);
 
-    	// make the swapchain image into presentable mode
-    	Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    	DrawImGui(cmd,m_SwapchainImageViews[swapchainImageIndex]);
-    	Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		// make the swapchain image into presentable mode
+		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		DrawImGui(cmd, m_SwapchainImageViews[swapchainImageIndex]);
+		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 		// finalize the command buffer (we can no longer add commands, but it can now be executed)
 		VK_CHECK(vkEndCommandBuffer(cmd));
@@ -464,6 +532,24 @@ namespace Imagine::Vulkan
 
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
 	}
+	void VulkanRenderer::SendImGuiCommands() {
+#ifdef MGN_IMGUI
+    	if (ImGui::Begin("Background")) {
+
+    		ComputeEffect& selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
+
+    		ImGui::Text("Selected effect: ", selected.name);
+
+    		ImGui::SliderInt("Effect Index", &m_CurrentBackgroundEffect,0, m_BackgroundEffects.size() - 1);
+
+    		ImGui::InputFloat4("data1",(float*)& selected.data.data1);
+    		ImGui::InputFloat4("data2",(float*)& selected.data.data2);
+    		ImGui::InputFloat4("data3",(float*)& selected.data.data3);
+    		ImGui::InputFloat4("data4",(float*)& selected.data.data4);
+    	}
+    	ImGui::End();
+#endif
+	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
 		//    	// make a clear-color from Time.
@@ -476,16 +562,15 @@ namespace Imagine::Vulkan
 		//    	// clear image
 		//    	vkCmdClearColorImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
 
+		ComputeEffect& effect = m_BackgroundEffects[m_CurrentBackgroundEffect];
+
 		// bind the gradient drawing compute pipeline
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipeline);
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline);
 
 		// bind the descriptor set containing the draw image for the compute pipeline
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipelineLayout, 0, 1, &m_DrawImageDescriptors, 0, nullptr);
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.layout, 0, 1, &m_DrawImageDescriptors, 0, nullptr);
 
-		ComputePushConstants pc{};
-    	pc.data1 = glm::vec4(1,0,0,1);
-    	pc.data2 = glm::vec4(0,0,1,1);
-    	vkCmdPushConstants(cmd, m_GradientPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &pc);
+    	vkCmdPushConstants(cmd, effect.layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &effect.data);
 
 		// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
 		vkCmdDispatch(cmd, std::ceil(m_DrawExtent.width / 16.0), std::ceil(m_DrawExtent.height / 16.0), 1);

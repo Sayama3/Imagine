@@ -112,6 +112,14 @@ namespace Imagine::Core {
 			static bool open = true;
 			ImGui::ShowDemoWindow(&open);
 
+			if (m_Window) {
+				m_Window->SendImGuiCommands();
+			}
+
+			if (m_Renderer) {
+				m_Renderer->SendImGuiCommands();
+			}
+
 			//TODO: Other imgui rendering functions
 
 			MgnImGui::Render();

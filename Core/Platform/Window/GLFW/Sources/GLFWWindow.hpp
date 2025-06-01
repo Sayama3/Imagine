@@ -11,6 +11,7 @@ namespace Imagine::Core {
 		~GLFWWindow() override;
 
 		void Update() override;
+		void SendImGuiCommands() override {}
 
 		uint32_t GetWindowWidth() override;
 		uint32_t GetWindowHeight() override;

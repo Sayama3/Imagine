@@ -30,6 +30,7 @@ namespace Imagine::Vulkan {
 		void InitializePipelines();
 
 		void InitGradientPipeline();
+		void InitSkyPipeline();
 
 		void CreateSwapChain(uint32_t width, uint32_t height);
 		void DestroySwapChain();
@@ -40,12 +41,16 @@ namespace Imagine::Vulkan {
 		[[nodiscard]] const Core::RendererParameters& GetRenderParams() const;
 	public:
 		virtual void Draw() override;
+		virtual void SendImGuiCommands() override;
 		void DrawBackground(VkCommandBuffer cmd);
 
 		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 		void InitializeImGui();
 	private:
 		void DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView);
+	private:
+		std::vector<ComputeEffect> m_BackgroundEffects;
+		int m_CurrentBackgroundEffect{0};
 	private:
 		VkInstance m_Instance{nullptr}; // Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr}; // Vulkan debug output handle
@@ -74,9 +79,6 @@ namespace Imagine::Vulkan {
 		VkExtent2D m_DrawExtent{0, 0};
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
-
-		VkPipeline m_GradientPipeline{nullptr};
-		VkPipelineLayout m_GradientPipelineLayout{nullptr};
 
 
 		// immediate submit structures

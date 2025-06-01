@@ -13,6 +13,7 @@ namespace Imagine::Core {
 		virtual ~HeadLessWindow() override;
 
 		virtual void Update() override;
+		virtual void SendImGuiCommands() override {}
 
 		virtual uint32_t GetWindowWidth() override;
 		virtual uint32_t GetWindowHeight() override;

@@ -28,6 +28,8 @@ set(VULKAN_SOURCES
 		Sources/DescriptorLayoutBuilder.cpp
 		Include/Imagine/Vulkan/DescriptorAllocator.hpp
 		Sources/DescriptorAllocator.cpp
+		Include/Imagine/Vulkan/VulkanShader.hpp
+		Sources/VulkanShader.cpp
 )
 
 target_sources(Core PRIVATE

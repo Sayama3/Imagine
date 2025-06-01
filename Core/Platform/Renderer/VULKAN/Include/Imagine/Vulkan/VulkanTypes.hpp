@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {
 	struct ComputePushConstants {
@@ -12,5 +13,13 @@ namespace Imagine::Vulkan {
 		glm::vec4 data2;
 		glm::vec4 data3;
 		glm::vec4 data4;
+	};
+
+	struct ComputeEffect
+	{
+		std::string name;
+		VkPipeline pipeline;
+		VkPipelineLayout layout;
+		ComputePushConstants data;
 	};
 }

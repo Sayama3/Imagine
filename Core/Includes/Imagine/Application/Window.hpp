@@ -26,6 +26,7 @@ namespace Imagine::Core {
 		Window& operator=(const Window&) = delete;
 	public:
 		virtual void Update() = 0;
+		virtual void SendImGuiCommands() = 0;
 	public:
 		virtual uint32_t GetWindowWidth() = 0;
 		virtual uint32_t GetWindowHeight() = 0;
