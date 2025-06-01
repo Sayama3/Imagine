@@ -11,6 +11,7 @@
 #include "Imagine/Vulkan/Vulkan.hpp"
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
 #include "Imagine/Vulkan/VulkanFrameData.hpp"
+#include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
 	class VulkanRenderer final : public Core::Renderer {

@@ -263,11 +263,20 @@ namespace Imagine::Vulkan
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
+
+    	VkPushConstantRange pushConstant{};
+    	pushConstant.offset = 0;
+    	pushConstant.size = sizeof(ComputePushConstants);
+    	pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
     	VkPipelineLayoutCreateInfo computeLayout{};
     	computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     	computeLayout.pNext = nullptr;
     	computeLayout.pSetLayouts = &m_DrawImageDescriptorLayout;
     	computeLayout.setLayoutCount = 1;
+
+    	computeLayout.pPushConstantRanges = &pushConstant;
+    	computeLayout.pushConstantRangeCount = 1;
 
     	VK_CHECK(vkCreatePipelineLayout(m_Device, &computeLayout, nullptr, &m_GradientPipelineLayout));
 
@@ -472,6 +481,11 @@ namespace Imagine::Vulkan
 
 		// bind the descriptor set containing the draw image for the compute pipeline
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_GradientPipelineLayout, 0, 1, &m_DrawImageDescriptors, 0, nullptr);
+
+		ComputePushConstants pc{};
+    	pc.data1 = glm::vec4(1,0,0,1);
+    	pc.data2 = glm::vec4(0,0,1,1);
+    	vkCmdPushConstants(cmd, m_GradientPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &pc);
 
 		// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
 		vkCmdDispatch(cmd, std::ceil(m_DrawExtent.width / 16.0), std::ceil(m_DrawExtent.height / 16.0), 1);

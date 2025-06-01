@@ -41,11 +41,11 @@ set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_INSTALL OFF)
 set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
-set(BUILD_SHARED_LIBS OFF)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 FetchContent_Declare(
 		Assimp
 		GIT_REPOSITORY "https://github.com/assimp/assimp.git"
-		GIT_TAG "v5.4.3"
+		GIT_TAG "v6.0.0"
 )
 
 # ===== Window Libraries =====
