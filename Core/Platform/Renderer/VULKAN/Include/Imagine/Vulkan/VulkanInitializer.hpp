@@ -76,7 +76,7 @@ namespace Imagine::Vulkan
             return subImage;
         }
 
-        VkSemaphoreSubmitInfo SemaphoreSubmitInfo(VkPipelineStageFlags2 stageMask, VkSemaphore semaphore)
+        inline static VkSemaphoreSubmitInfo SemaphoreSubmitInfo(VkPipelineStageFlags2 stageMask, VkSemaphore semaphore)
         {
             VkSemaphoreSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
@@ -89,7 +89,7 @@ namespace Imagine::Vulkan
             return submitInfo;
         }
 
-        VkCommandBufferSubmitInfo CommandBufferSubmitInfo(VkCommandBuffer cmd)
+        inline static VkCommandBufferSubmitInfo CommandBufferSubmitInfo(VkCommandBuffer cmd)
         {
             VkCommandBufferSubmitInfo info{};
             info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
@@ -100,7 +100,7 @@ namespace Imagine::Vulkan
             return info;
         }
 
-        VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo* cmd, VkSemaphoreSubmitInfo* signalSemaphoreInfo, VkSemaphoreSubmitInfo* waitSemaphoreInfo)
+        inline static VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo* cmd, VkSemaphoreSubmitInfo* signalSemaphoreInfo, VkSemaphoreSubmitInfo* waitSemaphoreInfo)
         {
             VkSubmitInfo2 info = {};
             info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
@@ -118,7 +118,7 @@ namespace Imagine::Vulkan
             return info;
         }
 
-        VkImageCreateInfo ImageCreateInfo2D(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
+        inline static VkImageCreateInfo ImageCreateInfo2D(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
         {
             //TODO: Create MipMaps
             VkImageCreateInfo info = {};
@@ -143,7 +143,7 @@ namespace Imagine::Vulkan
             return info;
         }
 
-        VkImageViewCreateInfo ImageViewCreateInfo2D(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
+        inline static VkImageViewCreateInfo ImageViewCreateInfo2D(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
         {
             // build a image-view for the depth image to use for rendering
             VkImageViewCreateInfo info = {};
@@ -164,7 +164,7 @@ namespace Imagine::Vulkan
             return info;
         }
 
-    	VkRenderingAttachmentInfo RenderingAttachmentInfo(VkImageView view, VkClearValue* clear ,VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+    	inline static VkRenderingAttachmentInfo RenderingAttachmentInfo(VkImageView view, VkClearValue* clear ,VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
         	VkRenderingAttachmentInfo colorAttachment {};
         	colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
         	colorAttachment.pNext = nullptr;
@@ -180,7 +180,7 @@ namespace Imagine::Vulkan
         	return colorAttachment;
         }
 
-    	VkRenderingInfo RenderingInfo(VkExtent2D extents, VkRenderingAttachmentInfo* colorAttachement, VkRenderingAttachmentInfo* depthAttachement) {
+    	inline static VkRenderingInfo RenderingInfo(VkExtent2D extents, VkRenderingAttachmentInfo* colorAttachement, VkRenderingAttachmentInfo* depthAttachement) {
         	VkRenderingInfo renderingInfo = {};
 			renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
         	renderingInfo.pNext = nullptr;
@@ -197,6 +197,18 @@ namespace Imagine::Vulkan
         	return renderingInfo;
         }
 
+    	inline static VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlags stage, VkShaderModule shader, const std::string& name = {}) {
+        	VkPipelineShaderStageCreateInfo info {};
+        	info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        	info.pNext = nullptr;
+        	info.flags = stage;
+        	info.module = shader;
+        	if (!name.empty()) {
+				info.pName = name.c_str();
+			}
+        	return info;
+		}
 
-    }
+
+	} // namespace Initializer
 }

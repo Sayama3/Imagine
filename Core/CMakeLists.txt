@@ -63,7 +63,7 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/PushConstant.hpp
 		Sources/Rendering/Shader.cpp
 		Includes/Imagine/Rendering/Shader.hpp
-		Includes/Imagine/Rendering/ShaderStage.hpp
+		Includes/Imagine/Rendering/ShaderParameters.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

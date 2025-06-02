@@ -86,9 +86,6 @@ namespace Imagine::Vulkan {
 		VkCommandBuffer m_ImmCommandBuffer{nullptr};
 		VkCommandPool m_ImmCommandPool{nullptr};
 
-
-		// TODO: Replace the deletion queue with a list of handle to delete through a std::variant of some of the Vulkan
-		//  possible objects to delete.
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
 	};
