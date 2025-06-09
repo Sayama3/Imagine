@@ -48,6 +48,18 @@ FetchContent_Declare(
 		GIT_TAG "v6.0.0"
 )
 
+
+set(MESHOPT_BUILD_DEMO OFF) # Build demo
+set(MESHOPT_BUILD_GLTFPACK OFF) # Build gltfpack
+set(MESHOPT_BUILD_SHARED_LIBS OFF) # Build shared libraries
+set(MESHOPT_WERROR OFF) # Treat warnings as errors
+set(MESHOPT_INSTALL OFF) # Install library
+FetchContent_Declare(
+		MeshOptimizer
+		GIT_REPOSITORY "https://github.com/zeux/meshoptimizer.git"
+		GIT_TAG "v0.23"
+)
+
 # ===== Window Libraries =====
 
 if(MGN_WINDOW_GLFW)
