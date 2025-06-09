@@ -6,16 +6,22 @@
 
 
 // bootstrap library
+#define VMA_IMPLEMENTATION 1
+
 #include <VkBootstrap.h>
 
 #include "Imagine/Application/Application.hpp"
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
 #include "Imagine/Vulkan/VulkanMacros.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
+
+#include <vk_mem_alloc.h>
+
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Vulkan/DescriptorAllocator.hpp"
 #include "Imagine/Vulkan/DescriptorLayoutBuilder.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
 
@@ -450,6 +456,74 @@ namespace Imagine::Vulkan {
 		}
 		m_SwapchainImages.clear();
 		m_SwapchainImageViews.clear();
+	}
+
+	AllocatedBuffer VulkanRenderer::CreateBuffer(const uint64_t allocSize, const VkBufferUsageFlags usage, const VmaMemoryUsage memoryUsage) {
+		// allocate buffer
+		VkBufferCreateInfo bufferInfo = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+		bufferInfo.pNext = nullptr;
+		bufferInfo.size = allocSize;
+
+		bufferInfo.usage = usage;
+
+		VmaAllocationCreateInfo vmaallocInfo = {};
+		vmaallocInfo.usage = memoryUsage;
+		vmaallocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		AllocatedBuffer newBuffer;
+
+		// allocate the buffer
+		VK_CHECK(vmaCreateBuffer(m_Allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation,
+								 &newBuffer.info));
+
+		return newBuffer;
+	}
+
+	void VulkanRenderer::DestroyBuffer(AllocatedBuffer &buffer) {
+		vmaDestroyBuffer(m_Allocator, buffer.buffer, buffer.allocation);
+		buffer = AllocatedBuffer{}; // Reset the buffer to avoid access to deleted ptr.
+	}
+
+	GPUMeshBuffers VulkanRenderer::UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices) {
+		const uint64_t vertexBufferSize = vertices.size() * sizeof(Vertex);
+		const uint64_t indexBufferSize = indices.size() * sizeof(uint32_t);
+
+		GPUMeshBuffers GPUMesh;
+
+		GPUMesh.vertexBuffer = CreateBuffer(vertexBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+		// find the adress of the vertex buffer
+		VkBufferDeviceAddressInfo deviceAdressInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer = GPUMesh.vertexBuffer.buffer};
+		GPUMesh.vertexBufferAddress = vkGetBufferDeviceAddress(m_Device, &deviceAdressInfo);
+
+		// create index buffer
+		GPUMesh.indexBuffer = CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+		AllocatedBuffer staging = CreateBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+		void* data = staging.allocation->GetMappedData();
+
+		// copy vertex buffer
+		memcpy(data, vertices.data(), vertexBufferSize);
+		// copy index buffer
+		memcpy((uint8_t*)data + vertexBufferSize, indices.data(), indexBufferSize);
+
+		ImmediateSubmit([&](VkCommandBuffer cmd) {
+			VkBufferCopy vertexCopy{ 0 };
+			vertexCopy.dstOffset = 0;
+			vertexCopy.srcOffset = 0;
+			vertexCopy.size = vertexBufferSize;
+
+			vkCmdCopyBuffer(cmd, staging.buffer, GPUMesh.vertexBuffer.buffer, 1, &vertexCopy);
+
+			VkBufferCopy indexCopy{ 0 };
+			indexCopy.dstOffset = 0;
+			indexCopy.srcOffset = vertexBufferSize;
+			indexCopy.size = indexBufferSize;
+
+			vkCmdCopyBuffer(cmd, staging.buffer, GPUMesh.indexBuffer.buffer, 1, &indexCopy);
+		});
+
+		DestroyBuffer(staging);
+		return GPUMesh;
 	}
 
 	void VulkanRenderer::ShutdownVulkan() {

@@ -3,6 +3,7 @@
 //
 
 #include "Imagine/Vulkan/DescriptorLayoutBuilder.hpp"
+#include "Imagine/Vulkan/VulkanMacros.hpp"
 
 namespace Imagine::Vulkan {
 	void DescriptorLayoutBuilder::AddBinding(const uint32_t binding, const VkDescriptorType type) {

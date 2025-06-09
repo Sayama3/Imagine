@@ -7,7 +7,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
-
+#include <vk_mem_alloc.h>
 namespace Imagine::Vulkan {
 	struct Deleter {
 

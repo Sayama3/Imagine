@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Imagine/Vulkan/Vulkan.hpp"
+#include <vk_mem_alloc.h>
 
 namespace Imagine::Vulkan {
 

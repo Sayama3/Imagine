@@ -3,6 +3,7 @@
 //
 
 #include "Imagine/Vulkan/DescriptorAllocator.hpp"
+#include "Imagine/Vulkan/VulkanMacros.hpp"
 
 namespace Imagine::Vulkan {
 

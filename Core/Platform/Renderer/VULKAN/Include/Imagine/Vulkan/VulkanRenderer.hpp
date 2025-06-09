@@ -38,6 +38,11 @@ namespace Imagine::Vulkan {
 		void DestroySwapChain();
 
 	private:
+		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+		void DestroyBuffer(AllocatedBuffer& buffer);
+		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+
+	private:
 		void ShutdownVulkan();
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();
 		[[nodiscard]] const Core::RendererParameters &GetRenderParams() const;

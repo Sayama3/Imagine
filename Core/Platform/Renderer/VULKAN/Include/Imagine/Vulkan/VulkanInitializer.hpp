@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "Imagine/Core/Macros.hpp"
+#include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
 	namespace Initializer {
@@ -207,5 +208,6 @@ namespace Imagine::Vulkan {
 
 			return info;
 		}
+
 	} // namespace Initializer
 } // namespace Imagine::Vulkan

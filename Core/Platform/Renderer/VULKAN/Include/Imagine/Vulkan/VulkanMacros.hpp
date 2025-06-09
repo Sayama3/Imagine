@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vulkan/vk_enum_string_helper.h>
 #include "Imagine/Core/Macros.hpp"
 
 #define VK_CHECK(vk_func)                                                                                                      \

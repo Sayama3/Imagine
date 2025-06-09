@@ -122,6 +122,7 @@ namespace Imagine::Vulkan {
 				return false;
 			}
 			*outShaderModule = shaderModule;
+			return true;
 		}
 
 		inline static bool LoadShaderModule(const char *filePath, VkDevice device, VkShaderModule *outShaderModule) {

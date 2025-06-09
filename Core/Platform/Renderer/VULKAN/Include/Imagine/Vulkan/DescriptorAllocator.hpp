@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Imagine/Vulkan/Vulkan.hpp"
+#include <vulkan/vulkan.h>
 
 namespace Imagine::Vulkan {
 
