@@ -31,6 +31,7 @@ namespace Imagine::Vulkan {
 
 		void InitGradientPipeline();
 		void InitSkyPipeline();
+		void InitTrianglePipeline();
 
 		void CreateSwapChain(uint32_t width, uint32_t height);
 		void DestroySwapChain();
@@ -43,6 +44,7 @@ namespace Imagine::Vulkan {
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
 		void DrawBackground(VkCommandBuffer cmd);
+		void DrawGeometry(VkCommandBuffer cmd);
 
 		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 		void InitializeImGui();
@@ -85,6 +87,9 @@ namespace Imagine::Vulkan {
 		VkFence m_ImmFence{nullptr};
 		VkCommandBuffer m_ImmCommandBuffer{nullptr};
 		VkCommandPool m_ImmCommandPool{nullptr};
+
+		VkPipelineLayout m_TrianglePipelineLayout{nullptr};
+		VkPipeline m_TrianglePipeline{nullptr};
 
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;

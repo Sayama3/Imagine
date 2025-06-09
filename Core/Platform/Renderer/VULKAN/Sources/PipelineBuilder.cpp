@@ -8,9 +8,16 @@
 #include "Imagine/Core/Macros.hpp"
 
 namespace Imagine::Vulkan {
-	PipelineBuilder::PipelineBuilder() {
+	// PipelineBuilder::PipelineBuilder() {
+	// 	Clear();
+	// 	m_ShaderStages.reserve(Core::c_ShaderStageCount);
+	// }
+
+	PipelineBuilder::PipelineBuilder(VkPipelineLayout pipelineLayout)
+	{
 		Clear();
 		m_ShaderStages.reserve(Core::c_ShaderStageCount);
+		m_PipelineLayout = pipelineLayout;
 	}
 
 	PipelineBuilder::~PipelineBuilder() = default;
@@ -58,7 +65,7 @@ namespace Imagine::Vulkan {
 	PipelineBuilder &PipelineBuilder::SetColorAttachmentFormat(const VkFormat format) {
 		m_ColorAttachmentformat = format;
 
-		m_RenderInfo.colorAttachmentCount = format;
+		m_RenderInfo.colorAttachmentCount = 1;
 		m_RenderInfo.pColorAttachmentFormats = &m_ColorAttachmentformat;
 		return *this;
 	}
@@ -86,8 +93,8 @@ namespace Imagine::Vulkan {
 		return *this;
 	}
 
-	PipelineBuilder& PipelineBuilder::AddShader(Core::ShaderStage stage, VkShaderModule shader) {
-		m_ShaderStages.push_back(Initializer::PipelineShaderStageCreateInfo(Utils::GetShaderStageFlags(stage), shader));
+	PipelineBuilder& PipelineBuilder::AddShader(Core::ShaderStage stage, VkShaderModule shader, const char* name /* = "main"*/) {
+		m_ShaderStages.push_back(Initializer::PipelineShaderStageCreateInfo(Utils::GetShaderStageFlagsBits(stage), shader, name));
 		return *this;
 	}
 
@@ -168,6 +175,8 @@ namespace Imagine::Vulkan {
 		m_DepthStencil = { .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
 
 		m_RenderInfo = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
+
+		m_ColorAttachmentformat = VK_FORMAT_UNDEFINED;
 
 		m_ShaderStages.clear();
 	}

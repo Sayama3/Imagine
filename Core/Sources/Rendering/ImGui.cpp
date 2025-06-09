@@ -37,7 +37,6 @@ namespace Imagine::Core {
 	void MgnImGui::NewFrame() {MGN_LOG_ERROR("ImGui Not Implemented.");}
 	void MgnImGui::NewRenderFrame() {MGN_LOG_ERROR("ImGui Not Implemented.");}
 	void MgnImGui::NewWindowFrame() {MGN_LOG_ERROR("ImGui Not Implemented.");}
-	void MgnImGui::WindowProcessEvents(void* event) {MGN_LOG_ERROR("ImGui Not Implemented.");}
 	void MgnImGui::Render() {MGN_LOG_ERROR("ImGui Not Implemented.");}
 	void MgnImGui::Shutdown() {MGN_LOG_ERROR("ImGui Not Implemented.");}
 	void MgnImGui::ShutdownWindow() {MGN_LOG_ERROR("ImGui Not Implemented.");}

@@ -22,8 +22,7 @@ namespace Imagine::Core {
 	void MgnImGui::NewWindowFrame(){
 		ImGui_ImplGlfw_NewFrame();
 	}
-	void MgnImGui::WindowProcessEvents(void *event) {
-	}
+
 	void MgnImGui::ShutdownWindow() {
 		ImGui_ImplGlfw_Shutdown();
 	}

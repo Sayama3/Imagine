@@ -13,6 +13,8 @@
 
 #ifdef MGN_IMGUI
 #include "Imagine/Rendering/MgnImGui.hpp"
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
 #endif
 
 namespace Imagine::Core {
@@ -41,10 +43,10 @@ namespace Imagine::Core {
 		// We initialize SDL and create a window with it.
 		SDL_Init(SDL_INIT_VIDEO);
 
-		SDL_WindowFlags window_flags;
+		SDL_WindowFlags window_flags{};
 
 #ifdef MGN_RENDERER_VULKAN
-		window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
+		window_flags |= (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
 #endif
 
 		//TODO: Use `parameters.Resizable`.
@@ -64,9 +66,11 @@ namespace Imagine::Core {
 
 		while (SDL_PollEvent(&e) != 0)
 		{
+			bool canHandleEvent = true;
 #ifdef MGN_IMGUI
-			Imagine::Core::MgnImGui::WindowProcessEvents(&e);
+			canHandleEvent = !ImGui_ImplSDL3_ProcessEvent(&e);
 #endif
+			if (!canHandleEvent) continue;
 
 			if (e.type == SDL_EVENT_QUIT) {
 				m_ShouldClose = true;

@@ -24,9 +24,7 @@ namespace Imagine::Core {
 	void MgnImGui::NewWindowFrame() {
 		ImGui_ImplSDL3_NewFrame();
 	}
-	void MgnImGui::WindowProcessEvents(void* event) {
-		ImGui_ImplSDL3_ProcessEvent(static_cast<SDL_Event*>(event));
-	}
+
 	void MgnImGui::ShutdownWindow() {
 		ImGui_ImplSDL3_Shutdown();
 	}

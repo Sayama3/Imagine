@@ -4,25 +4,42 @@
 
 #pragma once
 
+
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
+#include "Imagine/Vulkan/Vulkan.hpp"
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
 
 namespace Imagine::Vulkan
 {
     namespace Utils
     {
-    	inline static VkShaderStageFlags GetShaderStageFlags(const Core::ShaderStage stage) {
-    		VkShaderStageFlags stages{0};
+    	inline static VkShaderStageFlagBits GetShaderStageFlagsBits(const Core::ShaderStage stage) {
+    		static_assert(sizeof(VkShaderStageFlagBits) == sizeof(int));
+    		int stages = 0;
 
-			if(CHECK_BIT((uint16_t)stage, (uint16_t)Core::ShaderStage::Vertex)) stages |= VK_SHADER_STAGE_VERTEX_BIT;
-			if(CHECK_BIT((uint16_t)stage, (uint16_t)Core::ShaderStage::TessellationControl)) stages |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-			if(CHECK_BIT((uint16_t)stage, (uint16_t)Core::ShaderStage::TessellationEvaluation)) stages |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-			if(CHECK_BIT((uint16_t)stage, (uint16_t)Core::ShaderStage::Geometry)) stages |= VK_SHADER_STAGE_GEOMETRY_BIT;
-			if(CHECK_BIT((uint16_t)stage, (uint16_t)Core::ShaderStage::Fragment)) stages |= VK_SHADER_STAGE_FRAGMENT_BIT;
-			if(CHECK_BIT((uint16_t)stage, (uint16_t)Core::ShaderStage::Compute)) stages |= VK_SHADER_STAGE_COMPUTE_BIT;
+			if(((uint16_t)stage & (uint16_t)Imagine::Core::ShaderStage::Vertex) != 0) {
+				stages |= (int)VK_SHADER_STAGE_VERTEX_BIT;
+			}
+			if(((uint16_t)stage & (uint16_t)Imagine::Core::ShaderStage::TessellationControl) != 0) {
+				stages |= (int)VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+			}
+			if(((uint16_t)stage & (uint16_t)Imagine::Core::ShaderStage::TessellationEvaluation) != 0) {
+				stages |= (int)VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+			}
+			if(((uint16_t)stage & (uint16_t)Imagine::Core::ShaderStage::Geometry) != 0) {
+				stages |= (int)VK_SHADER_STAGE_GEOMETRY_BIT;
+			}
+			if(((uint16_t)stage & (uint16_t)Imagine::Core::ShaderStage::Fragment) != 0) {
+				stages |= (int)VK_SHADER_STAGE_FRAGMENT_BIT;
+			}
+			if(((uint16_t)stage & (uint16_t)Imagine::Core::ShaderStage::Compute) != 0) {
+				stages |= (int)VK_SHADER_STAGE_COMPUTE_BIT;
+			}
 
-    		return stages;
+    		MGN_CORE_ASSERT(stages != 0, "The shader stage '{}' in unkown.", (uint16_t)stage);
+
+    		return (VkShaderStageFlagBits)stages;
     	}
         //TODO: Remake the function to be a bit more accurate with what needs to be done in the engine.
         inline static void TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkPipelineStageFlags2 srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VkPipelineStageFlags2 dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT)

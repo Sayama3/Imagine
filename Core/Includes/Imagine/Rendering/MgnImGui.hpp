@@ -15,7 +15,6 @@ namespace Imagine::Core {
 		static void NewRenderFrame();
 		static void NewWindowFrame();
 
-		static void WindowProcessEvents(void* event);
 		static void Render();
 
 		static void Shutdown();

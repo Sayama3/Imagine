@@ -7,6 +7,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 
+#include "Imagine/Core/Macros.hpp"
+
 namespace Imagine::Vulkan
 {
     namespace Initializer
@@ -197,18 +199,26 @@ namespace Imagine::Vulkan
         	return renderingInfo;
         }
 
-    	inline static VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlags stage, VkShaderModule shader, const std::string& name = {}) {
-        	VkPipelineShaderStageCreateInfo info {};
-        	info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        	info.pNext = nullptr;
-        	info.flags = stage;
-        	info.module = shader;
-        	if (!name.empty()) {
-				info.pName = name.c_str();
-			}
-        	return info;
+    	inline static VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shader, const char* entrypointName="main") {
+        	MGN_CORE_ASSERT(entrypointName != nullptr, "[Vulkan] Cannot create a shader without a name.");
+
+			VkPipelineShaderStageCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.stage = stage;
+			info.module = shader;
+        	info.pName = entrypointName;
+			return info;
 		}
 
 
+		inline static VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo() {
+        	VkPipelineLayoutCreateInfo info{};
+
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			info.pNext = nullptr;
+
+        	return info;
+        }
 	} // namespace Initializer
 }
