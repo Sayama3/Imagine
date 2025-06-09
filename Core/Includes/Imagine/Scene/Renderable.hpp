@@ -5,12 +5,11 @@
 #pragma once
 #include "Imagine/Core/UUID.hpp"
 
-namespace Imagine::Core
-{
+namespace Imagine::Core {
 
-    struct Renderable {
-        UUID m_Mesh;
-        UUID m_Material;
-    };
+	struct Renderable {
+		UUID m_Mesh;
+		UUID m_Material;
+	};
 
-}
+} // namespace Imagine::Core

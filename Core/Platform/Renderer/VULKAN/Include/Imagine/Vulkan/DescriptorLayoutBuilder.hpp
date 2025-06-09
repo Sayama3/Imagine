@@ -14,8 +14,8 @@ namespace Imagine::Vulkan {
 
 		void AddBinding(uint32_t binding, VkDescriptorType type);
 		void Clear();
-		VkDescriptorSetLayout Build(VkDevice device, VkShaderStageFlags shaderStages, void* pNext = nullptr, VkDescriptorSetLayoutCreateFlags flags = 0);
+		VkDescriptorSetLayout Build(VkDevice device, VkShaderStageFlags shaderStages, void *pNext = nullptr, VkDescriptorSetLayoutCreateFlags flags = 0);
 	};
 
-} // Vulkan
+} // namespace Imagine::Vulkan
 // Imagine

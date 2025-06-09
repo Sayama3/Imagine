@@ -5,6 +5,6 @@
 #include "Imagine/Rendering/PushConstant.hpp"
 
 namespace Voxymore {
-namespace Core {
-} // Core
-} // Voxymore
+	namespace Core {
+	} // namespace Core
+} // namespace Voxymore

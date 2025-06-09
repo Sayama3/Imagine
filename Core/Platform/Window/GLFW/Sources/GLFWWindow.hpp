@@ -7,7 +7,7 @@
 namespace Imagine::Core {
 	class GLFWWindow : public Window {
 	public:
-		GLFWWindow(const std::string& windowName, const WindowParameters parameters);
+		GLFWWindow(const std::string &windowName, const WindowParameters parameters);
 		~GLFWWindow() override;
 
 		void Update() override;
@@ -21,17 +21,18 @@ namespace Imagine::Core {
 		uint32_t GetFramebufferHeight() override;
 		Size2 GetFramebufferSize() override;
 
-		void * GetNativeWindow() override;
+		void *GetNativeWindow() override;
 
 		bool WindowHasResized() override;
 		bool ShouldClose() override;
 
-		void* GetWindowPtr() override;
-	private:
-		static void framebufferResizeCallback(void* window, int width, int height);
+		void *GetWindowPtr() override;
 
 	private:
-		struct GLFWwindow* m_Window{nullptr}; //TODO: Change the window type to GLFW
+		static void framebufferResizeCallback(void *window, int width, int height);
+
+	private:
+		struct GLFWwindow *m_Window{nullptr}; // TODO: Change the window type to GLFW
 		bool frameBufferResized = false;
 	};
-}
+} // namespace Imagine::Core

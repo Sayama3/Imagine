@@ -16,29 +16,31 @@ namespace Imagine::Vulkan {
 	public:
 		PipelineBuilder(VkPipelineLayout pipelineLayout);
 		~PipelineBuilder();
+
 	public:
-		PipelineBuilder& ClearShaders();
-		PipelineBuilder& SetInputTopology(VkPrimitiveTopology topology);
-		PipelineBuilder& SetPolygonMode(VkPolygonMode mode, float lineWidth = 1.0f);
-		PipelineBuilder& SetCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace);
+		PipelineBuilder &ClearShaders();
+		PipelineBuilder &SetInputTopology(VkPrimitiveTopology topology);
+		PipelineBuilder &SetPolygonMode(VkPolygonMode mode, float lineWidth = 1.0f);
+		PipelineBuilder &SetCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace);
 
-		PipelineBuilder& SetMultisamplingNone();
-		PipelineBuilder& DisableBlending();
+		PipelineBuilder &SetMultisamplingNone();
+		PipelineBuilder &DisableBlending();
 
-		PipelineBuilder& SetColorAttachmentFormat(VkFormat format);
-		PipelineBuilder& SetDepthFormat(VkFormat format);
+		PipelineBuilder &SetColorAttachmentFormat(VkFormat format);
+		PipelineBuilder &SetDepthFormat(VkFormat format);
 
-		PipelineBuilder& DisableDepthTest();
+		PipelineBuilder &DisableDepthTest();
 
 		/**
 		 * A function to add a shader
 		 * @param stage  The shader stages the shader should be added to.
 		 * @param shader The vulkan shader module to set.
 		 */
-		PipelineBuilder& AddShader(Core::ShaderStage stage, VkShaderModule shader, const char* name = "main");
+		PipelineBuilder &AddShader(Core::ShaderStage stage, VkShaderModule shader, const char *name = "main");
 
 		VkPipeline BuildPipeline(VkDevice device);
 		void Clear();
+
 	public:
 		std::vector<VkPipelineShaderStageCreateInfo> m_ShaderStages;
 
@@ -50,7 +52,6 @@ namespace Imagine::Vulkan {
 		VkPipelineDepthStencilStateCreateInfo m_DepthStencil;
 		VkPipelineRenderingCreateInfo m_RenderInfo;
 		VkFormat m_ColorAttachmentformat;
-
 	};
 
 } // namespace Imagine::Vulkan

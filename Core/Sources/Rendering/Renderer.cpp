@@ -12,10 +12,10 @@
 
 namespace Imagine::Core {
 
-	Renderer* Renderer::s_Renderer{nullptr};
+	Renderer *Renderer::s_Renderer{nullptr};
 
-	Renderer * Renderer::Create(ApplicationParameters appParams) {
-		Renderer* renderer{nullptr};
+	Renderer *Renderer::Create(ApplicationParameters appParams) {
+		Renderer *renderer{nullptr};
 		if (!appParams.Renderer) {
 			return nullptr;
 		}
@@ -29,20 +29,18 @@ namespace Imagine::Core {
 		return renderer;
 	}
 
-	Renderer * Renderer::Initialize(ApplicationParameters appParams) {
+	Renderer *Renderer::Initialize(ApplicationParameters appParams) {
 		if (s_Renderer) return s_Renderer;
 		s_Renderer = Renderer::Create(std::move(appParams));
 		return s_Renderer;
 	}
 
-	void Renderer::Shutdown()
-	{
+	void Renderer::Shutdown() {
 		delete s_Renderer;
 		s_Renderer = nullptr;
 	}
 
-	Renderer* Renderer::Get()
-	{
+	Renderer *Renderer::Get() {
 		return s_Renderer;
 	}
-}
+} // namespace Imagine::Core

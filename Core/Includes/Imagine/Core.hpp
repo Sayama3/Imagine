@@ -1,3 +1,4 @@
+
 //
 // Created by Sayama on 29/04/2025.
 //
@@ -32,4 +33,4 @@
 #include "Imagine/Scene/Scene.hpp"
 
 namespace Imagine::Core {
-} // Imagine::Core
+} // namespace Imagine::Core

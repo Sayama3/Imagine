@@ -19,7 +19,7 @@ namespace Imagine::Core {
 #endif
 	}
 
-	void MgnImGui::NewWindowFrame(){
+	void MgnImGui::NewWindowFrame() {
 		ImGui_ImplGlfw_NewFrame();
 	}
 

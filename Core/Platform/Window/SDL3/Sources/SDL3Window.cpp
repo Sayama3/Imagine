@@ -12,13 +12,13 @@
 #include "SDL3Window.hpp"
 
 #ifdef MGN_IMGUI
-#include "Imagine/Rendering/MgnImGui.hpp"
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
+#include "Imagine/Rendering/MgnImGui.hpp"
 #endif
 
 namespace Imagine::Core {
-	void * SDL3Window::GetNativeWindow() {
+	void *SDL3Window::GetNativeWindow() {
 		return m_Window;
 	}
 
@@ -30,15 +30,15 @@ namespace Imagine::Core {
 		return m_ShouldClose;
 	}
 
-	void* SDL3Window::GetWindowPtr()
-	{
+	void *SDL3Window::GetWindowPtr() {
 		return m_Window;
 	}
 
-	void SDL3Window::framebufferResizeCallback(void* window, int width, int height) {
+	void SDL3Window::framebufferResizeCallback(void *window, int width, int height) {
 	}
 
-	SDL3Window::SDL3Window(const std::string& windowName, const WindowParameters parameters) : Window{} {
+	SDL3Window::SDL3Window(const std::string &windowName, const WindowParameters parameters) :
+		Window{} {
 
 		// We initialize SDL and create a window with it.
 		SDL_Init(SDL_INIT_VIDEO);
@@ -46,16 +46,15 @@ namespace Imagine::Core {
 		SDL_WindowFlags window_flags{};
 
 #ifdef MGN_RENDERER_VULKAN
-		window_flags |= (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
+		window_flags |= (SDL_WindowFlags) (SDL_WINDOW_VULKAN);
 #endif
 
-		//TODO: Use `parameters.Resizable`.
+		// TODO: Use `parameters.Resizable`.
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
 	}
 
 	SDL3Window::~SDL3Window() {
-		if (m_Window)
-		{
+		if (m_Window) {
 			SDL_DestroyWindow(m_Window);
 			m_Window = nullptr;
 		}
@@ -64,8 +63,7 @@ namespace Imagine::Core {
 	void SDL3Window::Update() {
 		SDL_Event e;
 
-		while (SDL_PollEvent(&e) != 0)
-		{
+		while (SDL_PollEvent(&e) != 0) {
 			bool canHandleEvent = true;
 #ifdef MGN_IMGUI
 			canHandleEvent = !ImGui_ImplSDL3_ProcessEvent(&e);
@@ -86,37 +84,37 @@ namespace Imagine::Core {
 
 	uint32_t SDL3Window::GetWindowWidth() {
 		int width;
-		SDL_GetWindowSize(m_Window, &width,nullptr);
+		SDL_GetWindowSize(m_Window, &width, nullptr);
 		return width;
 	}
 
 	uint32_t SDL3Window::GetWindowHeight() {
 		int height;
-		SDL_GetWindowSize(m_Window, nullptr,&height);
+		SDL_GetWindowSize(m_Window, nullptr, &height);
 		return height;
 	}
 
 	Size2 SDL3Window::GetWindowSize() {
 		int width, height;
-		SDL_GetWindowSize(m_Window, &width,&height);
+		SDL_GetWindowSize(m_Window, &width, &height);
 		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 	}
 
 	uint32_t SDL3Window::GetFramebufferWidth() {
 		int width;
-		SDL_GetWindowSizeInPixels(m_Window, &width,nullptr);
+		SDL_GetWindowSizeInPixels(m_Window, &width, nullptr);
 		return width;
 	}
 
 	uint32_t SDL3Window::GetFramebufferHeight() {
 		int height;
-		SDL_GetWindowSizeInPixels(m_Window, nullptr,&height);
+		SDL_GetWindowSizeInPixels(m_Window, nullptr, &height);
 		return height;
 	}
 
 	Size2 SDL3Window::GetFramebufferSize() {
 		int width, height;
-		SDL_GetWindowSizeInPixels(m_Window, &width,&height);
+		SDL_GetWindowSizeInPixels(m_Window, &width, &height);
 		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 	}
-}
+} // namespace Imagine::Core

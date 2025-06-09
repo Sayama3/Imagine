@@ -21,6 +21,7 @@ namespace Imagine::Vulkan {
 
 	public:
 		virtual void PrepareShutdown() override;
+
 	private:
 		void InitializeVulkan();
 		void InitializeSwapChain();
@@ -39,20 +40,24 @@ namespace Imagine::Vulkan {
 	private:
 		void ShutdownVulkan();
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();
-		[[nodiscard]] const Core::RendererParameters& GetRenderParams() const;
+		[[nodiscard]] const Core::RendererParameters &GetRenderParams() const;
+
 	public:
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
 		void DrawBackground(VkCommandBuffer cmd);
 		void DrawGeometry(VkCommandBuffer cmd);
 
-		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
+		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function);
 		void InitializeImGui();
+
 	private:
 		void DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView);
+
 	private:
 		std::vector<ComputeEffect> m_BackgroundEffects;
 		int m_CurrentBackgroundEffect{0};
+
 	private:
 		VkInstance m_Instance{nullptr}; // Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr}; // Vulkan debug output handle

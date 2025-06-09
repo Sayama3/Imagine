@@ -9,7 +9,7 @@
 namespace Imagine::Core {
 	class HeadLessWindow final : public Window {
 	public:
-		HeadLessWindow(const std::string& windowName, const WindowParameters parameters);
+		HeadLessWindow(const std::string &windowName, const WindowParameters parameters);
 		virtual ~HeadLessWindow() override;
 
 		virtual void Update() override;
@@ -20,11 +20,11 @@ namespace Imagine::Core {
 
 		virtual uint32_t GetFramebufferWidth() override;
 		virtual uint32_t GetFramebufferHeight() override;
-		virtual void * GetNativeWindow() override;
+		virtual void *GetNativeWindow() override;
 
 		virtual bool WindowHasResized() override;
 		virtual bool ShouldClose() override;
-	private:
 
+	private:
 	};
-}
+} // namespace Imagine::Core

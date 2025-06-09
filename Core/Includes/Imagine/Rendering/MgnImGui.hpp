@@ -21,4 +21,4 @@ namespace Imagine::Core {
 		static void ShutdownWindow();
 		static void ShutdownRenderer();
 	};
-}
+} // namespace Imagine::Core

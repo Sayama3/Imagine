@@ -11,20 +11,23 @@ namespace Imagine::Core {
 
 	class Renderer {
 	public:
-		static Renderer* Create(ApplicationParameters appParams);
-		static Renderer* Initialize(ApplicationParameters appParams);
+		static Renderer *Create(ApplicationParameters appParams);
+		static Renderer *Initialize(ApplicationParameters appParams);
 		static void Shutdown();
-		static Renderer* Get();
+		static Renderer *Get();
+
 	private:
-		static Renderer* s_Renderer;
+		static Renderer *s_Renderer;
+
 	public:
 		Renderer() = default;
 		virtual ~Renderer() = default;
-		Renderer(const Renderer&) = delete;
-		Renderer& operator=(const Renderer&) = delete;
+		Renderer(const Renderer &) = delete;
+		Renderer &operator=(const Renderer &) = delete;
+
 	public:
 		virtual void Draw() = 0;
 		virtual void SendImGuiCommands() = 0;
 		virtual void PrepareShutdown() = 0;
 	};
-}
+} // namespace Imagine::Core

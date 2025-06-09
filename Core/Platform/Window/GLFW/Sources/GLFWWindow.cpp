@@ -6,7 +6,7 @@
 #include "GLFWWindow.hpp"
 
 namespace Imagine::Core {
-	void * GLFWWindow::GetNativeWindow() {
+	void *GLFWWindow::GetNativeWindow() {
 		return m_Window;
 	}
 
@@ -18,19 +18,19 @@ namespace Imagine::Core {
 		return glfwWindowShouldClose(static_cast<GLFWwindow *>(m_Window));
 	}
 
-	void* GLFWWindow::GetWindowPtr()
-	{
+	void *GLFWWindow::GetWindowPtr() {
 		return m_Window;
 	}
 
-	void GLFWWindow::framebufferResizeCallback(void* window, int width, int height) {
-		auto app = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(static_cast<GLFWwindow *>(window)));
+	void GLFWWindow::framebufferResizeCallback(void *window, int width, int height) {
+		auto app = reinterpret_cast<GLFWWindow *>(glfwGetWindowUserPointer(static_cast<GLFWwindow *>(window)));
 		app->frameBufferResized = true;
 	}
 
-	GLFWWindow::GLFWWindow(const std::string& windowName, const WindowParameters parameters) : Window{} {
+	GLFWWindow::GLFWWindow(const std::string &windowName, const WindowParameters parameters) :
+		Window{} {
 		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //TODO: See if I want the No API by default.
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // TODO: See if I want the No API by default.
 		glfwWindowHint(GLFW_RESIZABLE, parameters.Resizable ? GLFW_TRUE : GLFW_FALSE);
 		m_Window = glfwCreateWindow(parameters.Width, parameters.Height, windowName.c_str(), nullptr, nullptr);
 		glfwSetWindowUserPointer(static_cast<GLFWwindow *>(m_Window), this);
@@ -81,4 +81,4 @@ namespace Imagine::Core {
 		glfwGetFramebufferSize(static_cast<GLFWwindow *>(m_Window), &width, &height);
 		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 	}
-}
+} // namespace Imagine::Core

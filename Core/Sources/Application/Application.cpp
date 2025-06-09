@@ -9,8 +9,8 @@
 #include "Imagine/Scene/Scene.hpp"
 
 #ifdef MGN_IMGUI
-#include "Imagine/Rendering/MgnImGui.hpp"
 #include <imgui.h>
+#include "Imagine/Rendering/MgnImGui.hpp"
 #endif
 namespace Imagine::Core {
 
@@ -28,15 +28,15 @@ namespace Imagine::Core {
 	};
 
 
-	Application* Application::s_Instance{nullptr};
+	Application *Application::s_Instance{nullptr};
 
-	Application * Application::Create(const ApplicationParameters &parameters) {
-		Application* application{nullptr};
+	Application *Application::Create(const ApplicationParameters &parameters) {
+		Application *application{nullptr};
 		application = new Application(parameters);
 		return application;
 	}
 
-	Application * Application::Initialize(const ApplicationParameters &parameters) {
+	Application *Application::Initialize(const ApplicationParameters &parameters) {
 		if (s_Instance) return s_Instance;
 		s_Instance = Application::Create(parameters);
 		return s_Instance;
@@ -47,12 +47,12 @@ namespace Imagine::Core {
 		s_Instance = nullptr;
 	}
 
-	Application* Application::Get()
-	{
+	Application *Application::Get() {
 		return s_Instance;
 	}
 
-	Application::Application(const ApplicationParameters& parameters) : m_Parameters(parameters) {
+	Application::Application(const ApplicationParameters &parameters) :
+		m_Parameters(parameters) {
 		m_ShouldStop = false;
 		m_LastFrame = m_Start = std::chrono::high_resolution_clock::now();
 		m_DeltaTime = 0.01666666f;
@@ -120,13 +120,12 @@ namespace Imagine::Core {
 				m_Renderer->SendImGuiCommands();
 			}
 
-			//TODO: Other imgui rendering functions
+			// TODO: Other imgui rendering functions
 
 			MgnImGui::Render();
 #endif
 
-			if (m_Renderer)
-			{
+			if (m_Renderer) {
 				m_Renderer->Draw();
 			}
 
@@ -146,4 +145,4 @@ namespace Imagine::Core {
 		std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();
 		return std::chrono::duration<double, std::chrono::seconds::period>(newFrame - m_Start).count();
 	}
-} // Imagine
+} // namespace Imagine::Core

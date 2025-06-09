@@ -6,7 +6,8 @@
 
 namespace Imagine::Core {
 
-	Layer::Layer(std::string name) : m_DebugName(std::move(name)) { }
+	Layer::Layer(std::string name) :
+		m_DebugName(std::move(name)) {}
 
-	Layer::~Layer() { }
-}
+	Layer::~Layer() {}
+} // namespace Imagine::Core

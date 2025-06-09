@@ -4,6 +4,5 @@
 
 #include "Imagine/Scene/Entity.hpp"
 
-namespace Imagine::Core
-{
+namespace Imagine::Core {
 }

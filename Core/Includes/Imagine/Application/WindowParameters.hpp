@@ -12,4 +12,4 @@ namespace Imagine::Core {
 		bool Resizable;
 	};
 
-}
+} // namespace Imagine::Core

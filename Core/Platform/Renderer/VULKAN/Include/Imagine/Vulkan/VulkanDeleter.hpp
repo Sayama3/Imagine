@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "Imagine/Vulkan/Vulkan.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
+#include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {
 	struct Deleter {
@@ -38,32 +38,44 @@ namespace Imagine::Vulkan {
 			MGN_CORE_ASSERT(device, "Vulkan Device is not set in the Vulkan Deleter.");
 			// reverse iterate the deletion queue to execute all the functions
 			for (auto it = m_ToDelete.rbegin(); it != m_ToDelete.rend(); ++it) {
-				VkType& type = *it;
-				if (VmaAllocator* vmaAllocator = std::get_if<VmaAllocator>(&type)) {
+				VkType &type = *it;
+				if (VmaAllocator *vmaAllocator = std::get_if<VmaAllocator>(&type)) {
 					vmaDestroyAllocator(*vmaAllocator);
-				} else if (VkFence* fence = std::get_if<VkFence>(&type)) {
-					vkDestroyFence(device,  *fence, nullptr);
-				} else if (VkSemaphore* semaphore = std::get_if<VkSemaphore>(&type)) {
-					vkDestroySemaphore(device,  *semaphore, nullptr);
-				} else if (VkCommandPool* vkCommandPool = std::get_if<VkCommandPool>(&type)) {
+				}
+				else if (VkFence *fence = std::get_if<VkFence>(&type)) {
+					vkDestroyFence(device, *fence, nullptr);
+				}
+				else if (VkSemaphore *semaphore = std::get_if<VkSemaphore>(&type)) {
+					vkDestroySemaphore(device, *semaphore, nullptr);
+				}
+				else if (VkCommandPool *vkCommandPool = std::get_if<VkCommandPool>(&type)) {
 					vkDestroyCommandPool(device, *vkCommandPool, nullptr);
-				} else if (VkImageView* vmaImageView = std::get_if<VkImageView>(&type)) {
+				}
+				else if (VkImageView *vmaImageView = std::get_if<VkImageView>(&type)) {
 					vkDestroyImageView(device, *vmaImageView, nullptr);
-				} else if (VmaImage* vmaImage = std::get_if<VmaImage>(&type)) {
+				}
+				else if (VmaImage *vmaImage = std::get_if<VmaImage>(&type)) {
 					vmaDestroyImage(vmaImage->allocator, vmaImage->data, vmaImage->allocation);
-				} else if (VkDescriptorSetLayout* descriptorSetLayout = std::get_if<VkDescriptorSetLayout>(&type)) {
+				}
+				else if (VkDescriptorSetLayout *descriptorSetLayout = std::get_if<VkDescriptorSetLayout>(&type)) {
 					vkDestroyDescriptorSetLayout(device, *descriptorSetLayout, nullptr);
-				} else if (DescriptorAllocator* descriptorAllocator = std::get_if<DescriptorAllocator>(&type)) {
+				}
+				else if (DescriptorAllocator *descriptorAllocator = std::get_if<DescriptorAllocator>(&type)) {
 					descriptorAllocator->DestroyPool(device);
-				} else if (VkPipeline* pipeline = std::get_if<VkPipeline>(&type)) {
+				}
+				else if (VkPipeline *pipeline = std::get_if<VkPipeline>(&type)) {
 					vkDestroyPipeline(device, *pipeline, nullptr);
-				} else if (VkPipelineLayout* pipelineLayout = std::get_if<VkPipelineLayout>(&type)) {
+				}
+				else if (VkPipelineLayout *pipelineLayout = std::get_if<VkPipelineLayout>(&type)) {
 					vkDestroyPipelineLayout(device, *pipelineLayout, nullptr);
-				}else if (VkDescriptorPool* descriptorPool = std::get_if<VkDescriptorPool>(&type)) {
+				}
+				else if (VkDescriptorPool *descriptorPool = std::get_if<VkDescriptorPool>(&type)) {
 					vkDestroyDescriptorPool(device, *descriptorPool, nullptr);
-				} else if (ShutdownFunction* shutdown = std::get_if<ShutdownFunction>(&type)) {
+				}
+				else if (ShutdownFunction *shutdown = std::get_if<ShutdownFunction>(&type)) {
 					(*shutdown)();
-				} else { // std::monostate
+				}
+				else { // std::monostate
 					MGN_CORE_ERROR("[Vulkan] Type at index {} not handled.", type.index());
 				}
 			}
@@ -73,4 +85,4 @@ namespace Imagine::Vulkan {
 
 		std::deque<VkType> m_ToDelete;
 	};
-}
+} // namespace Imagine::Vulkan

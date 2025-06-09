@@ -22,11 +22,11 @@ namespace Imagine::Core {
 		ImGui_ImplVulkan_NewFrame();
 	}
 
-	void MgnImGui::Render(){
+	void MgnImGui::Render() {
 		ImGui::Render();
 	}
 
-	void MgnImGui::ShutdownRenderer(){
+	void MgnImGui::ShutdownRenderer() {
 		ImGui_ImplVulkan_Shutdown();
 	}
 } // namespace Imagine::Core

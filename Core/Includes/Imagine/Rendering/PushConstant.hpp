@@ -19,10 +19,10 @@ namespace Imagine::Core {
 
 	template<typename T>
 	PushConstant PushConstant::CreateFrom(const ShaderStage stage, const uint32_t offset) {
-		return PushConstant {
-			offset,
-			sizeof(T),
-			stage,
+		return PushConstant{
+				offset,
+				sizeof(T),
+				stage,
 		};
 	}
 

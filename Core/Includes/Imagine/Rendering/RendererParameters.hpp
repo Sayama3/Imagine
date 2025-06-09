@@ -13,9 +13,8 @@ namespace Imagine::Core {
 	inline static constexpr bool c_DefaultDebugRendering = false;
 #endif
 
-	struct RendererParameters
-	{
+	struct RendererParameters {
 		uint16_t NbrFrameInFlight = 2;
 		bool EnableDebug = c_DefaultDebugRendering;
 	};
-}
+} // namespace Imagine::Core

@@ -11,7 +11,7 @@
 namespace Imagine::Core {
 
 	struct ApplicationParameters {
-		static inline constexpr const char* const EngineName{"Imagine"};
+		static inline constexpr const char *const EngineName{"Imagine"};
 		std::string AppName;
 		uint32_t AppVersion;
 		std::optional<WindowParameters> Window;
@@ -23,4 +23,4 @@ namespace Imagine::Core {
 		[[nodiscard]] std::string GetVersionStr() const;
 		void SetVersion(uint32_t major, uint32_t minor, uint32_t patch);
 	};
-} // Imagine::Core
+} // namespace Imagine::Core

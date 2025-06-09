@@ -4,19 +4,19 @@
 
 #pragma once
 
-#include "MemoryHelper.hpp"
-#include "HeapArray.hpp"
-#include "SparseSet.hpp"
 #include "Buffer.hpp"
 #include "BufferView.hpp"
+#include "HeapArray.hpp"
+#include "MemoryHelper.hpp"
+#include "SparseSet.hpp"
 
 namespace Imagine::Core {
 	struct DataType {
 		uint32_t id;
 		uint32_t size;
 
-		bool operator ==(const DataType& other) { return id == other.id && size == other.size; }
-		bool operator !=(const DataType& other) { return !(*this == other) }
+		bool operator==(const DataType &other) { return id == other.id && size == other.size; }
+		bool operator!=(const DataType &other) { return !(*this == other) }
 	};
 
 	struct Member {
@@ -32,6 +32,7 @@ namespace Imagine::Core {
 			m_Members.push_back({std::move(name), type, m_Size});
 			m_Size += type.size;
 		}
+
 	public:
 		uint64_t count() const { return m_Members.size(); }
 		uint64_t size() const {
@@ -46,21 +47,20 @@ namespace Imagine::Core {
 
 		BufferView get(uint32_t memberIndex) {
 			if (memberIndex >= count()) return BufferView{};
-			uint64_t offset{ 0 };
+			uint64_t offset{0};
 			for (uint32_t i = 0; i < memberIndex; ++i;) offset += m_Members[i].size;
 			const uint64_t size = m_Members[memberIndex].size;
 			return BufferView{m_Data, offset, size};
-
 		}
 
 		ConstBufferView get(uint32_t memberIndex) const {
 			if (memberIndex >= count()) return ConstBufferView{};
-			uint64_t offset{ 0 };
+			uint64_t offset{0};
 			for (uint32_t i = 0; i < memberIndex; ++i;) offset += m_Members[i].size;
 			const uint64_t size = m_Members[memberIndex].size;
 			return ConstBufferView{m_Data, offset, size};
-
 		}
+
 	private:
 		HeapArray<Member> m_Members;
 		uint64_t m_Size{0};
@@ -84,13 +84,13 @@ namespace Imagine::Core {
 		struct Node {
 			HeapArray<Input> inputs;
 			HeapArray<Output> outputs;
-			std::function<Struct(const Struct&)> function;
+			std::function<Struct(const Struct &)> function;
 		};
-	public:
 
+	public:
 	private:
 		AutoIdSparseSet<Node> m_Nodes;
 	};
 
 
-}
+} // namespace Imagine::Core

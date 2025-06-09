@@ -6,7 +6,7 @@
 
 #include "Imagine/Core/Macros.hpp"
 
-#define CHECK_SHADER_STAGE_BIT(stage1, stage2) CHECK_BIT((uint16_t)stage1, (uint16_t)stage2)
+#define CHECK_SHADER_STAGE_BIT(stage1, stage2) CHECK_BIT((uint16_t) stage1, (uint16_t) stage2)
 
 namespace Imagine::Core {
 
@@ -24,10 +24,10 @@ namespace Imagine::Core {
 		All = Vertex | TessellationControl | TessellationEvaluation | Geometry | Fragment | Compute,
 	};
 
-	static inline constexpr uint64_t c_ShaderStageCount {6};
+	static inline constexpr uint64_t c_ShaderStageCount{6};
 
-	inline ShaderStage operator |(ShaderStage a, ShaderStage b) {
+	inline ShaderStage operator|(ShaderStage a, ShaderStage b) {
 		return static_cast<ShaderStage>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
 	}
 
-}
+} // namespace Imagine::Core

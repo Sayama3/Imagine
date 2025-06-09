@@ -8,32 +8,31 @@
 #include "Imagine/Core/Logger.hpp"
 #include "Imagine/Core/Macros.hpp"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
 	using namespace Imagine;
 	using namespace Imagine::Core;
 
 	Imagine::Core::Log::Init({
 			LogFileParameter{
-			"Imagine.log",
-			"Imagine.old.log",
-		},
-		c_DefaultLogPattern,
-		true,
+					"Imagine.log",
+					"Imagine.old.log",
+			},
+			c_DefaultLogPattern,
+			true,
 	});
 
-	ApplicationParameters params {
-		std::string{"Imagine"},
-		MGN_MAKE_VERSION(0,0,1),
-		WindowParameters {
-			900,
-			600,
-			true,
-		},
-		RendererParameters{
-			2,
-			c_DefaultDebugRendering,
-		},
+	ApplicationParameters params{
+			std::string{"Imagine"},
+			MGN_MAKE_VERSION(0, 0, 1),
+			WindowParameters{
+					900,
+					600,
+					true,
+			},
+			RendererParameters{
+					2,
+					c_DefaultDebugRendering,
+			},
 	};
 
 	// ApplicationParameters params {
@@ -43,7 +42,7 @@ int main(int argc, char** argv)
 	// 	std::nullopt,
 	// };
 
-	Application* application = Application::Initialize(params);
+	Application *application = Application::Initialize(params);
 
 	application->Run();
 

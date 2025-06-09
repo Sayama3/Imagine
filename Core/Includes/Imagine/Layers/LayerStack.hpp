@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Layer.hpp"
 #include "Imagine/Core/TimeStep.hpp"
+#include "Layer.hpp"
 
 namespace Imagine::Core {
 
@@ -14,24 +14,23 @@ namespace Imagine::Core {
 		LayerStack();
 		~LayerStack();
 
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* overlay);
-		void PopLayer(Layer* layer);
-		void PopOverlay(Layer* overlay);
+		void PushLayer(Layer *layer);
+		void PushOverlay(Layer *overlay);
+		void PopLayer(Layer *layer);
+		void PopOverlay(Layer *overlay);
 
-		inline std::vector<Layer*>::iterator begin() {return m_Layers.begin();}
-		inline std::vector<Layer*>::iterator end() {return m_Layers.end();}
-		inline std::vector<Layer*>::reverse_iterator rbegin() {return m_Layers.rbegin();}
-		inline std::vector<Layer*>::reverse_iterator rend() {return m_Layers.rend();}
+		inline std::vector<Layer *>::iterator begin() { return m_Layers.begin(); }
+		inline std::vector<Layer *>::iterator end() { return m_Layers.end(); }
+		inline std::vector<Layer *>::reverse_iterator rbegin() { return m_Layers.rbegin(); }
+		inline std::vector<Layer *>::reverse_iterator rend() { return m_Layers.rend(); }
 
-		inline std::vector<Layer*>::const_iterator begin() const {return m_Layers.begin();}
-		inline std::vector<Layer*>::const_iterator end() const {return m_Layers.end();}
-		inline std::vector<Layer*>::const_reverse_iterator rbegin() const {return m_Layers.rbegin();}
-		inline std::vector<Layer*>::const_reverse_iterator rend() const {return m_Layers.rend();}
+		inline std::vector<Layer *>::const_iterator begin() const { return m_Layers.begin(); }
+		inline std::vector<Layer *>::const_iterator end() const { return m_Layers.end(); }
+		inline std::vector<Layer *>::const_reverse_iterator rbegin() const { return m_Layers.rbegin(); }
+		inline std::vector<Layer *>::const_reverse_iterator rend() const { return m_Layers.rend(); }
 
 		template<typename T>
-		inline T*GetLayer()
-		{
+		inline T *GetLayer() {
 			/*MGN_PROFILE_FUNCTION();*/
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
@@ -41,10 +40,9 @@ namespace Imagine::Core {
 		}
 
 		template<typename T>
-		inline const T* GetLayer() const
-		{
+		inline const T *GetLayer() const {
 			/*MGN_PROFILE_FUNCTION();*/
-			for (Layer* layer: m_Layers) {
+			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 					return static_cast<const T *>(layer);
 			}
@@ -52,12 +50,10 @@ namespace Imagine::Core {
 		}
 
 		template<typename T>
-		inline bool TryGetLayer(T*& ptr)
-		{
+		inline bool TryGetLayer(T *&ptr) {
 			/*MGN_PROFILE_FUNCTION();*/
 			for (Layer *layer: m_Layers) {
-				if (typeid(*layer) == typeid(T))
-				{
+				if (typeid(*layer) == typeid(T)) {
 					ptr = static_cast<T *>(layer);
 					return true;
 				}
@@ -66,12 +62,10 @@ namespace Imagine::Core {
 		}
 
 		template<typename T>
-		inline const bool TryGetLayer(const T*& ptr) const
-		{
+		inline const bool TryGetLayer(const T *&ptr) const {
 			/*MGN_PROFILE_FUNCTION();*/
-			for (Layer* layer: m_Layers) {
-				if (typeid(*layer) == typeid(T))
-				{
+			for (Layer *layer: m_Layers) {
+				if (typeid(*layer) == typeid(T)) {
 					ptr = static_cast<const T *>(layer);
 					return true;
 				}
@@ -80,12 +74,10 @@ namespace Imagine::Core {
 		}
 
 		template<typename T>
-		inline size_t GetLayerIndex() const
-		{
+		inline size_t GetLayerIndex() const {
 			/*MGN_PROFILE_FUNCTION();*/
 			for (size_t i = 0; i < m_Layers.size(); ++i) {
-				if (typeid(*(m_Layers[i])) == typeid(T))
-				{
+				if (typeid(*(m_Layers[i])) == typeid(T)) {
 					return i;
 				}
 			}
@@ -93,8 +85,8 @@ namespace Imagine::Core {
 		}
 
 	private:
-		std::vector<Layer*> m_Layers;
+		std::vector<Layer *> m_Layers;
 		unsigned int m_LayerInsertIndex = 0;
 	};
 
-} // PhysicalLayers
+} // namespace Imagine::Core

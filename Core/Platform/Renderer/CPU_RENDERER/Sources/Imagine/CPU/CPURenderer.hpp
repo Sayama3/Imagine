@@ -8,9 +8,9 @@
 
 namespace Imagine::CPU {
 	class CPURenderer final : public Core::Renderer {
-public:
+	public:
 		CPURenderer();
-		CPURenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams);
+		CPURenderer(const RendererParameter &renderParams, const ApplicationParameters &appParams);
 		virtual ~CPURenderer() override;
 	};
-}
+} // namespace Imagine::CPU

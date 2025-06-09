@@ -4,7 +4,6 @@
 
 #include "../../Includes/Imagine/Scene/Physicalisable.hpp"
 
-namespace Imagine::Core
-{
+namespace Imagine::Core {
 
 }

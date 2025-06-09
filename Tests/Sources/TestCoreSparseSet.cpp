@@ -49,9 +49,9 @@ TEST(CoreSparseSet, IntSparseSet) {
 	while (idGenerator < 32) {
 		const auto data = idGenerator;
 		ASSERT_TRUE(sparseSet.Create(idGenerator++, data));
-		ASSERT_FALSE(sparseSet.Create(idGenerator-1));
-		ASSERT_TRUE(sparseSet.Exist(idGenerator-1));
-		ASSERT_EQ(sparseSet.Get(idGenerator-1), data);
+		ASSERT_FALSE(sparseSet.Create(idGenerator - 1));
+		ASSERT_TRUE(sparseSet.Exist(idGenerator - 1));
+		ASSERT_EQ(sparseSet.Get(idGenerator - 1), data);
 		ASSERT_EQ(sparseSet.Count(), idGenerator);
 		ASSERT_EQ(sparseSet.Capacity(), 32);
 	}
@@ -88,7 +88,7 @@ TEST(CoreSparseSet, Vec4AutoSparseSet) {
 	ASSERT_FALSE(sparseSet.Exist(64));
 
 	const auto id1 = sparseSet.Create();
-	ASSERT_NE(id1, (AutoSparseSet::NullId) );
+	ASSERT_NE(id1, (AutoSparseSet::NullId));
 	ASSERT_FALSE(sparseSet.Create(id1));
 	ASSERT_TRUE(sparseSet.Exist(id1));
 	ASSERT_EQ(sparseSet.Get(id1), Vec4());
@@ -122,7 +122,7 @@ TEST(CoreSparseSet, Vec4AutoSparseSet) {
 
 	auto count = 2;
 	while (sparseSet.Count() < 32) {
-		const auto data = Vec4(sparseSet.Count()+1);
+		const auto data = Vec4(sparseSet.Count() + 1);
 		const auto id = sparseSet.Create(data);
 		ASSERT_NE(id, (AutoSparseSet::NullId));
 		ASSERT_FALSE(sparseSet.Create(id));

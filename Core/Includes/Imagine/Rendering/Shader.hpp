@@ -11,7 +11,7 @@ namespace Imagine::Core {
 	class Shader {
 	public:
 		virtual ~Shader() = default;
-		virtual const char* GetName() const = 0;
+		virtual const char *GetName() const = 0;
 	};
 
 } // namespace Imagine::Core

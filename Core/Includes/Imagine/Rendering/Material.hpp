@@ -6,7 +6,7 @@
 
 namespace Imagine::Core {
 
-	//TODO: A material system.
+	// TODO: A material system.
 	class Material {
 	};
 

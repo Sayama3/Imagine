@@ -5,6 +5,6 @@
 #include "../../Includes/Imagine/Scene/Renderable.hpp"
 
 namespace Imagine {
-namespace Core {
-} // Core
-} // Imagine
+	namespace Core {
+	} // namespace Core
+} // namespace Imagine

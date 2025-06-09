@@ -15,11 +15,10 @@ namespace Imagine::Vulkan {
 		glm::vec4 data4;
 	};
 
-	struct ComputeEffect
-	{
+	struct ComputeEffect {
 		std::string name;
 		VkPipeline pipeline;
 		VkPipelineLayout layout;
 		ComputePushConstants data;
 	};
-}
+} // namespace Imagine::Vulkan

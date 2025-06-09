@@ -6,6 +6,5 @@
 
 namespace Imagine::Core {
 	class Event {
-
 	};
-}
+} // namespace Imagine::Core

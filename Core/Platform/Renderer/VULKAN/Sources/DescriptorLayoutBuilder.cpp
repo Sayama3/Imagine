@@ -5,9 +5,8 @@
 #include "Imagine/Vulkan/DescriptorLayoutBuilder.hpp"
 
 namespace Imagine::Vulkan {
-	void DescriptorLayoutBuilder::AddBinding(const uint32_t binding, const VkDescriptorType type)
-	{
-		VkDescriptorSetLayoutBinding newbind {};
+	void DescriptorLayoutBuilder::AddBinding(const uint32_t binding, const VkDescriptorType type) {
+		VkDescriptorSetLayoutBinding newbind{};
 		newbind.binding = binding;
 		newbind.descriptorCount = 1;
 		newbind.descriptorType = type;
@@ -19,9 +18,8 @@ namespace Imagine::Vulkan {
 		bindings.clear();
 	}
 
-	VkDescriptorSetLayout DescriptorLayoutBuilder::Build(VkDevice device, VkShaderStageFlags shaderStages, void* pNext, VkDescriptorSetLayoutCreateFlags flags)
-	{
-		for (auto& b : bindings) {
+	VkDescriptorSetLayout DescriptorLayoutBuilder::Build(VkDevice device, VkShaderStageFlags shaderStages, void *pNext, VkDescriptorSetLayoutCreateFlags flags) {
+		for (auto &b: bindings) {
 			b.stageFlags |= shaderStages;
 		}
 

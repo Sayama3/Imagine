@@ -2,10 +2,10 @@
 // Created by ianpo on 02/06/2025.
 //
 
-#include "Imagine/Vulkan/VulkanInitializer.hpp"
-#include "Imagine/Vulkan/VulkanUtils.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
 #include "Imagine/Core/Macros.hpp"
+#include "Imagine/Vulkan/VulkanInitializer.hpp"
+#include "Imagine/Vulkan/VulkanUtils.hpp"
 
 namespace Imagine::Vulkan {
 	// PipelineBuilder::PipelineBuilder() {
@@ -13,8 +13,7 @@ namespace Imagine::Vulkan {
 	// 	m_ShaderStages.reserve(Core::c_ShaderStageCount);
 	// }
 
-	PipelineBuilder::PipelineBuilder(VkPipelineLayout pipelineLayout)
-	{
+	PipelineBuilder::PipelineBuilder(VkPipelineLayout pipelineLayout) {
 		Clear();
 		m_ShaderStages.reserve(Core::c_ShaderStageCount);
 		m_PipelineLayout = pipelineLayout;
@@ -22,14 +21,14 @@ namespace Imagine::Vulkan {
 
 	PipelineBuilder::~PipelineBuilder() = default;
 
-	PipelineBuilder& PipelineBuilder::SetInputTopology(const VkPrimitiveTopology topology) {
+	PipelineBuilder &PipelineBuilder::SetInputTopology(const VkPrimitiveTopology topology) {
 		m_InputAssembly.topology = topology;
 		// TODO: Investigate what is "primitiveRestartEnable".
 		m_InputAssembly.primitiveRestartEnable = false;
 		return *this;
 	}
 
-	PipelineBuilder& PipelineBuilder::SetPolygonMode(VkPolygonMode mode, float lineWidth) {
+	PipelineBuilder &PipelineBuilder::SetPolygonMode(VkPolygonMode mode, float lineWidth) {
 		m_Rasterizer.polygonMode = mode;
 		m_Rasterizer.lineWidth = lineWidth;
 		return *this;
@@ -75,7 +74,7 @@ namespace Imagine::Vulkan {
 		return *this;
 	}
 
-	PipelineBuilder& PipelineBuilder::DisableDepthTest() {
+	PipelineBuilder &PipelineBuilder::DisableDepthTest() {
 		m_DepthStencil.depthTestEnable = VK_FALSE;
 		m_DepthStencil.depthWriteEnable = VK_FALSE;
 		m_DepthStencil.depthCompareOp = VK_COMPARE_OP_NEVER;
@@ -86,14 +85,14 @@ namespace Imagine::Vulkan {
 		m_DepthStencil.minDepthBounds = 0.f;
 		m_DepthStencil.maxDepthBounds = 1.f;
 		return *this;
-}
+	}
 
-	PipelineBuilder & PipelineBuilder::ClearShaders() {
+	PipelineBuilder &PipelineBuilder::ClearShaders() {
 		m_ShaderStages.clear();
 		return *this;
 	}
 
-	PipelineBuilder& PipelineBuilder::AddShader(Core::ShaderStage stage, VkShaderModule shader, const char* name /* = "main"*/) {
+	PipelineBuilder &PipelineBuilder::AddShader(Core::ShaderStage stage, VkShaderModule shader, const char *name /* = "main"*/) {
 		m_ShaderStages.push_back(Initializer::PipelineShaderStageCreateInfo(Utils::GetShaderStageFlagsBits(stage), shader, name));
 		return *this;
 	}
@@ -124,7 +123,7 @@ namespace Imagine::Vulkan {
 		// build the actual pipeline
 		// we now use all of the info structs we have been writing into,
 		// into this one to create the pipeline
-		VkGraphicsPipelineCreateInfo pipelineInfo {};
+		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		// connect the renderInfo to the pNext extension mechanism
 		pipelineInfo.pNext = &m_RenderInfo;
@@ -141,9 +140,9 @@ namespace Imagine::Vulkan {
 		pipelineInfo.layout = m_PipelineLayout;
 
 		// Creating the dynamic viewport & scissor.
-		const VkDynamicState state[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		const VkDynamicState state[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
-		VkPipelineDynamicStateCreateInfo dynamicInfo = { .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
+		VkPipelineDynamicStateCreateInfo dynamicInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
 		dynamicInfo.pDynamicStates = state;
 		dynamicInfo.dynamicStateCount = 2;
 
@@ -162,19 +161,19 @@ namespace Imagine::Vulkan {
 	void PipelineBuilder::Clear() {
 		// clear all of the structs we need back to 0 with their correct stype
 
-		m_InputAssembly = { .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
+		m_InputAssembly = {.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
 
-		m_Rasterizer = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
+		m_Rasterizer = {.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
 
 		m_ColorBlendAttachment = {};
 
-		m_Multisampling = { .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
+		m_Multisampling = {.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
 
 		m_PipelineLayout = {};
 
-		m_DepthStencil = { .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
+		m_DepthStencil = {.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
 
-		m_RenderInfo = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
+		m_RenderInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO};
 
 		m_ColorAttachmentformat = VK_FORMAT_UNDEFINED;
 

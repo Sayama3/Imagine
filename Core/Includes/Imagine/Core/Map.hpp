@@ -9,12 +9,11 @@
 #include "SparseSet.hpp"
 
 namespace Imagine::Core {
-	// Declaration of the concept “Hashable”, which is satisfied by any type “T”
-	// such that for values “a” of type “T”, the expression std::hash<T>{}(a)
+	// Declaration of the concept ï¿½Hashableï¿½, which is satisfied by any type ï¿½Tï¿½
+	// such that for values ï¿½aï¿½ of type ï¿½Tï¿½, the expression std::hash<T>{}(a)
 	// compiles and its result is convertible to std::size_t
 	template<typename T>
-	concept Hashable = requires(T a)
-	{
+	concept Hashable = requires(T a) {
 		{ std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
 	};
 
@@ -24,4 +23,4 @@ namespace Imagine::Core {
 		SparseSet<Value> m_Data;
 	};
 
-}
+} // namespace Imagine::Core

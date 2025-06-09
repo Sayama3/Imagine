@@ -6,266 +6,288 @@
 #include "HeapArray.hpp"
 #include "MemoryHelper.hpp"
 
-namespace Imagine::Core
-{
-    /**
-     * This is a sparse set using HeapArray that suppose the ids will come incrementally from 0 (and may get re-used)
-     * as it's based on this to re-allocate the array of ids inside. Adding the element ID 18000 WILL reallocate the whole
-     * data structure to be able to handle 18000 elements at least (Some overhead included). Be careful when using it.
-     *
-     * @tparam T The Type of data stored in the sparse set
-     * @tparam UnsignedInteger The type of integer used in the sparse set
-     */
-    template<typename T, typename UnsignedInteger = uint32_t>
-    class SparseSet {
-        static_assert(std::is_unsigned_v<UnsignedInteger> == true);
-    public:
-        static inline constexpr UnsignedInteger c_OverheadResize = 64;
-    private:
-        bool RawCreate(const UnsignedInteger id) {
+namespace Imagine::Core {
+	/**
+	 * This is a sparse set using HeapArray that suppose the ids will come incrementally from 0 (and may get re-used)
+	 * as it's based on this to re-allocate the array of ids inside. Adding the element ID 18000 WILL reallocate the whole
+	 * data structure to be able to handle 18000 elements at least (Some overhead included). Be careful when using it.
+	 *
+	 * @tparam T The Type of data stored in the sparse set
+	 * @tparam UnsignedInteger The type of integer used in the sparse set
+	 */
+	template<typename T, typename UnsignedInteger = uint32_t>
+	class SparseSet {
+		static_assert(std::is_unsigned_v<UnsignedInteger> == true);
 
-            if (Exist(id)) return false;
+	public:
+		static inline constexpr UnsignedInteger c_OverheadResize = 64;
 
-            // As elements are contiguous in memory, add the dense array count is the next element index.
-            const UnsignedInteger index = dense.size();
+	private:
+		bool RawCreate(const UnsignedInteger id) {
 
-            // Check that each of the three arrays has enough space for the element insertion.
-            if (dense.capacity() <= index) {
-                dense.reserve(index + c_OverheadResize);
-                elements.reserve(index + c_OverheadResize);
-            }
-            if (sparse.size() <= id) {
-                sparse.resize(id + c_OverheadResize);
-            }
+			if (Exist(id)) return false;
 
-            // Add the elements in the arrays
-            dense.emplace_back();
-            elements.emplace_back();
+			// As elements are contiguous in memory, add the dense array count is the next element index.
+			const UnsignedInteger index = dense.size();
 
-            // Set the elements two-way connection
-            sparse[id] = index;
-            dense[index] = id;
+			// Check that each of the three arrays has enough space for the element insertion.
+			if (dense.capacity() <= index) {
+				dense.reserve(index + c_OverheadResize);
+				elements.reserve(index + c_OverheadResize);
+			}
+			if (sparse.size() <= id) {
+				sparse.resize(id + c_OverheadResize);
+			}
 
-            return true;
-        }
-    public:
-        SparseSet() {sparse.resize(256);dense.reserve(256);elements.reserve(256);}
-        explicit SparseSet(const UnsignedInteger capacity) {sparse.resize(capacity);dense.reserve(capacity);elements.reserve(capacity);}
+			// Add the elements in the arrays
+			dense.emplace_back();
+			elements.emplace_back();
 
-        virtual ~SparseSet() {
-            for (int i = 0; i < elements.size(); ++i) {
-                elements[i].~T();
-            }
-            elements.clear();
-            dense.clear();
-            sparse.clear();
-        }
+			// Set the elements two-way connection
+			sparse[id] = index;
+			dense[index] = id;
 
-        [[nodiscard]] bool Exist(const UnsignedInteger id) const {
-            if (id >= sparse.size()) return false;
-            const UnsignedInteger index = sparse[id];
-            if (index >= dense.size()) return false;
-            return dense[index] == id;
-        }
+			return true;
+		}
 
-        virtual bool Create(const UnsignedInteger id) {
-            if (!RawCreate(id)) return false;
+	public:
+		SparseSet() {
+			sparse.resize(256);
+			dense.reserve(256);
+			elements.reserve(256);
+		}
+		explicit SparseSet(const UnsignedInteger capacity) {
+			sparse.resize(capacity);
+			dense.reserve(capacity);
+			elements.reserve(capacity);
+		}
 
-            // Initialize the data.
-            new (&elements[sparse[id]]) T ();
+		virtual ~SparseSet() {
+			for (int i = 0; i < elements.size(); ++i) {
+				elements[i].~T();
+			}
+			elements.clear();
+			dense.clear();
+			sparse.clear();
+		}
 
-            return true;
-        }
+		[[nodiscard]] bool Exist(const UnsignedInteger id) const {
+			if (id >= sparse.size()) return false;
+			const UnsignedInteger index = sparse[id];
+			if (index >= dense.size()) return false;
+			return dense[index] == id;
+		}
 
-        virtual bool Create(const UnsignedInteger id, const T& data) {
-            if (!RawCreate(id)) return false;
+		virtual bool Create(const UnsignedInteger id) {
+			if (!RawCreate(id)) return false;
 
-            // Initialize the data.
-            new (&elements[sparse[id]]) T(data);
+			// Initialize the data.
+			new (&elements[sparse[id]]) T();
 
-            return true;
-        }
+			return true;
+		}
 
-        virtual void Remove(const UnsignedInteger id)
-        {
-            // Check the id is used. Cause no point doing work for naught.
-            if (!Exist(id)) return;
+		virtual bool Create(const UnsignedInteger id, const T &data) {
+			if (!RawCreate(id)) return false;
 
-            UnsignedInteger index = sparse[id];
+			// Initialize the data.
+			new (&elements[sparse[id]]) T(data);
 
-            const UnsignedInteger last_index = dense.size() - 1;
-            // Only doing the expensive bit of work if we need a swap.
-            if (index != last_index)
-            {
-                // We are not the last one, so to not make any hole, we do a swap and delete.
-                const UnsignedInteger swapIndex = last_index;
-                const UnsignedInteger swapId = dense[swapIndex];
+			return true;
+		}
 
-                MemoryHelper::c_swap_memory<T>(elements[index], elements[swapIndex]);
-                MemoryHelper::c_swap_memory<UnsignedInteger>(dense[index], dense[swapIndex]);
-                MemoryHelper::c_swap_memory<UnsignedInteger>(sparse[id], sparse[swapId]);
+		virtual void Remove(const UnsignedInteger id) {
+			// Check the id is used. Cause no point doing work for naught.
+			if (!Exist(id)) return;
 
-                index = swapIndex;
-            }
+			UnsignedInteger index = sparse[id];
 
-            // Calling destructor cause the type T is not in use anymore.
-            elements[index].~T();
+			const UnsignedInteger last_index = dense.size() - 1;
+			// Only doing the expensive bit of work if we need a swap.
+			if (index != last_index) {
+				// We are not the last one, so to not make any hole, we do a swap and delete.
+				const UnsignedInteger swapIndex = last_index;
+				const UnsignedInteger swapId = dense[swapIndex];
 
-            // Removing the index from existing.
-            elements.pop_back();
-            dense.pop_back();
+				MemoryHelper::c_swap_memory<T>(elements[index], elements[swapIndex]);
+				MemoryHelper::c_swap_memory<UnsignedInteger>(dense[index], dense[swapIndex]);
+				MemoryHelper::c_swap_memory<UnsignedInteger>(sparse[id], sparse[swapId]);
 
-            // Safely setting the sparse to -1 just in case anything happens.
-            // But is probably useless and might be worth removing to remove a useless CPU instruction.
-            sparse[id] = -1;
-        }
+				index = swapIndex;
+			}
 
-        virtual void Clear() {
-            for (int i = dense.size() - 1; i >= 0; --i) {
-                Remove(dense[i]);
-            }
-        }
+			// Calling destructor cause the type T is not in use anymore.
+			elements[index].~T();
 
-        virtual void Reserve(const UnsignedInteger capacity) {
-            sparse.reserve(capacity);
-            dense.reserve(capacity);
-            elements.reserve(capacity);
-        }
+			// Removing the index from existing.
+			elements.pop_back();
+			dense.pop_back();
 
-        virtual void Prepare(const UnsignedInteger additional_capacity) {
+			// Safely setting the sparse to -1 just in case anything happens.
+			// But is probably useless and might be worth removing to remove a useless CPU instruction.
+			sparse[id] = -1;
+		}
+
+		virtual void Clear() {
+			for (int i = dense.size() - 1; i >= 0; --i) {
+				Remove(dense[i]);
+			}
+		}
+
+		virtual void Reserve(const UnsignedInteger capacity) {
+			sparse.reserve(capacity);
+			dense.reserve(capacity);
+			elements.reserve(capacity);
+		}
+
+		virtual void Prepare(const UnsignedInteger additional_capacity) {
 			sparse.reserve(dense.size() + additional_capacity);
-            dense.prepare(additional_capacity);
-            elements.prepare(additional_capacity);
-        }
+			dense.prepare(additional_capacity);
+			elements.prepare(additional_capacity);
+		}
 
-        [[nodiscard]] virtual T* TryGet(const UnsignedInteger id) {
-            if (!Exist(id)) return nullptr;
-            return &elements[sparse[id]];
-        }
+		[[nodiscard]] virtual T *TryGet(const UnsignedInteger id) {
+			if (!Exist(id)) return nullptr;
+			return &elements[sparse[id]];
+		}
 
-        [[nodiscard]] virtual T& Get(const UnsignedInteger id) {
+		[[nodiscard]] virtual T &Get(const UnsignedInteger id) {
 #ifdef MGN_DEBUG
-            MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
-            return elements[sparse[id]];
-        }
-        [[nodiscard]] virtual const T* TryGet(const UnsignedInteger id) const {
-            if (!Exist(id)) return nullptr;
-            return &elements[sparse[id]];
-        }
+			return elements[sparse[id]];
+		}
+		[[nodiscard]] virtual const T *TryGet(const UnsignedInteger id) const {
+			if (!Exist(id)) return nullptr;
+			return &elements[sparse[id]];
+		}
 
-        [[nodiscard]] virtual const T& Get(const UnsignedInteger id) const {
+		[[nodiscard]] virtual const T &Get(const UnsignedInteger id) const {
 #ifdef MGN_DEBUG
-            MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
-            return elements[sparse[id]];
-        }
+			return elements[sparse[id]];
+		}
 
-        [[nodiscard]] UnsignedInteger Count() const {
-            return dense.size();
-        }
+		[[nodiscard]] UnsignedInteger Count() const {
+			return dense.size();
+		}
 
-        [[nodiscard]] UnsignedInteger Capacity() const {
-            return dense.capacity();
-        }
+		[[nodiscard]] UnsignedInteger Capacity() const {
+			return dense.capacity();
+		}
 
-    protected:
-        HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
-        HeapArray<UnsignedInteger, UnsignedInteger> dense{};
-        HeapArray<T, UnsignedInteger> elements{};
-    };
+	protected:
+		HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
+		HeapArray<UnsignedInteger, UnsignedInteger> dense{};
+		HeapArray<T, UnsignedInteger> elements{};
+	};
 
 
-    /**
-     * A Raw Sparse Set where we manage the IDs inside the Data Structure using a FreeList and incremental IDs.
-     * @tparam UnsignedInteger The unsigned integer used to count, measure, etc. wherever it's necessary.
-     */
-    template<typename T, typename UnsignedInteger = uint32_t>
-    class AutoIdSparseSet : public SparseSet<T, UnsignedInteger> {
-    public:
-        AutoIdSparseSet() : SparseSet<T, UnsignedInteger>() {FreeList.reserve(256); FreeList.reserve(256);}
-        explicit AutoIdSparseSet(const UnsignedInteger capacity) : SparseSet<T, UnsignedInteger>(capacity) {FreeList.reserve(capacity); FreeList.reserve(capacity);}
-        virtual ~AutoIdSparseSet() override {
-            FreeList.clear();
-            IDs = 0;
-        }
-    private:
-        UnsignedInteger CreateID() {
-            UnsignedInteger id;
-            if (!FreeList.empty()) {
-                id = FreeList.back();
-                FreeList.pop_back();
-            } else {
-                id = IDs++;
-            }
-            return id;
-        } // This way, std::numeric_limits<UnsignedInteger>::max() is a null id.
+	/**
+	 * A Raw Sparse Set where we manage the IDs inside the Data Structure using a FreeList and incremental IDs.
+	 * @tparam UnsignedInteger The unsigned integer used to count, measure, etc. wherever it's necessary.
+	 */
+	template<typename T, typename UnsignedInteger = uint32_t>
+	class AutoIdSparseSet : public SparseSet<T, UnsignedInteger> {
+	public:
+		AutoIdSparseSet() :
+			SparseSet<T, UnsignedInteger>() {
+			FreeList.reserve(256);
+			FreeList.reserve(256);
+		}
+		explicit AutoIdSparseSet(const UnsignedInteger capacity) :
+			SparseSet<T, UnsignedInteger>(capacity) {
+			FreeList.reserve(capacity);
+			FreeList.reserve(capacity);
+		}
+		virtual ~AutoIdSparseSet() override {
+			FreeList.clear();
+			IDs = 0;
+		}
 
-        void EnsureFreelistContinuityOnCreate(const UnsignedInteger id) {
-            if (id >= IDs) {
-                const UnsignedInteger nextIDs = (id+1);
-                const UnsignedInteger numberIdToAddInFreeList = nextIDs - IDs;
-                FreeList.reserve(FreeList.size() + numberIdToAddInFreeList + SparseSet<T, UnsignedInteger>::c_OverheadResize);
-                FreeList.redimension(FreeList.size() + numberIdToAddInFreeList);
-                for (int i = IDs; i < id; ++i) {
-                    FreeList.push_back(i);
-                }
-                IDs = nextIDs;
-            } else if (!FreeList.empty()) {
-                const UnsignedInteger* begin = &FreeList[0];
-                const UnsignedInteger* end = &FreeList.back() + 1;
+	private:
+		UnsignedInteger CreateID() {
+			UnsignedInteger id;
+			if (!FreeList.empty()) {
+				id = FreeList.back();
+				FreeList.pop_back();
+			}
+			else {
+				id = IDs++;
+			}
+			return id;
+		} // This way, std::numeric_limits<UnsignedInteger>::max() is a null id.
 
-                const UnsignedInteger* idxPtr = std::find(begin, end, id);
-                if (idxPtr != end) {
-                    FreeList.swap_and_remove(idxPtr - begin);
-                }
-            }
-        }
-    public:
-        static constexpr UnsignedInteger NullId{std::numeric_limits<UnsignedInteger>::max()};
-    public:
-        virtual UnsignedInteger Create() {
-            const UnsignedInteger id = CreateID();
-            const bool result = SparseSet<T, UnsignedInteger>::Create(id);
-            return result ? id : NullId;
-        }
+		void EnsureFreelistContinuityOnCreate(const UnsignedInteger id) {
+			if (id >= IDs) {
+				const UnsignedInteger nextIDs = (id + 1);
+				const UnsignedInteger numberIdToAddInFreeList = nextIDs - IDs;
+				FreeList.reserve(FreeList.size() + numberIdToAddInFreeList + SparseSet<T, UnsignedInteger>::c_OverheadResize);
+				FreeList.redimension(FreeList.size() + numberIdToAddInFreeList);
+				for (int i = IDs; i < id; ++i) {
+					FreeList.push_back(i);
+				}
+				IDs = nextIDs;
+			}
+			else if (!FreeList.empty()) {
+				const UnsignedInteger *begin = &FreeList[0];
+				const UnsignedInteger *end = &FreeList.back() + 1;
 
-        virtual UnsignedInteger Create(const T& data) {
-            const UnsignedInteger id = CreateID();
-            const bool result = SparseSet<T, UnsignedInteger>::Create(id, data);
-            return result ? id : NullId;
-        }
+				const UnsignedInteger *idxPtr = std::find(begin, end, id);
+				if (idxPtr != end) {
+					FreeList.swap_and_remove(idxPtr - begin);
+				}
+			}
+		}
 
-        virtual bool Create(const UnsignedInteger id) override {
-            if (id == NullId) return false;
-            EnsureFreelistContinuityOnCreate(id);
-            return SparseSet<T, UnsignedInteger>::Create(id);
-        }
+	public:
+		static constexpr UnsignedInteger NullId{std::numeric_limits<UnsignedInteger>::max()};
 
-        virtual bool Create(const UnsignedInteger id, const T& data) override {
-            if (id == NullId) return false;
-            EnsureFreelistContinuityOnCreate(id);
-            return SparseSet<T, UnsignedInteger>::Create(id, data);
-        }
+	public:
+		virtual UnsignedInteger Create() {
+			const UnsignedInteger id = CreateID();
+			const bool result = SparseSet<T, UnsignedInteger>::Create(id);
+			return result ? id : NullId;
+		}
 
-        virtual void Remove(const UnsignedInteger id) override {
-            if (id == NullId) return;
-            if (!SparseSet<T, UnsignedInteger>::Exist(id)) {
-                return;
-            }
-            FreeList.push_back(id);
-            SparseSet<T, UnsignedInteger>::Remove(id);
-        }
+		virtual UnsignedInteger Create(const T &data) {
+			const UnsignedInteger id = CreateID();
+			const bool result = SparseSet<T, UnsignedInteger>::Create(id, data);
+			return result ? id : NullId;
+		}
 
-        virtual void Clear() override {
-            for (int i = SparseSet<T, UnsignedInteger>::dense.size() - 1; i >= 0; --i) {
-                const auto id = SparseSet<T, UnsignedInteger>::dense[i];
-                FreeList.push_back(id);
-                SparseSet<T, UnsignedInteger>::Remove(id);
-            }
-        }
-    protected:
-        HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger>::c_OverheadResize};
-        UnsignedInteger IDs{0};
-    };
-}
+		virtual bool Create(const UnsignedInteger id) override {
+			if (id == NullId) return false;
+			EnsureFreelistContinuityOnCreate(id);
+			return SparseSet<T, UnsignedInteger>::Create(id);
+		}
+
+		virtual bool Create(const UnsignedInteger id, const T &data) override {
+			if (id == NullId) return false;
+			EnsureFreelistContinuityOnCreate(id);
+			return SparseSet<T, UnsignedInteger>::Create(id, data);
+		}
+
+		virtual void Remove(const UnsignedInteger id) override {
+			if (id == NullId) return;
+			if (!SparseSet<T, UnsignedInteger>::Exist(id)) {
+				return;
+			}
+			FreeList.push_back(id);
+			SparseSet<T, UnsignedInteger>::Remove(id);
+		}
+
+		virtual void Clear() override {
+			for (int i = SparseSet<T, UnsignedInteger>::dense.size() - 1; i >= 0; --i) {
+				const auto id = SparseSet<T, UnsignedInteger>::dense[i];
+				FreeList.push_back(id);
+				SparseSet<T, UnsignedInteger>::Remove(id);
+			}
+		}
+
+	protected:
+		HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger>::c_OverheadResize};
+		UnsignedInteger IDs{0};
+	};
+} // namespace Imagine::Core

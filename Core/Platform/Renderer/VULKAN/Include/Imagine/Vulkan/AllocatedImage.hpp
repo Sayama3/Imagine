@@ -8,13 +8,13 @@
 
 namespace Imagine::Vulkan {
 
-struct AllocatedImage {
-	VkImage image{nullptr};
-	VkImageView imageView{nullptr};
-	VmaAllocation allocation{nullptr};
-	VkExtent3D imageExtent{0,0,0};
-	VkFormat imageFormat{VK_FORMAT_UNDEFINED};
-};
+	struct AllocatedImage {
+		VkImage image{nullptr};
+		VkImageView imageView{nullptr};
+		VmaAllocation allocation{nullptr};
+		VkExtent3D imageExtent{0, 0, 0};
+		VkFormat imageFormat{VK_FORMAT_UNDEFINED};
+	};
 
-} // Vulkan
+} // namespace Imagine::Vulkan
 // Imagine

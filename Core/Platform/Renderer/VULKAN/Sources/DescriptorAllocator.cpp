@@ -6,14 +6,12 @@
 
 namespace Imagine::Vulkan {
 
-	void DescriptorAllocator::InitPool(VkDevice device, uint32_t maxSets, std::span<PoolSizeRatio> poolRatios)
-	{
+	void DescriptorAllocator::InitPool(VkDevice device, uint32_t maxSets, std::span<PoolSizeRatio> poolRatios) {
 		std::vector<VkDescriptorPoolSize> poolSizes;
-		for (PoolSizeRatio ratio : poolRatios) {
+		for (PoolSizeRatio ratio: poolRatios) {
 			poolSizes.push_back(VkDescriptorPoolSize{
-				.type = ratio.type,
-				.descriptorCount = uint32_t(ratio.ratio * maxSets)
-			});
+					.type = ratio.type,
+					.descriptorCount = uint32_t(ratio.ratio * maxSets)});
 		}
 
 		VkDescriptorPoolCreateInfo pool_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
@@ -25,14 +23,12 @@ namespace Imagine::Vulkan {
 		vkCreateDescriptorPool(device, &pool_info, nullptr, &pool);
 	}
 
-	void DescriptorAllocator::ClearDescriptors(VkDevice device)
-	{
+	void DescriptorAllocator::ClearDescriptors(VkDevice device) {
 		vkResetDescriptorPool(device, pool, 0);
 	}
 
-	void DescriptorAllocator::DestroyPool(VkDevice device)
-	{
-		vkDestroyDescriptorPool(device,pool,nullptr);
+	void DescriptorAllocator::DestroyPool(VkDevice device) {
+		vkDestroyDescriptorPool(device, pool, nullptr);
 	}
 
 
@@ -49,4 +45,4 @@ namespace Imagine::Vulkan {
 
 		return ds;
 	}
-}
+} // namespace Imagine::Vulkan

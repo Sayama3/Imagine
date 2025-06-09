@@ -19,4 +19,4 @@ namespace Imagine::Vulkan {
 		//  possible objects to delete.
 		Deleter m_DeletionQueue = {};
 	};
-}
+} // namespace Imagine::Vulkan
