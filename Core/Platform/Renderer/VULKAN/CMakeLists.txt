@@ -32,6 +32,7 @@ set(VULKAN_SOURCES
 		Sources/VulkanShader.cpp
 		Include/Imagine/Vulkan/PipelineBuilder.hpp
 		Sources/PipelineBuilder.cpp
+		Sources/VulkanInitializer.cpp
 )
 
 target_sources(Core PRIVATE

@@ -50,5 +50,17 @@ namespace Imagine::Vulkan {
 		VkDeviceAddress vertexBuffer;
 	};
 
+	struct GeoSurface {
+		uint32_t startIndex;
+		uint32_t count;
+	};
+
+	struct MeshAsset {
+		std::string name;
+
+		std::vector<GeoSurface> surfaces;
+		GPUMeshBuffers meshBuffers;
+	};
+
 
 } // namespace Imagine::Vulkan

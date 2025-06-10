@@ -11,6 +11,9 @@
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
+
+	class VulkanRenderer;
+
 	namespace Initializer {
 		inline static VkCommandPoolCreateInfo CommandPoolCreateInfo(const uint32_t queueFamilyIndex, const VkCommandPoolCreateFlags flags = 0) {
 			VkCommandPoolCreateInfo info = {};
@@ -208,6 +211,8 @@ namespace Imagine::Vulkan {
 
 			return info;
 		}
+
+		static std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer* engine, const std::filesystem::path &filePath);
 
 	} // namespace Initializer
 } // namespace Imagine::Vulkan
