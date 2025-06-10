@@ -51,6 +51,8 @@ namespace Imagine::Vulkan {
 		InitializeSyncStructures();
 		InitializeDescriptors();
 		InitializePipelines();
+
+		InitDefaultMeshData();
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -260,6 +262,7 @@ namespace Imagine::Vulkan {
 		InitGradientPipeline();
 		InitSkyPipeline();
 		InitTrianglePipeline();
+		InitMeshPipeline();
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
@@ -419,6 +422,58 @@ namespace Imagine::Vulkan {
 		vkDestroyShaderModule(m_Device, triangleFragmentShader, nullptr);
 		vkDestroyShaderModule(m_Device, triangleVertexShader, nullptr);
 	}
+	void VulkanRenderer::InitMeshPipeline() {
+		VkShaderModule triangleVertexShader{nullptr};
+		if (!Utils::LoadShaderModule("Assets/colored_triangle_mesh.vert.spv", m_Device, &triangleVertexShader)) {
+			MGN_CORE_ERROR("Error when building the triangle vertex shader module");
+		}
+		else {
+			MGN_CORE_INFO("Triangle vertex shader succesfully loaded");
+		}
+
+		VkShaderModule triangleFragmentShader{nullptr};
+		if (!Utils::LoadShaderModule("Assets/colored_triangle.frag.spv", m_Device, &triangleFragmentShader)) {
+			MGN_CORE_ERROR("Error when building the triangle fragment shader module");
+		}
+		else {
+			MGN_CORE_INFO("Triangle fragment shader succesfully loaded");
+		}
+
+
+		VkPushConstantRange bufferRange{};
+		bufferRange.offset = 0;
+		bufferRange.size = sizeof(GPUDrawPushConstants);
+		bufferRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+		// build the pipeline layout that controls the inputs/outputs of the shader
+		// we are not using descriptor sets or other systems yet, so no need to use anything other than empty default
+		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializer::PipelineLayoutCreateInfo();
+		pipelineLayoutCreateInfo.pPushConstantRanges = &bufferRange;
+		pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+
+		VK_CHECK(vkCreatePipelineLayout(m_Device, &pipelineLayoutCreateInfo, nullptr, &m_MeshPipelineLayout));
+		m_MainDeletionQueue.push(m_MeshPipelineLayout);
+
+		// connecting the vertex and pixel shaders to the pipeline
+		m_MeshPipeline = PipelineBuilder(m_MeshPipelineLayout)
+									 .AddShader(ShaderStage::Fragment, triangleFragmentShader)
+									 .AddShader(ShaderStage::Vertex, triangleVertexShader)
+									 .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+									 .SetPolygonMode(VK_POLYGON_MODE_FILL)
+									 .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
+									 .SetMultisamplingNone()
+									 .DisableBlending()
+									 .DisableDepthTest()
+									 .SetColorAttachmentFormat(m_DrawImage.imageFormat)
+									 .SetDepthFormat(VK_FORMAT_UNDEFINED)
+									 .BuildPipeline(m_Device);
+
+		m_MainDeletionQueue.push(m_MeshPipeline);
+
+		// clean structures
+		vkDestroyShaderModule(m_Device, triangleFragmentShader, nullptr);
+		vkDestroyShaderModule(m_Device, triangleVertexShader, nullptr);
+	}
 
 	void VulkanRenderer::CreateSwapChain(const uint32_t width, const uint32_t height) {
 		vkb::SwapchainBuilder swapchainBuilder{m_ChosenGPU, m_Device, m_Surface};
@@ -472,8 +527,7 @@ namespace Imagine::Vulkan {
 		AllocatedBuffer newBuffer;
 
 		// allocate the buffer
-		VK_CHECK(vmaCreateBuffer(m_Allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation,
-								 &newBuffer.info));
+		VK_CHECK(vmaCreateBuffer(m_Allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation, &newBuffer.info));
 
 		return newBuffer;
 	}
@@ -499,22 +553,22 @@ namespace Imagine::Vulkan {
 
 		AllocatedBuffer staging = CreateBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
-		void* data = staging.allocation->GetMappedData();
+		void *data = staging.allocation->GetMappedData();
 
 		// copy vertex buffer
 		memcpy(data, vertices.data(), vertexBufferSize);
 		// copy index buffer
-		memcpy((uint8_t*)data + vertexBufferSize, indices.data(), indexBufferSize);
+		memcpy((uint8_t *) data + vertexBufferSize, indices.data(), indexBufferSize);
 
 		ImmediateSubmit([&](VkCommandBuffer cmd) {
-			VkBufferCopy vertexCopy{ 0 };
+			VkBufferCopy vertexCopy{0};
 			vertexCopy.dstOffset = 0;
 			vertexCopy.srcOffset = 0;
 			vertexCopy.size = vertexBufferSize;
 
 			vkCmdCopyBuffer(cmd, staging.buffer, GPUMesh.vertexBuffer.buffer, 1, &vertexCopy);
 
-			VkBufferCopy indexCopy{ 0 };
+			VkBufferCopy indexCopy{0};
 			indexCopy.dstOffset = 0;
 			indexCopy.srcOffset = vertexBufferSize;
 			indexCopy.size = indexBufferSize;
@@ -524,6 +578,35 @@ namespace Imagine::Vulkan {
 
 		DestroyBuffer(staging);
 		return GPUMesh;
+	}
+
+	void VulkanRenderer::InitDefaultMeshData() {
+
+		std::array<Vertex,4> rect_vertices;
+
+		rect_vertices[0].position = {0.5,-0.5, 0};
+		rect_vertices[1].position = {0.5,0.5, 0};
+		rect_vertices[2].position = {-0.5,-0.5, 0};
+		rect_vertices[3].position = {-0.5,0.5, 0};
+
+		rect_vertices[0].color = {0,0, 0,1};
+		rect_vertices[1].color = { 0.5,0.5,0.5 ,1};
+		rect_vertices[2].color = { 1,0, 0,1 };
+		rect_vertices[3].color = { 0,1, 0,1 };
+
+		std::array<uint32_t,6> rect_indices;
+
+		rect_indices[0] = 0;
+		rect_indices[1] = 1;
+		rect_indices[2] = 2;
+
+		rect_indices[3] = 2;
+		rect_indices[4] = 1;
+		rect_indices[5] = 3;
+
+		m_Rectangle = UploadMesh(rect_indices,rect_vertices);
+		m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, m_Rectangle.indexBuffer.allocation, m_Rectangle.indexBuffer.buffer});
+		m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, m_Rectangle.vertexBuffer.allocation, m_Rectangle.vertexBuffer.buffer});
 	}
 
 	void VulkanRenderer::ShutdownVulkan() {
@@ -714,6 +797,17 @@ namespace Imagine::Vulkan {
 
 		// launch a draw command to draw 3 vertices
 		vkCmdDraw(cmd, 3, 1, 0, 0);
+
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
+
+		GPUDrawPushConstants push_constants;
+		push_constants.worldMatrix = glm::mat4{ 1.f };
+		push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
+
+		vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+		vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
 		vkCmdEndRendering(cmd);
 	}

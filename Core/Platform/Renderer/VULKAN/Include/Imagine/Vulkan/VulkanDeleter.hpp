@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include <vk_mem_alloc.h>
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
-#include <vk_mem_alloc.h>
+
 namespace Imagine::Vulkan {
 	struct Deleter {
-
 		using ShutdownFunction = void (*)();
 
 		template<typename VmaType>
@@ -21,8 +21,9 @@ namespace Imagine::Vulkan {
 		};
 
 		using VmaImage = VmaObject<VkImage>;
+		using VmaBuffer = VmaObject<VkBuffer>;
 
-		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool>;
+		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool>;
 
 		/**
 		 * Function that will add an object in the list of object to destroy.
@@ -56,6 +57,9 @@ namespace Imagine::Vulkan {
 				}
 				else if (VmaImage *vmaImage = std::get_if<VmaImage>(&type)) {
 					vmaDestroyImage(vmaImage->allocator, vmaImage->data, vmaImage->allocation);
+				}
+				else if (VmaBuffer *vmaImage = std::get_if<VmaBuffer>(&type)) {
+					vmaDestroyBuffer(vmaImage->allocator, vmaImage->data, vmaImage->allocation);
 				}
 				else if (VkDescriptorSetLayout *descriptorSetLayout = std::get_if<VkDescriptorSetLayout>(&type)) {
 					vkDestroyDescriptorSetLayout(device, *descriptorSetLayout, nullptr);

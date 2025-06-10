@@ -33,6 +33,7 @@ namespace Imagine::Vulkan {
 		void InitGradientPipeline();
 		void InitSkyPipeline();
 		void InitTrianglePipeline();
+		void InitMeshPipeline();
 
 		void CreateSwapChain(uint32_t width, uint32_t height);
 		void DestroySwapChain();
@@ -41,6 +42,8 @@ namespace Imagine::Vulkan {
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void DestroyBuffer(AllocatedBuffer& buffer);
 		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+
+		void InitDefaultMeshData();
 
 	private:
 		void ShutdownVulkan();
@@ -100,6 +103,11 @@ namespace Imagine::Vulkan {
 
 		VkPipelineLayout m_TrianglePipelineLayout{nullptr};
 		VkPipeline m_TrianglePipeline{nullptr};
+
+		VkPipelineLayout m_MeshPipelineLayout;
+		VkPipeline m_MeshPipeline;
+
+		GPUMeshBuffers m_Rectangle;
 
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;

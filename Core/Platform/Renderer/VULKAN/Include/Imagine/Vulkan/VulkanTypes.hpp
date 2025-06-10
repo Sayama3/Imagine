@@ -39,7 +39,6 @@ namespace Imagine::Vulkan {
 
 	// holds the resources needed for a mesh
 	struct GPUMeshBuffers {
-
 		AllocatedBuffer indexBuffer;
 		AllocatedBuffer vertexBuffer;
 		VkDeviceAddress vertexBufferAddress;
