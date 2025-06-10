@@ -41,10 +41,9 @@ namespace Imagine::Vulkan {
 	private:
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void DestroyBuffer(AllocatedBuffer& buffer);
-		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
-
 		void InitDefaultMeshData();
-
+	public:
+		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 	private:
 		void ShutdownVulkan();
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();

@@ -51,8 +51,8 @@ namespace Imagine::Vulkan {
 	};
 
 	struct GeoSurface {
-		uint32_t startIndex;
-		uint32_t count;
+		uint32_t startIndex{0};
+		uint32_t count{0};
 	};
 
 	struct MeshAsset {
