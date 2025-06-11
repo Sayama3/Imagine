@@ -30,6 +30,13 @@ FetchContent_Declare(
 		GIT_PROGRESS TRUE
 )
 
+set(XXHASH_BUILD_XXHSUM OFF)
+FetchContent_Declare(xxHash
+		GIT_REPOSITORY https://github.com/Cyan4973/xxHash.git
+		GIT_TAG "1fc167c19f009265eb0a37117a03bbcdbc687e59" # Commit of the 2 June 2025
+		SOURCE_SUBDIR  build/cmake
+)
+
 #FetchContent_Declare(
 #		EASTL
 #		GIT_REPOSITORY "https://github.com/electronicarts/EASTL.git"
@@ -126,7 +133,7 @@ if(MGN_IMGUI)
 	)
 endif()
 
-FetchContent_MakeAvailable(glm Spdlog Tracy Assimp)
+FetchContent_MakeAvailable(glm Spdlog Tracy Assimp xxHash)
 
 if(MGN_RENDERER_VULKAN)
 	FetchContent_MakeAvailable(VkBoostrap VulkanMemoryAllocator Volk)
