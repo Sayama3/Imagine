@@ -4,9 +4,19 @@
 
 #pragma once
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL 1
+
+#ifndef GLM_FORCE_RADIANS
+#define GLM_FORCE_RADIANS
 #endif
+#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#endif
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+// #ifndef GLM_FORCE_LEFT_HANDED
+// #define GLM_FORCE_LEFT_HANDED
+// #endif // GLM_FORCE_LEFT_HANDED
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

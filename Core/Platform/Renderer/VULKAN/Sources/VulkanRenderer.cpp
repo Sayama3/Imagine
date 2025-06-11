@@ -808,12 +808,12 @@ namespace Imagine::Vulkan {
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
 
 		GPUDrawPushConstants push_constants;
-		push_constants.worldMatrix = glm::mat4{ 1.f };
-		push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
+		// push_constants.worldMatrix = glm::mat4{ 1.f };
+		// push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
 
-		vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-		vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+		// vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+		// vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		// vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
 		{
 
@@ -825,7 +825,7 @@ namespace Imagine::Vulkan {
 			// to opengl and gltf axis
 			projection[1][1] *= -1;
 
-			constexpr unsigned meshToDraw = 1;
+			constexpr unsigned meshToDraw = 2;
 
 			push_constants.worldMatrix = projection * view;
 

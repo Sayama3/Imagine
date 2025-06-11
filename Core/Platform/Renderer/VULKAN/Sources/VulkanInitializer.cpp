@@ -22,10 +22,11 @@ namespace Imagine::Vulkan {
 			// Usually - if speed is not the most important aspect for you - you'll
 			// probably to request more postprocessing than we do in this example.
 			const aiScene *scene = importer.ReadFile(filePath.string(),
-													 aiProcess_CalcTangentSpace |
-															 aiProcess_Triangulate |
-															 aiProcess_JoinIdenticalVertices |
-															 aiProcess_SortByPType);
+			aiProcess_Triangulate |
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_GenUVCoords |
+			aiProcess_FlipUVs |
+			aiProcess_SortByPType);
 
 			// If the import failed, report it
 			if (nullptr == scene) {
@@ -48,6 +49,10 @@ namespace Imagine::Vulkan {
 
 			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 				const aiMesh *aiMesh = scene->mMeshes[i];
+				if (!aiMesh->HasPositions()) {
+					continue;
+				}
+
 				MeshAsset mesh;
 				mesh.name = aiMesh->mName.C_Str();
 
@@ -82,7 +87,8 @@ namespace Imagine::Vulkan {
 
 				indices.reserve(aiMesh->mNumFaces*3);
 				for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
-					const aiFace &face = aiMesh->mFaces[i];
+					MGN_CORE_ASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
+					const aiFace& face = aiMesh->mFaces[i];
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}
 
