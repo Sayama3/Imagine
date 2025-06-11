@@ -90,6 +90,7 @@ namespace Imagine::Vulkan {
 
 		// Image onto which we'll draw each frame before sending it to the framebuffer.
 		AllocatedImage m_DrawImage{};
+		AllocatedImage m_DepthImage{};
 		VkExtent2D m_DrawExtent{0, 0};
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};

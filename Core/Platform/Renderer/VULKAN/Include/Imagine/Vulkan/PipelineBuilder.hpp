@@ -30,6 +30,9 @@ namespace Imagine::Vulkan {
 		PipelineBuilder &SetDepthFormat(VkFormat format);
 
 		PipelineBuilder &DisableDepthTest();
+		PipelineBuilder &EnableDepthTest(bool depthWriteEnable, VkCompareOp op);
+		PipelineBuilder &EnableBlendingAdditive();
+		PipelineBuilder &EnableBlendingAlpha();
 
 		/**
 		 * A function to add a shader

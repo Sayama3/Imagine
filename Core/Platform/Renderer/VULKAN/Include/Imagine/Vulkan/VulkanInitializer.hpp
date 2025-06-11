@@ -177,6 +177,20 @@ namespace Imagine::Vulkan {
 			return colorAttachment;
 		}
 
+		inline static VkRenderingAttachmentInfo DepthAttachmentInfo(VkImageView view, float clearValue = 1.0f, VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+			VkRenderingAttachmentInfo depthAttachment {};
+			depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			depthAttachment.pNext = nullptr;
+
+			depthAttachment.imageView = view;
+			depthAttachment.imageLayout = layout;
+			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			depthAttachment.clearValue.depthStencil.depth = clearValue;
+
+			return depthAttachment;
+		}
+
 		inline static VkRenderingInfo RenderingInfo(VkExtent2D extents, VkRenderingAttachmentInfo *colorAttachement, VkRenderingAttachmentInfo *depthAttachement) {
 			VkRenderingInfo renderingInfo = {};
 			renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;

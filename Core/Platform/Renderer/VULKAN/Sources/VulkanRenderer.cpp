@@ -183,6 +183,25 @@ namespace Imagine::Vulkan {
 		// add to deletion queues
 		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
 		m_MainDeletionQueue.push(m_DrawImage.imageView);
+
+
+
+		m_DepthImage.imageFormat = VK_FORMAT_D32_SFLOAT;
+		m_DepthImage.imageExtent = drawImageExtent;
+		VkImageUsageFlags depthImageUsages{};
+		depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+		VkImageCreateInfo dimg_info = Initializer::ImageCreateInfo2D(m_DepthImage.imageFormat, depthImageUsages, drawImageExtent);
+		//allocate and create the image
+		vmaCreateImage(m_Allocator, &dimg_info, &rimg_allocinfo, &m_DepthImage.image, &m_DepthImage.allocation, nullptr);
+		//build a image-view for the draw image to use for rendering
+		VkImageViewCreateInfo dview_info = Initializer::ImageViewCreateInfo2D(m_DepthImage.imageFormat, m_DepthImage.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+		VK_CHECK(vkCreateImageView(m_Device, &dview_info, nullptr, &m_DepthImage.imageView));
+
+		// add to deletion queues
+		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_DepthImage.allocation, m_DepthImage.image});
+		m_MainDeletionQueue.push(m_DepthImage.imageView);
 	}
 
 	void VulkanRenderer::InitializeCommands() {
@@ -417,10 +436,10 @@ namespace Imagine::Vulkan {
 									 .SetPolygonMode(VK_POLYGON_MODE_FILL)
 									 .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
 									 .SetMultisamplingNone()
-									 .DisableBlending()
-									 .DisableDepthTest()
+									 .EnableBlendingAlpha()
+									 .EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
 									 .SetColorAttachmentFormat(m_DrawImage.imageFormat)
-									 .SetDepthFormat(VK_FORMAT_UNDEFINED)
+									 .SetDepthFormat(m_DepthImage.imageFormat)
 									 .BuildPipeline(m_Device);
 
 		m_MainDeletionQueue.push(m_TrianglePipeline);
@@ -469,10 +488,10 @@ namespace Imagine::Vulkan {
 									 .SetPolygonMode(VK_POLYGON_MODE_FILL)
 									 .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
 									 .SetMultisamplingNone()
-									 .DisableBlending()
-									 .DisableDepthTest()
+									 .EnableBlendingAlpha()
+									 .EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
 									 .SetColorAttachmentFormat(m_DrawImage.imageFormat)
-									 .SetDepthFormat(VK_FORMAT_UNDEFINED)
+									 .SetDepthFormat(m_DepthImage.imageFormat)
 									 .BuildPipeline(m_Device);
 
 		m_MainDeletionQueue.push(m_MeshPipeline);
@@ -681,6 +700,7 @@ namespace Imagine::Vulkan {
 		DrawBackground(cmd);
 
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		Utils::TransitionImage(cmd, m_DepthImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
 		DrawGeometry(cmd);
 
@@ -777,8 +797,9 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::DrawGeometry(VkCommandBuffer cmd) {
 		VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(m_DrawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		VkRenderingAttachmentInfo depthAttachment = Initializer::DepthAttachmentInfo(m_DepthImage.imageView, 1.0f, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
-		VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_DrawExtent, &colorAttachment, nullptr);
+		VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_DrawExtent, &colorAttachment, &depthAttachment);
 		vkCmdBeginRendering(cmd, &renderInfo);
 
 		// set dynamic viewport and scissor
@@ -819,7 +840,7 @@ namespace Imagine::Vulkan {
 
 			glm::mat4 view = glm::translate(glm::vec3{ 0,0,-5 });
 			// camera projection
-			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_DrawExtent.width / (float)m_DrawExtent.height, 10000.f, 0.1f);
+			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_DrawExtent.width / (float)m_DrawExtent.height, 0.1f, 10000.f);
 
 			// invert the Y direction on projection matrix so that we are more similar
 			// to opengl and gltf axis
