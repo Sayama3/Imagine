@@ -107,6 +107,7 @@ namespace Imagine::Vulkan {
 		VkPipeline m_MeshPipeline;
 
 		GPUMeshBuffers m_Rectangle;
+		std::vector<std::shared_ptr<MeshAsset>> m_TestMeshes;
 
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;

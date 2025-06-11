@@ -2,11 +2,13 @@
 // Created by Iannis on 10/06/2025.
 //
 
-#include "Imagine/Vulkan/VulkanInitializer.hpp"
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h> // Post processing flags
 #include <assimp/scene.h> // Output data structure
+
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Vulkan/VulkanInitializer.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
 
@@ -42,6 +44,8 @@ namespace Imagine::Vulkan {
 			std::vector<uint32_t> indices;
 			std::vector<Vertex> vertices;
 
+			constexpr bool c_OverrideColorVertex = true;
+
 			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 				const aiMesh *aiMesh = scene->mMeshes[i];
 				MeshAsset mesh;
@@ -67,7 +71,6 @@ namespace Imagine::Vulkan {
 						vertices[i].uv_y = texCoords.y;
 					}
 
-					constexpr bool c_OverrideColorVertex = false;
 					if constexpr (c_OverrideColorVertex) {
 						vertices[i].color = {vertices[i].normal.x, vertices[i].normal.y, vertices[i].normal.z, 1.0};
 					}
@@ -77,14 +80,17 @@ namespace Imagine::Vulkan {
 					}
 				}
 
+				indices.reserve(aiMesh->mNumFaces*3);
 				for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
-					GeoSurface surface;
 					const aiFace &face = aiMesh->mFaces[i];
-					surface.count = face.mNumIndices;
-					surface.startIndex = indices.size();
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
-					mesh.surfaces.push_back(surface);
 				}
+
+				GeoSurface surface;
+				surface.startIndex = 0;
+				surface.count = indices.size();
+
+				mesh.surfaces.push_back(surface);
 
 				mesh.meshBuffers = engine->UploadMesh(indices, vertices);
 

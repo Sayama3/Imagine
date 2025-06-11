@@ -30,11 +30,11 @@ namespace Imagine::Vulkan {
 	};
 
 	struct Vertex {
-		glm::vec3 position;
-		float uv_x;
-		glm::vec3 normal;
-		float uv_y;
-		glm::vec4 color;
+		glm::vec3 position{0,0,0};
+		float uv_x{0};
+		glm::vec3 normal{0,1,0};
+		float uv_y{0};
+		glm::vec4 color{0,0,0,1};
 	};
 
 	// holds the resources needed for a mesh

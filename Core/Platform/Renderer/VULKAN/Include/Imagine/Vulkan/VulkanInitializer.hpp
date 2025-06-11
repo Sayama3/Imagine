@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <filesystem>
+#include <memory>
+#include <optional>
+#include <vector>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 
@@ -212,7 +216,7 @@ namespace Imagine::Vulkan {
 			return info;
 		}
 
-		static std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer* engine, const std::filesystem::path &filePath);
+		std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath);
 
 	} // namespace Initializer
 } // namespace Imagine::Vulkan

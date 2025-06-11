@@ -53,6 +53,13 @@ namespace Imagine::Vulkan {
 		InitializePipelines();
 
 		InitDefaultMeshData();
+
+		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/basicmesh.glb").value_or( std::vector<std::shared_ptr<MeshAsset>>{} );
+
+		for (std::shared_ptr<MeshAsset> & meshAsset: m_TestMeshes) {
+			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.indexBuffer.allocation, meshAsset->meshBuffers.indexBuffer.buffer});
+			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.vertexBuffer.allocation, meshAsset->meshBuffers.vertexBuffer.buffer});
+		}
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -425,18 +432,18 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::InitMeshPipeline() {
 		VkShaderModule triangleVertexShader{nullptr};
 		if (!Utils::LoadShaderModule("Assets/colored_triangle_mesh.vert.spv", m_Device, &triangleVertexShader)) {
-			MGN_CORE_ERROR("Error when building the triangle vertex shader module");
+			MGN_CORE_ERROR("Error when building the mesh vertex shader module");
 		}
 		else {
-			MGN_CORE_INFO("Triangle vertex shader succesfully loaded");
+			MGN_CORE_INFO("mesh vertex shader succesfully loaded");
 		}
 
 		VkShaderModule triangleFragmentShader{nullptr};
 		if (!Utils::LoadShaderModule("Assets/colored_triangle.frag.spv", m_Device, &triangleFragmentShader)) {
-			MGN_CORE_ERROR("Error when building the triangle fragment shader module");
+			MGN_CORE_ERROR("Error when building the mesh fragment shader module");
 		}
 		else {
-			MGN_CORE_INFO("Triangle fragment shader succesfully loaded");
+			MGN_CORE_INFO("mesh fragment shader succesfully loaded");
 		}
 
 
@@ -774,8 +781,6 @@ namespace Imagine::Vulkan {
 		VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_DrawExtent, &colorAttachment, nullptr);
 		vkCmdBeginRendering(cmd, &renderInfo);
 
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
-
 		// set dynamic viewport and scissor
 		VkViewport viewport = {};
 		viewport.x = 0;
@@ -795,8 +800,10 @@ namespace Imagine::Vulkan {
 
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 
+		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
+
 		// launch a draw command to draw 3 vertices
-		vkCmdDraw(cmd, 3, 1, 0, 0);
+		// vkCmdDraw(cmd, 3, 1, 0, 0);
 
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
 
@@ -806,8 +813,30 @@ namespace Imagine::Vulkan {
 
 		vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
 		vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
 		vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+
+		{
+
+			glm::mat4 view = glm::translate(glm::vec3{ 0,0,-5 });
+			// camera projection
+			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_DrawExtent.width / (float)m_DrawExtent.height, 10000.f, 0.1f);
+
+			// invert the Y direction on projection matrix so that we are more similar
+			// to opengl and gltf axis
+			projection[1][1] *= -1;
+
+			constexpr unsigned meshToDraw = 1;
+
+			push_constants.worldMatrix = projection * view;
+
+			push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
+
+			vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+			vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+			vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->surfaces[0].count, 1, m_TestMeshes[meshToDraw]->surfaces[0].startIndex, 0, 0);
+		}
+
 
 		vkCmdEndRendering(cmd);
 	}

@@ -1,6 +1,7 @@
 #version 450
 
 layout (location = 0) out vec3 outColor;
+layout (location = 1) out vec2 outUV;
 
 void main()
 {
@@ -21,4 +22,5 @@ void main()
     //output the position of each vertex
     gl_Position = vec4(positions[gl_VertexIndex], 1.0f);
     outColor = colors[gl_VertexIndex];
+    outUV = vec2(0);
 }
