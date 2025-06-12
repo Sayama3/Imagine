@@ -19,22 +19,19 @@ set(VULKAN_SOURCES
 		Include/Imagine/Vulkan/VulkanUtils.hpp
 		Include/Imagine/Vulkan/VulkanMacros.hpp
 		Include/Imagine/Vulkan/VulkanFrameData.hpp
+		Sources/VulkanFrameData.cpp
 		Include/Imagine/Vulkan/Vulkan.hpp
 		Sources/Vulkan.cpp
 		Include/Imagine/Vulkan/VulkanDeleter.hpp
 		Include/Imagine/Vulkan/AllocatedImage.hpp
 		Sources/AllocatedImage.cpp
-		Include/Imagine/Vulkan/DescriptorLayoutBuilder.hpp
-		Sources/DescriptorLayoutBuilder.cpp
-		Include/Imagine/Vulkan/DescriptorAllocator.hpp
-		Sources/DescriptorAllocator.cpp
 		Include/Imagine/Vulkan/VulkanShader.hpp
 		Sources/VulkanShader.cpp
 		Include/Imagine/Vulkan/PipelineBuilder.hpp
 		Sources/PipelineBuilder.cpp
 		Sources/VulkanInitializer.cpp
-		Include/Imagine/Vulkan/VulkanFrame.hpp
-		Sources/VulkanFrame.cpp
+		Include/Imagine/Vulkan/Descriptors.hpp
+		Sources/Descriptors.cpp
 )
 
 target_sources(Core PRIVATE

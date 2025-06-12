@@ -5,10 +5,10 @@
 #pragma once
 
 #include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Vulkan/Vulkan.hpp"
 
 #include "Imagine/Vulkan/AllocatedImage.hpp"
-#include "Imagine/Vulkan/DescriptorAllocator.hpp"
-#include "Imagine/Vulkan/Vulkan.hpp"
+#include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
 #include "Imagine/Vulkan/VulkanFrameData.hpp"
 #include "Imagine/Vulkan/VulkanTypes.hpp"
@@ -43,6 +43,10 @@ namespace Imagine::Vulkan {
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void DestroyBuffer(AllocatedBuffer& buffer);
 		void InitDefaultMeshData();
+	public:
+		AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+		AllocatedImage CreateImage(const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+		void DestroyImage(const AllocatedImage& img);
 	public:
 		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 	private:
@@ -81,6 +85,7 @@ namespace Imagine::Vulkan {
 		VkExtent2D m_SwapchainExtent{};
 
 		std::vector<VulkanFrameData> m_Frames{};
+
 		uint32_t m_FrameIndex{0};
 		VkQueue m_GraphicsQueue{nullptr};
 		uint32_t m_GraphicsQueueFamily{0};
@@ -98,6 +103,8 @@ namespace Imagine::Vulkan {
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
+		GPUSceneData m_SceneData;
+		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
 
 		// immediate submit structures
 		VkFence m_ImmFence{nullptr};
@@ -113,6 +120,13 @@ namespace Imagine::Vulkan {
 		GPUMeshBuffers m_Rectangle;
 		std::vector<std::shared_ptr<MeshAsset>> m_TestMeshes;
 
+		AllocatedImage m_WhiteImage;
+		AllocatedImage m_BlackImage;
+		AllocatedImage m_GreyImage;
+		AllocatedImage m_ErrorCheckerboardImage;
+
+		VkSampler m_DefaultSamplerLinear{nullptr};
+		VkSampler m_DefaultSamplerNearest{nullptr};
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
 

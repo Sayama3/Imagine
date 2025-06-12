@@ -8,6 +8,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
+#include "Imagine/Vulkan/Descriptors.hpp"
 
 namespace Imagine::Vulkan {
 	struct Deleter {
@@ -23,7 +24,7 @@ namespace Imagine::Vulkan {
 		using VmaImage = VmaObject<VkImage>;
 		using VmaBuffer = VmaObject<VkBuffer>;
 
-		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool>;
+		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool, DescriptorAllocatorGrowable, VkSampler>;
 
 		/**
 		 * Function that will add an object in the list of object to destroy.
@@ -75,6 +76,12 @@ namespace Imagine::Vulkan {
 				}
 				else if (VkDescriptorPool *descriptorPool = std::get_if<VkDescriptorPool>(&type)) {
 					vkDestroyDescriptorPool(device, *descriptorPool, nullptr);
+				}
+				else if (VkSampler *sampler = std::get_if<VkSampler>(&type)) {
+					vkDestroySampler(device, *sampler, nullptr);
+				}
+				else if (DescriptorAllocatorGrowable *descriptorAllocatorGrowable = std::get_if<DescriptorAllocatorGrowable>(&type)) {
+					descriptorAllocatorGrowable->DestroyPools(device);
 				}
 				else if (ShutdownFunction *shutdown = std::get_if<ShutdownFunction>(&type)) {
 					(*shutdown)();

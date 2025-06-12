@@ -21,8 +21,7 @@
 
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/FileSystem.hpp"
-#include "Imagine/Vulkan/DescriptorAllocator.hpp"
-#include "Imagine/Vulkan/DescriptorLayoutBuilder.hpp"
+#include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
 
 // Window-Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
@@ -54,9 +53,9 @@ namespace Imagine::Vulkan {
 
 		InitDefaultMeshData();
 
-		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/basicmesh.glb").value_or( std::vector<std::shared_ptr<MeshAsset>>{} );
+		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/basicmesh.glb").value_or(std::vector<std::shared_ptr<MeshAsset>>{});
 
-		for (std::shared_ptr<MeshAsset> & meshAsset: m_TestMeshes) {
+		for (std::shared_ptr<MeshAsset> &meshAsset: m_TestMeshes) {
 			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.indexBuffer.allocation, meshAsset->meshBuffers.indexBuffer.buffer});
 			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.vertexBuffer.allocation, meshAsset->meshBuffers.vertexBuffer.buffer});
 		}
@@ -151,7 +150,7 @@ namespace Imagine::Vulkan {
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
 
-		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D,deviceProperties.limits.maxImageDimension2D};
+		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D, deviceProperties.limits.maxImageDimension2D};
 		MGN_CORE_INFO("Max Draw Image: {} x {}", maxDrawImage.width, maxDrawImage.height);
 
 		const Size2 framebufferSize = Window::Get()->GetFramebufferSize();
@@ -200,9 +199,9 @@ namespace Imagine::Vulkan {
 		depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 		VkImageCreateInfo dimg_info = Initializer::ImageCreateInfo2D(m_DepthImage.imageFormat, depthImageUsages, drawImageExtent);
-		//allocate and create the image
+		// allocate and create the image
 		vmaCreateImage(m_Allocator, &dimg_info, &rimg_allocinfo, &m_DepthImage.image, &m_DepthImage.allocation, nullptr);
-		//build a image-view for the draw image to use for rendering
+		// build a image-view for the draw image to use for rendering
 		VkImageViewCreateInfo dview_info = Initializer::ImageViewCreateInfo2D(m_DepthImage.imageFormat, m_DepthImage.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 		VK_CHECK(vkCreateImageView(m_Device, &dview_info, nullptr, &m_DepthImage.imageView));
@@ -255,6 +254,20 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::InitializeDescriptors() {
 
+		for (int i = 0; i < m_Frames.size(); ++i) {
+			// create a descriptor pool
+			std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> frame_sizes = {
+					{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3},
+					{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3},
+					{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3},
+					{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4},
+			};
+
+			m_Frames[i].m_FrameDescriptors = DescriptorAllocatorGrowable{};
+			m_Frames[i].m_FrameDescriptors.Init(m_Device, 1000, frame_sizes);
+			m_MainDeletionQueue.push(m_Frames[i].m_FrameDescriptors);
+		}
+
 		// create a descriptor pool that will hold 10 sets with 1 image each
 		std::vector<DescriptorAllocator::PoolSizeRatio> sizes =
 				{
@@ -271,21 +284,15 @@ namespace Imagine::Vulkan {
 		// allocate a descriptor set for our draw image
 		m_DrawImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_DrawImageDescriptorLayout);
 
-		VkDescriptorImageInfo imgInfo{};
-		imgInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-		imgInfo.imageView = m_DrawImage.imageView;
+		DescriptorWriter writer;
+		writer.WriteImage(0, m_DrawImage.imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+		writer.UpdateSet(m_Device, m_DrawImageDescriptors);
 
-		VkWriteDescriptorSet drawImageWrite = {};
-		drawImageWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		drawImageWrite.pNext = nullptr;
-
-		drawImageWrite.dstBinding = 0;
-		drawImageWrite.dstSet = m_DrawImageDescriptors;
-		drawImageWrite.descriptorCount = 1;
-		drawImageWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-		drawImageWrite.pImageInfo = &imgInfo;
-
-		vkUpdateDescriptorSets(m_Device, 1, &drawImageWrite, 0, nullptr);
+		{
+			DescriptorLayoutBuilder builder;
+			builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+			m_GpuSceneDataDescriptorLayout = builder.Build(m_Device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		}
 
 		// make sure both the descriptor allocator and the new layout get cleaned up properly
 		m_MainDeletionQueue.push(m_DrawImageDescriptorLayout);
@@ -490,17 +497,17 @@ namespace Imagine::Vulkan {
 
 		// connecting the vertex and pixel shaders to the pipeline
 		m_MeshPipeline = PipelineBuilder(m_MeshPipelineLayout)
-									 .AddShader(ShaderStage::Fragment, triangleFragmentShader)
-									 .AddShader(ShaderStage::Vertex, triangleVertexShader)
-									 .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
-									 .SetPolygonMode(VK_POLYGON_MODE_FILL)
-									 .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
-									 .SetMultisamplingNone()
-									 .EnableBlendingAlpha()
-									 .EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
-									 .SetColorAttachmentFormat(m_DrawImage.imageFormat)
-									 .SetDepthFormat(m_DepthImage.imageFormat)
-									 .BuildPipeline(m_Device);
+								 .AddShader(ShaderStage::Fragment, triangleFragmentShader)
+								 .AddShader(ShaderStage::Vertex, triangleVertexShader)
+								 .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+								 .SetPolygonMode(VK_POLYGON_MODE_FILL)
+								 .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
+								 .SetMultisamplingNone()
+								 .EnableBlendingAlpha()
+								 .EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
+								 .SetColorAttachmentFormat(m_DrawImage.imageFormat)
+								 .SetDepthFormat(m_DepthImage.imageFormat)
+								 .BuildPipeline(m_Device);
 
 		m_MainDeletionQueue.push(m_MeshPipeline);
 
@@ -627,19 +634,19 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::InitDefaultMeshData() {
 
-		std::array<Vertex,4> rect_vertices;
+		std::array<Vertex, 4> rect_vertices;
 
-		rect_vertices[0].position = {0.5,-0.5, 0};
-		rect_vertices[1].position = {0.5,0.5, 0};
-		rect_vertices[2].position = {-0.5,-0.5, 0};
-		rect_vertices[3].position = {-0.5,0.5, 0};
+		rect_vertices[0].position = {0.5, -0.5, 0};
+		rect_vertices[1].position = {0.5, 0.5, 0};
+		rect_vertices[2].position = {-0.5, -0.5, 0};
+		rect_vertices[3].position = {-0.5, 0.5, 0};
 
-		rect_vertices[0].color = {0,0, 0,1};
-		rect_vertices[1].color = { 0.5,0.5,0.5 ,1};
-		rect_vertices[2].color = { 1,0, 0,1 };
-		rect_vertices[3].color = { 0,1, 0,1 };
+		rect_vertices[0].color = {0, 0, 0, 1};
+		rect_vertices[1].color = {0.5, 0.5, 0.5, 1};
+		rect_vertices[2].color = {1, 0, 0, 1};
+		rect_vertices[3].color = {0, 1, 0, 1};
 
-		std::array<uint32_t,6> rect_indices;
+		std::array<uint32_t, 6> rect_indices;
 
 		rect_indices[0] = 0;
 		rect_indices[1] = 1;
@@ -649,9 +656,118 @@ namespace Imagine::Vulkan {
 		rect_indices[4] = 1;
 		rect_indices[5] = 3;
 
-		m_Rectangle = UploadMesh(rect_indices,rect_vertices);
+		m_Rectangle = UploadMesh(rect_indices, rect_vertices);
 		m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, m_Rectangle.indexBuffer.allocation, m_Rectangle.indexBuffer.buffer});
 		m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, m_Rectangle.vertexBuffer.allocation, m_Rectangle.vertexBuffer.buffer});
+
+		// 3 default textures, white, grey, black. 1 pixel each
+		uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
+		m_WhiteImage = CreateImage(&white, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_WhiteImage.allocation, m_WhiteImage.image});
+		m_MainDeletionQueue.push(m_WhiteImage.imageView);
+
+		uint32_t grey = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
+		m_GreyImage = CreateImage(&grey, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_GreyImage.allocation, m_GreyImage.image});
+		m_MainDeletionQueue.push(m_GreyImage.imageView);
+
+		uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
+		m_BlackImage = CreateImage(&black, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_BlackImage.allocation, m_BlackImage.image});
+		m_MainDeletionQueue.push(m_BlackImage.imageView);
+
+		// checkerboard image
+		uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
+		std::array<uint32_t, 16 * 16> pixels; // for 16x16 checkerboard texture
+		for (int x = 0; x < 16; x++) {
+			for (int y = 0; y < 16; y++) {
+				pixels[y * 16 + x] = ((x % 2) ^ (y % 2)) ? magenta : black;
+			}
+		}
+		m_ErrorCheckerboardImage = CreateImage(pixels.data(), VkExtent3D{16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_ErrorCheckerboardImage.allocation, m_ErrorCheckerboardImage.image});
+		m_MainDeletionQueue.push(m_ErrorCheckerboardImage.imageView);
+
+		VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+
+		sampl.magFilter = VK_FILTER_NEAREST;
+		sampl.minFilter = VK_FILTER_NEAREST;
+		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerNearest);
+		m_MainDeletionQueue.push(m_DefaultSamplerNearest);
+
+		sampl.magFilter = VK_FILTER_LINEAR;
+		sampl.minFilter = VK_FILTER_LINEAR;
+		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerLinear);
+		m_MainDeletionQueue.push(m_DefaultSamplerLinear);
+	}
+	AllocatedImage VulkanRenderer::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
+		AllocatedImage img{};
+		img.imageFormat = format;
+		img.imageExtent = size;
+
+		VkImageCreateInfo img_info = Initializer::ImageCreateInfo2D(format, usage, size);
+		if (mipmapped) {
+			img_info.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(size.width, size.height)))) + 1;
+		}
+
+		VmaAllocationCreateInfo allocInfo{};
+		allocInfo.usage = VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY;
+		allocInfo.requiredFlags = static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+		// allocate and create the image
+		VK_CHECK(vmaCreateImage(m_Allocator, &img_info, &allocInfo, &img.image, &img.allocation, nullptr));
+
+		// if the format is a depth format, we will need to have it use the correct
+		// aspect flag
+		VkImageAspectFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (format == VK_FORMAT_D32_SFLOAT) {
+			aspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
+		}
+		// build a image-view for the image
+		VkImageViewCreateInfo viewInfo = Initializer::ImageViewCreateInfo2D(format, img.image, aspectFlag);
+		viewInfo.subresourceRange.levelCount = img_info.mipLevels;
+
+		VK_CHECK(vkCreateImageView(m_Device, &viewInfo, nullptr, &img.imageView))
+
+		return img;
+	}
+	AllocatedImage VulkanRenderer::CreateImage(const void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
+		size_t dataSize = size.depth * size.width * size.height * 4;
+		AllocatedBuffer uploadbuffer = CreateBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+		memcpy(uploadbuffer.info.pMappedData, data, dataSize);
+
+		AllocatedImage new_image = CreateImage(size, format, usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, mipmapped);
+
+		ImmediateSubmit([&](VkCommandBuffer cmd) {
+			Utils::TransitionImage(cmd, new_image.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+			VkBufferImageCopy copyRegion = {};
+			copyRegion.bufferOffset = 0;
+			copyRegion.bufferRowLength = 0;
+			copyRegion.bufferImageHeight = 0;
+
+			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			copyRegion.imageSubresource.mipLevel = 0;
+			copyRegion.imageSubresource.baseArrayLayer = 0;
+			copyRegion.imageSubresource.layerCount = 1;
+			copyRegion.imageExtent = size;
+
+			// copy the buffer into the image
+			vkCmdCopyBufferToImage(cmd, uploadbuffer.buffer, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+								   &copyRegion);
+
+			Utils::TransitionImage(cmd, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+								   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		});
+
+		DestroyBuffer(uploadbuffer);
+
+		return new_image;
+	}
+	void VulkanRenderer::DestroyImage(const AllocatedImage &img) {
+		vkDestroyImageView(m_Device, img.imageView, nullptr);
+		vmaDestroyImage(m_Allocator, img.image, img.allocation);
 	}
 
 	void VulkanRenderer::ShutdownVulkan() {
@@ -702,6 +818,7 @@ namespace Imagine::Vulkan {
 		VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
 
 		GetCurrentFrame().m_DeletionQueue.flush(m_Device);
+		GetCurrentFrame().m_FrameDescriptors.ClearPools(m_Device);
 
 		// request image from the swapchain
 		uint32_t swapchainImageIndex;
@@ -710,7 +827,8 @@ namespace Imagine::Vulkan {
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			m_ResizeRequested = true;
-		} else {
+		}
+		else {
 			MGN_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
 		}
 		VkCommandBuffer cmd{nullptr};
@@ -781,7 +899,8 @@ namespace Imagine::Vulkan {
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_ResizeRequested) {
 			ResizeSwapChain();
-		} else {
+		}
+		else {
 			MGN_CORE_ASSERT(result == VK_SUCCESS, "Failing to acquire the Swap Chain Image.");
 		}
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
@@ -791,7 +910,7 @@ namespace Imagine::Vulkan {
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
-			ImGui::SliderFloat("Render Scale",&m_RenderScale, 0.3f, 1.f);
+			ImGui::SliderFloat("Render Scale", &m_RenderScale, 0.3f, 1.f);
 
 			ImGui::Text("Selected effect: ", selected.name);
 
@@ -857,6 +976,25 @@ namespace Imagine::Vulkan {
 
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 
+		// allocate a new uniform buffer for the scene data
+		// using CPU_TO_GPU as the `GPUSceneData` type is very small and can probably be cached entirely in VRAM.
+		// better use a dedicated `VMA_MEMORY_USAGE_GPU` for bigger data and do a transfer beforehand.
+		AllocatedBuffer gpuSceneDataBuffer = CreateBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+		// add it to the deletion queue of this frame so it gets deleted once its been used
+		GetCurrentFrame().m_DeletionQueue.push(Deleter::VmaBuffer{m_Allocator, gpuSceneDataBuffer.allocation, gpuSceneDataBuffer.buffer});
+
+		// write the buffer
+		GPUSceneData *sceneUniformData = (GPUSceneData *) gpuSceneDataBuffer.allocation->GetMappedData();
+		*sceneUniformData = m_SceneData;
+
+		// create a descriptor set that binds that buffer and update it
+		VkDescriptorSet globalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
+
+		DescriptorWriter writer;
+		writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		writer.UpdateSet(m_Device, globalDescriptor);
+
 		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
 
 		// launch a draw command to draw 3 vertices
@@ -874,9 +1012,9 @@ namespace Imagine::Vulkan {
 
 		{
 
-			glm::mat4 view = glm::translate(glm::vec3{ 0,0,-5 });
+			glm::mat4 view = glm::translate(glm::vec3{0, 0, -5});
 			// camera projection
-			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_DrawExtent.width / (float)m_DrawExtent.height, 0.1f, 10000.f);
+			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
 
 			// invert the Y direction on projection matrix so that we are more similar
 			// to opengl and gltf axis
