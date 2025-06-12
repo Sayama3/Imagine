@@ -33,6 +33,8 @@ set(VULKAN_SOURCES
 		Include/Imagine/Vulkan/PipelineBuilder.hpp
 		Sources/PipelineBuilder.cpp
 		Sources/VulkanInitializer.cpp
+		Include/Imagine/Vulkan/VulkanFrame.hpp
+		Sources/VulkanFrame.cpp
 )
 
 target_sources(Core PRIVATE

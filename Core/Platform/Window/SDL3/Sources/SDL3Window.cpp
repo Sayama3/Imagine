@@ -21,9 +21,8 @@ namespace Imagine::Core {
 	void *SDL3Window::GetNativeWindow() {
 		return m_Window;
 	}
-
-	bool SDL3Window::WindowHasResized() {
-		return frameBufferResized;
+	bool SDL3Window::IsMinimized() {
+		return m_Minimized;
 	}
 
 	bool SDL3Window::ShouldClose() {
@@ -44,6 +43,8 @@ namespace Imagine::Core {
 		SDL_Init(SDL_INIT_VIDEO);
 
 		SDL_WindowFlags window_flags{};
+
+		if (parameters.Resizable) window_flags |= SDL_WINDOW_RESIZABLE;
 
 #ifdef MGN_RENDERER_VULKAN
 		window_flags |= (SDL_WindowFlags) (SDL_WINDOW_VULKAN);

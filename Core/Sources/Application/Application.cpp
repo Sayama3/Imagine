@@ -99,33 +99,37 @@ namespace Imagine::Core {
 
 	void Application::Run() {
 		while (!m_ShouldStop) {
+			bool canDraw = true;
 			if (m_Window) {
 				m_Window->Update();
 				m_ShouldStop |= m_Window->ShouldClose();
+				canDraw = !m_Window->IsMinimized();
 			}
 
+			if (canDraw) {
 #ifdef MGN_IMGUI
-			MgnImGui::NewRenderFrame();
-			MgnImGui::NewWindowFrame();
-			MgnImGui::NewFrame();
+				MgnImGui::NewRenderFrame();
+				MgnImGui::NewWindowFrame();
+				MgnImGui::NewFrame();
 
-			static bool open = true;
-			ImGui::ShowDemoWindow(&open);
+				static bool open = true;
+				ImGui::ShowDemoWindow(&open);
 
-			if (m_Window) {
-				m_Window->SendImGuiCommands();
-			}
+				if (m_Window) {
+					m_Window->SendImGuiCommands();
+				}
 
-			if (m_Renderer) {
-				m_Renderer->SendImGuiCommands();
-			}
+				if (m_Renderer) {
+					m_Renderer->SendImGuiCommands();
+				}
 
-			// TODO: Other imgui rendering functions
+				// TODO: Other imgui rendering functions
 
-			MgnImGui::Render();
+				MgnImGui::Render();
 #endif
+			}
 
-			if (m_Renderer) {
+			if (m_Renderer && canDraw) {
 				m_Renderer->Draw();
 			}
 

@@ -38,6 +38,7 @@ namespace Imagine::Vulkan {
 		void CreateSwapChain(uint32_t width, uint32_t height);
 		void DestroySwapChain();
 
+		void ResizeSwapChain();
 	private:
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void DestroyBuffer(AllocatedBuffer& buffer);
@@ -68,7 +69,7 @@ namespace Imagine::Vulkan {
 	private:
 		VkInstance m_Instance{nullptr}; // Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr}; // Vulkan debug output handle
-		VkPhysicalDevice m_ChosenGPU{nullptr}; // GPU chosen as the default device
+		VkPhysicalDevice m_PhysicalDevice{nullptr}; // GPU chosen as the default device
 		VkDevice m_Device{nullptr}; // Vulkan device for commands
 		VkSurfaceKHR m_Surface{nullptr}; // Vulkan window surface
 
@@ -92,6 +93,8 @@ namespace Imagine::Vulkan {
 		AllocatedImage m_DrawImage{};
 		AllocatedImage m_DepthImage{};
 		VkExtent2D m_DrawExtent{0, 0};
+		float m_RenderScale{1.0f};
+
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
@@ -112,5 +115,7 @@ namespace Imagine::Vulkan {
 
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
+
+		bool m_ResizeRequested{false};
 	};
 } // namespace Imagine::Vulkan

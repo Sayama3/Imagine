@@ -20,7 +20,7 @@ namespace Imagine::Core {
 		Size2 GetFramebufferSize() override;
 		void *GetNativeWindow() override;
 
-		bool WindowHasResized() override;
+		bool IsMinimized() override;
 		bool ShouldClose() override;
 
 		void *GetWindowPtr() override;
@@ -30,7 +30,6 @@ namespace Imagine::Core {
 
 	private:
 		struct SDL_Window *m_Window{nullptr};
-		bool frameBufferResized = false;
 		bool m_ShouldClose = false;
 		bool m_Minimized = false;
 	};

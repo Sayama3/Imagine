@@ -36,8 +36,9 @@ namespace Imagine::Core {
 		virtual uint32_t GetFramebufferHeight() = 0;
 		virtual Size2 GetFramebufferSize() = 0;
 
+		virtual bool IsMinimized() = 0;
+
 		virtual void* GetNativeWindow() = 0;
-		virtual bool WindowHasResized() = 0;
 		virtual bool ShouldClose() = 0;
 
 		/**

@@ -114,12 +114,14 @@ namespace Imagine::Vulkan {
 		vkb::PhysicalDeviceSelector selector{vkb_inst};
 		vkb::PhysicalDevice physicalDevice = selector
 													 .set_minimum_version(1, 3)
+													 .add_desired_extension(VK_KHR_DISPLAY_EXTENSION_NAME)
 													 .set_required_features_13(features)
 													 .set_required_features_12(features12)
 													 .set_surface(m_Surface)
 													 .select()
 													 .value();
 
+		physicalDevice.enable_extension_if_present(VK_KHR_DISPLAY_EXTENSION_NAME);
 
 		// create the final vulkan device
 		vkb::DeviceBuilder deviceBuilder{physicalDevice};
@@ -127,7 +129,7 @@ namespace Imagine::Vulkan {
 
 		// Get the VkDevice handle used in the rest of a vulkan application
 		m_Device = vkbDevice.device;
-		m_ChosenGPU = physicalDevice.physical_device;
+		m_PhysicalDevice = physicalDevice.physical_device;
 
 		m_Frames.resize(GetRenderParams().NbrFrameInFlight);
 
@@ -136,7 +138,7 @@ namespace Imagine::Vulkan {
 
 		// initialize the memory allocator
 		VmaAllocatorCreateInfo allocatorInfo = {};
-		allocatorInfo.physicalDevice = m_ChosenGPU;
+		allocatorInfo.physicalDevice = m_PhysicalDevice;
 		allocatorInfo.device = m_Device;
 		allocatorInfo.instance = m_Instance;
 		allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
@@ -146,13 +148,20 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::InitializeSwapChain() {
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
+
+		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D,deviceProperties.limits.maxImageDimension2D};
+		MGN_CORE_INFO("Max Draw Image: {} x {}", maxDrawImage.width, maxDrawImage.height);
+
 		const Size2 framebufferSize = Window::Get()->GetFramebufferSize();
 		CreateSwapChain(framebufferSize.width, framebufferSize.height);
 
+
 		// draw image size will match the window
 		VkExtent3D drawImageExtent = {
-				framebufferSize.width,
-				framebufferSize.height,
+				maxDrawImage.width,
+				maxDrawImage.height,
 				1};
 
 		// hardcoding the draw format to 16-bit float
@@ -183,7 +192,6 @@ namespace Imagine::Vulkan {
 		// add to deletion queues
 		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_DrawImage.allocation, m_DrawImage.image});
 		m_MainDeletionQueue.push(m_DrawImage.imageView);
-
 
 
 		m_DepthImage.imageFormat = VK_FORMAT_D32_SFLOAT;
@@ -502,7 +510,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::CreateSwapChain(const uint32_t width, const uint32_t height) {
-		vkb::SwapchainBuilder swapchainBuilder{m_ChosenGPU, m_Device, m_Surface};
+		vkb::SwapchainBuilder swapchainBuilder{m_PhysicalDevice, m_Device, m_Surface};
 
 		m_SwapchainImageFormat = VK_FORMAT_B8G8R8A8_UNORM; // TODO: See with HDR if we really want this one.
 
@@ -537,6 +545,17 @@ namespace Imagine::Vulkan {
 		}
 		m_SwapchainImages.clear();
 		m_SwapchainImageViews.clear();
+	}
+	void VulkanRenderer::ResizeSwapChain() {
+		vkDeviceWaitIdle(m_Device);
+
+		DestroySwapChain();
+
+		auto size = Window::Get()->GetFramebufferSize();
+
+		CreateSwapChain(size.width, size.height);
+
+		m_ResizeRequested = false;
 	}
 
 	AllocatedBuffer VulkanRenderer::CreateBuffer(const uint64_t allocSize, const VkBufferUsageFlags usage, const VmaMemoryUsage memoryUsage) {
@@ -668,6 +687,14 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::Draw() {
+		// TODO: Preserve aspect ratio
+		m_DrawExtent.width = std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale;
+		m_DrawExtent.height = std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale;
+
+		const bool canDraw = m_DrawExtent.width > 0 && m_DrawExtent.height > 0;
+		if (!canDraw) {
+			return;
+		}
 
 		// wait until the gpu has finished rendering the last frame. Timeout of 1
 		// second
@@ -678,14 +705,17 @@ namespace Imagine::Vulkan {
 
 		// request image from the swapchain
 		uint32_t swapchainImageIndex;
-		VK_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex));
 
+		VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			m_ResizeRequested = true;
+		} else {
+			MGN_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
+		}
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 		VK_CHECK(vkResetCommandBuffer(cmd, 0));
-
-		m_DrawExtent.width = m_DrawImage.imageExtent.width;
-		m_DrawExtent.height = m_DrawImage.imageExtent.height;
 
 		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
@@ -747,8 +777,13 @@ namespace Imagine::Vulkan {
 
 		presentInfo.pImageIndices = &swapchainImageIndex;
 
-		VK_CHECK(vkQueuePresentKHR(m_GraphicsQueue, &presentInfo));
+		result = vkQueuePresentKHR(m_GraphicsQueue, &presentInfo);
 
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_ResizeRequested) {
+			ResizeSwapChain();
+		} else {
+			MGN_CORE_ASSERT(result == VK_SUCCESS, "Failing to acquire the Swap Chain Image.");
+		}
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
 	}
 	void VulkanRenderer::SendImGuiCommands() {
@@ -756,6 +791,7 @@ namespace Imagine::Vulkan {
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
+			ImGui::SliderFloat("Render Scale",&m_RenderScale, 0.3f, 1.f);
 
 			ImGui::Text("Selected effect: ", selected.name);
 
@@ -917,7 +953,7 @@ namespace Imagine::Vulkan {
 		// this initializes imgui for Vulkan
 		ImGui_ImplVulkan_InitInfo init_info = {};
 		init_info.Instance = m_Instance;
-		init_info.PhysicalDevice = m_ChosenGPU;
+		init_info.PhysicalDevice = m_PhysicalDevice;
 		init_info.Device = m_Device;
 		init_info.Queue = m_GraphicsQueue;
 		init_info.DescriptorPool = imguiPool;
