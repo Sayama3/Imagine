@@ -1031,7 +1031,7 @@ namespace Imagine::Vulkan {
 
 		{
 
-			glm::mat4 view = glm::translate(glm::vec3{0, 0, -5});
+			glm::mat4 view = glm::translate(glm::vec3{0, 0, 5});
 			// camera projection
 			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
 

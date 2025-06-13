@@ -7,13 +7,17 @@
 
 #ifndef GLM_FORCE_RADIANS
 #define GLM_FORCE_RADIANS
-#endif
+#endif // GLM_FORCE_RADIANS
+
 #ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#endif
+#endif // GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
-#endif
+#endif // GLM_ENABLE_EXPERIMENTAL
+
+// TODO: Figure out a way for a Left Handed with ; +X = Right ; +Y = Up ; +Z = Forward ;
 // #ifndef GLM_FORCE_LEFT_HANDED
 // #define GLM_FORCE_LEFT_HANDED
 // #endif // GLM_FORCE_LEFT_HANDED
