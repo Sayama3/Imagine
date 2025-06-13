@@ -42,7 +42,7 @@ namespace Imagine::Vulkan {
 	private:
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void DestroyBuffer(AllocatedBuffer& buffer);
-		void InitDefaultMeshData();
+		void InitDefaultData();
 	public:
 		AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
 		AllocatedImage CreateImage(const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
@@ -127,6 +127,9 @@ namespace Imagine::Vulkan {
 
 		VkSampler m_DefaultSamplerLinear{nullptr};
 		VkSampler m_DefaultSamplerNearest{nullptr};
+
+		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};
+
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
 

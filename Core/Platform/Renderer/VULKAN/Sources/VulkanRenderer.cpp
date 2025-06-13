@@ -51,7 +51,7 @@ namespace Imagine::Vulkan {
 		InitializeDescriptors();
 		InitializePipelines();
 
-		InitDefaultMeshData();
+		InitDefaultData();
 
 		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/Models/basicmesh.glb").value();
 
@@ -292,11 +292,19 @@ namespace Imagine::Vulkan {
 			DescriptorLayoutBuilder builder;
 			builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 			m_GpuSceneDataDescriptorLayout = builder.Build(m_Device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+			m_MainDeletionQueue.push(m_GpuSceneDataDescriptorLayout);
 		}
 
 		// make sure both the descriptor allocator and the new layout get cleaned up properly
 		m_MainDeletionQueue.push(m_DrawImageDescriptorLayout);
 		m_MainDeletionQueue.push(m_GlobalDescriptorAllocator);
+
+		{
+			DescriptorLayoutBuilder layoutBuilder;
+			layoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			m_SingleImageDescriptorLayout = layoutBuilder.Build(m_Device, VK_SHADER_STAGE_FRAGMENT_BIT);
+			m_MainDeletionQueue.push(m_SingleImageDescriptorLayout);
+		}
 	}
 
 	void VulkanRenderer::InitializePipelines() {
@@ -473,7 +481,7 @@ namespace Imagine::Vulkan {
 		}
 
 		VkShaderModule triangleFragmentShader{nullptr};
-		if (!Utils::LoadShaderModule("Assets/colored_triangle.frag.spv", m_Device, &triangleFragmentShader)) {
+		if (!Utils::LoadShaderModule("Assets/tex_image.frag.spv", m_Device, &triangleFragmentShader)) {
 			MGN_CORE_ERROR("Error when building the mesh fragment shader module");
 		}
 		else {
@@ -489,8 +497,10 @@ namespace Imagine::Vulkan {
 		// build the pipeline layout that controls the inputs/outputs of the shader
 		// we are not using descriptor sets or other systems yet, so no need to use anything other than empty default
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializer::PipelineLayoutCreateInfo();
-		pipelineLayoutCreateInfo.pPushConstantRanges = &bufferRange;
 		pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+		pipelineLayoutCreateInfo.pPushConstantRanges = &bufferRange;
+		pipelineLayoutCreateInfo.setLayoutCount = 1;
+		pipelineLayoutCreateInfo.pSetLayouts = &m_SingleImageDescriptorLayout;
 
 		VK_CHECK(vkCreatePipelineLayout(m_Device, &pipelineLayoutCreateInfo, nullptr, &m_MeshPipelineLayout));
 		m_MainDeletionQueue.push(m_MeshPipelineLayout);
@@ -632,7 +642,7 @@ namespace Imagine::Vulkan {
 		return GPUMesh;
 	}
 
-	void VulkanRenderer::InitDefaultMeshData() {
+	void VulkanRenderer::InitDefaultData() {
 
 		std::array<Vertex, 4> rect_vertices;
 
@@ -663,17 +673,17 @@ namespace Imagine::Vulkan {
 		// 3 default textures, white, grey, black. 1 pixel each
 		uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
 		m_WhiteImage = CreateImage(&white, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
-		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_WhiteImage.allocation, m_WhiteImage.image});
+		m_MainDeletionQueue.push(m_Allocator, m_WhiteImage.allocation, m_WhiteImage.image);
 		m_MainDeletionQueue.push(m_WhiteImage.imageView);
 
 		uint32_t grey = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
 		m_GreyImage = CreateImage(&grey, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
-		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_GreyImage.allocation, m_GreyImage.image});
+		m_MainDeletionQueue.push(m_Allocator, m_GreyImage.allocation, m_GreyImage.image);
 		m_MainDeletionQueue.push(m_GreyImage.imageView);
 
-		uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
+		uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 1));
 		m_BlackImage = CreateImage(&black, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
-		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_BlackImage.allocation, m_BlackImage.image});
+		m_MainDeletionQueue.push(m_Allocator, m_BlackImage.allocation, m_BlackImage.image);
 		m_MainDeletionQueue.push(m_BlackImage.imageView);
 
 		// checkerboard image
@@ -685,7 +695,7 @@ namespace Imagine::Vulkan {
 			}
 		}
 		m_ErrorCheckerboardImage = CreateImage(pixels.data(), VkExtent3D{16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
-		m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_ErrorCheckerboardImage.allocation, m_ErrorCheckerboardImage.image});
+		m_MainDeletionQueue.push(m_Allocator, m_ErrorCheckerboardImage.allocation, m_ErrorCheckerboardImage.image);
 		m_MainDeletionQueue.push(m_ErrorCheckerboardImage.imageView);
 
 		VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
@@ -1001,7 +1011,16 @@ namespace Imagine::Vulkan {
 		// vkCmdDraw(cmd, 3, 1, 0, 0);
 
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
+		//bind a texture
+		VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
+		{
+			DescriptorWriter writer;
+			writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
+			writer.UpdateSet(m_Device, imageSet);
+		}
+
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
 		GPUDrawPushConstants push_constants;
 		// push_constants.worldMatrix = glm::mat4{ 1.f };
 		// push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
