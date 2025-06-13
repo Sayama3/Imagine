@@ -16,26 +16,26 @@ namespace Imagine::Vulkan {
 			static_assert(sizeof(VkShaderStageFlagBits) == sizeof(int));
 			int stages = 0;
 
-			if (((uint16_t) stage & (uint16_t) Imagine::Core::ShaderStage::Vertex) != 0) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Vertex)) {
 				stages |= (int) VK_SHADER_STAGE_VERTEX_BIT;
 			}
-			if (((uint16_t) stage & (uint16_t) Imagine::Core::ShaderStage::TessellationControl) != 0) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::TessellationControl)) {
 				stages |= (int) VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 			}
-			if (((uint16_t) stage & (uint16_t) Imagine::Core::ShaderStage::TessellationEvaluation) != 0) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::TessellationEvaluation)) {
 				stages |= (int) VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 			}
-			if (((uint16_t) stage & (uint16_t) Imagine::Core::ShaderStage::Geometry) != 0) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Geometry)) {
 				stages |= (int) VK_SHADER_STAGE_GEOMETRY_BIT;
 			}
-			if (((uint16_t) stage & (uint16_t) Imagine::Core::ShaderStage::Fragment) != 0) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Fragment)) {
 				stages |= (int) VK_SHADER_STAGE_FRAGMENT_BIT;
 			}
-			if (((uint16_t) stage & (uint16_t) Imagine::Core::ShaderStage::Compute) != 0) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Compute)) {
 				stages |= (int) VK_SHADER_STAGE_COMPUTE_BIT;
 			}
 
-			MGN_CORE_ASSERT(stages != 0, "The shader stage '{}' in unkown.", (uint16_t) stage);
+			MGN_CORE_ASSERT(stages != 0, "The shader stage '{}' in unknown.", (uint16_t) stage);
 
 			return (VkShaderStageFlagBits) stages;
 		}

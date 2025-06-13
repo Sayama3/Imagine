@@ -6,7 +6,7 @@
 
 #include "Imagine/Core/Macros.hpp"
 
-#define CHECK_SHADER_STAGE_BIT(stage1, stage2) CHECK_BIT((uint16_t) stage1, (uint16_t) stage2)
+#define CHECK_SHADER_STAGE_BIT(stage1, stage2) ((uint16_t) stage1 & (uint16_t) stage2)
 
 namespace Imagine::Core {
 

@@ -111,6 +111,7 @@
 #endif
 
 #ifndef CHECK_BIT
+/// Macro used to check a certain bit position. For exemple, if the number "4" as the byte number 2 checked.
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 #endif
 
