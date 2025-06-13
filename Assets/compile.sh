@@ -5,3 +5,4 @@ glslc sky.comp -o sky.comp.spv
 glslc colored_triangle.vert -o colored_triangle.vert.spv
 glslc colored_triangle.frag -o colored_triangle.frag.spv
 glslc colored_triangle_mesh.vert -o colored_triangle_mesh.vert.spv
+glslc tex_image.frag -o tex_image.frag.spv

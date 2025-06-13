@@ -53,7 +53,7 @@ namespace Imagine::Vulkan {
 
 		InitDefaultMeshData();
 
-		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/basicmesh.glb").value_or(std::vector<std::shared_ptr<MeshAsset>>{});
+		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/Models/basicmesh.glb").value();
 
 		for (std::shared_ptr<MeshAsset> &meshAsset: m_TestMeshes) {
 			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.indexBuffer.allocation, meshAsset->meshBuffers.indexBuffer.buffer});
