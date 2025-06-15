@@ -8,14 +8,12 @@
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
 namespace Imagine::Vulkan {
-	// PipelineBuilder::PipelineBuilder() {
-	// 	Clear();
-	// 	m_ShaderStages.reserve(Core::c_ShaderStageCount);
-	// }
-
-	PipelineBuilder::PipelineBuilder(VkPipelineLayout pipelineLayout) {
+	PipelineBuilder::PipelineBuilder() {
 		Clear();
 		m_ShaderStages.reserve(Core::c_ShaderStageCount);
+	}
+
+	PipelineBuilder::PipelineBuilder(VkPipelineLayout pipelineLayout) : PipelineBuilder() {
 		m_PipelineLayout = pipelineLayout;
 	}
 
@@ -112,8 +110,7 @@ namespace Imagine::Vulkan {
 		return *this;
 	}
 
-	PipelineBuilder &PipelineBuilder::EnableBlendingAlpha()
-	{
+	PipelineBuilder &PipelineBuilder::EnableBlendingAlpha() {
 		m_ColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		m_ColorBlendAttachment.blendEnable = VK_TRUE;
 		m_ColorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
@@ -125,6 +122,10 @@ namespace Imagine::Vulkan {
 		return *this;
 	}
 
+	PipelineBuilder &PipelineBuilder::SetPipelineLayout(VkPipelineLayout pipelineLayout) {
+		m_PipelineLayout = pipelineLayout;
+		return *this;
+	}
 
 	PipelineBuilder &PipelineBuilder::ClearShaders() {
 		m_ShaderStages.clear();
@@ -137,6 +138,9 @@ namespace Imagine::Vulkan {
 	}
 
 	VkPipeline PipelineBuilder::BuildPipeline(VkDevice device) {
+		MGN_CORE_ASSERT(m_PipelineLayout, "Cannot build a pipeline without a pipeline layout.");
+		if (!m_PipelineLayout) return VK_NULL_HANDLE;
+
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportState.pNext = nullptr;

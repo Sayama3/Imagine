@@ -14,6 +14,7 @@ namespace Imagine::Vulkan {
 
 	class PipelineBuilder {
 	public:
+		PipelineBuilder();
 		PipelineBuilder(VkPipelineLayout pipelineLayout);
 		~PipelineBuilder();
 
@@ -33,6 +34,8 @@ namespace Imagine::Vulkan {
 		PipelineBuilder &EnableDepthTest(bool depthWriteEnable, VkCompareOp op);
 		PipelineBuilder &EnableBlendingAdditive();
 		PipelineBuilder &EnableBlendingAlpha();
+
+		PipelineBuilder &SetPipelineLayout(VkPipelineLayout pipelineLayout);
 
 		/**
 		 * A function to add a shader

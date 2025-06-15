@@ -11,6 +11,7 @@
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
 #include "Imagine/Vulkan/VulkanFrameData.hpp"
+#include "Imagine/Vulkan/VulkanMaterial.hpp"
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
@@ -20,7 +21,15 @@ namespace Imagine::Vulkan {
 		virtual ~VulkanRenderer() override;
 
 	public:
+		static VulkanRenderer *Get();
+
 		virtual void PrepareShutdown() override;
+		virtual Core::RendererAPI GetAPI() override { return VulkanRenderer::GetStaticAPI(); }
+		static Core::RendererAPI GetStaticAPI() { return Core::RendererAPI::Vulkan; }
+
+	public:
+		VkDevice GetDevice();
+		VkPhysicalDevice GetPhysicalDevice();
 
 	private:
 		void InitializeVulkan();
@@ -39,16 +48,25 @@ namespace Imagine::Vulkan {
 		void DestroySwapChain();
 
 		void ResizeSwapChain();
+
 	private:
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-		void DestroyBuffer(AllocatedBuffer& buffer);
+		void DestroyBuffer(AllocatedBuffer &buffer);
 		void InitDefaultData();
+
 	public:
 		AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
-		AllocatedImage CreateImage(const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
-		void DestroyImage(const AllocatedImage& img);
+		AllocatedImage CreateImage(const void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+		void DestroyImage(const AllocatedImage &img);
+
 	public:
 		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+
+	public:
+		VkDescriptorSetLayout GetGPUSceneDescriptorLayout();
+		VkFormat GetColorImageFormat() const;
+		VkFormat GetDepthImageFormat() const;
+
 	private:
 		void ShutdownVulkan();
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();
@@ -92,7 +110,7 @@ namespace Imagine::Vulkan {
 
 		VmaAllocator m_Allocator{nullptr};
 
-		DescriptorAllocator m_GlobalDescriptorAllocator{};
+		DescriptorAllocatorGrowable m_GlobalDescriptorAllocator{};
 
 		// Image onto which we'll draw each frame before sending it to the framebuffer.
 		AllocatedImage m_DrawImage{};
@@ -128,11 +146,15 @@ namespace Imagine::Vulkan {
 		VkSampler m_DefaultSamplerLinear{nullptr};
 		VkSampler m_DefaultSamplerNearest{nullptr};
 
+		VulkanMaterialInstance m_DefaultMaterial{};
+		GLTFMetallicRoughness m_MetalRoughMaterial{};
+
 		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};
 
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
 
+		glm::vec3 m_CameraPos{0, 0, -5};
 		bool m_ResizeRequested{false};
 	};
 } // namespace Imagine::Vulkan

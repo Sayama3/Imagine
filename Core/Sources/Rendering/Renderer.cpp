@@ -43,4 +43,13 @@ namespace Imagine::Core {
 	Renderer *Renderer::Get() {
 		return s_Renderer;
 	}
+
+	RendererAPI Renderer::GetStaticAPI() {
+#if defined(MGN_RENDERER_VULKAN)
+		return RendererAPI::Vulkan;
+#else
+		return RendererAPI::CPU;
+#endif
+
+	}
 } // namespace Imagine::Core

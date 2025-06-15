@@ -65,8 +65,24 @@ namespace Imagine::Vulkan {
 		PrepareShutdown();
 		ShutdownVulkan();
 	}
+
+	VulkanRenderer *VulkanRenderer::Get() {
+		Renderer *renderer = Renderer::Get();
+		if (!renderer) return nullptr;
+		if (renderer->GetAPI() != VulkanRenderer::GetStaticAPI()) return nullptr;
+		return reinterpret_cast<VulkanRenderer *>(renderer);
+	}
+
 	void VulkanRenderer::PrepareShutdown() {
 		vkDeviceWaitIdle(m_Device);
+	}
+
+	VkDevice VulkanRenderer::GetDevice() {
+		return m_Device;
+	}
+
+	VkPhysicalDevice VulkanRenderer::GetPhysicalDevice() {
+		return m_PhysicalDevice;
 	}
 
 	void VulkanRenderer::InitializeVulkan() {
@@ -269,10 +285,13 @@ namespace Imagine::Vulkan {
 		}
 
 		// create a descriptor pool that will hold 10 sets with 1 image each
-		std::vector<DescriptorAllocator::PoolSizeRatio> sizes =
-				{
-						{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}};
-		m_GlobalDescriptorAllocator.InitPool(m_Device, 10, sizes);
+		std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = {
+			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
+			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1},
+			{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1},
+			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
+		};
+		m_GlobalDescriptorAllocator.Init(m_Device, 10, sizes);
 
 		// make the descriptor set layout for our compute draw
 		{
@@ -312,6 +331,8 @@ namespace Imagine::Vulkan {
 		InitSkyPipeline();
 		InitTrianglePipeline();
 		InitMeshPipeline();
+
+		m_MetalRoughMaterial.BuildPipeline(this);
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
@@ -641,6 +662,15 @@ namespace Imagine::Vulkan {
 		DestroyBuffer(staging);
 		return GPUMesh;
 	}
+	VkDescriptorSetLayout VulkanRenderer::GetGPUSceneDescriptorLayout() {
+		return m_GpuSceneDataDescriptorLayout;
+	}
+	VkFormat VulkanRenderer::GetColorImageFormat() const {
+		return m_DrawImage.imageFormat;
+	}
+	VkFormat VulkanRenderer::GetDepthImageFormat() const {
+		return m_DepthImage.imageFormat;
+	}
 
 	void VulkanRenderer::InitDefaultData() {
 
@@ -709,7 +739,30 @@ namespace Imagine::Vulkan {
 		sampl.minFilter = VK_FILTER_LINEAR;
 		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerLinear);
 		m_MainDeletionQueue.push(m_DefaultSamplerLinear);
+
+		GLTFMetallicRoughness::MaterialResources materialResources;
+		// default the material textures
+		materialResources.colorImage = m_WhiteImage;
+		materialResources.colorSampler = m_DefaultSamplerLinear;
+		materialResources.metalRoughImage = m_WhiteImage;
+		materialResources.metalRoughSampler = m_DefaultSamplerLinear;
+
+		// set the uniform buffer for the material data
+		AllocatedBuffer materialConstants = CreateBuffer(sizeof(GLTFMetallicRoughness::MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+		// write the buffer
+		GLTFMetallicRoughness::MaterialConstants *sceneUniformData = (GLTFMetallicRoughness::MaterialConstants *) materialConstants.allocation->GetMappedData();
+		sceneUniformData->colorFactors = glm::vec4{1, 1, 1, 1};
+		sceneUniformData->metal_rough_factors = glm::vec4{1, 0.5, 0, 0};
+
+		m_MainDeletionQueue.push(m_Allocator, materialConstants.allocation, materialConstants.buffer);
+
+		materialResources.dataBuffer = materialConstants.buffer;
+		materialResources.dataBufferOffset = 0;
+
+		m_DefaultMaterial = m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator);
 	}
+
 	AllocatedImage VulkanRenderer::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
 		AllocatedImage img{};
 		img.imageFormat = format;
@@ -920,6 +973,8 @@ namespace Imagine::Vulkan {
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
+			ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPos), 0.1, 0, 0, "%.1f");
+			ImGui::Spacing();
 			ImGui::SliderFloat("Render Scale", &m_RenderScale, 0.3f, 1.f);
 
 			ImGui::Text("Selected effect: ", selected.name);
@@ -1011,7 +1066,7 @@ namespace Imagine::Vulkan {
 		// vkCmdDraw(cmd, 3, 1, 0, 0);
 
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
-		//bind a texture
+		// bind a texture
 		VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
 		{
 			DescriptorWriter writer;
@@ -1031,12 +1086,13 @@ namespace Imagine::Vulkan {
 
 		{
 
-			glm::mat4 view = glm::translate(glm::vec3{0, 0, 5});
+			glm::mat4 view = glm::translate(m_CameraPos);
 			// camera projection
 			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
 
 			// invert the Y direction on projection matrix so that we are more similar
 			// to opengl and gltf axis
+			projection[0][0] *= -1;
 			projection[1][1] *= -1;
 
 			constexpr unsigned meshToDraw = 2;

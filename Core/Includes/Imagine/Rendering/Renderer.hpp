@@ -9,6 +9,11 @@
 
 namespace Imagine::Core {
 
+	enum class RendererAPI {
+		CPU,
+		Vulkan,
+	};
+
 	class Renderer {
 	public:
 		static Renderer *Create(ApplicationParameters appParams);
@@ -16,6 +21,7 @@ namespace Imagine::Core {
 		static void Shutdown();
 		static Renderer *Get();
 
+		static RendererAPI GetStaticAPI();
 	private:
 		static Renderer *s_Renderer;
 
@@ -26,6 +32,8 @@ namespace Imagine::Core {
 		Renderer &operator=(const Renderer &) = delete;
 
 	public:
+		virtual RendererAPI GetAPI() = 0;
+
 		virtual void Draw() = 0;
 		virtual void SendImGuiCommands() = 0;
 		virtual void PrepareShutdown() = 0;
