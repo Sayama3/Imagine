@@ -64,6 +64,7 @@ set(CORE_SRC_FILES
 		Sources/Rendering/Shader.cpp
 		Includes/Imagine/Rendering/Shader.hpp
 		Includes/Imagine/Rendering/ShaderParameters.hpp
+		Includes/Imagine/Rendering/DrawContext.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

@@ -5,4 +5,7 @@
 #include "Imagine/Scene/Entity.hpp"
 
 namespace Imagine::Core {
-}
+	bool EntityID::IsValid() const {
+		return id != -1u;
+	}
+} // namespace Imagine::Core

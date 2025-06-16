@@ -9,7 +9,9 @@
 
 namespace Imagine::Core {
 	struct EntityID {
-		uint32_t id;
+		uint32_t id{-1u};
+
+		[[nodiscard]] bool IsValid() const;
 		[[nodiscard]] UUID AsUUID() const { return UUID(id); }
 		[[nodiscard]] std::string string() const { return std::to_string(id); }
 	};
