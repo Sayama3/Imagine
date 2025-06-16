@@ -128,6 +128,20 @@ namespace Imagine::Core {
 			sparse[id] = -1;
 		}
 
+		virtual T& GetOrCreate(const UnsignedInteger id) {
+			if (!Exist(id)) {
+				Create(id);
+			}
+			return Get(id);
+		}
+
+		virtual T& GetOrCreate(const UnsignedInteger id, const T& data) {
+			if (!Exist(id)) {
+				Create(id, data);
+			}
+			return Get(id);
+		}
+
 		virtual void Clear() {
 			for (int i = dense.size() - 1; i >= 0; --i) {
 				Remove(dense[i]);
@@ -231,12 +245,12 @@ namespace Imagine::Core {
 				IDs = nextIDs;
 			}
 			else if (!FreeList.empty()) {
-				const UnsignedInteger *begin = &FreeList[0];
-				const UnsignedInteger *end = &FreeList.back() + 1;
+				auto begin = FreeList.cbegin();
+				auto end = FreeList.cend();
 
-				const UnsignedInteger *idxPtr = std::find(begin, end, id);
-				if (idxPtr != end) {
-					FreeList.swap_and_remove(idxPtr - begin);
+				auto it = std::find(begin, end, id);
+				if (it != end) {
+					FreeList.swap_and_remove(it);
 				}
 			}
 		}
@@ -267,6 +281,16 @@ namespace Imagine::Core {
 			if (id == NullId) return false;
 			EnsureFreelistContinuityOnCreate(id);
 			return SparseSet<T, UnsignedInteger>::Create(id, data);
+		}
+
+		virtual T& GetOrCreate(const UnsignedInteger id) override {
+			EnsureFreelistContinuityOnCreate(id, false);
+			return SparseSet<T, UnsignedInteger>::GetOrCreate(id);
+		}
+
+		virtual T& GetOrCreate(const UnsignedInteger id, const T &data) override {
+			EnsureFreelistContinuityOnCreate(id, false);
+			return SparseSet<T, UnsignedInteger>::GetOrCreate(id, data);
 		}
 
 		virtual void Remove(const UnsignedInteger id) override {

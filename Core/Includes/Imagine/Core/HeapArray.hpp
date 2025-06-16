@@ -61,7 +61,75 @@ namespace Imagine::Core {
 			std::swap(Count, other.Count);
 			std::swap(Capacity, other.Capacity);
 		}
+	public:
+		//TODO: finish the iterator when I got internet back on.
+		struct const_iterator {
+			friend HeapArray;
+		protected:
+			HeapArray<T, UnsignedInteger>* array{nullptr};
+			UnsignedInteger index{-1};
+		public:
+			const HeapArray<T, UnsignedInteger>& GetArray() const {return *array;}
+			UnsignedInteger GetIndex() const {return index;}
+		public:
+			explicit operator bool() const {return array;}
 
+			const T* operator->() const {return &array->get(index);}
+			const T& operator*() const {return array->get(index);}
+
+			const_iterator operator++() {
+				const_iterator result{*this};
+				index += 1;
+				return result;
+			}
+			const_iterator operator--() {
+				const_iterator result{*this};
+				index -= 1;
+				return result;
+			}
+			const_iterator& operator+=(const int64_t value) {
+				index += value;
+				return *this;
+			}
+			const_iterator& operator-=(const int64_t value) {
+				index -= value;
+				return *this;
+			}
+
+			const_iterator operator+(const const_iterator& o) const {
+				const_iterator result{*this};
+				result += o.index;
+				return result;
+			}
+
+			const_iterator operator-(const const_iterator& o) const {
+				const_iterator result{*this};
+				result -= o.index;
+				return result;
+			}
+
+			bool operator==(const const_iterator & o) const {return index == o.index;}
+			bool operator!=(const const_iterator & o) const {return !(*this == o);}
+			auto operator<=>(const const_iterator & o) const {return index <=> o.index;}
+			auto operator<=>(const int64_t & o) const {return static_cast<int64_t>(index) <=> o;}
+			auto operator<=>(const uint64_t & o) const {return static_cast<uint64_t>(index) <=> o;}
+		};
+
+		struct iterator final : public const_iterator {
+			friend HeapArray;
+		public:
+			HeapArray<T, UnsignedInteger>& GetArray() const {return *const_iterator::array;}
+		public:
+			T* operator->() {return &const_iterator::array->get(const_iterator::index);}
+			T& operator*() {return const_iterator::array->get(const_iterator::index);}
+		};
+
+		iterator begin() {return iterator{this, 0};}
+		iterator end() {return iterator{this, Count};}
+		const_iterator begin() const {return const_iterator{this, 0};}
+		const_iterator end() const {return const_iterator{this, Count};}
+		const_iterator cbegin() const {return const_iterator{this, 0};}
+		const_iterator cend() const {return const_iterator{this, Count};}
 	private:
 		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2) {
 			MGN_CORE_ASSERT(id1 < Capacity, "The index {} is out of bound.", id1);
@@ -192,6 +260,9 @@ namespace Imagine::Core {
 			}
 			--Count;
 		}
+		void remove(const const_iterator& it) {
+			remove(it.index);
+		}
 
 		/**
 		 * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
@@ -201,7 +272,9 @@ namespace Imagine::Core {
 			c_swap_elements(index, Count - 1);
 			--Count;
 		}
-
+		void swap_and_remove(const const_iterator& it) {
+			swap_and_remove(it.index);
+		}
 		void clear() {
 			Count = 0;
 		}

@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Entity.hpp"
+#include "Relationship.hpp"
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/RawSparseSet.hpp"
@@ -22,15 +23,59 @@ namespace Imagine::Core {
 		~Scene();
 
 	public:
+		// CRD (CRUD without the update)
 		EntityID CreateEntity();
 		Entity &GetEntity(EntityID id);
 		const Entity &GetEntity(EntityID id) const;
 		void DestroyEntity(EntityID id);
-
 		void Clear();
 
+	public:
+
+		class RelationshipIterator {
+		public:
+			RelationshipIterator() = default;
+			~RelationshipIterator() = default;
+			RelationshipIterator(const RelationshipIterator &o);
+			RelationshipIterator &operator=(const RelationshipIterator &o);
+			RelationshipIterator(Scene* scene, EntityID id);
+
+		private:
+			Scene* scene{nullptr};
+			EntityID current{EntityID::NullID};
+		public:
+			[[nodiscard]] bool IsValid() const {return scene && current != EntityID::NullID;}
+			[[nodiscard]] explicit operator bool() const {return IsValid(); }
+
+			[[nodiscard]] Entity& Get();
+			[[nodiscard]] const Entity& Get() const;
+
+			[[nodiscard]] bool IsRoot() const;
+			[[nodiscard]] bool HasChildren() const;
+			[[nodiscard]] bool HasParent() const;
+
+			/// This method will calculate the same way an linked-list works all the children this entity have.
+			/// @return The number of children this entity have.
+			[[nodiscard]] uint64_t CountChildren() const;
+
+			[[nodiscard]] RelationshipIterator PreviousSibling() const;
+			[[nodiscard]] RelationshipIterator NextSibling() const;
+			[[nodiscard]] RelationshipIterator Parent() const;
+			[[nodiscard]] RelationshipIterator FirstChild() const;
+
+			//TODO: Test see if it works.
+			RelationshipIterator& operator ++(int);
+		};
+
+		// Relationship management
+		void SetParent(EntityID entity, EntityID parent);
+		void AddToChild(EntityID entity, EntityID child);
+
+	public:
+		// Component Handling
 		void AddComponentType(UUID componentId, uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
 		UUID AddComponentType(uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
+
 
 		template<typename T>
 		void AddComponentType() {
@@ -80,6 +125,8 @@ namespace Imagine::Core {
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
+		void ForEach(std::function<void(const glm::mat4& worldMat, Entity& entity)>);
+
 		[[nodiscard]] uint32_t Count() const {
 			return m_SparseEntities.Count();
 		}
@@ -101,5 +148,10 @@ namespace Imagine::Core {
 	private:
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
 		std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;
+
+		HeapArray<EntityID> m_Roots;
+		SparseSet<Parent, uint32_t> m_Parents;
+		SparseSet<Child, uint32_t> m_Children;
+		SparseSet<Sibling, uint32_t> m_Siblings;
 	};
 } // namespace Imagine::Core

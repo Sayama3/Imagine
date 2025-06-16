@@ -3,5 +3,18 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/EASTL" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/SDL" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/VulkanMemoryAllocator" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/assimp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/glfw" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/meshoptimizer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/spdlog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/tracy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/vk-bootstrap" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/volk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/xxHash" vcs="Git" />
   </component>
 </project>

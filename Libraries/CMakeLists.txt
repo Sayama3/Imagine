@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-include(FetchContent)
+#include(FetchContent)
 
 set(GLM_ENABLE_CXX_20 ON)
 set(GLM_BUILD_LIBRARY OFF)

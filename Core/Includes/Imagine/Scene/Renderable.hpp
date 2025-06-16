@@ -12,6 +12,7 @@ namespace Imagine::Core {
 	//TODO: Move the rendering to ECS like
 
 	struct Renderable {
+		virtual ~Renderable() = default;
 		virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) = 0;
 	};
 
@@ -31,7 +32,7 @@ namespace Imagine::Core {
 			}
 		}
 
-		virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx)
+		virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) override
 		{
 			// draw children
 			for (auto& c : children) {
@@ -41,9 +42,9 @@ namespace Imagine::Core {
 
 		struct MeshNode : public Node {
 
-			std::shared_ptr<MeshAsset> mesh;
+			std::shared_ptr<uint32_t> mesh;
 
-			virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) override;
+			virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) override {}
 		};
 	};
 
