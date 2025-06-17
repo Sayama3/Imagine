@@ -72,6 +72,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/Mesh.hpp
 		Includes/Imagine/Rendering/Model.cpp
 		Includes/Imagine/Rendering/Model.hpp
+		Includes/Imagine/Scene/SceneManager.cpp
+		Includes/Imagine/Scene/SceneManager.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

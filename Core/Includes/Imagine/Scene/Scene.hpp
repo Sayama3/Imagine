@@ -17,11 +17,24 @@ namespace Imagine::Core {
 	class Scene {
 	public:
 		static constexpr uint64_t c_EntityPrepareCount = 1024;
-
+		using Ref = std::shared_ptr<Scene>;
 	public:
 		Scene();
 		~Scene();
 
+		/// The copy constructor WILL keep the same ID. Be mindful.
+		Scene(const Scene& o) = default;
+		/// The copy assignment WILL keep the same ID. Be mindful.
+		Scene& operator=(const Scene& s) = default;
+
+		Scene(Scene&& o) noexcept;
+		Scene& operator=(Scene&& s) noexcept;
+
+		void swap(Scene& s) noexcept;
+
+	public:
+		/// Create a copy of the scene with a different ID.
+		Scene Duplicate() const;
 	public:
 		// CRD (CRUD without the update)
 		EntityID CreateEntity();
@@ -200,7 +213,10 @@ namespace Imagine::Core {
 				comps.Prepare(additional_capacity);
 			}
 		}
-
+	public:
+		UUID GetID() const {return ID;}
+	private:
+		UUID ID{};
 	private:
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
 		std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;

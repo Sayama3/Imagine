@@ -11,6 +11,28 @@ namespace Imagine::Core {
 	}
 
 	Scene::~Scene() = default;
+	Scene::Scene(Scene &&o) noexcept {
+		swap(o);
+	}
+	Scene &Scene::operator=(Scene &&s) noexcept {
+		swap(s);
+		return *this;
+	}
+	void Scene::swap(Scene &s) noexcept {
+		m_SparseEntities.swap(s.m_SparseEntities);
+		m_CustomComponents.swap(s.m_CustomComponents);
+		m_Roots.swap(s.m_Roots);
+		m_Parents.swap(s.m_Parents);
+		m_Children.swap(s.m_Children);
+		m_Siblings.swap(s.m_Siblings);
+		std::swap(ID, s.ID);
+	}
+
+	Scene Scene::Duplicate() const {
+		Scene scene{*this};
+		scene.ID = UUID{};
+		return scene;
+	}
 
 	EntityID Scene::CreateEntity() {
 		const EntityID id = {m_SparseEntities.Create()};

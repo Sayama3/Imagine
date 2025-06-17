@@ -130,7 +130,16 @@ namespace Imagine::Core {
 			}
 
 			if (m_Renderer && canDraw) {
-				m_Renderer->Draw();
+				if (m_Renderer->BeginDraw()) {
+					m_Renderer->Draw();
+
+					glm::mat4 identity{};
+
+
+
+					m_Renderer->EndDraw();
+					m_Renderer->Present();
+				}
 			}
 
 			std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();

@@ -61,6 +61,15 @@ namespace Imagine::Core {
 			dense.reserve(capacity);
 			elements.reserve(capacity);
 		}
+		SparseSet(const SparseSet&) = default;
+		SparseSet& operator=(const SparseSet&) = default;
+		SparseSet(SparseSet&&s) noexcept {swap(s);}
+		SparseSet& operator=(SparseSet&& s) noexcept { swap(s); return *this;}
+		void swap(SparseSet& s) noexcept {
+			sparse.swap(sparse);
+			dense.swap(dense);
+			elements.swap(elements);
+		}
 
 		virtual ~SparseSet() {
 			for (int i = 0; i < elements.size(); ++i) {
@@ -215,11 +224,22 @@ namespace Imagine::Core {
 			FreeList.reserve(capacity);
 			FreeList.reserve(capacity);
 		}
+		AutoIdSparseSet(const AutoIdSparseSet&) = default;
+		AutoIdSparseSet& operator=(const AutoIdSparseSet&) = default;
+
+		AutoIdSparseSet(AutoIdSparseSet&& aiss) noexcept {swap(aiss);}
+		AutoIdSparseSet& operator=(AutoIdSparseSet&& aiss) noexcept {swap(aiss); return *this;}
+
 		virtual ~AutoIdSparseSet() override {
 			FreeList.clear();
 			IDs = 0;
 		}
 
+		void swap(AutoIdSparseSet& aiss) noexcept {
+			SparseSet<T,UnsignedInteger>::swap(aiss);
+			FreeList.swap(aiss.FreeList);
+			std::swap(IDs, aiss.FreeList);
+		}
 	private:
 		UnsignedInteger CreateID() {
 			UnsignedInteger id;
