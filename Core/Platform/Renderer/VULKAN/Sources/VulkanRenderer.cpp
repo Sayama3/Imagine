@@ -129,7 +129,7 @@ namespace Imagine::Vulkan {
 		vkb::PhysicalDeviceSelector selector{vkb_inst};
 		vkb::PhysicalDevice physicalDevice = selector
 													 .set_minimum_version(1, 3)
-													 .add_desired_extension(VK_KHR_DISPLAY_EXTENSION_NAME)
+													 .add_required_extension(VK_KHR_DISPLAY_EXTENSION_NAME)
 													 .set_required_features_13(features)
 													 .set_required_features_12(features12)
 													 .set_surface(m_Surface)
