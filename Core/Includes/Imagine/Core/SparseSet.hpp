@@ -284,12 +284,12 @@ namespace Imagine::Core {
 		}
 
 		virtual T& GetOrCreate(const UnsignedInteger id) override {
-			EnsureFreelistContinuityOnCreate(id, false);
+			EnsureFreelistContinuityOnCreate(id);
 			return SparseSet<T, UnsignedInteger>::GetOrCreate(id);
 		}
 
 		virtual T& GetOrCreate(const UnsignedInteger id, const T &data) override {
-			EnsureFreelistContinuityOnCreate(id, false);
+			EnsureFreelistContinuityOnCreate(id);
 			return SparseSet<T, UnsignedInteger>::GetOrCreate(id, data);
 		}
 

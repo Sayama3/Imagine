@@ -62,20 +62,33 @@ namespace Imagine::Core {
 			std::swap(Capacity, other.Capacity);
 		}
 	public:
-		//TODO: finish the iterator when I got internet back on.
+		//TODO: finish the iterator.
 		struct const_iterator {
 			friend HeapArray;
+		public:
+			using iterator_category = std::random_access_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = const T*;
+			using reference = const T&;
+		public:
+			const_iterator() = default;
+			~const_iterator() = default;
+			const_iterator(const const_iterator&) = default;
+			const_iterator& operator=(const const_iterator&) = default;
+			const_iterator(const HeapArray<T, UnsignedInteger>* array, UnsignedInteger index) : array(array), index(index) {}
 		protected:
-			HeapArray<T, UnsignedInteger>* array{nullptr};
-			UnsignedInteger index{-1};
+			const HeapArray<T, UnsignedInteger>* array{nullptr};
+			difference_type index{-1u};
 		public:
 			const HeapArray<T, UnsignedInteger>& GetArray() const {return *array;}
-			UnsignedInteger GetIndex() const {return index;}
+			UnsignedInteger GetIndex() const {return static_cast<UnsignedInteger>(index);}
+			const pointer Get() const { return &array->get(static_cast<UnsignedInteger>(index));}
 		public:
 			explicit operator bool() const {return array;}
 
-			const T* operator->() const {return &array->get(index);}
-			const T& operator*() const {return array->get(index);}
+			const T* operator->() const {return &array->get(static_cast<UnsignedInteger>(index));}
+			const T& operator*() const {return array->get(static_cast<UnsignedInteger>(index));}
 
 			const_iterator operator++() {
 				const_iterator result{*this};
@@ -87,11 +100,11 @@ namespace Imagine::Core {
 				index -= 1;
 				return result;
 			}
-			const_iterator& operator+=(const int64_t value) {
+			const_iterator& operator+=(const difference_type value) {
 				index += value;
 				return *this;
 			}
-			const_iterator& operator-=(const int64_t value) {
+			const_iterator& operator-=(const difference_type value) {
 				index -= value;
 				return *this;
 			}
@@ -115,21 +128,11 @@ namespace Imagine::Core {
 			auto operator<=>(const uint64_t & o) const {return static_cast<uint64_t>(index) <=> o;}
 		};
 
-		struct iterator final : public const_iterator {
-			friend HeapArray;
-		public:
-			HeapArray<T, UnsignedInteger>& GetArray() const {return *const_iterator::array;}
-		public:
-			T* operator->() {return &const_iterator::array->get(const_iterator::index);}
-			T& operator*() {return const_iterator::array->get(const_iterator::index);}
-		};
+		inline const_iterator begin() const {return cbegin();}
+		inline const_iterator end() const {return cend();}
 
-		iterator begin() {return iterator{this, 0};}
-		iterator end() {return iterator{this, Count};}
-		const_iterator begin() const {return const_iterator{this, 0};}
-		const_iterator end() const {return const_iterator{this, Count};}
-		const_iterator cbegin() const {return const_iterator{this, 0};}
-		const_iterator cend() const {return const_iterator{this, Count};}
+		inline const_iterator cbegin() const { return const_iterator(this, 0u);}
+		inline const_iterator cend() const { return const_iterator(this, Count);}
 	private:
 		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2) {
 			MGN_CORE_ASSERT(id1 < Capacity, "The index {} is out of bound.", id1);

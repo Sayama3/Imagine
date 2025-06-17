@@ -19,6 +19,14 @@ namespace Imagine::Core {
 		return id;
 	}
 
+	EntityID Scene::CreateEntity(EntityID parentId) {
+		const EntityID id = {m_SparseEntities.Create()};
+		m_SparseEntities.Get(id.id).Id = id;
+		AddToChild(id, parentId);
+		return id;
+
+	}
+
 	Entity &Scene::GetEntity(const EntityID id) {
 		return m_SparseEntities.Get(id.id);
 	}
@@ -40,6 +48,69 @@ namespace Imagine::Core {
 		}
 		m_SparseEntities.Clear();
 	}
+	Scene::ChildIterator::ChildIterator(Scene *scene, EntityID parent) :
+		scene(scene) {
+		if (!scene) return;
+		auto *child = scene->m_Children.TryGet(parent.id);
+		if (child && child->firstChild.IsValid()) {
+			currentChild = child->firstChild;
+		}
+	}
+	Scene::ChildIterator Scene::ChildIterator::Next() const {
+		ChildIterator sibling{*this};
+		++sibling;
+		return sibling;
+	}
+	Scene::ChildIterator Scene::ChildIterator::Previous() const {
+		ChildIterator sibling{*this};
+		--sibling;
+		return sibling;
+	}
+	Scene::ChildIterator Scene::ChildIterator::operator++(int) {
+		ChildIterator res{*this};
+		++(*this);
+		return res;
+	}
+	EntityID Scene::ChildIterator::GetParent() const {
+		auto *parent = scene->m_Parents.TryGet(currentChild.id);
+		return parent ? parent->parent : EntityID::NullID;
+	}
+
+	Scene::ChildIterator &Scene::ChildIterator::operator++() {
+		auto *sib = scene->m_Siblings.TryGet(currentChild.id);
+		if (sib && sib->next.IsValid()) {
+			currentChild = sib->next;
+		}
+		else {
+			currentChild = EntityID::NullID;
+		}
+		return *this;
+	}
+	Scene::ChildIterator Scene::ChildIterator::operator--(int) {
+		ChildIterator res{*this};
+		--(*this);
+		return res;
+	}
+
+	Scene::ChildIterator &Scene::ChildIterator::operator--() {
+		auto *sib = scene->m_Siblings.TryGet(currentChild.id);
+		if (sib && sib->previous.IsValid()) {
+			currentChild = sib->previous;
+		}
+		else {
+			currentChild = EntityID::NullID;
+		}
+		return *this;
+	}
+
+	Scene::ChildIterator Scene::BeginChild(EntityID parent) {
+		return ChildIterator{this, parent};
+	}
+
+	Scene::ChildIterator Scene::EndChild() {
+		return {this, EntityID::NullID};
+	}
+
 	Scene::RelationshipIterator::RelationshipIterator(const RelationshipIterator &o) :
 		scene(o.scene), current(o.current) {
 	}
@@ -48,7 +119,8 @@ namespace Imagine::Core {
 		current = o.current;
 		return *this;
 	}
-	Scene::RelationshipIterator::RelationshipIterator(Scene *scene, EntityID id) : scene(scene), current(id) {
+	Scene::RelationshipIterator::RelationshipIterator(Scene *scene, EntityID id) :
+		scene(scene), current(id) {
 	}
 	// RelationshipIterator
 	Entity &Scene::RelationshipIterator::Get() {
@@ -82,7 +154,7 @@ namespace Imagine::Core {
 	}
 
 	Scene::RelationshipIterator Scene::RelationshipIterator::PreviousSibling() const {
-		Sibling* sibling = scene->m_Siblings.TryGet(current.id);
+		Sibling *sibling = scene->m_Siblings.TryGet(current.id);
 		return sibling ? RelationshipIterator{scene, sibling->previous} : RelationshipIterator{scene, EntityID::NullID};
 	}
 
@@ -100,9 +172,9 @@ namespace Imagine::Core {
 		struct Child *child = scene->m_Children.TryGet(current.id);
 		return child ? RelationshipIterator{scene, child->firstChild} : RelationshipIterator{scene, EntityID::NullID};
 	}
-	Scene::RelationshipIterator &Scene::RelationshipIterator::operator++(int) {
+	Scene::RelationshipIterator &Scene::RelationshipIterator::operator++() {
 		// First we go see if there is any child.
-		struct Child* child = scene->m_Children.TryGet(current.id);
+		struct Child *child = scene->m_Children.TryGet(current.id);
 		if (child && child->firstChild.IsValid()) {
 			current = child->firstChild;
 			return *this;
@@ -116,9 +188,9 @@ namespace Imagine::Core {
 		}
 
 		// If we don't have any sibling, we go to see it our parent (or the parent of our parent recursively) don't have any next sibling.
-		struct Parent* parent = scene->m_Parents.TryGet(current.id);
+		struct Parent *parent = scene->m_Parents.TryGet(current.id);
 		while (parent && parent->parent.IsValid()) {
-			struct Sibling* parentSibling = scene->m_Siblings.TryGet(parent->parent.id);
+			struct Sibling *parentSibling = scene->m_Siblings.TryGet(parent->parent.id);
 			if (parentSibling && parentSibling->next.IsValid()) {
 				current = parentSibling->next;
 				return *this;
@@ -129,6 +201,20 @@ namespace Imagine::Core {
 		// If we don't have a child, we don't have a sibling, and no ancestry have any sibling... Well, that's the end.
 		current = EntityID::NullID;
 		return *this;
+	}
+
+	Scene::RelationshipIterator Scene::BeginRelationship(EntityID e) {
+		return Scene::RelationshipIterator{this, e};
+	}
+
+	Scene::RelationshipIterator Scene::EndRelationship() {
+		return Scene::RelationshipIterator{this, EntityID::NullID};
+	}
+
+	Scene::RelationshipIterator Scene::RelationshipIterator::operator++(int) {
+		Scene::RelationshipIterator it{*this};
+		++*this;
+		return it;
 	}
 
 	// Relationship management
@@ -298,8 +384,5 @@ namespace Imagine::Core {
 
 		MGN_CORE_ERROR("The component id {} didn't exist on entity {} but somehow hasn't been added successfully either.", componentId.string(), entityId.string());
 		return {};
-	}
-
-	void Scene::ForEach(std::function<void(const glm::mat4 &worldMat, Entity &entity)>) {
 	}
 } // namespace Imagine::Core

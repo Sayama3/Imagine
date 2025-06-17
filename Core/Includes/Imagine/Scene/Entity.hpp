@@ -10,7 +10,7 @@
 
 namespace Imagine::Core {
 	struct EntityID {
-		static inline constexpr EntityID NullID{-1u};
+		static inline constexpr uint32_t NullID{-1u};
 
 		EntityID() = default;
 		EntityID(const uint32_t id) : id(id) {}
@@ -31,7 +31,7 @@ namespace Imagine::Core {
 
 	struct Entity {
 		EntityID Id;
-		Quat Rotation;
-		Vec3 Position;
+		Quat LocalRotation;
+		Vec3 LocalPosition;
 	};
 } // namespace Imagine::Core
