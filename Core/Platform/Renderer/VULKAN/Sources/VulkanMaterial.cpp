@@ -8,6 +8,8 @@
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
+using namespace Imagine::Core;
+
 namespace Imagine::Vulkan {
 	void GLTFMetallicRoughness::BuildPipeline(VulkanRenderer* renderer) {
 		MGN_CORE_ASSERT(renderer, "The current renderer is not a Vulkan renderer.");

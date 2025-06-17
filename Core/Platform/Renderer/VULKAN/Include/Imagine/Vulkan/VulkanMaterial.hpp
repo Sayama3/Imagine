@@ -6,6 +6,7 @@
 
 #include <vulkan/vulkan.h>
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/Material.hpp"
 #include "Imagine/Vulkan/AllocatedImage.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 
@@ -13,21 +14,17 @@ namespace Imagine::Vulkan {
 
 	class VulkanRenderer;
 
-	enum class MaterialPass : uint8_t {
-		MainColor,
-		Transparent,
-		Other
-	};
-
 	struct VulkanMaterialPipeline {
 		VkPipeline pipeline;
 		VkPipelineLayout layout;
 	};
 
-	struct VulkanMaterialInstance {
+	struct VulkanMaterialInstance : public Core::MaterialInstance {
+		VulkanMaterialInstance() = default;
+		virtual ~VulkanMaterialInstance() = default;
+
 		VulkanMaterialPipeline *pipeline;
 		VkDescriptorSet materialSet;
-		MaterialPass passType;
 	};
 
 	struct GLTFMetallicRoughness {
@@ -56,7 +53,7 @@ namespace Imagine::Vulkan {
 		void BuildPipeline(VulkanRenderer* renderer);
 		void ClearResources(VkDevice device);
 
-		VulkanMaterialInstance WriteMaterial(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable &descriptorAllocator);
+		VulkanMaterialInstance WriteMaterial(VkDevice device, Core::MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable &descriptorAllocator);
 	};
 };
 

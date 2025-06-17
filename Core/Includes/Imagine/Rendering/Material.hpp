@@ -6,8 +6,18 @@
 
 namespace Imagine::Core {
 
-	// TODO: A material system.
-	class Material {
+
+	enum class MaterialPass : uint8_t {
+		MainColor,
+		Transparent,
+		Other
+	};
+
+	struct MaterialInstance {
+		MaterialInstance() = default;
+		virtual ~MaterialInstance() = default;
+
+		MaterialPass passType;
 	};
 
 } // namespace Imagine::Core

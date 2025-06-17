@@ -66,6 +66,12 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/ShaderParameters.hpp
 		Includes/Imagine/Rendering/DrawContext.hpp
 		Includes/Imagine/Scene/Relationship.hpp
+		Sources/Rendering/RenderObject.cpp
+		Includes/Imagine/Rendering/RenderObject.hpp
+		Sources/Rendering/Mesh.cpp
+		Includes/Imagine/Rendering/Mesh.hpp
+		Includes/Imagine/Rendering/Model.cpp
+		Includes/Imagine/Rendering/Model.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

@@ -23,6 +23,7 @@
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
+#include "Imagine/Vulkan/VulkanMesh.hpp"
 
 // Window-Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
 #if defined(MGN_WINDOW_SDL3)
@@ -286,10 +287,10 @@ namespace Imagine::Vulkan {
 
 		// create a descriptor pool that will hold 10 sets with 1 image each
 		std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = {
-			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
-			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1},
-			{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1},
-			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
+				{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1},
+				{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1},
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
 		};
 		m_GlobalDescriptorAllocator.Init(m_Device, 10, sizes);
 
@@ -864,15 +865,14 @@ namespace Imagine::Vulkan {
 	const Core::RendererParameters &VulkanRenderer::GetRenderParams() const {
 		return m_AppParams.Renderer.value();
 	}
-
-	void VulkanRenderer::Draw() {
+	bool VulkanRenderer::BeginDraw() {
 		// TODO: Preserve aspect ratio
 		m_DrawExtent.width = std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale;
 		m_DrawExtent.height = std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale;
 
 		const bool canDraw = m_DrawExtent.width > 0 && m_DrawExtent.height > 0;
 		if (!canDraw) {
-			return;
+			return false;
 		}
 
 		// wait until the gpu has finished rendering the last frame. Timeout of 1
@@ -884,9 +884,7 @@ namespace Imagine::Vulkan {
 		GetCurrentFrame().m_FrameDescriptors.ClearPools(m_Device);
 
 		// request image from the swapchain
-		uint32_t swapchainImageIndex;
-
-		VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &swapchainImageIndex);
+		VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &GetCurrentFrame().m_SwapchainImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			m_ResizeRequested = true;
@@ -894,36 +892,29 @@ namespace Imagine::Vulkan {
 		else {
 			MGN_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
 		}
+
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 		VK_CHECK(vkResetCommandBuffer(cmd, 0));
 
 		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
-
-		// make the swapchain image into writeable mode before rendering
-		// TODO: See if the layout VK_IMAGE_LAYOUT_GENERAL is the most optimal
-
-		// Prepare the image for the drawing
-		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
-
-		// ALl the draw command starting with the clearing of the background
-		DrawBackground(cmd);
-
-		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		Utils::TransitionImage(cmd, m_DepthImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-
-		DrawGeometry(cmd);
+		return true;
+	}
+	void VulkanRenderer::EndDraw() {
+		VkCommandBuffer cmd{nullptr};
+		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
 		// Ending the drawing commands and copying the data into the swapchain image.
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		Utils::CopyImageToImage(cmd, m_DrawImage.image, m_SwapchainImages[swapchainImageIndex], m_DrawExtent, m_SwapchainExtent, VK_IMAGE_ASPECT_COLOR_BIT);
+		Utils::TransitionImage(cmd, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		Utils::CopyImageToImage(cmd, m_DrawImage.image, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], m_DrawExtent, m_SwapchainExtent, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		// make the swapchain image into presentable mode
-		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		DrawImGui(cmd, m_SwapchainImageViews[swapchainImageIndex]);
-		Utils::TransitionImage(cmd, m_SwapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		Utils::TransitionImage(cmd, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		DrawImGui(cmd, m_SwapchainImageViews[GetCurrentFrame().m_SwapchainImageIndex]);
+		Utils::TransitionImage(cmd, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
 
 		// finalize the command buffer (we can no longer add commands, but it can now be executed)
 		VK_CHECK(vkEndCommandBuffer(cmd));
@@ -942,7 +933,8 @@ namespace Imagine::Vulkan {
 		// submit command buffer to the queue and execute it.
 		//  _renderFence will now block until the graphic commands finish execution
 		VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, GetCurrentFrame().m_RenderFence));
-
+	}
+	void VulkanRenderer::Present() {
 		// prepare present
 		//  this will put the image we just rendered to into the visible window.
 		//  we want to wait on the _renderSemaphore for that,
@@ -956,10 +948,9 @@ namespace Imagine::Vulkan {
 		presentInfo.pWaitSemaphores = &GetCurrentFrame().m_RenderSemaphore;
 		presentInfo.waitSemaphoreCount = 1;
 
-		presentInfo.pImageIndices = &swapchainImageIndex;
+		presentInfo.pImageIndices = &GetCurrentFrame().m_SwapchainImageIndex;
 
-		result = vkQueuePresentKHR(m_GraphicsQueue, &presentInfo);
-
+		VkResult result = vkQueuePresentKHR(m_GraphicsQueue, &presentInfo);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_ResizeRequested) {
 			ResizeSwapChain();
 		}
@@ -968,6 +959,53 @@ namespace Imagine::Vulkan {
 		}
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
 	}
+
+	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
+		VkCommandBuffer cmd{nullptr};
+		cmd = GetCurrentFrame().m_MainCommandBuffer;
+
+		for (const RenderObject & draw: ctx.OpaqueSurfaces) {
+
+			VulkanMesh* mesh = dynamic_cast<VulkanMesh*>(draw.mesh.get());
+			VulkanMaterialInstance* material = dynamic_cast<VulkanMaterialInstance*>(draw.material);
+
+			vkCmdBindPipeline(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
+			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 0,1, &m_DrawImageDescriptors,0,nullptr );
+			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 1,1, &material->materialSet,0,nullptr );
+
+			vkCmdBindIndexBuffer(cmd, mesh->indexBuffer,0,VK_INDEX_TYPE_UINT32);
+
+			GPUDrawPushConstants pushConstants;
+			pushConstants.vertexBuffer = mesh->vertexBufferAddress;
+			pushConstants.worldMatrix = draw.transform;
+			vkCmdPushConstants(cmd,material->pipeline->layout ,VK_SHADER_STAGE_VERTEX_BIT,0, sizeof(GPUDrawPushConstants), &pushConstants);
+
+			//TODO: Do some smart LOD selection instead of the best one everytime
+			Mesh::LOD lod = mesh->lods.front();
+			vkCmdDrawIndexed(cmd,lod.count,1,lod.index,0,0);
+
+		}
+	}
+
+	void VulkanRenderer::Draw() {
+		VkCommandBuffer cmd{nullptr};
+		cmd = GetCurrentFrame().m_MainCommandBuffer;
+
+		// make the swapchain image into writeable mode before rendering
+		// TODO: See if the layout VK_IMAGE_LAYOUT_GENERAL is the most optimal
+
+		// Prepare the image for the drawing
+		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+
+		// ALl the draw command starting with the clearing of the background
+		DrawBackground(cmd);
+
+		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		Utils::TransitionImage(cmd, m_DepthImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+
+		DrawGeometry(cmd);
+	}
+
 	void VulkanRenderer::SendImGuiCommands() {
 #ifdef MGN_IMGUI
 		if (ImGui::Begin("Background")) {

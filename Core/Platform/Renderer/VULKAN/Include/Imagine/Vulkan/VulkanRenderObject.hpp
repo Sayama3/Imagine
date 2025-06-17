@@ -5,19 +5,19 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include "Imagine/Vulkan/VulkanMaterial.hpp"
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/RenderObject.hpp"
+#include "Imagine/Vulkan/VulkanMaterial.hpp"
+#include "Imagine/Vulkan/VulkanMesh.hpp"
 
 namespace Imagine::Vulkan {
 
-	struct VulkanRenderObject {
-		uint32_t indexCount;
-		uint32_t firstIndex;
-		glm::mat4 transform;
+	struct VulkanRenderObject final : public Core::RenderObject {
+		VulkanRenderObject() = default;
+		virtual ~VulkanRenderObject() = default;
 
-		VkBuffer indexBuffer;
-		VulkanMaterialInstance* material;
-		VkDeviceAddress vertexBufferAddress;
+		VulkanMesh* GetVulkanMesh();
+		VulkanMaterialInstance* GetVulkanMaterialInstance();
 	};
 
 

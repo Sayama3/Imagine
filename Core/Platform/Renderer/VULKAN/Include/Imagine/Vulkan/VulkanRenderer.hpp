@@ -73,6 +73,12 @@ namespace Imagine::Vulkan {
 		[[nodiscard]] const Core::RendererParameters &GetRenderParams() const;
 
 	public:
+
+		virtual bool BeginDraw() override;
+		virtual void EndDraw() override;
+		virtual void Present() override;
+		virtual void Draw(const Core::DrawContext & ctx) override;
+
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
 		void DrawBackground(VkCommandBuffer cmd);

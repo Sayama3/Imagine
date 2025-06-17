@@ -17,6 +17,7 @@ namespace Imagine::Vulkan {
 
 		VkSemaphore m_SwapchainSemaphore = {}, m_RenderSemaphore = {};
 		VkFence m_RenderFence = {};
+		uint32_t m_SwapchainImageIndex;
 
 		// TODO: Add a Draw/Depth image per frame
 		// AllocatedImage m_DrawImage{};
