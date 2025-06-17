@@ -81,6 +81,9 @@ namespace Imagine::Vulkan {
 
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
+
+		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Core::Scene*, Core::EntityID parent = Core::EntityID::NullID) override;
+
 		void DrawBackground(VkCommandBuffer cmd);
 		void DrawGeometry(VkCommandBuffer cmd);
 

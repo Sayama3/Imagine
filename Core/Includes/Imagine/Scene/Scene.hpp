@@ -122,6 +122,9 @@ namespace Imagine::Core {
 		// Relationship management
 		void SetParent(EntityID entity, EntityID parent);
 		void AddToChild(EntityID entity, EntityID child);
+	private:
+		void RemoveParent(EntityID child);
+		void AddChild(EntityID parent, EntityID orphan);
 
 	public:
 		/// Iterate on all the entity with a function.
@@ -221,7 +224,7 @@ namespace Imagine::Core {
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
 		std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;
 
-		HeapArray<EntityID> m_Roots;
+		std::unordered_set<EntityID> m_Roots;
 		SparseSet<Parent, uint32_t> m_Parents;
 		SparseSet<Child, uint32_t> m_Children;
 		SparseSet<Sibling, uint32_t> m_Siblings;
@@ -230,8 +233,8 @@ namespace Imagine::Core {
 
 	template<typename T>
 	void Scene::ForEach(std::function<T(const T &worldMat, Scene *scene, EntityID entity)> func) {
-		const HeapArray<EntityID>::const_iterator beg = m_Roots.cbegin();
-		const HeapArray<EntityID>::const_iterator end = m_Roots.cend();
+		const auto beg = m_Roots.cbegin();
+		const auto end = m_Roots.cend();
 
 		T data{};
 
@@ -243,8 +246,8 @@ namespace Imagine::Core {
 
 	template<typename T>
 	void Scene::ForEach(const T &rootData, std::function<T(const T &data, Scene *scene, EntityID entity)> func) {
-		const HeapArray<EntityID>::const_iterator beg = m_Roots.cbegin();
-		const HeapArray<EntityID>::const_iterator end = m_Roots.cend();
+		const auto beg = m_Roots.cbegin();
+		const auto end = m_Roots.cend();
 
 		for (auto it = beg; it != end; ++it) {
 			EntityID rootId = *it;

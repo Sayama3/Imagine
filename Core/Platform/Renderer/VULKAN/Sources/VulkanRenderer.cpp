@@ -1028,6 +1028,11 @@ namespace Imagine::Vulkan {
 #endif
 	}
 
+	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene * scene, EntityID parent) {
+		if (!scene) return;
+
+	}
+
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
 		//    	// make a clear-color from Time.
 		//    	VkClearColorValue clearValue;

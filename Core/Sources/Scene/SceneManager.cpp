@@ -2,7 +2,7 @@
 // Created by Iannis on 17/06/2025.
 //
 
-#include "SceneManager.hpp"
+#include "Imagine/Scene/SceneManager.hpp"
 namespace Imagine::Core {
 	SceneManager::SceneRef SceneManager::GetMainScene() {
 		return s_MainScene;

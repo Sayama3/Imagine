@@ -7,8 +7,10 @@
 #include "Imagine/Application/ApplicationParameters.hpp"
 #include "Imagine/Rendering/DrawContext.hpp"
 #include "Imagine/Rendering/RendererParameters.hpp"
+#include "Imagine/Scene/Entity.hpp"
 
 namespace Imagine::Core {
+	class Scene;
 
 	enum class RendererAPI {
 		CPU,
@@ -40,6 +42,9 @@ namespace Imagine::Core {
 		virtual void Present() = 0;
 		virtual void Draw() = 0;
 		virtual void Draw(const DrawContext& ctx) = 0;
+
+		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;
+		//TODO: LoadInternalModelInScene
 
 		virtual void SendImGuiCommands() = 0;
 		virtual void PrepareShutdown() = 0;

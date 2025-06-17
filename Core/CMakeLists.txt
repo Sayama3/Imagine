@@ -70,9 +70,9 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/RenderObject.hpp
 		Sources/Rendering/Mesh.cpp
 		Includes/Imagine/Rendering/Mesh.hpp
-		Includes/Imagine/Rendering/Model.cpp
+		Sources/Rendering/Model.cpp
 		Includes/Imagine/Rendering/Model.hpp
-		Includes/Imagine/Scene/SceneManager.cpp
+		Sources/Scene/SceneManager.cpp
 		Includes/Imagine/Scene/SceneManager.hpp
 )
 

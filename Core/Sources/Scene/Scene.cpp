@@ -37,7 +37,7 @@ namespace Imagine::Core {
 	EntityID Scene::CreateEntity() {
 		const EntityID id = {m_SparseEntities.Create()};
 		m_SparseEntities.Get(id.id).Id = id;
-		m_Roots.push_back(id);
+		m_Roots.insert(id);
 		return id;
 	}
 
@@ -46,7 +46,6 @@ namespace Imagine::Core {
 		m_SparseEntities.Get(id.id).Id = id;
 		AddToChild(id, parentId);
 		return id;
-
 	}
 
 	Entity &Scene::GetEntity(const EntityID id) {
@@ -241,48 +240,70 @@ namespace Imagine::Core {
 
 	// Relationship management
 	void Scene::SetParent(const EntityID entity, const EntityID parent) {
-		AddToChild(parent, entity);
+		if (parent.IsValid())
+			AddToChild(parent, entity);
 	}
 
 	void Scene::AddToChild(const EntityID entity, const EntityID child) {
-		auto it = std::find(m_Roots.cbegin(), m_Roots.cend(), child);
-		if (it != m_Roots.cend()) {
-			m_Roots.swap_and_remove(it);
-		}
+		if (!child.IsValid()) return;
 
-		Parent &parent = m_Parents.GetOrCreate(child.id);
-		if (parent.parent.IsValid()) {
-			if (parent.parent == child) {
-				// Removing the parent from having child or attaching the next sibling if there is any.
-				Sibling *sibling = m_Siblings.TryGet(child.id);
-				if (!sibling || !sibling->next.IsValid()) {
-					m_Children.Remove(parent.parent.id);
+		// Make the child an orphan
+		RemoveParent(child);
+
+		if (entity.IsValid()) {
+			// Now that the parent is valid, we can assign the orphan to the new parent.
+			AddChild(entity, child);
+
+			// Assigning the new parent;
+			m_Parents.GetOrCreate(child.id).parent = entity;
+
+			auto it = std::find(m_Roots.cbegin(), m_Roots.cend(), child);
+			if (it != m_Roots.cend()) {
+				m_Roots.erase(it);
+			}
+		}
+		else {
+			m_Roots.insert(child.id);
+		}
+	}
+
+	void Scene::RemoveParent(EntityID child) {
+		Parent *pParent = m_Parents.TryGet(child.id);
+		if (pParent) {
+			Parent &parent = *pParent;
+			if (parent.parent.IsValid()) {
+				if (parent.parent == child) {
+					// Removing the parent from having child or attaching the next sibling if there is any.
+					Sibling *sibling = m_Siblings.TryGet(child.id);
+					if (!sibling || !sibling->next.IsValid()) {
+						m_Children.Remove(parent.parent.id);
+					}
+					else {
+						m_Children.Get(parent.parent.id).firstChild = sibling->next;
+						m_Siblings.Get(sibling->next.id).previous = EntityID::NullID;
+					}
 				}
 				else {
-					m_Children.Get(parent.parent.id).firstChild = sibling->next;
-					m_Siblings.Get(sibling->next.id).previous = EntityID::NullID;
-				}
-			}
-			else {
-				// Reordering the siblings to preserve the hierarchy as a linked-list would do.
-				Sibling &sibling = m_Siblings.Get(child.id);
-				Sibling *previous = sibling.previous.IsValid() ? m_Siblings.TryGet(sibling.previous.id) : nullptr;
-				Sibling *next = sibling.next.IsValid() ? m_Siblings.TryGet(sibling.next.id) : nullptr;
+					// Reordering the siblings to preserve the hierarchy as a linked-list would do.
+					Sibling &sibling = m_Siblings.Get(child.id);
+					Sibling *previous = sibling.previous.IsValid() ? m_Siblings.TryGet(sibling.previous.id) : nullptr;
+					Sibling *next = sibling.next.IsValid() ? m_Siblings.TryGet(sibling.next.id) : nullptr;
 
-				if (previous) {
-					previous->next = next ? sibling.next : EntityID::NullID;
-				}
-				if (next) {
-					next->previous = previous ? sibling.previous : EntityID::NullID;
+					if (previous) {
+						previous->next = next ? sibling.next : EntityID::NullID;
+					}
+					if (next) {
+						next->previous = previous ? sibling.previous : EntityID::NullID;
+					}
 				}
 			}
+			m_Parents.Remove(child.id);
 		}
+	}
 
-		// Finally assigning the new parent;
-		parent.parent = entity;
-
+	void Scene::AddChild(EntityID parent, EntityID orphan) {
 		// Checking for the new parent where is some available place.
-		Child &childComponent = m_Children.GetOrCreate(entity.id);
+		Child &childComponent = m_Children.GetOrCreate(parent.id);
 		if (childComponent.firstChild.IsValid()) {
 			const EntityID fistChildId = childComponent.firstChild;
 			EntityID currentSibling = fistChildId;
@@ -291,11 +312,11 @@ namespace Imagine::Core {
 				currentSibling = sibling->next;
 				sibling = &m_Siblings.Get(currentSibling.id);
 			}
-			sibling->next = child;
-			m_Siblings.GetOrCreate(child.id).previous = currentSibling.id;
+			sibling->next = orphan;
+			m_Siblings.GetOrCreate(orphan.id).previous = currentSibling.id;
 		}
 		else {
-			childComponent.firstChild = entity;
+			childComponent.firstChild = orphan;
 		}
 	}
 
