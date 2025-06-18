@@ -8,6 +8,8 @@
 
 namespace Imagine::Core {
 	Scene::Scene() {
+		RegisterType<Renderable>();
+		RegisterType<Physicalisable>();
 	}
 
 	Scene::~Scene() = default;
@@ -37,6 +39,7 @@ namespace Imagine::Core {
 	EntityID Scene::CreateEntity() {
 		const EntityID id = {m_SparseEntities.Create()};
 		m_SparseEntities.Get(id.id).Id = id;
+		m_Names.Create(id.id, "Entity " + id.string());
 		m_Roots.insert(id);
 		return id;
 	}
@@ -44,7 +47,12 @@ namespace Imagine::Core {
 	EntityID Scene::CreateEntity(EntityID parentId) {
 		const EntityID id = {m_SparseEntities.Create()};
 		m_SparseEntities.Get(id.id).Id = id;
-		AddToChild(id, parentId);
+		m_Names.Create(id.id, "Entity " + id.string());
+		if (parentId.IsValid()) {
+			AddToChild(parentId, id);
+		} else {
+			m_Roots.insert(id);
+		}
 		return id;
 	}
 
@@ -61,6 +69,9 @@ namespace Imagine::Core {
 		for (auto &[uuid, rawSparseSet]: m_CustomComponents) {
 			rawSparseSet.Remove(id.id);
 		}
+		m_Names.Remove(id.id);
+		//TODO: Delete all children too
+		//TODO: Reorder the sibling hierarchy
 	}
 
 	void Scene::Clear() {
@@ -68,6 +79,14 @@ namespace Imagine::Core {
 			rawSparseSet.Clear();
 		}
 		m_SparseEntities.Clear();
+	}
+	std::string Scene::GetName(EntityID entityId) const {
+		auto* name = m_Names.TryGet(entityId.id);
+		MGN_CHECK_ERROR(name, "The entity id {} don't have name.", entityId.id);
+		return name ? *name : std::string{};
+	}
+	void Scene::SetName(EntityID entityId, std::string name) {
+		m_Names.GetOrCreate(entityId.id) = std::move(name);
 	}
 	Scene::ChildIterator::ChildIterator(Scene *scene, EntityID parent) :
 		scene(scene) {
@@ -321,13 +340,22 @@ namespace Imagine::Core {
 	}
 
 	// Component management
-	UUID Scene::AddComponentType(const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
+	UUID Scene::RegisterType(std::string name, const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
 		UUID id{};
-		AddComponentType(id, size, constructor, destructor, copy_constructor);
+		RegisterType(std::move(name), id, size, constructor, destructor, copy_constructor);
 		return id;
 	}
 
-	void Scene::AddComponentType(const UUID componentId, const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
+	void Scene::RegisterType(std::string name, const UUID componentId, const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
+		m_CustomComponentsMetadata[componentId] = {
+			std::move(name),
+			componentId,
+			size,
+			constructor != nullptr,
+			destructor != nullptr,
+			copy_constructor != nullptr,
+		};
+
 		m_CustomComponents[componentId] = RawSparseSet<uint32_t>{static_cast<uint32_t>(size), c_EntityPrepareCount};
 		auto &components = m_CustomComponents.at(componentId);
 		if (constructor) components.SetConstructor(constructor);
@@ -337,7 +365,7 @@ namespace Imagine::Core {
 
 	BufferView Scene::AddComponent(const EntityID entityId, const UUID componentId) {
 		if (!m_CustomComponents.contains(componentId)) {
-			MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+			MGN_CORE_ERROR("The component {} doesn't exist.",componentId.string());
 			return BufferView{};
 		}
 
@@ -352,7 +380,7 @@ namespace Imagine::Core {
 			return BufferView{components.Get(entityId.id), 0, components.GetDataSize()};
 		}
 
-		MGN_CORE_ERROR("The component id {} already exist on the entity {}.", componentId.string(), entityId.string());
+		MGN_CORE_ERROR("The component '{}' already exist on the entity '{}'.", m_CustomComponentsMetadata.at(componentId).name, GetName(entityId));
 		return {};
 	}
 
@@ -372,7 +400,7 @@ namespace Imagine::Core {
 			return BufferView{components.Get(entityId.id), 0, components.GetDataSize()};
 		}
 
-		MGN_CORE_ERROR("The component id {} already exist on the entity {}.", componentId.string(), entityId.string());
+		MGN_CORE_ERROR("The component '{}' already exist on the entity '{}'.", m_CustomComponentsMetadata.at(componentId).name, GetName(entityId));
 		return {};
 	}
 
@@ -388,7 +416,7 @@ namespace Imagine::Core {
 			return BufferView{components.Get(entityId.id), 0, components.GetDataSize()};
 		}
 
-		MGN_CORE_ERROR("The component id {} hasn't been added to the entity {}.", componentId.string(), entityId.string());
+		MGN_CORE_ERROR("The component '{}' hasn't been added to the entity '{}'.", m_CustomComponentsMetadata.at(componentId).name, GetName(entityId));
 		return {};
 	}
 
@@ -404,7 +432,7 @@ namespace Imagine::Core {
 			return ConstBufferView{components.Get(entityId.id), 0, components.GetDataSize()};
 		}
 
-		MGN_CORE_ERROR("The component id {} hasn't been added to the entity {}.", componentId.string(), entityId.string());
+		MGN_CORE_ERROR("The component '{}' hasn't been added to the entity '{}'.", m_CustomComponentsMetadata.at(componentId).name, GetName(entityId));
 		return {};
 	}
 
@@ -425,7 +453,12 @@ namespace Imagine::Core {
 			return BufferView{components.Get(entityId.id), 0, components.GetDataSize()};
 		}
 
-		MGN_CORE_ERROR("The component id {} didn't exist on entity {} but somehow hasn't been added successfully either.", componentId.string(), entityId.string());
+		MGN_CORE_ERROR("The component '{}' didn't exist on entity '{}' but somehow hasn't been added successfully either.", m_CustomComponentsMetadata.at(componentId).name, GetName(entityId));
 		return {};
+	}
+	bool Scene::HasComponent(EntityID entityId, UUID componentId) const {
+		if (!m_CustomComponents.contains(componentId)) {return false;}
+		auto &components = m_CustomComponents.at(componentId);
+		return components.Exist(entityId.id);
 	}
 } // namespace Imagine::Core

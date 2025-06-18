@@ -7,6 +7,7 @@
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/Scene.hpp"
+#include "Imagine/Scene/SceneManager.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -72,6 +73,8 @@ namespace Imagine::Core {
 	}
 
 	Application::~Application() {
+		SceneManager::Shutdown();
+
 		if (m_Renderer) {
 			m_Renderer->PrepareShutdown();
 		}
@@ -132,10 +135,6 @@ namespace Imagine::Core {
 			if (m_Renderer && canDraw) {
 				if (m_Renderer->BeginDraw()) {
 					m_Renderer->Draw();
-
-					glm::mat4 identity{};
-
-
 
 					m_Renderer->EndDraw();
 					m_Renderer->Present();

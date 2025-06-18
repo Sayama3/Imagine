@@ -58,4 +58,9 @@ namespace Imagine::Core {
 		}
 		return scene;
 	}
+
+	void SceneManager::Shutdown() {
+		s_MainScene.reset();
+		s_LoadedScenes.clear();
+	}
 } // namespace Imagine::Core

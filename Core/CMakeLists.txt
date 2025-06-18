@@ -74,6 +74,7 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/Model.hpp
 		Sources/Scene/SceneManager.cpp
 		Includes/Imagine/Scene/SceneManager.hpp
+		Sources/Core/Math.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

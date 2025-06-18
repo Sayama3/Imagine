@@ -9,11 +9,169 @@
 
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
+
+#include "Imagine/Scene/Renderable.hpp"
+#include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
 
 namespace Imagine::Vulkan {
 	namespace Initializer {
+		std::optional<std::shared_ptr<MeshAsset>> LoadModelAsMesh(VulkanRenderer *engine, const std::filesystem::path &filePath) {
+			return std::nullopt;
+		}
+		void LoadModelAsDynamic(VulkanRenderer *engine, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath) {
+			using namespace Imagine::Core;
+			Assimp::Importer importer;
+
+			const aiScene *scene = importer.ReadFile(filePath.string(),
+													 aiProcess_Triangulate |
+															 aiProcess_JoinIdenticalVertices |
+															 aiProcess_GenUVCoords |
+															 aiProcess_FlipUVs |
+															 // aiProcess_ConvertToLeftHanded |
+															 aiProcess_SortByPType);
+
+			// If the import failed, report it
+			if (nullptr == scene) {
+				MGN_CORE_ERROR(importer.GetErrorString());
+				return;
+			}
+
+			//TODO: Load the textures first.
+
+			//TODO: Load the material seconds.
+
+			std::vector<std::shared_ptr<MeshAsset>> meshes;
+			meshes.reserve(scene->mNumMeshes);
+
+			// Load the meshes
+			// TODO: Reuuse the materials for the meshes.
+			{
+				// use the same vectors for all meshes so that the memory doesnt reallocate as
+				// often
+				std::vector<uint32_t> indices;
+				std::vector<Vertex> vertices;
+
+				constexpr bool c_OverrideColorVertex = false;
+
+				for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
+					const aiMesh *aiMesh = scene->mMeshes[i];
+					if (!aiMesh->HasPositions()) {
+						continue;
+					}
+
+					MeshAsset mesh;
+					mesh.name = aiMesh->mName.C_Str();
+
+					indices.clear();
+					vertices.clear();
+
+					vertices.reserve(aiMesh->mNumVertices);
+					for (uint64_t i = 0; i < aiMesh->mNumVertices; ++i) {
+						vertices.emplace_back();
+						const auto &pos = aiMesh->mVertices[i];
+						vertices[i].position = {pos.x, pos.y, pos.z};
+
+						if (aiMesh->HasNormals()) {
+							const auto &normal = aiMesh->mNormals[i];
+							vertices[i].normal = {normal.x, normal.y, normal.z};
+						}
+
+						if (aiMesh->HasTextureCoords(0)) {
+							const auto &texCoords = aiMesh->mTextureCoords[0][i];
+							vertices[i].uv_x = texCoords.x;
+							vertices[i].uv_y = texCoords.y;
+						}
+
+						if constexpr (c_OverrideColorVertex) {
+							vertices[i].color = {vertices[i].normal.x, vertices[i].normal.y, vertices[i].normal.z, 1.0};
+						}
+						else if (aiMesh->HasVertexColors(0)) {
+							const auto &color = aiMesh->mColors[0][i];
+							vertices[i].color = {color.r, color.g, color.b, color.a};
+						}
+					}
+
+					indices.reserve(aiMesh->mNumFaces * 3);
+					for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
+						MGN_CORE_ASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
+						const aiFace &face = aiMesh->mFaces[i];
+						indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
+					}
+
+					Mesh::LOD surface;
+					surface.index = 0;
+					surface.count = indices.size();
+					surface.material = engine->GetDefaultMaterial();
+
+					mesh.lods.push_back(surface);
+
+					mesh.meshBuffers = engine->UploadMesh(indices, vertices);
+
+					engine->PushDeletion(mesh.meshBuffers.indexBuffer.allocation,mesh.meshBuffers.indexBuffer.buffer);
+					engine->PushDeletion(mesh.meshBuffers.vertexBuffer.allocation,mesh.meshBuffers.vertexBuffer.buffer);
+
+					meshes.emplace_back(std::make_shared<MeshAsset>(std::move(mesh)));
+				}
+			}
+
+			// Load the nodes as entity in the scene.
+			{
+				std::vector<std::tuple<aiNode *, aiMatrix4x4, Core::EntityID>> nodes{{scene->mRootNode, aiMatrix4x4{}, parent}};
+				nodes.reserve(scene->mNumMeshes);
+				while (!nodes.empty()) {
+					// Pop the last node available
+					auto [node, parentMatrix, parentEntityID] = nodes.back();
+					nodes.pop_back();
+
+					const char* cName = node->mName.C_Str();
+
+					const aiMatrix4x4& localMatrix = node->mTransformation;// * parentMatrix;
+					aiMatrix4x4 worldMatrix = localMatrix * parentMatrix;
+					glm::mat4 glmLocalMatrix{
+						localMatrix.a1,localMatrix.a2,localMatrix.a3,localMatrix.a4,
+						localMatrix.b1,localMatrix.b2,localMatrix.b3,localMatrix.b4,
+						localMatrix.c1,localMatrix.c2,localMatrix.c3,localMatrix.c4,
+						localMatrix.d1,localMatrix.d2,localMatrix.d3,localMatrix.d4,
+				};
+					glm::vec3 pos;
+					glm::quat rot;
+					glm::vec3 scale;
+					Math::DecomposeTransform(glmLocalMatrix, pos, rot, scale);
+
+					if (scale.x != scale.y || scale.y != scale.z) {
+						// MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
+					} else if (Math::SqrMagnitude(scale) != 1) {
+						// MGN_CORE_WARN("The scale of the node {} in the model {} is not 1. It's preferred to have a uniform scale of 1.");
+					}
+
+					EntityID entityId = coreScene->CreateEntity(parentEntityID);
+					coreScene->SetName(entityId, node->mName.C_Str());
+					coreScene->GetEntity(entityId).LocalPosition = pos;
+					coreScene->GetEntity(entityId).LocalRotation = rot;
+					coreScene->GetEntity(entityId).LocalScale = scale;
+
+					if (node->mNumMeshes == 1) {
+						coreScene->AddComponent<Renderable>(entityId, std::static_pointer_cast<Mesh>(meshes[*node->mMeshes]));
+					}
+					else if (node->mNumMeshes > 1) {
+						for (int i = 0; i < node->mNumMeshes; ++i) {
+							std::shared_ptr<MeshAsset> mesh = meshes[node->mMeshes[i]];
+							EntityID meshChild = coreScene->CreateEntity(entityId);
+							coreScene->SetName(meshChild, mesh->name);
+							coreScene->AddComponent<Renderable>(meshChild, std::static_pointer_cast<Mesh>(mesh));
+						}
+					}
+
+
+					for (int i = 0; i < node->mNumChildren; ++i) {
+						aiNode* child = node->mChildren[i];
+						nodes.push_back({child, worldMatrix, entityId});
+					}
+				}
+			}
+		}
 		std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath) {
 			// Create an instance of the Importer class
 			Assimp::Importer importer;
@@ -22,11 +180,12 @@ namespace Imagine::Vulkan {
 			// Usually - if speed is not the most important aspect for you - you'll
 			// probably to request more postprocessing than we do in this example.
 			const aiScene *scene = importer.ReadFile(filePath.string(),
-			aiProcess_Triangulate |
-			aiProcess_JoinIdenticalVertices |
-			aiProcess_GenUVCoords |
-			aiProcess_FlipUVs |
-			aiProcess_SortByPType);
+													 aiProcess_Triangulate |
+															 aiProcess_JoinIdenticalVertices |
+															 aiProcess_GenUVCoords |
+															 aiProcess_FlipUVs |
+															 // aiProcess_ConvertToLeftHanded |
+															 aiProcess_SortByPType);
 
 			// If the import failed, report it
 			if (nullptr == scene) {
@@ -85,20 +244,23 @@ namespace Imagine::Vulkan {
 					}
 				}
 
-				indices.reserve(aiMesh->mNumFaces*3);
+				indices.reserve(aiMesh->mNumFaces * 3);
 				for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
 					MGN_CORE_ASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
-					const aiFace& face = aiMesh->mFaces[i];
+					const aiFace &face = aiMesh->mFaces[i];
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}
 
-				GeoSurface surface;
-				surface.startIndex = 0;
+				Core::Mesh::LOD surface;
+				surface.index = 0;
 				surface.count = indices.size();
 
-				mesh.surfaces.push_back(surface);
+				mesh.lods.push_back(surface);
 
 				mesh.meshBuffers = engine->UploadMesh(indices, vertices);
+
+				engine->PushDeletion(mesh.meshBuffers.indexBuffer.allocation,mesh.meshBuffers.indexBuffer.buffer);
+				engine->PushDeletion(mesh.meshBuffers.vertexBuffer.allocation,mesh.meshBuffers.vertexBuffer.buffer);
 
 				meshes.emplace_back(std::make_shared<MeshAsset>(std::move(mesh)));
 			}

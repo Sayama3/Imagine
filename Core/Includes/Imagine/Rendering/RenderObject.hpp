@@ -12,10 +12,10 @@ namespace Imagine::Core {
 	struct RenderObject {
 		RenderObject() = default;
 		virtual ~RenderObject() = default;
-
-		glm::mat4 transform{};
-		std::unique_ptr<Mesh> mesh{nullptr};
-		MaterialInstance *material{nullptr};
+		RenderObject(const Mat4& trs, std::shared_ptr<Mesh> m) : transform(trs), mesh(m) {}
+		Mat4 transform{};
+		std::shared_ptr<Mesh> mesh{nullptr};
+		//MaterialInstance *material{nullptr};
 	};
 
 } // namespace Imagine::Core

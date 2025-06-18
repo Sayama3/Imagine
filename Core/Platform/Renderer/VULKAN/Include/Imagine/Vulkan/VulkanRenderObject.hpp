@@ -8,7 +8,7 @@
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/RenderObject.hpp"
 #include "Imagine/Vulkan/VulkanMaterial.hpp"
-#include "Imagine/Vulkan/VulkanMesh.hpp"
+#include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
 
@@ -16,8 +16,7 @@ namespace Imagine::Vulkan {
 		VulkanRenderObject() = default;
 		virtual ~VulkanRenderObject() = default;
 
-		VulkanMesh* GetVulkanMesh();
-		VulkanMaterialInstance* GetVulkanMaterialInstance();
+		MeshAsset* GetVulkanMesh();
 	};
 
 

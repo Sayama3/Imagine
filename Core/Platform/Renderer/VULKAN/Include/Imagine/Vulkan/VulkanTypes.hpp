@@ -6,6 +6,7 @@
 
 #include <vk_mem_alloc.h>
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/Mesh.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {
@@ -55,10 +56,10 @@ namespace Imagine::Vulkan {
 		uint32_t count{0};
 	};
 
-	struct MeshAsset {
-		std::string name;
+	struct MeshAsset final : public Core::Mesh {
+		MeshAsset() = default;
+		virtual ~MeshAsset() = default;
 
-		std::vector<GeoSurface> surfaces;
 		GPUMeshBuffers meshBuffers;
 	};
 

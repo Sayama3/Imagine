@@ -12,8 +12,11 @@ namespace Imagine::Core {
 	//TODO: Move the rendering to ECS like
 
 	struct Renderable {
+		Renderable() = default;
 		virtual ~Renderable() = default;
-		virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) = 0;
+		Renderable(std::shared_ptr<Mesh> m) : mesh(std::move(m)) {}
+
+		std::shared_ptr<Mesh> mesh;
 	};
 
 } // namespace Imagine::Core

@@ -6,7 +6,6 @@
 
 namespace Imagine::Core {
 
-
 	enum class MaterialPass : uint8_t {
 		MainColor,
 		Transparent,

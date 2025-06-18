@@ -32,8 +32,8 @@ TEST(CoreScene, RAII) {
 	ASSERT_EQ(scene->Count(), 0);
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 0);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 0);
-	scene->AddComponentType<PhyscsCounter>();
-	scene->AddComponentType<RenderCounter>();
+	scene->RegisterType<PhyscsCounter>();
+	scene->RegisterType<RenderCounter>();
 
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 0);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 0);
@@ -122,7 +122,7 @@ TEST(CoreScene, Persistence) {
 
 	Scene scene;
 
-	scene.AddComponentType<Physcs>();
+	scene.RegisterType<Physcs>();
 	scene.Prepare(50);
 
 	EntityID ids[50];

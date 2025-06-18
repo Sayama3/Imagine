@@ -238,7 +238,7 @@ namespace Imagine::Core {
 		void swap(AutoIdSparseSet& aiss) noexcept {
 			SparseSet<T,UnsignedInteger>::swap(aiss);
 			FreeList.swap(aiss.FreeList);
-			std::swap(IDs, aiss.FreeList);
+			std::swap(IDs, aiss.IDs);
 		}
 	private:
 		UnsignedInteger CreateID() {

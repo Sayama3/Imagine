@@ -31,7 +31,23 @@ namespace Imagine::Core {
 
 	struct Entity {
 		EntityID Id;
-		Quat LocalRotation;
-		Vec3 LocalPosition;
+		Vec3 LocalPosition{0};
+		Quat LocalRotation{Math::Identity<Quat>()};
+		Vec3 LocalScale{1};
+
+		Mat4 GetLocalMatrix() const;
 	};
 } // namespace Imagine::Core
+
+
+
+template<>
+struct std::hash<Imagine::Core::EntityID> {
+	std::size_t operator()(const Imagine::Core::EntityID &s) const noexcept {
+		return std::hash<uint32_t>{}(s.id);
+	}
+};
+
+inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::EntityID &value) {
+	return os << value.string();
+}

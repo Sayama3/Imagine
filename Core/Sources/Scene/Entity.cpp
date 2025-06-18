@@ -8,4 +8,7 @@ namespace Imagine::Core {
 	bool EntityID::IsValid() const {
 		return id != -1u;
 	}
+	Mat4 Entity::GetLocalMatrix() const {
+		return Math::TRS(LocalPosition, LocalRotation, LocalScale);
+	}
 } // namespace Imagine::Core

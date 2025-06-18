@@ -20,6 +20,9 @@ namespace Imagine::Core {
 
 		static void UnloadScene(SceneRef scene);
 		static SceneRef UnloadScene(UUID id);
+
+		static void Shutdown();
+
 	private:
 		static inline SceneRef s_MainScene = std::make_shared<Scene>();
 		// Lowest order number is first

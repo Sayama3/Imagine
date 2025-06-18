@@ -18,6 +18,16 @@ namespace Imagine::Core {
 	public:
 		static constexpr uint64_t c_EntityPrepareCount = 1024;
 		using Ref = std::shared_ptr<Scene>;
+
+		/// Struct holding the component metadata.
+		struct Metadata {
+			std::string name;
+			UUID id;
+			uint64_t size;
+			bool hasConstructor;
+			bool hasDestructor;
+			bool hasCopyConstructor;
+		};
 	public:
 		Scene();
 		~Scene();
@@ -43,6 +53,9 @@ namespace Imagine::Core {
 		const Entity &GetEntity(EntityID id) const;
 		void DestroyEntity(EntityID id);
 		void Clear();
+
+		[[nodiscard]] std::string GetName(EntityID entityId) const;
+		void SetName(EntityID entityId, std::string name);
 
 	public:
 		// Iterator used to iterate on all the child of an entity.
@@ -147,13 +160,14 @@ namespace Imagine::Core {
 
 	public:
 		// Component Handling
-		void AddComponentType(UUID componentId, uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
-		UUID AddComponentType(uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
+		void RegisterType(std::string name, UUID componentId, uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
+		UUID RegisterType(std::string name, uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
 
 
 		template<typename T>
-		void AddComponentType() {
-			AddComponentType(
+		void RegisterType() {
+			RegisterType(
+					typeid(T).name(),
 					UUID::FromType<T>(),
 					sizeof(T),
 					[](void *data, uint32_t size) { new (data) T(); },
@@ -163,9 +177,19 @@ namespace Imagine::Core {
 
 		BufferView AddComponent(EntityID entityId, UUID componentId);
 		BufferView AddComponent(EntityID entityId, UUID componentId, ConstBufferView view);
+
 		BufferView GetComponent(EntityID entityId, UUID componentId);
 		ConstBufferView GetComponent(EntityID entityId, UUID componentId) const;
+
 		BufferView GetOrAddComponent(EntityID entityId, UUID componentId);
+
+		bool HasComponent(EntityID entityId, UUID componentId) const;
+
+		template<typename T>
+		bool HasComponent(EntityID entityId) const {
+			return HasComponent(entityId, UUID::FromType<T>());
+		}
+
 
 		template<typename T>
 		T *AddComponent(const EntityID entityId) {
@@ -223,11 +247,13 @@ namespace Imagine::Core {
 	private:
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
 		std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;
+		std::unordered_map<UUID, Metadata> m_CustomComponentsMetadata;
 
 		std::unordered_set<EntityID> m_Roots;
 		SparseSet<Parent, uint32_t> m_Parents;
 		SparseSet<Child, uint32_t> m_Children;
 		SparseSet<Sibling, uint32_t> m_Siblings;
+		SparseSet<std::string, uint32_t> m_Names;
 	};
 
 
@@ -240,6 +266,7 @@ namespace Imagine::Core {
 
 		for (auto it = beg; it != end; ++it) {
 			EntityID rootId = *it;
+			T root = func(data, this, rootId);
 			ForEach<T>(rootId, data, func);
 		}
 	}
@@ -251,14 +278,15 @@ namespace Imagine::Core {
 
 		for (auto it = beg; it != end; ++it) {
 			EntityID rootId = *it;
-			ForEach<T>(rootId, rootData, func);
+			T root = func(rootData, this, rootId);
+			ForEach<T>(rootId, root, func);
 		}
 	}
 
 	template<typename T>
 	void Scene::ForEach(EntityID entity, const T &associatedData, const std::function<T(const T &data, Scene *scene, EntityID entity)> &func) {
 		const auto beg = BeginChild(entity);
-		const auto end = BeginChild(entity);
+		const auto end = EndChild();
 		for (auto it = beg; it != end; ++it) {
 			EntityID childId = it.GetCurrentChild();
 			T childData = func(associatedData, this, childId);

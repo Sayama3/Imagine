@@ -21,9 +21,10 @@
 
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Scene/Renderable.hpp"
+#include "Imagine/Scene/SceneManager.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
-#include "Imagine/Vulkan/VulkanMesh.hpp"
 
 // Window-Specific functions used to create the Surface until I figure out a way to properly create it from the Window Side.
 #if defined(MGN_WINDOW_SDL3)
@@ -56,10 +57,7 @@ namespace Imagine::Vulkan {
 
 		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/Models/basicmesh.glb").value();
 
-		for (std::shared_ptr<MeshAsset> &meshAsset: m_TestMeshes) {
-			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.indexBuffer.allocation, meshAsset->meshBuffers.indexBuffer.buffer});
-			m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, meshAsset->meshBuffers.vertexBuffer.allocation, meshAsset->meshBuffers.vertexBuffer.buffer});
-		}
+		Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "Assets/Models/house.glb");
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -75,6 +73,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::PrepareShutdown() {
+		m_TestScene.Clear();
 		vkDeviceWaitIdle(m_Device);
 	}
 
@@ -130,7 +129,6 @@ namespace Imagine::Vulkan {
 		vkb::PhysicalDeviceSelector selector{vkb_inst};
 		vkb::PhysicalDevice physicalDevice = selector
 													 .set_minimum_version(1, 3)
-													 .add_required_extension(VK_KHR_DISPLAY_EXTENSION_NAME)
 													 .set_required_features_13(features)
 													 .set_required_features_12(features12)
 													 .set_surface(m_Surface)
@@ -334,6 +332,7 @@ namespace Imagine::Vulkan {
 		InitMeshPipeline();
 
 		m_MetalRoughMaterial.BuildPipeline(this);
+		m_MainDeletionQueue.push(m_MetalRoughMaterial);
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
@@ -761,7 +760,7 @@ namespace Imagine::Vulkan {
 		materialResources.dataBuffer = materialConstants.buffer;
 		materialResources.dataBufferOffset = 0;
 
-		m_DefaultMaterial = m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator);
+		m_DefaultMaterial = std::make_shared<VulkanMaterialInstance>(m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
 	}
 
 	AllocatedImage VulkanRenderer::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
@@ -905,6 +904,8 @@ namespace Imagine::Vulkan {
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
+		// vkCmdEndRendering(cmd);
+
 		// Ending the drawing commands and copying the data into the swapchain image.
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 		Utils::TransitionImage(cmd, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -958,33 +959,6 @@ namespace Imagine::Vulkan {
 			MGN_CORE_ASSERT(result == VK_SUCCESS, "Failing to acquire the Swap Chain Image.");
 		}
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
-	}
-
-	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
-		VkCommandBuffer cmd{nullptr};
-		cmd = GetCurrentFrame().m_MainCommandBuffer;
-
-		for (const RenderObject & draw: ctx.OpaqueSurfaces) {
-
-			VulkanMesh* mesh = dynamic_cast<VulkanMesh*>(draw.mesh.get());
-			VulkanMaterialInstance* material = dynamic_cast<VulkanMaterialInstance*>(draw.material);
-
-			vkCmdBindPipeline(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
-			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 0,1, &m_DrawImageDescriptors,0,nullptr );
-			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 1,1, &material->materialSet,0,nullptr );
-
-			vkCmdBindIndexBuffer(cmd, mesh->indexBuffer,0,VK_INDEX_TYPE_UINT32);
-
-			GPUDrawPushConstants pushConstants;
-			pushConstants.vertexBuffer = mesh->vertexBufferAddress;
-			pushConstants.worldMatrix = draw.transform;
-			vkCmdPushConstants(cmd,material->pipeline->layout ,VK_SHADER_STAGE_VERTEX_BIT,0, sizeof(GPUDrawPushConstants), &pushConstants);
-
-			//TODO: Do some smart LOD selection instead of the best one everytime
-			Mesh::LOD lod = mesh->lods.front();
-			vkCmdDrawIndexed(cmd,lod.count,1,lod.index,0,0);
-
-		}
 	}
 
 	void VulkanRenderer::Draw() {
@@ -1097,29 +1071,30 @@ namespace Imagine::Vulkan {
 		*sceneUniformData = m_SceneData;
 
 		// create a descriptor set that binds that buffer and update it
-		VkDescriptorSet globalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
+		GetCurrentFrame().m_GlobalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
+
 
 		DescriptorWriter writer;
 		writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		writer.UpdateSet(m_Device, globalDescriptor);
+		writer.UpdateSet(m_Device, GetCurrentFrame().m_GlobalDescriptor);
 
 		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
 
 		// launch a draw command to draw 3 vertices
 		// vkCmdDraw(cmd, 3, 1, 0, 0);
 
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
-		// bind a texture
-		VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
-		{
-			DescriptorWriter writer;
-			writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+//		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
+//		// bind a texture
+//		VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
+//		{
+//			DescriptorWriter writer;
+//			writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+//
+//			writer.UpdateSet(m_Device, imageSet);
+//		}
 
-			writer.UpdateSet(m_Device, imageSet);
-		}
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
-		GPUDrawPushConstants push_constants;
+//		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
+//		GPUDrawPushConstants push_constants;
 		// push_constants.worldMatrix = glm::mat4{ 1.f };
 		// push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
 
@@ -1127,31 +1102,90 @@ namespace Imagine::Vulkan {
 		// vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 		// vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
-		{
+//		{
+//
+//			glm::mat4 view = glm::translate(m_CameraPos);
+//			// camera projection
+//			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+//
+//			// invert the Y direction on projection matrix so that we are more similar
+//			// to opengl and gltf axis
+//			projection[0][0] *= -1;
+//			projection[1][1] *= -1;
+//
+//			for (int meshToDraw = 2; meshToDraw < m_TestMeshes.size(); ++meshToDraw) {
+//
+//				push_constants.worldMatrix = projection * view;
+//
+//				push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
+//
+//				vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+//				vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+//
+//				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
+//			}
+//		}
+		Mat4 identity{};
 
-			glm::mat4 view = glm::translate(m_CameraPos);
-			// camera projection
-			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
-
-			// invert the Y direction on projection matrix so that we are more similar
-			// to opengl and gltf axis
-			projection[0][0] *= -1;
-			projection[1][1] *= -1;
-
-			constexpr unsigned meshToDraw = 2;
-
-			push_constants.worldMatrix = projection * view;
-
-			push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
-
-			vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-			vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-			vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->surfaces[0].count, 1, m_TestMeshes[meshToDraw]->surfaces[0].startIndex, 0, 0);
+		DrawContext ctx;
+		m_TestScene.ForEach<Mat4>(identity,
+			[&ctx](const Mat4& parentMatrix, Scene* scene, EntityID entity) {
+			Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
+			Mat4 worldMat = localMat * parentMatrix;
+			const Renderable* render = scene->GetComponent<Renderable>(entity);
+			if (render) {
+				ctx.OpaqueSurfaces.push_back({
+					worldMat,
+					render->mesh
+				});
+			}
+			return worldMat;
 		}
+		);
 
+		Draw(ctx);
 
 		vkCmdEndRendering(cmd);
+	}
+
+	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
+		VkCommandBuffer cmd{nullptr};
+		cmd = GetCurrentFrame().m_MainCommandBuffer;
+
+		glm::mat4 view = glm::translate(m_CameraPos);
+		// camera projection
+		glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+
+		// invert the Y direction on projection matrix so that we are more similar
+		// to opengl and gltf axis
+		projection[0][0] *= -1;
+		projection[1][1] *= -1;
+
+		glm::mat4 vp = projection * view;
+
+		for (const RenderObject & draw: ctx.OpaqueSurfaces) {
+
+			MeshAsset* mesh = dynamic_cast<MeshAsset*>(draw.mesh.get());
+
+			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+			//TODO: Do some smart LOD selection instead of the best one everytime
+			const Mesh::LOD& lod = draw.mesh->lods.front();
+
+			const VulkanMaterialInstance* material = dynamic_cast<const VulkanMaterialInstance*>(lod.material.get());
+
+			vkCmdBindPipeline(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
+			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 0,1, &GetCurrentFrame().m_GlobalDescriptor,0,nullptr );
+			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 1,1, &material->materialSet,0,nullptr );
+
+			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer,0,VK_INDEX_TYPE_UINT32);
+
+			GPUDrawPushConstants pushConstants;
+			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+			pushConstants.worldMatrix = vp * draw.transform;
+			vkCmdPushConstants(cmd,material->pipeline->layout ,VK_SHADER_STAGE_VERTEX_BIT,0, sizeof(GPUDrawPushConstants), &pushConstants);
+
+			vkCmdDrawIndexed(cmd,lod.count,1,lod.index,0,0);
+		}
 	}
 
 	void VulkanRenderer::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function) {

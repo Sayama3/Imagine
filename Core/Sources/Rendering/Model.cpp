@@ -4,7 +4,6 @@
 
 #include "Imagine/Rendering/Model.hpp"
 
-namespace Imagine {
-namespace Core {
-} // Core
-} // Imagine
+namespace Imagine::Core {
+
+} // Imagine::Core

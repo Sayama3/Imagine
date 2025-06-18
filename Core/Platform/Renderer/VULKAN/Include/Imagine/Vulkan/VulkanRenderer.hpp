@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
 #include "Imagine/Vulkan/AllocatedImage.hpp"
@@ -61,11 +62,20 @@ namespace Imagine::Vulkan {
 
 	public:
 		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+		void PushDeletion(Deleter::VkType data) {
+			m_MainDeletionQueue.push(std::move(data));
+		}
 
+		template<typename VmaType>
+		void PushDeletion(VmaAllocation allocation, VmaType data) {
+			m_MainDeletionQueue.push(m_Allocator, allocation, data);
+		}
 	public:
 		VkDescriptorSetLayout GetGPUSceneDescriptorLayout();
 		VkFormat GetColorImageFormat() const;
 		VkFormat GetDepthImageFormat() const;
+
+		std::shared_ptr<VulkanMaterialInstance> GetDefaultMaterial() {return m_DefaultMaterial;}
 
 	private:
 		void ShutdownVulkan();
@@ -130,6 +140,7 @@ namespace Imagine::Vulkan {
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
+		Core::Scene m_TestScene;
 		GPUSceneData m_SceneData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
 
@@ -155,7 +166,7 @@ namespace Imagine::Vulkan {
 		VkSampler m_DefaultSamplerLinear{nullptr};
 		VkSampler m_DefaultSamplerNearest{nullptr};
 
-		VulkanMaterialInstance m_DefaultMaterial{};
+		std::shared_ptr<VulkanMaterialInstance> m_DefaultMaterial{};
 		GLTFMetallicRoughness m_MetalRoughMaterial{};
 
 		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};

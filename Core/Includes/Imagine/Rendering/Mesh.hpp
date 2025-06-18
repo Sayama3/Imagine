@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Imagine/Rendering/Material.hpp"
 
 namespace Imagine::Core {
 
@@ -13,8 +14,10 @@ namespace Imagine::Core {
 		struct LOD {
 			uint32_t index;
 			uint32_t count;
+			std::shared_ptr<MaterialInstance> material;
 		};
 
+		std::string name;
 		std::vector<LOD> lods{};
 	};
 

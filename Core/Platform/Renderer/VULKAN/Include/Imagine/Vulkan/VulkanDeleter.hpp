@@ -9,6 +9,7 @@
 #include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
+#include "Imagine/Vulkan/VulkanMaterial.hpp"
 
 namespace Imagine::Vulkan {
 	struct Deleter {
@@ -24,7 +25,7 @@ namespace Imagine::Vulkan {
 		using VmaImage = VmaObject<VkImage>;
 		using VmaBuffer = VmaObject<VkBuffer>;
 
-		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool, DescriptorAllocatorGrowable, VkSampler>;
+		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool, DescriptorAllocatorGrowable, VkSampler, GLTFMetallicRoughness>;
 
 
 		/**
@@ -88,6 +89,9 @@ namespace Imagine::Vulkan {
 				}
 				else if (DescriptorAllocatorGrowable *descriptorAllocatorGrowable = std::get_if<DescriptorAllocatorGrowable>(&type)) {
 					descriptorAllocatorGrowable->DestroyPools(device);
+				}
+				else if (GLTFMetallicRoughness *material = std::get_if<GLTFMetallicRoughness>(&type)) {
+					material->ClearResources(device);
 				}
 				else if (ShutdownFunction *shutdown = std::get_if<ShutdownFunction>(&type)) {
 					(*shutdown)();

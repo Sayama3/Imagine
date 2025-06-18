@@ -25,5 +25,6 @@ namespace Imagine::Vulkan {
 
 		Deleter m_DeletionQueue = {};
 		DescriptorAllocatorGrowable m_FrameDescriptors;
+		VkDescriptorSet m_GlobalDescriptor{nullptr};
 	};
 } // namespace Imagine::Vulkan
