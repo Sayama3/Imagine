@@ -181,6 +181,9 @@ namespace Imagine::Core {
 		BufferView GetComponent(EntityID entityId, UUID componentId);
 		ConstBufferView GetComponent(EntityID entityId, UUID componentId) const;
 
+		BufferView TryGetComponent(EntityID entityId, UUID componentId);
+		ConstBufferView TryGetComponent(EntityID entityId, UUID componentId) const;
+
 		BufferView GetOrAddComponent(EntityID entityId, UUID componentId);
 
 		bool HasComponent(EntityID entityId, UUID componentId) const;
@@ -214,6 +217,18 @@ namespace Imagine::Core {
 		template<typename T>
 		const T *GetComponent(const EntityID entityId) const {
 			auto view = GetComponent(entityId, UUID::FromType<T>());
+			return view.IsValid() ? view.template Get<T>() : nullptr;
+		}
+
+		template<typename T>
+		T *TryGetComponent(const EntityID entityId) {
+			auto view = TryGetComponent(entityId, UUID::FromType<T>());
+			return view.IsValid() ? view.template Get<T>() : nullptr;
+		}
+
+		template<typename T>
+		const T *TryGetComponent(const EntityID entityId) const {
+			auto view = TryGetComponent(entityId, UUID::FromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
@@ -267,12 +282,12 @@ namespace Imagine::Core {
 		for (auto it = beg; it != end; ++it) {
 			EntityID rootId = *it;
 			T root = func(data, this, rootId);
-			ForEach<T>(rootId, data, func);
+			ForEach<T>(rootId, root, func);
 		}
 	}
 
 	template<typename T>
-	void Scene::ForEach(const T &rootData, std::function<T(const T &data, Scene *scene, EntityID entity)> func) {
+	void Scene::ForEach(const T &rootData, std::function<T(const T &parentData, Scene *scene, EntityID entity)> func) {
 		const auto beg = m_Roots.cbegin();
 		const auto end = m_Roots.cend();
 
@@ -284,13 +299,13 @@ namespace Imagine::Core {
 	}
 
 	template<typename T>
-	void Scene::ForEach(EntityID entity, const T &associatedData, const std::function<T(const T &data, Scene *scene, EntityID entity)> &func) {
+	void Scene::ForEach(EntityID entity, const T &associatedData, const std::function<T(const T &parentData, Scene *scene, EntityID entity)> &func) {
 		const auto beg = BeginChild(entity);
 		const auto end = EndChild();
 		for (auto it = beg; it != end; ++it) {
 			EntityID childId = it.GetCurrentChild();
 			T childData = func(associatedData, this, childId);
-			ForEach(childId, childData, func);
+			ForEach<T>(childId, childData, func);
 		}
 	}
 } // namespace Imagine::Core

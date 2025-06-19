@@ -436,6 +436,37 @@ namespace Imagine::Core {
 		return {};
 	}
 
+
+	BufferView Scene::TryGetComponent(const EntityID entityId, const UUID componentId) {
+		if (!m_CustomComponents.contains(componentId)) {
+			MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+			return BufferView{};
+		}
+
+		auto &components = m_CustomComponents.at(componentId);
+
+		if (components.Exist(entityId.id)) {
+			return BufferView{components.Get(entityId.id), 0, components.GetDataSize()};
+		}
+
+		return {};
+	}
+
+	ConstBufferView Scene::TryGetComponent(const EntityID entityId, const UUID componentId) const {
+		if (!m_CustomComponents.contains(componentId)) {
+			MGN_CORE_ERROR("The component id {} doesn't exist.", componentId.string());
+			return ConstBufferView{};
+		}
+
+		auto &components = m_CustomComponents.at(componentId);
+
+		if (components.Exist(entityId.id)) {
+			return ConstBufferView{components.Get(entityId.id), 0, components.GetDataSize()};
+		}
+
+		return {};
+	}
+
 	BufferView Scene::GetOrAddComponent(EntityID entityId, UUID componentId) {
 
 		if (!m_CustomComponents.contains(componentId)) {

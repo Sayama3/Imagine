@@ -57,7 +57,7 @@ namespace Imagine::Vulkan {
 
 		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/Models/basicmesh.glb").value();
 
-		Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "Assets/Models/house.glb");
+		Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\Iannis\\Downloads\\CommercialRefrigerator.glb");
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -898,6 +898,24 @@ namespace Imagine::Vulkan {
 
 		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+
+		{
+			m_SceneData.view = glm::translate(m_CameraPos);
+			// camera projection
+			m_SceneData.proj = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+
+			// invert the Y direction on projection matrix so that we are more similar
+			// to opengl and gltf axis
+			m_SceneData.proj[1][1] *= -1;
+			m_SceneData.proj[0][0] *= -1;
+			m_SceneData.viewproj = m_SceneData.proj * m_SceneData.view;
+
+			//some default lighting parameters
+			m_SceneData.ambientColor = glm::vec4(.1f);
+			m_SceneData.sunlightColor = glm::vec4(1.f);
+			m_SceneData.sunlightDirection = glm::vec4(0,1,0.5,1.f);
+		}
+
 		return true;
 	}
 	void VulkanRenderer::EndDraw() {
@@ -1002,9 +1020,8 @@ namespace Imagine::Vulkan {
 #endif
 	}
 
-	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene * scene, EntityID parent) {
+	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene *scene, EntityID parent) {
 		if (!scene) return;
-
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
@@ -1083,18 +1100,18 @@ namespace Imagine::Vulkan {
 		// launch a draw command to draw 3 vertices
 		// vkCmdDraw(cmd, 3, 1, 0, 0);
 
-//		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
-//		// bind a texture
-//		VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
-//		{
-//			DescriptorWriter writer;
-//			writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-//
-//			writer.UpdateSet(m_Device, imageSet);
-//		}
-
-//		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
-//		GPUDrawPushConstants push_constants;
+		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
+		// // bind a texture
+		// VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
+		// {
+		// 	DescriptorWriter writer;
+		// 	writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		//
+		// 	writer.UpdateSet(m_Device, imageSet);
+		// }
+		//
+		// vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
+		//		GPUDrawPushConstants push_constants;
 		// push_constants.worldMatrix = glm::mat4{ 1.f };
 		// push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
 
@@ -1102,46 +1119,42 @@ namespace Imagine::Vulkan {
 		// vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 		// vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
-//		{
-//
-//			glm::mat4 view = glm::translate(m_CameraPos);
-//			// camera projection
-//			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
-//
-//			// invert the Y direction on projection matrix so that we are more similar
-//			// to opengl and gltf axis
-//			projection[0][0] *= -1;
-//			projection[1][1] *= -1;
-//
-//			for (int meshToDraw = 2; meshToDraw < m_TestMeshes.size(); ++meshToDraw) {
-//
-//				push_constants.worldMatrix = projection * view;
-//
-//				push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
-//
-//				vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-//				vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-//
-//				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
-//			}
-//		}
-		Mat4 identity{};
+		//		{
+		//
+		//			glm::mat4 view = glm::translate(m_CameraPos);
+		//			// camera projection
+		//			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+		//
+		//			// invert the Y direction on projection matrix so that we are more similar
+		//			// to opengl and gltf axis
+		//			projection[0][0] *= -1;
+		//			projection[1][1] *= -1;
+		//
+		//			for (int meshToDraw = 2; meshToDraw < m_TestMeshes.size(); ++meshToDraw) {
+		//
+		//				push_constants.worldMatrix = projection * view;
+		//
+		//				push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
+		//
+		//				vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+		//				vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		//
+		//				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
+		//			}
+		//		}
+		Mat4 identity = Math::Identity<Mat4>();
 
 		DrawContext ctx;
 		m_TestScene.ForEach<Mat4>(identity,
-			[&ctx](const Mat4& parentMatrix, Scene* scene, EntityID entity) {
-			Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
-			Mat4 worldMat = localMat * parentMatrix;
-			const Renderable* render = scene->GetComponent<Renderable>(entity);
-			if (render) {
-				ctx.OpaqueSurfaces.push_back({
-					worldMat,
-					render->mesh
-				});
-			}
-			return worldMat;
-		}
-		);
+								  [&ctx](const Mat4 &parentMatrix, Scene *scene, EntityID entity) {
+									  const Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
+									  const Mat4 worldMat = parentMatrix * localMat;
+									  const Renderable *render = scene->TryGetComponent<Renderable>(entity);
+									  if (render) {
+										  ctx.OpaqueSurfaces.push_back({worldMat, render->mesh});
+									  }
+									  return worldMat;
+								  });
 
 		Draw(ctx);
 
@@ -1152,26 +1165,15 @@ namespace Imagine::Vulkan {
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
-		glm::mat4 view = glm::translate(m_CameraPos);
-		// camera projection
-		glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+		for (const RenderObject &draw: ctx.OpaqueSurfaces) {
 
-		// invert the Y direction on projection matrix so that we are more similar
-		// to opengl and gltf axis
-		projection[0][0] *= -1;
-		projection[1][1] *= -1;
-
-		glm::mat4 vp = projection * view;
-
-		for (const RenderObject & draw: ctx.OpaqueSurfaces) {
-
-			MeshAsset* mesh = dynamic_cast<MeshAsset*>(draw.mesh.get());
+			MeshAsset *mesh = dynamic_cast<MeshAsset *>(draw.mesh.get());
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
-			//TODO: Do some smart LOD selection instead of the best one everytime
-			const Mesh::LOD& lod = draw.mesh->lods.front();
+			// TODO: Do some smart LOD selection instead of the best one everytime
+			const Mesh::LOD &lod = draw.mesh->lods.front();
 
-			const VulkanMaterialInstance* material = dynamic_cast<const VulkanMaterialInstance*>(lod.material.get());
+			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
 
 			vkCmdBindPipeline(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
 			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 0,1, &GetCurrentFrame().m_GlobalDescriptor,0,nullptr );
@@ -1181,7 +1183,7 @@ namespace Imagine::Vulkan {
 
 			GPUDrawPushConstants pushConstants;
 			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-			pushConstants.worldMatrix = vp * draw.transform;
+			pushConstants.worldMatrix = draw.transform;
 			vkCmdPushConstants(cmd,material->pipeline->layout ,VK_SHADER_STAGE_VERTEX_BIT,0, sizeof(GPUDrawPushConstants), &pushConstants);
 
 			vkCmdDrawIndexed(cmd,lod.count,1,lod.index,0,0);

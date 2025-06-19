@@ -35,7 +35,7 @@ namespace Imagine::Vulkan {
 		float uv_x{0};
 		glm::vec3 normal{0,1,0};
 		float uv_y{0};
-		glm::vec4 color{0,0,0,1};
+		glm::vec4 color{1};
 	};
 
 	// holds the resources needed for a mesh

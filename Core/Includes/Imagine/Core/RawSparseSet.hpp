@@ -230,9 +230,8 @@ namespace Imagine::Core {
 
 
 		virtual void Clear() {
-			for (int64_t i = dense.size() - 1; i >= 0; --i) {
-				const auto id = dense.get(i);
-				Remove(id);
+			while (!dense.empty()) {
+				Remove(dense.get(dense.size() - 1));
 			}
 		}
 

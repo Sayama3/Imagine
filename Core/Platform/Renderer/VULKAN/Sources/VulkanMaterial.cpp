@@ -86,7 +86,7 @@ namespace Imagine::Vulkan {
 	void GLTFMetallicRoughness::ClearResources(VkDevice device) {
 	}
 
-	VulkanMaterialInstance GLTFMetallicRoughness::WriteMaterial(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable & descriptorAllocatorGrowable) {
+	VulkanMaterialInstance GLTFMetallicRoughness::WriteMaterial(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable & descriptorAllocator) {
 		VulkanMaterialInstance instance;
 
 		instance.passType = pass;
@@ -98,7 +98,7 @@ namespace Imagine::Vulkan {
 			instance.pipeline = &opaquePipeline;
 		}
 
-		instance.materialSet = descriptorAllocatorGrowable.Allocate(device, materialLayout);
+		instance.materialSet = descriptorAllocator.Allocate(device, materialLayout);
 
 		writer.Clear();
 		writer.WriteBuffer(0, resources.dataBuffer, sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

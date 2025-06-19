@@ -152,8 +152,8 @@ namespace Imagine::Core {
 		}
 
 		virtual void Clear() {
-			for (int i = dense.size() - 1; i >= 0; --i) {
-				Remove(dense[i]);
+			while (!dense.empty()) {
+				Remove(dense[dense.size() - 1]);
 			}
 		}
 

@@ -17,9 +17,12 @@
 
 namespace Imagine::Vulkan {
 	namespace Initializer {
+		constexpr bool c_OverrideColorVertex = false;
+
 		std::optional<std::shared_ptr<MeshAsset>> LoadModelAsMesh(VulkanRenderer *engine, const std::filesystem::path &filePath) {
 			return std::nullopt;
 		}
+
 		void LoadModelAsDynamic(VulkanRenderer *engine, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath) {
 			using namespace Imagine::Core;
 			Assimp::Importer importer;
@@ -52,8 +55,6 @@ namespace Imagine::Vulkan {
 				// often
 				std::vector<uint32_t> indices;
 				std::vector<Vertex> vertices;
-
-				constexpr bool c_OverrideColorVertex = false;
 
 				for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 					const aiMesh *aiMesh = scene->mMeshes[i];
@@ -130,18 +131,23 @@ namespace Imagine::Vulkan {
 					const aiMatrix4x4& localMatrix = node->mTransformation;// * parentMatrix;
 					aiMatrix4x4 worldMatrix = localMatrix * parentMatrix;
 					glm::mat4 glmLocalMatrix{
-						localMatrix.a1,localMatrix.a2,localMatrix.a3,localMatrix.a4,
-						localMatrix.b1,localMatrix.b2,localMatrix.b3,localMatrix.b4,
-						localMatrix.c1,localMatrix.c2,localMatrix.c3,localMatrix.c4,
-						localMatrix.d1,localMatrix.d2,localMatrix.d3,localMatrix.d4,
+						{localMatrix.a1,localMatrix.b1,localMatrix.c1,localMatrix.d1},
+						{localMatrix.a2,localMatrix.b2,localMatrix.c2,localMatrix.d2},
+						{localMatrix.a3,localMatrix.b3,localMatrix.c3,localMatrix.d3},
+						{localMatrix.a4,localMatrix.b4,localMatrix.c4,localMatrix.d4},
 				};
 					glm::vec3 pos;
 					glm::quat rot;
 					glm::vec3 scale;
-					Math::DecomposeTransform(glmLocalMatrix, pos, rot, scale);
+					glm::vec3 skew;
+					glm::vec4 perspective;
+					glm::decompose(glmLocalMatrix, scale, rot, pos, skew, perspective);
+
+					MGN_CORE_ASSERT(skew == glm::vec3(0), "skew transformation not supported.");
+					MGN_CORE_ASSERT(perspective == glm::vec4(0,0,0,1), "perspective transformation not supported.");
 
 					if (scale.x != scale.y || scale.y != scale.z) {
-						// MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
+						MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
 					} else if (Math::SqrMagnitude(scale) != 1) {
 						// MGN_CORE_WARN("The scale of the node {} in the model {} is not 1. It's preferred to have a uniform scale of 1.");
 					}
@@ -172,6 +178,7 @@ namespace Imagine::Vulkan {
 				}
 			}
 		}
+
 		std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath) {
 			// Create an instance of the Importer class
 			Assimp::Importer importer;
@@ -203,8 +210,6 @@ namespace Imagine::Vulkan {
 			// often
 			std::vector<uint32_t> indices;
 			std::vector<Vertex> vertices;
-
-			constexpr bool c_OverrideColorVertex = true;
 
 			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 				const aiMesh *aiMesh = scene->mMeshes[i];
