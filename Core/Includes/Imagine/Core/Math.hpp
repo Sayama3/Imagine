@@ -18,9 +18,9 @@
 #endif // GLM_ENABLE_EXPERIMENTAL
 
 // TODO: Figure out a way for a Left Handed with ; +X = Right ; +Y = Up ; +Z = Forward ;
-// #ifndef GLM_FORCE_LEFT_HANDED
-// #define GLM_FORCE_LEFT_HANDED
-// #endif // GLM_FORCE_LEFT_HANDED
+#ifndef GLM_FORCE_LEFT_HANDED
+#define GLM_FORCE_LEFT_HANDED
+#endif // GLM_FORCE_LEFT_HANDED
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

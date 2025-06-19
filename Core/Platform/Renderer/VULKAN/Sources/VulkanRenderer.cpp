@@ -900,14 +900,14 @@ namespace Imagine::Vulkan {
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
 
 		{
-			m_SceneData.view = glm::translate(m_CameraPos);
+			m_SceneData.view = glm::translate(-m_CameraPos);
 			// camera projection
 			m_SceneData.proj = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
 
 			// invert the Y direction on projection matrix so that we are more similar
 			// to opengl and gltf axis
 			m_SceneData.proj[1][1] *= -1;
-			m_SceneData.proj[0][0] *= -1;
+			// m_SceneData.proj[0][0] *= -1;
 			m_SceneData.viewproj = m_SceneData.proj * m_SceneData.view;
 
 			//some default lighting parameters
@@ -1004,6 +1004,7 @@ namespace Imagine::Vulkan {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
 			ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPos), 0.1, 0, 0, "%.1f");
+			ImGui::DragFloat3("Scene Position", glm::value_ptr(m_ScenePos), 0.1, 0, 0, "%.1f");
 			ImGui::Spacing();
 			ImGui::SliderFloat("Render Scale", &m_RenderScale, 0.3f, 1.f);
 
@@ -1142,10 +1143,11 @@ namespace Imagine::Vulkan {
 		//				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
 		//			}
 		//		}
-		Mat4 identity = Math::Identity<Mat4>();
+		Mat4 sceneTransform = Math::Identity<Mat4>();
+		sceneTransform = Math::Translate(sceneTransform, m_ScenePos);
 
 		DrawContext ctx;
-		m_TestScene.ForEach<Mat4>(identity,
+		m_TestScene.ForEach<Mat4>(sceneTransform,
 								  [&ctx](const Mat4 &parentMatrix, Scene *scene, EntityID entity) {
 									  const Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
 									  const Mat4 worldMat = parentMatrix * localMat;

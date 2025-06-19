@@ -32,7 +32,7 @@ namespace Imagine::Vulkan {
 															 aiProcess_JoinIdenticalVertices |
 															 aiProcess_GenUVCoords |
 															 aiProcess_FlipUVs |
-															 // aiProcess_ConvertToLeftHanded |
+															 aiProcess_ConvertToLeftHanded |
 															 aiProcess_SortByPType);
 
 			// If the import failed, report it

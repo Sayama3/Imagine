@@ -175,6 +175,7 @@ namespace Imagine::Vulkan {
 		Core::ApplicationParameters m_AppParams;
 
 		glm::vec3 m_CameraPos{0, 0, -5};
+		glm::vec3 m_ScenePos{0, 0, 0};
 		bool m_ResizeRequested{false};
 	};
 } // namespace Imagine::Vulkan
