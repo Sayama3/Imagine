@@ -50,12 +50,17 @@ namespace Imagine::Vulkan {
 		InitializeSwapChain();
 		InitializeCommands();
 		InitializeSyncStructures();
+		CreateDefaultSamplers();
 		InitializeDescriptors();
 		InitializePipelines();
 
 		InitDefaultData();
 
-		// m_ImGuiImage = VulkanImGuiImage::Add(m_DefaultSamplerLinear, m_DrawImage.imageView, m_DrawImage.)
+		// {
+
+		// }
+		// m_ImGuiImage = VulkanImGuiImage::Add(m_DefaultSamplerLinear, m_DrawImage.imageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, m_DrawExtent.width, m_DrawExtent.height);
+		// m_MainDeletionQueue.push(m_ImGuiImage);
 
 		// Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf");
 	}
@@ -302,7 +307,7 @@ namespace Imagine::Vulkan {
 		m_DrawImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_DrawImageDescriptorLayout);
 
 		DescriptorWriter writer;
-		writer.WriteImage(0, m_DrawImage.imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+		writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 		writer.UpdateSet(m_Device, m_DrawImageDescriptors);
 
 		{
@@ -588,7 +593,7 @@ namespace Imagine::Vulkan {
 
 		DestroySwapChain();
 
-		auto size = Window::Get()->GetFramebufferSize();
+		const auto size = Window::Get()->GetFramebufferSize();
 
 		CreateSwapChain(size.width, size.height);
 
@@ -671,6 +676,20 @@ namespace Imagine::Vulkan {
 		return m_DepthImage.imageFormat;
 	}
 
+	void VulkanRenderer::CreateDefaultSamplers() {
+		VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+		sampl.magFilter = VK_FILTER_NEAREST;
+		sampl.minFilter = VK_FILTER_NEAREST;
+
+		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerNearest);
+		m_MainDeletionQueue.push(m_DefaultSamplerNearest);
+
+		sampl.magFilter = VK_FILTER_LINEAR;
+		sampl.minFilter = VK_FILTER_LINEAR;
+
+		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerLinear);
+		m_MainDeletionQueue.push(m_DefaultSamplerLinear);
+	}
 	void VulkanRenderer::InitDefaultData() {
 
 		std::array<Vertex, 4> rect_vertices;
@@ -726,18 +745,6 @@ namespace Imagine::Vulkan {
 		m_ErrorCheckerboardImage = CreateImage(pixels.data(), VkExtent3D{16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
 		m_MainDeletionQueue.push(m_Allocator, m_ErrorCheckerboardImage.allocation, m_ErrorCheckerboardImage.image);
 		m_MainDeletionQueue.push(m_ErrorCheckerboardImage.imageView);
-
-		VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
-
-		sampl.magFilter = VK_FILTER_NEAREST;
-		sampl.minFilter = VK_FILTER_NEAREST;
-		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerNearest);
-		m_MainDeletionQueue.push(m_DefaultSamplerNearest);
-
-		sampl.magFilter = VK_FILTER_LINEAR;
-		sampl.minFilter = VK_FILTER_LINEAR;
-		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerLinear);
-		m_MainDeletionQueue.push(m_DefaultSamplerLinear);
 
 		GLTFMetallicRoughness::MaterialResources materialResources;
 		// default the material textures
@@ -867,8 +874,13 @@ namespace Imagine::Vulkan {
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
 		// TODO: Preserve aspect ratio
-		m_DrawExtent.width = std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale;
-		m_DrawExtent.height = std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale;
+		if (m_RenderToImGui && m_ImGuiRenderer.has_value()) {
+			m_DrawExtent.width = m_ImGuiRenderer.value().width;
+			m_DrawExtent.height = m_ImGuiRenderer.value().height;
+		} else {
+			m_DrawExtent.width = std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale;
+			m_DrawExtent.height = std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale;
+		}
 
 		const bool canDraw = m_DrawExtent.width > 0 && m_DrawExtent.height > 0;
 		if (!canDraw) {
@@ -1031,10 +1043,17 @@ namespace Imagine::Vulkan {
 		}
 		ImGui::End();
 
-		// if (ImGui::Begin("Rendering")) {
-		// 	ImGui::Image((ImTextureID)m_DrawImageDescriptors, {m_DrawExtent.width*m_RenderScale,m_DrawExtent.height*m_RenderScale});
-		// }
-		// ImGui::End();
+
+		if (ImGui::Begin("Rendering")) {
+			ImVec2 size = ImGui::GetContentRegionAvail();
+			m_ImGuiRenderer = Size2{(uint32_t)size.x, (uint32_t)size.y};
+
+			ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, 0);
+			ImGui::Image((ImTextureID) m_DrawImageDescriptors, {size.x, size.y}, {0.f, 0.f}, {(float) m_DrawExtent.width / (float) m_DrawImage.imageExtent.width, (float) m_DrawExtent.height / (float) m_DrawImage.imageExtent.height});
+			ImGui::PopStyleVar(1);
+		}
+		ImGui::End();
+
 #endif
 	}
 
@@ -1068,122 +1087,6 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::DrawGeometry(VkCommandBuffer cmd) {
-		// VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(m_DrawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		// VkRenderingAttachmentInfo depthAttachment = Initializer::DepthAttachmentInfo(m_DepthImage.imageView, 1.0f, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-		//
-		// VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_DrawExtent, &colorAttachment, &depthAttachment);
-		// vkCmdBeginRendering(cmd, &renderInfo);
-		//
-		// // set dynamic viewport and scissor
-		// VkViewport viewport = {};
-		// viewport.x = 0;
-		// viewport.y = 0;
-		// viewport.width = m_DrawExtent.width;
-		// viewport.height = m_DrawExtent.height;
-		// viewport.minDepth = 0.f;
-		// viewport.maxDepth = 1.f;
-		//
-		// vkCmdSetViewport(cmd, 0, 1, &viewport);
-		//
-		// VkRect2D scissor = {};
-		// scissor.offset.x = 0;
-		// scissor.offset.y = 0;
-		// scissor.extent.width = m_DrawExtent.width;
-		// scissor.extent.height = m_DrawExtent.height;
-		//
-		// vkCmdSetScissor(cmd, 0, 1, &scissor);
-		//
-		// // allocate a new uniform buffer for the scene data
-		// // using CPU_TO_GPU as the `GPUSceneData` type is very small and can probably be cached entirely in VRAM.
-		// // better use a dedicated `VMA_MEMORY_USAGE_GPU` for bigger data and do a transfer beforehand.
-		// AllocatedBuffer gpuSceneDataBuffer = CreateBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-		//
-		// // add it to the deletion queue of this frame so it gets deleted once its been used
-		// GetCurrentFrame().m_DeletionQueue.push(Deleter::VmaBuffer{m_Allocator, gpuSceneDataBuffer.allocation, gpuSceneDataBuffer.buffer});
-		//
-		// // write the buffer
-		// GPUSceneData *sceneUniformData = (GPUSceneData *) gpuSceneDataBuffer.allocation->GetMappedData();
-		// *sceneUniformData = m_SceneData;
-		//
-		// // create a descriptor set that binds that buffer and update it
-		// GetCurrentFrame().m_GlobalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
-		//
-		//
-		// DescriptorWriter writer;
-		// writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		// writer.UpdateSet(m_Device, GetCurrentFrame().m_GlobalDescriptor);
-		//
-		// // vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
-		//
-		// // launch a draw command to draw 3 vertices
-		// // vkCmdDraw(cmd, 3, 1, 0, 0);
-		//
-		// // vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
-		// // // bind a texture
-		// // VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
-		// // {
-		// // 	DescriptorWriter writer;
-		// // 	writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		// //
-		// // 	writer.UpdateSet(m_Device, imageSet);
-		// // }
-		// //
-		// // vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
-		// //		GPUDrawPushConstants push_constants;
-		// // push_constants.worldMatrix = glm::mat4{ 1.f };
-		// // push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
-		//
-		// // vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-		// // vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		// // vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
-		//
-		// //		{
-		// //
-		// //			glm::mat4 view = glm::translate(m_CameraPos);
-		// //			// camera projection
-		// //			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
-		// //
-		// //			// invert the Y direction on projection matrix so that we are more similar
-		// //			// to opengl and gltf axis
-		// //			projection[0][0] *= -1;
-		// //			projection[1][1] *= -1;
-		// //
-		// //			for (int meshToDraw = 2; meshToDraw < m_TestMeshes.size(); ++meshToDraw) {
-		// //
-		// //				push_constants.worldMatrix = projection * view;
-		// //
-		// //				push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
-		// //
-		// //				vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-		// //				vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		// //
-		// //				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
-		// //			}
-		// //		}
-		// Mat4 sceneTransform = Math::Identity<Mat4>();
-		// sceneTransform = Math::Translate(sceneTransform, m_ScenePos);
-		//
-		// DrawContext ctx;
-		// m_TestScene.CacheTransforms();
-		// m_TestScene.ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
-		// 	const Mat4 worldMat = scene->GetWorldTransform(id);
-		// 	MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
-		// 	ctx.OpaqueSurfaces.push_back({worldMat, renderable.mesh});
-		// });
-		// //m_TestScene.ForEach<Mat4>(sceneTransform,
-		// //						  [&ctx](const Mat4 &parentMatrix, Scene *scene, EntityID entity) {
-		// //							  const Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
-		// //							  const Mat4 worldMat = parentMatrix * localMat;
-		// //							  const Renderable *render = scene->TryGetComponent<Renderable>(entity);
-		// //							  if (render) {
-		// //								  ctx.OpaqueSurfaces.push_back({worldMat, render->mesh});
-		// //							  }
-		// //							  return worldMat;
-		// //						  });
-		//
-		// Draw(ctx);
-		//
-		// vkCmdEndRendering(cmd);
 	}
 
 	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
@@ -1345,6 +1248,40 @@ namespace Imagine::Vulkan {
 		ImGui_ImplVulkan_CreateFontsTexture();
 
 		m_MainDeletionQueue.push(imguiPool);
+
+
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
+
+		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D, deviceProperties.limits.maxImageDimension2D};
+		MGN_CORE_INFO("Max Draw Image: {} x {}", maxDrawImage.width, maxDrawImage.height);
+
+
+		// m_ImGuiImage = CreateImage({maxDrawImage.width,maxDrawImage.height,0}, VK_FORMAT_R8G8B8A8_SNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, false);
+		//
+		// {
+		// 	// Create Descriptor Set:
+		// 	{
+		// 		VkDescriptorSetAllocateInfo alloc_info = {};
+		// 		alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		// 		alloc_info.descriptorPool = imguiPool;
+		// 		alloc_info.descriptorSetCount = 1;
+		// 		alloc_info.pSetLayouts = &m_SingleImageDescriptorLayout;
+		//
+		// 		VK_CHECK(vkAllocateDescriptorSets(m_Device, &alloc_info, &m_ImGuiImageDescriptor));
+		// 	}
+		//
+		// 	// Update the Descriptor Set:
+		// 	{
+		// 		DescriptorWriter writer;
+		// 		writer.WriteImage(0, m_ImGuiImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// 		writer.UpdateSet(m_Device, m_ImGuiImageDescriptor);
+		// 	}
+		// }
+		//
+		// // add to deletion queues
+		// m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_ImGuiImage.allocation, m_ImGuiImage.image});
+		// m_MainDeletionQueue.push(m_ImGuiImage.imageView);
 #endif
 	}
 

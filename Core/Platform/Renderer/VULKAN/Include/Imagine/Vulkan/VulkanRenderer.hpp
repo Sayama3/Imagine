@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Core/Size.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
@@ -74,6 +75,7 @@ namespace Imagine::Vulkan {
 		VkDescriptorSetLayout GetGPUSceneDescriptorLayout();
 		VkFormat GetColorImageFormat() const;
 		VkFormat GetDepthImageFormat() const;
+		void CreateDefaultSamplers();
 
 		std::shared_ptr<VulkanMaterialInstance> GetDefaultMaterial() {return m_DefaultMaterial;}
 
@@ -142,6 +144,16 @@ namespace Imagine::Vulkan {
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
+		// AllocatedImage m_ImGuiImage{};
+		// VkDescriptorSet m_ImGuiImageDescriptor{nullptr};
+
+#ifdef MGN_IMGUI
+		bool m_RenderToImGui = true;
+#else
+		bool m_RenderToImGui = false;
+#endif
+		std::optional<Core::Size2> m_ImGuiRenderer;
+
 		GPUSceneData m_SceneData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
 
@@ -174,13 +186,12 @@ namespace Imagine::Vulkan {
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
 
-		glm::vec3 m_CameraPos{0, 0, -5};
-		glm::quat m_CameraRot{Math::Identity<glm::quat>()};
-		glm::vec3 m_CameraRotEuler{0,0,0};
+		glm::vec3 m_CameraPos{0, 40, -25};
+		glm::quat m_CameraRot{glm::rotate(45.f, glm::vec3(1,0,0))};
+		glm::vec3 m_CameraRotEuler{45,0,0};
 
 		bool m_ResizeRequested{false};
 
 		Core::DrawContext m_MainDrawContext;
-		// VulkanImGuiImage m_ImGuiImage;
 	};
 } // namespace Imagine::Vulkan
