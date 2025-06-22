@@ -181,5 +181,6 @@ namespace Imagine::Vulkan {
 		bool m_ResizeRequested{false};
 
 		Core::DrawContext m_MainDrawContext;
+		// VulkanImGuiImage m_ImGuiImage;
 	};
 } // namespace Imagine::Vulkan

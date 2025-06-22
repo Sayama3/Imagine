@@ -55,6 +55,8 @@ namespace Imagine::Vulkan {
 
 		InitDefaultData();
 
+		// m_ImGuiImage = VulkanImGuiImage::Add(m_DefaultSamplerLinear, m_DrawImage.imageView, m_DrawImage.)
+
 		// Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf");
 	}
 
@@ -1002,6 +1004,7 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::SendImGuiCommands() {
 #ifdef MGN_IMGUI
+
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
@@ -1027,6 +1030,11 @@ namespace Imagine::Vulkan {
 			ImGui::InputFloat4("data4", (float *) &selected.data.data4);
 		}
 		ImGui::End();
+
+		// if (ImGui::Begin("Rendering")) {
+		// 	ImGui::Image((ImTextureID)m_DrawImageDescriptors, {m_DrawExtent.width*m_RenderScale,m_DrawExtent.height*m_RenderScale});
+		// }
+		// ImGui::End();
 #endif
 	}
 

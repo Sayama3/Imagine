@@ -27,8 +27,8 @@ namespace Imagine::Vulkan {
 		virtual uint64_t GetImGuiID() override;
 		virtual glm::fvec2 GetSize() override;
 
-		VkDescriptorSet descriptorSet;
-		glm::fvec2 size;
+		VkDescriptorSet descriptorSet{nullptr};
+		glm::fvec2 size{0};
 	};
 
 } // namespace Imagine::Vulkan
