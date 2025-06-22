@@ -45,7 +45,7 @@ using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
 
-	VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
+	static inline VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
 		const char *mt = vkb::to_string_message_type(messageType);
 
 		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
@@ -89,7 +89,7 @@ namespace Imagine::Vulkan {
 			}
 		}
 
-		return VK_FALSE;
+		return VK_FALSE; // Applications must return false here (Except Validation, if return true, will skip calling to driver)
 	}
 
 	VulkanRenderer::VulkanRenderer(const ApplicationParameters &appParams) :

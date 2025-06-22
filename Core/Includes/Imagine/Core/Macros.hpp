@@ -6,6 +6,10 @@
 
 #include "PlatformDetection.hpp"
 
+#ifndef MGN_NO_LOG
+#include "Logger.hpp"
+#endif
+
 #ifndef IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #define IMGUI_IMPL_OPENGL_LOADER_CUSTOM 1
 #endif
@@ -126,7 +130,6 @@
 #define MGN_VERSION_PATCH(version) ((uint32_t) (version) & 0xFFFU)
 
 #ifndef MGN_NO_LOG
-#include "Logger.hpp"
 
 #define MGN_CORE_LOG_DEBUG(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::debug, __VA_ARGS__)
 #define MGN_CORE_TRACE(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::trace, __VA_ARGS__)
