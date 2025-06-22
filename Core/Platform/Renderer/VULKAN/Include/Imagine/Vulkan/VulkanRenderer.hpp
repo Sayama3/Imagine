@@ -141,17 +141,12 @@ namespace Imagine::Vulkan {
 		VkExtent2D m_DrawExtent{0, 0};
 		float m_RenderScale{1.0f};
 
+		VkDescriptorSet m_ImGuiImageDescriptors{nullptr};
+		VkDescriptorSetLayout m_ImGuiImageDescriptorLayout{nullptr};
+
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
-		// AllocatedImage m_ImGuiImage{};
-		// VkDescriptorSet m_ImGuiImageDescriptor{nullptr};
-
-#ifdef MGN_IMGUI
-		bool m_RenderToImGui = true;
-#else
-		bool m_RenderToImGui = false;
-#endif
 		std::optional<Core::Size2> m_ImGuiRenderer;
 
 		GPUSceneData m_SceneData;

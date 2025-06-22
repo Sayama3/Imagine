@@ -55,14 +55,6 @@ namespace Imagine::Vulkan {
 		InitializePipelines();
 
 		InitDefaultData();
-
-		// {
-
-		// }
-		// m_ImGuiImage = VulkanImGuiImage::Add(m_DefaultSamplerLinear, m_DrawImage.imageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, m_DrawExtent.width, m_DrawExtent.height);
-		// m_MainDeletionQueue.push(m_ImGuiImage);
-
-		// Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf");
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -191,6 +183,8 @@ namespace Imagine::Vulkan {
 		drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
 		drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		drawImageUsages |= VK_IMAGE_USAGE_SAMPLED_BIT;
+		// drawImageUsages |= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 		VkImageCreateInfo rimg_info = Initializer::ImageCreateInfo2D(m_DrawImage.imageFormat, drawImageUsages, drawImageExtent);
 
@@ -301,14 +295,30 @@ namespace Imagine::Vulkan {
 			DescriptorLayoutBuilder builder;
 			builder.AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 			m_DrawImageDescriptorLayout = builder.Build(m_Device, VK_SHADER_STAGE_COMPUTE_BIT);
+			m_MainDeletionQueue.push(m_DrawImageDescriptorLayout);
+		}
+		{
+			// allocate a descriptor set for our draw image
+			m_DrawImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_DrawImageDescriptorLayout);
+			DescriptorWriter writer;
+			writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+			writer.UpdateSet(m_Device, m_DrawImageDescriptors);
 		}
 
-		// allocate a descriptor set for our draw image
-		m_DrawImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_DrawImageDescriptorLayout);
-
-		DescriptorWriter writer;
-		writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-		writer.UpdateSet(m_Device, m_DrawImageDescriptors);
+		// make the descriptor set layout for our compute draw
+		{
+			DescriptorLayoutBuilder builder;
+			builder.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			m_ImGuiImageDescriptorLayout = builder.Build(m_Device, VK_SHADER_STAGE_FRAGMENT_BIT);
+			m_MainDeletionQueue.push(m_ImGuiImageDescriptorLayout);
+		}
+		{
+			// allocate a descriptor set for our draw image
+			m_ImGuiImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_ImGuiImageDescriptorLayout);
+			DescriptorWriter writer;
+			writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			writer.UpdateSet(m_Device, m_ImGuiImageDescriptors);
+		}
 
 		{
 			DescriptorLayoutBuilder builder;
@@ -318,7 +328,6 @@ namespace Imagine::Vulkan {
 		}
 
 		// make sure both the descriptor allocator and the new layout get cleaned up properly
-		m_MainDeletionQueue.push(m_DrawImageDescriptorLayout);
 		m_MainDeletionQueue.push(m_GlobalDescriptorAllocator);
 
 		{
@@ -874,12 +883,12 @@ namespace Imagine::Vulkan {
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
 		// TODO: Preserve aspect ratio
-		if (m_RenderToImGui && m_ImGuiRenderer.has_value()) {
-			m_DrawExtent.width = m_ImGuiRenderer.value().width;
-			m_DrawExtent.height = m_ImGuiRenderer.value().height;
+		if (MgnImGui::DockingEnabled() && m_ImGuiRenderer.has_value()) {
+			m_DrawExtent.width = std::max(std::ceil(m_ImGuiRenderer.value().width * m_RenderScale), 1.f);
+			m_DrawExtent.height = std::max(std::ceil(m_ImGuiRenderer.value().height * m_RenderScale), 1.f);
 		} else {
-			m_DrawExtent.width = std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale;
-			m_DrawExtent.height = std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale;
+			m_DrawExtent.width = std::ceil(std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale);
+			m_DrawExtent.height = std::ceil(std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale);
 		}
 
 		const bool canDraw = m_DrawExtent.width > 0 && m_DrawExtent.height > 0;
@@ -1049,7 +1058,7 @@ namespace Imagine::Vulkan {
 			m_ImGuiRenderer = Size2{(uint32_t)size.x, (uint32_t)size.y};
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, 0);
-			ImGui::Image((ImTextureID) m_DrawImageDescriptors, {size.x, size.y}, {0.f, 0.f}, {(float) m_DrawExtent.width / (float) m_DrawImage.imageExtent.width, (float) m_DrawExtent.height / (float) m_DrawImage.imageExtent.height});
+			ImGui::Image((ImTextureID) m_ImGuiImageDescriptors, {size.x, size.y}, {0.f, 0.f}, {(float) m_DrawExtent.width / (float) m_DrawImage.imageExtent.width, (float) m_DrawExtent.height / (float) m_DrawImage.imageExtent.height});
 			ImGui::PopStyleVar(1);
 		}
 		ImGui::End();
@@ -1188,8 +1197,8 @@ namespace Imagine::Vulkan {
 
 		VK_CHECK(vkWaitForFences(m_Device, 1, &m_ImmFence, true, 9999999999));
 	}
-	void VulkanRenderer::InitializeImGui() {
 
+	void VulkanRenderer::InitializeImGui() {
 #ifdef MGN_IMGUI
 		// 1: create descriptor pool for IMGUI
 		//  the size of the pool is very oversize, but it's copied from imgui demo
@@ -1256,32 +1265,6 @@ namespace Imagine::Vulkan {
 		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D, deviceProperties.limits.maxImageDimension2D};
 		MGN_CORE_INFO("Max Draw Image: {} x {}", maxDrawImage.width, maxDrawImage.height);
 
-
-		// m_ImGuiImage = CreateImage({maxDrawImage.width,maxDrawImage.height,0}, VK_FORMAT_R8G8B8A8_SNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, false);
-		//
-		// {
-		// 	// Create Descriptor Set:
-		// 	{
-		// 		VkDescriptorSetAllocateInfo alloc_info = {};
-		// 		alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		// 		alloc_info.descriptorPool = imguiPool;
-		// 		alloc_info.descriptorSetCount = 1;
-		// 		alloc_info.pSetLayouts = &m_SingleImageDescriptorLayout;
-		//
-		// 		VK_CHECK(vkAllocateDescriptorSets(m_Device, &alloc_info, &m_ImGuiImageDescriptor));
-		// 	}
-		//
-		// 	// Update the Descriptor Set:
-		// 	{
-		// 		DescriptorWriter writer;
-		// 		writer.WriteImage(0, m_ImGuiImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		// 		writer.UpdateSet(m_Device, m_ImGuiImageDescriptor);
-		// 	}
-		// }
-		//
-		// // add to deletion queues
-		// m_MainDeletionQueue.push(Deleter::VmaImage{m_Allocator, m_ImGuiImage.allocation, m_ImGuiImage.image});
-		// m_MainDeletionQueue.push(m_ImGuiImage.imageView);
 #endif
 	}
 

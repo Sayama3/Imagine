@@ -22,10 +22,6 @@ namespace Imagine::Core {
 		ImGui_ImplVulkan_NewFrame();
 	}
 
-	void MgnImGui::Render() {
-		ImGui::Render();
-	}
-
 	void MgnImGui::PostRender(){
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// Update and Render additional Platform Windows

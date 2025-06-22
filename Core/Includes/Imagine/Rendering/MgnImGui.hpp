@@ -8,10 +8,17 @@
 
 namespace Imagine::Core {
 	class MgnImGui {
+	private:
+		inline static bool s_DockingEnabled { false };
 	public:
 		static void CreateContext();
 		static void InitializeWindow();
 		static void InitializeRenderer();
+
+		static void EnableDocking();
+		static void DisableDocking();
+
+		static bool DockingEnabled();
 
 		static void NewFrame();
 		static void NewRenderFrame();

@@ -69,6 +69,8 @@ namespace Imagine::Core {
 		MgnImGui::CreateContext();
 		MgnImGui::InitializeWindow();
 		MgnImGui::InitializeRenderer();
+
+		MgnImGui::EnableDocking();
 #endif
 
 		if (parameters.Renderer) {
@@ -120,7 +122,7 @@ namespace Imagine::Core {
 				MgnImGui::NewFrame();
 
 				static bool open = true;
-				ImGui::ShowDemoWindow(&open);
+				if (open) ImGui::ShowDemoWindow(&open);
 
 				if (m_Window) {
 					m_Window->SendImGuiCommands();
