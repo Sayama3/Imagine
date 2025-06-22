@@ -51,40 +51,40 @@ namespace Imagine::Vulkan {
 		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
 			switch (messageSeverity) {
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-					MGN_CORE_TRACE("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					MGN_CORE_TRACE("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-					MGN_CORE_INFO("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					MGN_CORE_INFO("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-					MGN_CORE_WARNING("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					MGN_CORE_WARNING("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-					MGN_CORE_ERROR("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					MGN_CORE_ERROR("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
 					MGN_BREAK();
 					break;
 				default:
-					MGN_CORE_ERROR("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					MGN_CORE_ERROR("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
 					break;
 			}
 		}
 		else {
 			switch (messageSeverity) {
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-					MGN_CORE_TRACE("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					MGN_CORE_TRACE("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-					MGN_CORE_INFO("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					MGN_CORE_INFO("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-					MGN_CORE_WARNING("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					MGN_CORE_WARNING("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-					MGN_CORE_ERROR("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					MGN_CORE_ERROR("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
 					MGN_BREAK();
 					break;
 				default:
-					MGN_CORE_ERROR("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					MGN_CORE_ERROR("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
 					break;
 			}
 		}
