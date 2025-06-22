@@ -55,7 +55,7 @@ namespace Imagine::Vulkan {
 
 		InitDefaultData();
 
-		//Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf");
+		// Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf");
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -953,7 +953,6 @@ namespace Imagine::Vulkan {
 		//  _renderFence will now block until the graphic commands finish execution
 		VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, GetCurrentFrame().m_RenderFence));
 
-
 		m_MainDrawContext.OpaqueSurfaces.clear();
 	}
 	void VulkanRenderer::Present() {
@@ -1308,10 +1307,19 @@ namespace Imagine::Vulkan {
 
 		// this initializes imgui for Vulkan
 		ImGui_ImplVulkan_InitInfo init_info = {};
+		// init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
 		init_info.Instance = m_Instance;
 		init_info.PhysicalDevice = m_PhysicalDevice;
 		init_info.Device = m_Device;
+		init_info.QueueFamily = m_GraphicsQueueFamily;
 		init_info.Queue = m_GraphicsQueue;
+
+		// init_info.PipelineCache = g_PipelineCache;
+		// init_info.RenderPass = wd->RenderPass;
+		// init_info.Subpass = 0;
+		// init_info.Allocator = g_Allocator;
+		init_info.CheckVkResultFn = [](const VkResult error) { VK_CHECK(error); };
+
 		init_info.DescriptorPool = imguiPool;
 		init_info.MinImageCount = 3;
 		init_info.ImageCount = 3;
@@ -1329,7 +1337,6 @@ namespace Imagine::Vulkan {
 		ImGui_ImplVulkan_CreateFontsTexture();
 
 		m_MainDeletionQueue.push(imguiPool);
-		// m_MainDeletionQueue.push(ImGui_ImplVulkan_Shutdown);
 #endif
 	}
 

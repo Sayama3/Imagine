@@ -156,6 +156,11 @@ namespace Imagine::Core {
 					}
 
 					m_Renderer->EndDraw();
+
+#ifdef MGN_IMGUI
+					MgnImGui::PostRender();
+#endif
+
 					m_Renderer->Present();
 				}
 			}

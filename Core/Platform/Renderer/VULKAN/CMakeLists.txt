@@ -23,8 +23,9 @@ set(VULKAN_SOURCES
 		Include/Imagine/Vulkan/Vulkan.hpp
 		Sources/Vulkan.cpp
 		Include/Imagine/Vulkan/VulkanDeleter.hpp
-		Include/Imagine/Vulkan/AllocatedImage.hpp
-		Sources/AllocatedImage.cpp
+		Sources/VulkanDeleter.cpp
+		Include/Imagine/Vulkan/VulkanImage.hpp
+		Sources/VulkanImage.cpp
 		Include/Imagine/Vulkan/VulkanShader.hpp
 		Sources/VulkanShader.cpp
 		Include/Imagine/Vulkan/PipelineBuilder.hpp

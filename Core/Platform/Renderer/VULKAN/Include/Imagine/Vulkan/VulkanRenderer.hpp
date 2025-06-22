@@ -8,10 +8,10 @@
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
-#include "Imagine/Vulkan/AllocatedImage.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
 #include "Imagine/Vulkan/VulkanFrameData.hpp"
+#include "Imagine/Vulkan/VulkanImage.hpp"
 #include "Imagine/Vulkan/VulkanMaterial.hpp"
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 

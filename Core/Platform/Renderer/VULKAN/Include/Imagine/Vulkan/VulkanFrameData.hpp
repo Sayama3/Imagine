@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "Imagine/Vulkan/AllocatedImage.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
+#include "Imagine/Vulkan/VulkanImage.hpp"
 
 namespace Imagine::Vulkan {
 

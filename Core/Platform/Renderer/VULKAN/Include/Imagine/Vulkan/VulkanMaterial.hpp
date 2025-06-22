@@ -7,8 +7,8 @@
 #include <vulkan/vulkan.h>
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/Material.hpp"
-#include "Imagine/Vulkan/AllocatedImage.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
+#include "Imagine/Vulkan/VulkanImage.hpp"
 
 namespace Imagine::Vulkan {
 

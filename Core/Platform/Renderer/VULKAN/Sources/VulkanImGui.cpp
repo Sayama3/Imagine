@@ -26,6 +26,16 @@ namespace Imagine::Core {
 		ImGui::Render();
 	}
 
+	void MgnImGui::PostRender(){
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		// Update and Render additional Platform Windows
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
+	}
+
 	void MgnImGui::ShutdownRenderer() {
 		ImGui_ImplVulkan_Shutdown();
 	}

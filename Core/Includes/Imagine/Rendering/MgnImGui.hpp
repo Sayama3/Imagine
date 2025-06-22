@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Imagine/Core/Math.hpp"
+
 namespace Imagine::Core {
 	class MgnImGui {
 	public:
@@ -16,9 +18,16 @@ namespace Imagine::Core {
 		static void NewWindowFrame();
 
 		static void Render();
+		static void PostRender();
 
 		static void Shutdown();
 		static void ShutdownWindow();
 		static void ShutdownRenderer();
+	};
+
+	struct ImGuiImage {
+		virtual ~ImGuiImage() = default;
+		virtual uint64_t GetImGuiID() = 0;
+		virtual glm::fvec2 GetSize() = 0;
 	};
 } // namespace Imagine::Core
