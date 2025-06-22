@@ -44,6 +44,54 @@
 using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
+
+	VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
+		const char *mt = vkb::to_string_message_type(messageType);
+
+		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+			switch (messageSeverity) {
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+					MGN_CORE_TRACE("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+					MGN_CORE_INFO("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+					MGN_CORE_WARNING("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+					MGN_CORE_ERROR("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					MGN_BREAK();
+					break;
+				default:
+					MGN_CORE_ERROR("[Vulkan: {}] - {}\n{}\n", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+					break;
+			}
+		}
+		else {
+			switch (messageSeverity) {
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+					MGN_CORE_TRACE("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+					MGN_CORE_INFO("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+					MGN_CORE_WARNING("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+					MGN_CORE_ERROR("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					MGN_BREAK();
+					break;
+				default:
+					MGN_CORE_ERROR("[Vulkan: {}]\n{}\n", mt, pCallbackData->pMessage);
+					break;
+			}
+		}
+
+		return VK_FALSE;
+	}
+
 	VulkanRenderer::VulkanRenderer(const ApplicationParameters &appParams) :
 		Renderer(), m_AppParams(appParams) {
 		InitializeVulkan();
@@ -88,7 +136,9 @@ namespace Imagine::Vulkan {
 		auto inst_ret = builder.set_app_name(m_AppParams.AppName.c_str())
 								.set_engine_name(ApplicationParameters::EngineName)
 								.request_validation_layers(GetRenderParams().EnableDebug)
-								.use_default_debug_messenger()
+								// .use_default_debug_messenger()
+								.set_debug_callback(VkDebugCallback)
+								// .set_debug_callback_user_data_pointer(this)
 								.require_api_version(1, 3, 0) // TODO? See if I better use the 1.2.0 vulkan version.
 								.build();
 
@@ -316,7 +366,8 @@ namespace Imagine::Vulkan {
 			// allocate a descriptor set for our draw image
 			m_ImGuiImageDescriptors = m_GlobalDescriptorAllocator.Allocate(m_Device, m_ImGuiImageDescriptorLayout);
 			DescriptorWriter writer;
-			writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			// writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			writer.WriteImage(0, m_DrawImage.imageView, m_DefaultSamplerLinear, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 			writer.UpdateSet(m_Device, m_ImGuiImageDescriptors);
 		}
 
@@ -886,7 +937,8 @@ namespace Imagine::Vulkan {
 		if (MgnImGui::DockingEnabled() && m_ImGuiRenderer.has_value()) {
 			m_DrawExtent.width = std::max(std::ceil(m_ImGuiRenderer.value().width * m_RenderScale), 1.f);
 			m_DrawExtent.height = std::max(std::ceil(m_ImGuiRenderer.value().height * m_RenderScale), 1.f);
-		} else {
+		}
+		else {
 			m_DrawExtent.width = std::ceil(std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale);
 			m_DrawExtent.height = std::ceil(std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale);
 		}
@@ -954,6 +1006,7 @@ namespace Imagine::Vulkan {
 
 		// make the swapchain image into presentable mode
 		Utils::TransitionImage(cmd, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		DrawImGui(cmd, m_SwapchainImageViews[GetCurrentFrame().m_SwapchainImageIndex]);
 		Utils::TransitionImage(cmd, m_SwapchainImages[GetCurrentFrame().m_SwapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
@@ -1055,7 +1108,7 @@ namespace Imagine::Vulkan {
 
 		if (ImGui::Begin("Rendering")) {
 			ImVec2 size = ImGui::GetContentRegionAvail();
-			m_ImGuiRenderer = Size2{(uint32_t)size.x, (uint32_t)size.y};
+			m_ImGuiRenderer = Size2{(uint32_t) size.x, (uint32_t) size.y};
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, 0);
 			ImGui::Image((ImTextureID) m_ImGuiImageDescriptors, {size.x, size.y}, {0.f, 0.f}, {(float) m_DrawExtent.width / (float) m_DrawImage.imageExtent.width, (float) m_DrawExtent.height / (float) m_DrawImage.imageExtent.height});
