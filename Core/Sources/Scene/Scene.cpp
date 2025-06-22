@@ -50,7 +50,8 @@ namespace Imagine::Core {
 		m_Names.Create(id.id, "Entity " + id.string());
 		if (parentId.IsValid()) {
 			AddToChild(parentId, id);
-		} else {
+		}
+		else {
 			m_Roots.insert(id);
 		}
 		return id;
@@ -70,8 +71,8 @@ namespace Imagine::Core {
 			rawSparseSet.Remove(id.id);
 		}
 		m_Names.Remove(id.id);
-		//TODO: Delete all children too
-		//TODO: Reorder the sibling hierarchy
+		// TODO: Delete all children too
+		// TODO: Reorder the sibling hierarchy
 	}
 
 	void Scene::Clear() {
@@ -81,15 +82,14 @@ namespace Imagine::Core {
 		m_SparseEntities.Clear();
 	}
 	std::string Scene::GetName(EntityID entityId) const {
-		auto* name = m_Names.TryGet(entityId.id);
+		auto *name = m_Names.TryGet(entityId.id);
 		MGN_CHECK_ERROR(name, "The entity id {} don't have name.", entityId.id);
 		return name ? *name : std::string{};
 	}
 	void Scene::SetName(EntityID entityId, std::string name) {
 		m_Names.GetOrCreate(entityId.id) = std::move(name);
 	}
-	Scene::ChildIterator::ChildIterator(Scene *scene, EntityID parent) :
-		scene(scene) {
+	Scene::ChildIterator::ChildIterator(Scene *scene, EntityID parent) : scene(scene) {
 		if (!scene) return;
 		auto *child = scene->m_Children.TryGet(parent.id);
 		if (child && child->firstChild.IsValid()) {
@@ -152,16 +152,27 @@ namespace Imagine::Core {
 	}
 
 	Scene::RelationshipIterator::RelationshipIterator(const RelationshipIterator &o) :
-		scene(o.scene), current(o.current) {
+		scene(o.scene), current(o.current), rootParent(o.rootParent) {
 	}
 	Scene::RelationshipIterator &Scene::RelationshipIterator::operator=(const RelationshipIterator &o) {
 		scene = o.scene;
 		current = o.current;
+		rootParent = o.rootParent;
 		return *this;
 	}
+
 	Scene::RelationshipIterator::RelationshipIterator(Scene *scene, EntityID id) :
 		scene(scene), current(id) {
+		if (!scene) return;
+		const auto *c = scene->m_Parents.TryGet(current.id);
+		if (c && c->parent.IsValid()) {
+			rootParent = c->parent;
+		}
 	}
+
+	Scene::RelationshipIterator::RelationshipIterator(Scene *scene, EntityID id, EntityID parent) : scene(scene), current(id), rootParent(parent) {
+	}
+
 	// RelationshipIterator
 	Entity &Scene::RelationshipIterator::Get() {
 		return scene->GetEntity(current);
@@ -195,23 +206,24 @@ namespace Imagine::Core {
 
 	Scene::RelationshipIterator Scene::RelationshipIterator::PreviousSibling() const {
 		Sibling *sibling = scene->m_Siblings.TryGet(current.id);
-		return sibling ? RelationshipIterator{scene, sibling->previous} : RelationshipIterator{scene, EntityID::NullID};
+		return sibling ? RelationshipIterator{scene, sibling->previous, rootParent} : RelationshipIterator{scene, EntityID::NullID, rootParent};
 	}
 
 	Scene::RelationshipIterator Scene::RelationshipIterator::NextSibling() const {
 		Sibling *sibling = scene->m_Siblings.TryGet(current.id);
-		return sibling ? RelationshipIterator{scene, sibling->next} : RelationshipIterator{scene, EntityID::NullID};
+		return sibling ? RelationshipIterator{scene, sibling->next, rootParent} : RelationshipIterator{scene, EntityID::NullID, rootParent};
 	}
 
 	Scene::RelationshipIterator Scene::RelationshipIterator::Parent() const {
 		struct Parent *parent = scene->m_Parents.TryGet(current.id);
-		return parent ? RelationshipIterator{scene, parent->parent} : RelationshipIterator{scene, EntityID::NullID};
+		return parent ? RelationshipIterator{scene, parent->parent, rootParent} : RelationshipIterator{scene, EntityID::NullID, rootParent};
 	}
 
 	Scene::RelationshipIterator Scene::RelationshipIterator::FirstChild() const {
 		struct Child *child = scene->m_Children.TryGet(current.id);
-		return child ? RelationshipIterator{scene, child->firstChild} : RelationshipIterator{scene, EntityID::NullID};
+		return child ? RelationshipIterator{scene, child->firstChild, rootParent} : RelationshipIterator{scene, EntityID::NullID, rootParent};
 	}
+
 	Scene::RelationshipIterator &Scene::RelationshipIterator::operator++() {
 		// First we go see if there is any child.
 		struct Child *child = scene->m_Children.TryGet(current.id);
@@ -229,7 +241,8 @@ namespace Imagine::Core {
 
 		// If we don't have any sibling, we go to see it our parent (or the parent of our parent recursively) don't have any next sibling.
 		struct Parent *parent = scene->m_Parents.TryGet(current.id);
-		while (parent && parent->parent.IsValid()) {
+		while (parent && parent->parent.IsValid() && parent->parent != rootParent) {
+
 			struct Sibling *parentSibling = scene->m_Siblings.TryGet(parent->parent.id);
 			if (parentSibling && parentSibling->next.IsValid()) {
 				current = parentSibling->next;
@@ -339,21 +352,98 @@ namespace Imagine::Core {
 		}
 	}
 
+	void Scene::CacheTransforms() {
+		Mat4 identity = Math::Identity<Mat4>();
+		ForEach<Mat4>(identity, [](const Mat4 &parentMatrix, Scene *scene, const EntityID id) {
+			const Mat4 localMat = scene->GetEntity(id).GetLocalMatrix();
+			const Mat4 worldMat = parentMatrix * localMat;
+			scene->m_WorldTransform.GetOrCreate(id.id) = worldMat;
+			return worldMat;
+		});
+	}
+	Mat4 Scene::GetWorldTransform(const EntityID id) const {
+		const Mat4* trs = m_WorldTransform.TryGet(id.id);
+		return trs ? *trs : Mat4(0);
+	}
+	void Scene::ForEach(std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)> func) {
+		const auto beg = m_Roots.cbegin();
+		const auto end = m_Roots.cend();
+
+		const Buffer rootData{};
+
+		for (auto it = beg; it != end; ++it) {
+			const EntityID rootId = *it;
+			const Buffer root = func(ConstBufferView{rootData.Get(), rootData.Size()}, this, rootId);
+			ForEach(rootId, ConstBufferView{root.Get(), 0, root.Size()}, func);
+		}
+	}
+	void Scene::ForEach(ConstBufferView rootData, std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)> func) {
+		const auto beg = m_Roots.cbegin();
+		const auto end = m_Roots.cend();
+
+		for (auto it = beg; it != end; ++it) {
+			EntityID rootId = *it;
+			Buffer root = func(rootData, this, rootId);
+			ForEach(rootId, ConstBufferView{root.Get(), 0, root.Size()}, func);
+		}
+	}
+	void Scene::ForEachWithComponent(UUID id, std::function<void(Scene *scene, EntityID entityId, BufferView component)> func) {
+		if (!m_CustomComponents.contains(id)) return;
+
+		auto& components = m_CustomComponents.at(id);
+
+		auto beg = components.begin();
+		auto end = components.begin();
+		for (auto it = beg; it != end; ++it) {
+			EntityID entity{it.GetID()};
+			BufferView bv = it.GetView();
+			func(this, entity, bv);
+		}
+	}
+	void Scene::ForEachWithComponent(UUID id, std::function<void(const Scene *scene, EntityID entityId, ConstBufferView component)> func) const {
+		if (!m_CustomComponents.contains(id)) return;
+
+		auto &components = m_CustomComponents.at(id);
+
+		auto beg = components.cbegin();
+		auto end = components.cbegin();
+		for (auto it = beg; it != end; ++it) {
+			EntityID entity{it.GetID()};
+			ConstBufferView bv = it.GetConstView();
+			func(this, entity, bv);
+		}
+	}
+	uint64_t Scene::CountComponents(UUID componentID) const {
+		if (!m_CustomComponents.contains(componentID)) return 0;
+
+		const auto& cc = m_CustomComponents.at(componentID);
+		return cc.Count();
+	}
+
+	void Scene::ForEach(EntityID entity, ConstBufferView associatedData, const std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)> &func) {
+		const auto beg = BeginChild(entity);
+		const auto end = EndChild();
+		for (auto it = beg; it != end; ++it) {
+			const EntityID childId = it.GetCurrentChild();
+			const Buffer childData = func(associatedData, this, childId);
+			ForEach(childId, ConstBufferView{childData.Get(), 0, childData.Size()}, func);
+		}
+	}
+
 	// Component management
 	UUID Scene::RegisterType(std::string name, const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
 		UUID id{};
 		RegisterType(std::move(name), id, size, constructor, destructor, copy_constructor);
 		return id;
 	}
-
 	void Scene::RegisterType(std::string name, const UUID componentId, const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
 		m_CustomComponentsMetadata[componentId] = {
-			std::move(name),
-			componentId,
-			size,
-			constructor != nullptr,
-			destructor != nullptr,
-			copy_constructor != nullptr,
+				std::move(name),
+				componentId,
+				size,
+				constructor != nullptr,
+				destructor != nullptr,
+				copy_constructor != nullptr,
 		};
 
 		m_CustomComponents[componentId] = RawSparseSet<uint32_t>{static_cast<uint32_t>(size), c_EntityPrepareCount};
@@ -365,7 +455,7 @@ namespace Imagine::Core {
 
 	BufferView Scene::AddComponent(const EntityID entityId, const UUID componentId) {
 		if (!m_CustomComponents.contains(componentId)) {
-			MGN_CORE_ERROR("The component {} doesn't exist.",componentId.string());
+			MGN_CORE_ERROR("The component {} doesn't exist.", componentId.string());
 			return BufferView{};
 		}
 
@@ -488,7 +578,9 @@ namespace Imagine::Core {
 		return {};
 	}
 	bool Scene::HasComponent(EntityID entityId, UUID componentId) const {
-		if (!m_CustomComponents.contains(componentId)) {return false;}
+		if (!m_CustomComponents.contains(componentId)) {
+			return false;
+		}
 		auto &components = m_CustomComponents.at(componentId);
 		return components.Exist(entityId.id);
 	}

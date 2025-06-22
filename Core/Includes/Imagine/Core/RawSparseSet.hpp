@@ -37,6 +37,109 @@ namespace Imagine::Core {
 		static inline constexpr UnsignedInteger c_OverheadResize = 64;
 
 	public:
+		class Iterator {
+		public:
+			Iterator() = default;
+			~Iterator() = default;
+			Iterator(const Iterator&) = default;
+			Iterator& operator=(const Iterator&) = default;
+			Iterator(RawSparseSet* sparseSet, UnsignedInteger index) : sparseSet(sparseSet), index(index) {}
+		public:
+			using iterator_category = std::bidirectional_iterator_tag;
+			using value_type = BufferView;
+			using difference_type = std::ptrdiff_t;
+			using pointer = BufferView;
+			using reference = BufferView;
+		public:
+			Iterator operator++(int) {
+				Iterator res{*this};
+				++(*this);
+				return res;
+			}
+			Iterator &operator++() {
+				++index;
+				return *this;
+			}
+			Iterator operator--(int) {
+				Iterator res{*this};
+				--(*this);
+				return res;
+			}
+			Iterator &operator--() {
+				--index;
+				return *this;
+			}
+
+			reference operator*() const { return GetView(); }
+			pointer operator->() const { return GetView(); }
+
+			bool operator==(const Iterator &o) const { return sparseSet == o.sparseSet && index == o.index; }
+			bool operator!=(const Iterator &o) const { return !(*this == o); }
+			auto operator<=>(const Iterator &o) const { return index <=> o.index; }
+		public:
+			UnsignedInteger GetID() const {return sparseSet->dense[index];}
+			UnsignedInteger GetIndex() const {return index;}
+			ConstBufferView GetConstView() const {return sparseSet->elements.get_const_view(index);}
+			BufferView GetView() {return sparseSet->elements.get_view(index);}
+		private:
+			RawSparseSet* sparseSet{nullptr};
+			UnsignedInteger index{0};
+		};
+
+		class ConstIterator {
+		public:
+			using iterator_category = std::bidirectional_iterator_tag;
+			using value_type = ConstBufferView;
+			using difference_type = std::ptrdiff_t;
+			using pointer = ConstBufferView;
+			using reference = ConstBufferView;
+		public:
+			ConstIterator() = default;
+			~ConstIterator() = default;
+			ConstIterator(const ConstIterator&) = default;
+			ConstIterator& operator=(const ConstIterator&) = default;
+			ConstIterator(const RawSparseSet* sparseSet, UnsignedInteger index) : sparseSet(sparseSet), index(index) {}
+		public:
+			ConstIterator operator++(int) {
+				ConstIterator res{*this};
+				++(*this);
+				return res;
+			}
+			ConstIterator &operator++() {
+				++index;
+				return *this;
+			}
+			ConstIterator operator--(int) {
+				ConstIterator res{*this};
+				--(*this);
+				return res;
+			}
+			ConstIterator &operator--() {
+				--index;
+				return *this;
+			}
+
+			reference operator*() const { return GetConstView(); }
+			pointer operator->() const { return GetConstView(); }
+
+			bool operator==(const ConstIterator &o) const { return sparseSet == o.sparseSet && index == o.index; }
+			bool operator!=(const ConstIterator &o) const { return !(*this == o); }
+			auto operator<=>(const ConstIterator &o) const { return index <=> o.index; }
+		public:
+			UnsignedInteger GetID() const {return sparseSet->dense[index];}
+			UnsignedInteger GetIndex() const {return index;}
+			ConstBufferView GetConstView() const {return sparseSet->elements.get_const_view(index);}
+		private:
+			const RawSparseSet* sparseSet{nullptr};
+			UnsignedInteger index{0};
+		};
+
+		Iterator begin() {return Iterator{this, 0};}
+		Iterator end() {return Iterator(this, dense.size());}
+
+		ConstIterator cbegin() const {return ConstIterator{this, 0};}
+		ConstIterator cend() const {return ConstIterator(this, dense.size());}
+	public:
 		template<typename T>
 		inline static RawSparseSet Instantiate() {
 			RawSparseSet sparseSet = RawSparseSet<UnsignedInteger>{sizeof(T)};

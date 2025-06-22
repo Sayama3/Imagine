@@ -55,9 +55,7 @@ namespace Imagine::Vulkan {
 
 		InitDefaultData();
 
-		m_TestMeshes = Initializer::LoadMeshes(this, "Assets/Models/basicmesh.glb").value();
-
-		Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\Iannis\\Downloads\\CommercialRefrigerator.glb");
+		//Initializer::LoadModelAsDynamic(this, &m_TestScene, EntityID::NullID, "C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf");
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -73,7 +71,6 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::PrepareShutdown() {
-		m_TestScene.Clear();
 		vkDeviceWaitIdle(m_Device);
 	}
 
@@ -865,6 +862,8 @@ namespace Imagine::Vulkan {
 		return m_AppParams.Renderer.value();
 	}
 	bool VulkanRenderer::BeginDraw() {
+		m_MainDrawContext.OpaqueSurfaces.clear();
+
 		// TODO: Preserve aspect ratio
 		m_DrawExtent.width = std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale;
 		m_DrawExtent.height = std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale;
@@ -901,6 +900,7 @@ namespace Imagine::Vulkan {
 
 		{
 			m_SceneData.view = glm::translate(-m_CameraPos);
+			m_SceneData.view = glm::toMat4(glm::inverse(m_CameraRot)) * m_SceneData.view;
 			// camera projection
 			m_SceneData.proj = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
 
@@ -910,10 +910,10 @@ namespace Imagine::Vulkan {
 			// m_SceneData.proj[0][0] *= -1;
 			m_SceneData.viewproj = m_SceneData.proj * m_SceneData.view;
 
-			//some default lighting parameters
+			// some default lighting parameters
 			m_SceneData.ambientColor = glm::vec4(.1f);
 			m_SceneData.sunlightColor = glm::vec4(1.f);
-			m_SceneData.sunlightDirection = glm::vec4(0,1,0.5,1.f);
+			m_SceneData.sunlightDirection = glm::vec4(0, 1, 0.5, 1.f);
 		}
 
 		return true;
@@ -952,6 +952,9 @@ namespace Imagine::Vulkan {
 		// submit command buffer to the queue and execute it.
 		//  _renderFence will now block until the graphic commands finish execution
 		VK_CHECK(vkQueueSubmit2(m_GraphicsQueue, 1, &submit, GetCurrentFrame().m_RenderFence));
+
+
+		m_MainDrawContext.OpaqueSurfaces.clear();
 	}
 	void VulkanRenderer::Present() {
 		// prepare present
@@ -1004,7 +1007,14 @@ namespace Imagine::Vulkan {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
 			ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPos), 0.1, 0, 0, "%.1f");
-			ImGui::DragFloat3("Scene Position", glm::value_ptr(m_ScenePos), 0.1, 0, 0, "%.1f");
+			glm::vec3 rot = glm::eulerAngles(m_CameraRot) * Math::RadToDeg;
+			if (ImGui::DragFloat3("Camera Rotation", glm::value_ptr(m_CameraRotEuler), 0.1, 0, 0, "%.1f")) {
+				m_CameraRot = glm::quat(m_CameraRotEuler * Math::DegToRad);
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				m_CameraRotEuler = glm::eulerAngles(m_CameraRot) * Math::RadToDeg;
+			}
+
 			ImGui::Spacing();
 			ImGui::SliderFloat("Render Scale", &m_RenderScale, 0.3f, 1.f);
 
@@ -1022,7 +1032,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene *scene, EntityID parent) {
-		if (!scene) return;
+		Initializer::LoadModelAsDynamic(this, scene, parent, path);
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
@@ -1051,6 +1061,128 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::DrawGeometry(VkCommandBuffer cmd) {
+		// VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(m_DrawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		// VkRenderingAttachmentInfo depthAttachment = Initializer::DepthAttachmentInfo(m_DepthImage.imageView, 1.0f, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+		//
+		// VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_DrawExtent, &colorAttachment, &depthAttachment);
+		// vkCmdBeginRendering(cmd, &renderInfo);
+		//
+		// // set dynamic viewport and scissor
+		// VkViewport viewport = {};
+		// viewport.x = 0;
+		// viewport.y = 0;
+		// viewport.width = m_DrawExtent.width;
+		// viewport.height = m_DrawExtent.height;
+		// viewport.minDepth = 0.f;
+		// viewport.maxDepth = 1.f;
+		//
+		// vkCmdSetViewport(cmd, 0, 1, &viewport);
+		//
+		// VkRect2D scissor = {};
+		// scissor.offset.x = 0;
+		// scissor.offset.y = 0;
+		// scissor.extent.width = m_DrawExtent.width;
+		// scissor.extent.height = m_DrawExtent.height;
+		//
+		// vkCmdSetScissor(cmd, 0, 1, &scissor);
+		//
+		// // allocate a new uniform buffer for the scene data
+		// // using CPU_TO_GPU as the `GPUSceneData` type is very small and can probably be cached entirely in VRAM.
+		// // better use a dedicated `VMA_MEMORY_USAGE_GPU` for bigger data and do a transfer beforehand.
+		// AllocatedBuffer gpuSceneDataBuffer = CreateBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		//
+		// // add it to the deletion queue of this frame so it gets deleted once its been used
+		// GetCurrentFrame().m_DeletionQueue.push(Deleter::VmaBuffer{m_Allocator, gpuSceneDataBuffer.allocation, gpuSceneDataBuffer.buffer});
+		//
+		// // write the buffer
+		// GPUSceneData *sceneUniformData = (GPUSceneData *) gpuSceneDataBuffer.allocation->GetMappedData();
+		// *sceneUniformData = m_SceneData;
+		//
+		// // create a descriptor set that binds that buffer and update it
+		// GetCurrentFrame().m_GlobalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
+		//
+		//
+		// DescriptorWriter writer;
+		// writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		// writer.UpdateSet(m_Device, GetCurrentFrame().m_GlobalDescriptor);
+		//
+		// // vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
+		//
+		// // launch a draw command to draw 3 vertices
+		// // vkCmdDraw(cmd, 3, 1, 0, 0);
+		//
+		// // vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
+		// // // bind a texture
+		// // VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
+		// // {
+		// // 	DescriptorWriter writer;
+		// // 	writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// //
+		// // 	writer.UpdateSet(m_Device, imageSet);
+		// // }
+		// //
+		// // vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
+		// //		GPUDrawPushConstants push_constants;
+		// // push_constants.worldMatrix = glm::mat4{ 1.f };
+		// // push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
+		//
+		// // vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+		// // vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		// // vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+		//
+		// //		{
+		// //
+		// //			glm::mat4 view = glm::translate(m_CameraPos);
+		// //			// camera projection
+		// //			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+		// //
+		// //			// invert the Y direction on projection matrix so that we are more similar
+		// //			// to opengl and gltf axis
+		// //			projection[0][0] *= -1;
+		// //			projection[1][1] *= -1;
+		// //
+		// //			for (int meshToDraw = 2; meshToDraw < m_TestMeshes.size(); ++meshToDraw) {
+		// //
+		// //				push_constants.worldMatrix = projection * view;
+		// //
+		// //				push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
+		// //
+		// //				vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+		// //				vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		// //
+		// //				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
+		// //			}
+		// //		}
+		// Mat4 sceneTransform = Math::Identity<Mat4>();
+		// sceneTransform = Math::Translate(sceneTransform, m_ScenePos);
+		//
+		// DrawContext ctx;
+		// m_TestScene.CacheTransforms();
+		// m_TestScene.ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
+		// 	const Mat4 worldMat = scene->GetWorldTransform(id);
+		// 	MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
+		// 	ctx.OpaqueSurfaces.push_back({worldMat, renderable.mesh});
+		// });
+		// //m_TestScene.ForEach<Mat4>(sceneTransform,
+		// //						  [&ctx](const Mat4 &parentMatrix, Scene *scene, EntityID entity) {
+		// //							  const Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
+		// //							  const Mat4 worldMat = parentMatrix * localMat;
+		// //							  const Renderable *render = scene->TryGetComponent<Renderable>(entity);
+		// //							  if (render) {
+		// //								  ctx.OpaqueSurfaces.push_back({worldMat, render->mesh});
+		// //							  }
+		// //							  return worldMat;
+		// //						  });
+		//
+		// Draw(ctx);
+		//
+		// vkCmdEndRendering(cmd);
+	}
+
+	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
+		VkCommandBuffer cmd{nullptr};
+		cmd = GetCurrentFrame().m_MainCommandBuffer;
+
 		VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(m_DrawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		VkRenderingAttachmentInfo depthAttachment = Initializer::DepthAttachmentInfo(m_DepthImage.imageView, 1.0f, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
@@ -1091,81 +1223,9 @@ namespace Imagine::Vulkan {
 		// create a descriptor set that binds that buffer and update it
 		GetCurrentFrame().m_GlobalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
 
-
 		DescriptorWriter writer;
 		writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		writer.UpdateSet(m_Device, GetCurrentFrame().m_GlobalDescriptor);
-
-		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline);
-
-		// launch a draw command to draw 3 vertices
-		// vkCmdDraw(cmd, 3, 1, 0, 0);
-
-		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipeline);
-		// // bind a texture
-		// VkDescriptorSet imageSet = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_SingleImageDescriptorLayout);
-		// {
-		// 	DescriptorWriter writer;
-		// 	writer.WriteImage(0, m_ErrorCheckerboardImage.imageView, m_DefaultSamplerNearest, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		//
-		// 	writer.UpdateSet(m_Device, imageSet);
-		// }
-		//
-		// vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_MeshPipelineLayout, 0, 1, &imageSet, 0, nullptr);
-		//		GPUDrawPushConstants push_constants;
-		// push_constants.worldMatrix = glm::mat4{ 1.f };
-		// push_constants.vertexBuffer = m_Rectangle.vertexBufferAddress;
-
-		// vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-		// vkCmdBindIndexBuffer(cmd, m_Rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		// vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
-
-		//		{
-		//
-		//			glm::mat4 view = glm::translate(m_CameraPos);
-		//			// camera projection
-		//			glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
-		//
-		//			// invert the Y direction on projection matrix so that we are more similar
-		//			// to opengl and gltf axis
-		//			projection[0][0] *= -1;
-		//			projection[1][1] *= -1;
-		//
-		//			for (int meshToDraw = 2; meshToDraw < m_TestMeshes.size(); ++meshToDraw) {
-		//
-		//				push_constants.worldMatrix = projection * view;
-		//
-		//				push_constants.vertexBuffer = m_TestMeshes[meshToDraw]->meshBuffers.vertexBufferAddress;
-		//
-		//				vkCmdPushConstants(cmd, m_MeshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
-		//				vkCmdBindIndexBuffer(cmd, m_TestMeshes[meshToDraw]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		//
-		//				vkCmdDrawIndexed(cmd, m_TestMeshes[meshToDraw]->lods[0].count, 1, m_TestMeshes[meshToDraw]->lods[0].index, 0, 0);
-		//			}
-		//		}
-		Mat4 sceneTransform = Math::Identity<Mat4>();
-		sceneTransform = Math::Translate(sceneTransform, m_ScenePos);
-
-		DrawContext ctx;
-		m_TestScene.ForEach<Mat4>(sceneTransform,
-								  [&ctx](const Mat4 &parentMatrix, Scene *scene, EntityID entity) {
-									  const Mat4 localMat = scene->GetEntity(entity).GetLocalMatrix();
-									  const Mat4 worldMat = parentMatrix * localMat;
-									  const Renderable *render = scene->TryGetComponent<Renderable>(entity);
-									  if (render) {
-										  ctx.OpaqueSurfaces.push_back({worldMat, render->mesh});
-									  }
-									  return worldMat;
-								  });
-
-		Draw(ctx);
-
-		vkCmdEndRendering(cmd);
-	}
-
-	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
-		VkCommandBuffer cmd{nullptr};
-		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
 		for (const RenderObject &draw: ctx.OpaqueSurfaces) {
 
@@ -1177,19 +1237,21 @@ namespace Imagine::Vulkan {
 
 			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
 
-			vkCmdBindPipeline(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
-			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 0,1, &GetCurrentFrame().m_GlobalDescriptor,0,nullptr );
-			vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,material->pipeline->layout, 1,1, &material->materialSet,0,nullptr );
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
 
-			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer,0,VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 			GPUDrawPushConstants pushConstants;
 			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
 			pushConstants.worldMatrix = draw.transform;
-			vkCmdPushConstants(cmd,material->pipeline->layout ,VK_SHADER_STAGE_VERTEX_BIT,0, sizeof(GPUDrawPushConstants), &pushConstants);
+			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
-			vkCmdDrawIndexed(cmd,lod.count,1,lod.index,0,0);
+			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 		}
+
+		vkCmdEndRendering(cmd);
 	}
 
 	void VulkanRenderer::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function) {
@@ -1269,6 +1331,10 @@ namespace Imagine::Vulkan {
 		m_MainDeletionQueue.push(imguiPool);
 		// m_MainDeletionQueue.push(ImGui_ImplVulkan_Shutdown);
 #endif
+	}
+
+	Core::DrawContext &VulkanRenderer::GetDrawContext() {
+		return m_MainDrawContext;
 	}
 
 	void VulkanRenderer::DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView) {

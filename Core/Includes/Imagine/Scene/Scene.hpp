@@ -28,23 +28,25 @@ namespace Imagine::Core {
 			bool hasDestructor;
 			bool hasCopyConstructor;
 		};
+
 	public:
 		Scene();
 		~Scene();
 
 		/// The copy constructor WILL keep the same ID. Be mindful.
-		Scene(const Scene& o) = default;
+		Scene(const Scene &o) = default;
 		/// The copy assignment WILL keep the same ID. Be mindful.
-		Scene& operator=(const Scene& s) = default;
+		Scene &operator=(const Scene &s) = default;
 
-		Scene(Scene&& o) noexcept;
-		Scene& operator=(Scene&& s) noexcept;
+		Scene(Scene &&o) noexcept;
+		Scene &operator=(Scene &&s) noexcept;
 
-		void swap(Scene& s) noexcept;
+		void swap(Scene &s) noexcept;
 
 	public:
 		/// Create a copy of the scene with a different ID.
 		Scene Duplicate() const;
+
 	public:
 		// CRD (CRUD without the update)
 		EntityID CreateEntity();
@@ -100,10 +102,12 @@ namespace Imagine::Core {
 			RelationshipIterator(const RelationshipIterator &o);
 			RelationshipIterator &operator=(const RelationshipIterator &o);
 			RelationshipIterator(Scene *scene, EntityID id);
+			RelationshipIterator(Scene *scene, EntityID id, EntityID rootParent);
 
 		private:
 			Scene *scene{nullptr};
 			EntityID current{EntityID::NullID};
+			EntityID rootParent{EntityID::NullID};
 
 		public:
 			[[nodiscard]] bool IsValid() const { return scene && current != EntityID::NullID; }
@@ -135,9 +139,14 @@ namespace Imagine::Core {
 		// Relationship management
 		void SetParent(EntityID entity, EntityID parent);
 		void AddToChild(EntityID entity, EntityID child);
+
 	private:
 		void RemoveParent(EntityID child);
 		void AddChild(EntityID parent, EntityID orphan);
+
+	public:
+		void CacheTransforms();
+		Mat4 GetWorldTransform(EntityID id) const;
 
 	public:
 		/// Iterate on all the entity with a function.
@@ -151,12 +160,33 @@ namespace Imagine::Core {
 		template<typename T>
 		void ForEach(const T &rootData, std::function<T(const T &parentData, Scene *scene, EntityID entity)>);
 
+		template<typename T>
+		void ForEachWithComponent(std::function<void(Scene *scene, EntityID entityId, T &component)>);
+
+		template<typename T>
+		void ForEachWithComponent(std::function<void(const Scene *scene, EntityID entityId, const T &component)>) const;
+
+		template<typename T>
+		[[nodiscard]] uint64_t CountComponents() const {
+			return CountComponents(UUID::FromType<T>());
+		}
+
+	public:
+		void ForEach(std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)>);
+		void ForEach(ConstBufferView rootData, std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)>);
+
+		void ForEachWithComponent(UUID componentID, std::function<void(Scene *scene, EntityID entityId, BufferView component)>);
+		void ForEachWithComponent(UUID componentID, std::function<void(const Scene *scene, EntityID entityId, ConstBufferView component)>) const;
+		[[nodiscard]] uint64_t CountComponents(UUID componentID) const;
+
 	private:
 		/// Iterate on all the children with a function.
 		/// The function will not be called on the selected entity but only the children. (And so recursively)
 		/// The function assume the data should be the result of the function 'func' and pass as parameter.
 		template<typename T>
-		void ForEach(EntityID entity, const T &associatedData, const std::function<T(const T &data, Scene *scene, EntityID entity)> &func);
+		void ForEach(EntityID entity, const T &associatedData, const std::function<T(const T &parentData, Scene *scene, EntityID entity)> &func);
+
+		void ForEach(EntityID entity, ConstBufferView associatedData, const std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)> &func);
 
 	public:
 		// Component Handling
@@ -255,10 +285,13 @@ namespace Imagine::Core {
 				comps.Prepare(additional_capacity);
 			}
 		}
+
 	public:
-		UUID GetID() const {return ID;}
+		UUID GetID() const { return ID; }
+
 	private:
 		UUID ID{};
+
 	private:
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
 		std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;
@@ -269,6 +302,7 @@ namespace Imagine::Core {
 		SparseSet<Child, uint32_t> m_Children;
 		SparseSet<Sibling, uint32_t> m_Siblings;
 		SparseSet<std::string, uint32_t> m_Names;
+		SparseSet<Mat4, uint32_t> m_WorldTransform;
 	};
 
 
@@ -295,6 +329,38 @@ namespace Imagine::Core {
 			EntityID rootId = *it;
 			T root = func(rootData, this, rootId);
 			ForEach<T>(rootId, root, func);
+		}
+	}
+
+	template<typename T>
+	void Scene::ForEachWithComponent(std::function<void(Scene *scene, EntityID entityId, T &component)> func) {
+		const auto id = UUID::FromType<T>();
+		if (!m_CustomComponents.contains(id)) return;
+
+		auto &components = m_CustomComponents.at(id);
+
+		auto beg = components.begin();
+		auto end = components.end();
+		for (auto it = beg; it != end; ++it) {
+			EntityID entity{it.GetID()};
+			BufferView bv = it.GetView();
+			func(this, entity, bv.As<T>());
+		}
+	}
+
+	template<typename T>
+	void Scene::ForEachWithComponent(std::function<void(const Scene *scene, EntityID entityId, const T &component)> func) const {
+		const auto id = UUID::FromType<T>();
+		if (!m_CustomComponents.contains(id)) return;
+
+		auto &components = m_CustomComponents.at(id);
+
+		auto beg = components.cbegin();
+		auto end = components.cend();
+		for (auto it = beg; it != end; ++it) {
+			EntityID entity{it.GetID()};
+			ConstBufferView bv = it.GetConstView();
+			func(this, entity, bv.As<T>());
 		}
 	}
 

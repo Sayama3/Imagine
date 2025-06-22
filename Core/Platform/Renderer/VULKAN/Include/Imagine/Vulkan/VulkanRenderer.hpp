@@ -100,6 +100,8 @@ namespace Imagine::Vulkan {
 		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function);
 		void InitializeImGui();
 
+		virtual Core::DrawContext& GetDrawContext() override;
+
 	private:
 		void DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView);
 
@@ -140,7 +142,6 @@ namespace Imagine::Vulkan {
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
-		Core::Scene m_TestScene;
 		GPUSceneData m_SceneData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
 
@@ -156,7 +157,6 @@ namespace Imagine::Vulkan {
 		VkPipeline m_MeshPipeline;
 
 		GPUMeshBuffers m_Rectangle;
-		std::vector<std::shared_ptr<MeshAsset>> m_TestMeshes;
 
 		AllocatedImage m_WhiteImage;
 		AllocatedImage m_BlackImage;
@@ -175,7 +175,11 @@ namespace Imagine::Vulkan {
 		Core::ApplicationParameters m_AppParams;
 
 		glm::vec3 m_CameraPos{0, 0, -5};
-		glm::vec3 m_ScenePos{0, 0, 0};
+		glm::quat m_CameraRot{Math::Identity<glm::quat>()};
+		glm::vec3 m_CameraRotEuler{0,0,0};
+
 		bool m_ResizeRequested{false};
+
+		Core::DrawContext m_MainDrawContext;
 	};
 } // namespace Imagine::Vulkan

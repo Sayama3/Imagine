@@ -17,7 +17,7 @@
 
 namespace Imagine::Vulkan {
 	namespace Initializer {
-		constexpr bool c_OverrideColorVertex = false;
+		constexpr bool c_OverrideColorVertex = true;
 
 		std::optional<std::shared_ptr<MeshAsset>> LoadModelAsMesh(VulkanRenderer *engine, const std::filesystem::path &filePath) {
 			return std::nullopt;
@@ -119,22 +119,27 @@ namespace Imagine::Vulkan {
 
 			// Load the nodes as entity in the scene.
 			{
-				std::vector<std::tuple<aiNode *, aiMatrix4x4, Core::EntityID>> nodes{{scene->mRootNode, aiMatrix4x4{}, parent}};
+				// Unwrapping everything in a vector to avoid recursion.
+				std::vector<std::tuple<aiNode *, Core::EntityID>> nodes{{scene->mRootNode, parent}};
 				nodes.reserve(scene->mNumMeshes);
 				while (!nodes.empty()) {
 					// Pop the last node available
-					auto [node, parentMatrix, parentEntityID] = nodes.back();
+					auto [node, parentEntityID] = nodes.back();
 					nodes.pop_back();
 
 					const char* cName = node->mName.C_Str();
 
 					const aiMatrix4x4& localMatrix = node->mTransformation;// * parentMatrix;
-					aiMatrix4x4 worldMatrix = localMatrix * parentMatrix;
-					glm::mat4 glmLocalMatrix{
-						{localMatrix.a1,localMatrix.b1,localMatrix.c1,localMatrix.d1},
-						{localMatrix.a2,localMatrix.b2,localMatrix.c2,localMatrix.d2},
-						{localMatrix.a3,localMatrix.b3,localMatrix.c3,localMatrix.d3},
-						{localMatrix.a4,localMatrix.b4,localMatrix.c4,localMatrix.d4},
+
+					// Going from ASSIMP to GLM is going from row major to column major.
+					//  Therefore, I create the glm matrix by rotating the matrix and
+					//  setting the data properly using the constructor with 4 column
+					//  (or vec4 basically) to be explicit and not have any issue later on.
+					const glm::mat4 glmLocalMatrix{
+						{localMatrix.a1,localMatrix.b1,localMatrix.c1,localMatrix.d1}, // Col 1
+						{localMatrix.a2,localMatrix.b2,localMatrix.c2,localMatrix.d2}, // col 2
+						{localMatrix.a3,localMatrix.b3,localMatrix.c3,localMatrix.d3}, // col 3
+						{localMatrix.a4,localMatrix.b4,localMatrix.c4,localMatrix.d4}, // col 4
 				};
 					glm::vec3 pos;
 					glm::quat rot;
@@ -173,7 +178,7 @@ namespace Imagine::Vulkan {
 
 					for (int i = 0; i < node->mNumChildren; ++i) {
 						aiNode* child = node->mChildren[i];
-						nodes.push_back({child, worldMatrix, entityId});
+						nodes.push_back({child, entityId});
 					}
 				}
 			}

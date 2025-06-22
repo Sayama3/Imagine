@@ -98,6 +98,7 @@ namespace Imagine::Core {
 
 	public:
 		ConstBufferView();
+		ConstBufferView(const void *buffer, uint64_t size);
 		ConstBufferView(const void *buffer, uint64_t offset, uint64_t size);
 		ConstBufferView(const BufferView &view);
 		ConstBufferView &operator=(const BufferView &view);

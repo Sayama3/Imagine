@@ -68,6 +68,10 @@ namespace Imagine::Core {
 		m_Buffer(buffer ? reinterpret_cast<const uint8_t *>(buffer) + offset : nullptr), m_Size(size) {
 	}
 
+	ConstBufferView::ConstBufferView(const void *buffer, const uint64_t size) :
+		m_Buffer(buffer ? reinterpret_cast<const uint8_t *>(buffer) : nullptr), m_Size(size) {
+	}
+
 	ConstBufferView::ConstBufferView(const BufferView &view) :
 		m_Buffer(view.Get()), m_Size(view.Size()) {
 	}

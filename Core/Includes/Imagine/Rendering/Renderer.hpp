@@ -43,6 +43,8 @@ namespace Imagine::Core {
 		virtual void Draw() = 0;
 		virtual void Draw(const DrawContext& ctx) = 0;
 
+		virtual DrawContext& GetDrawContext() = 0;
+
 		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;
 		//TODO: LoadInternalModelInScene
 

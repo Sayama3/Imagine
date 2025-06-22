@@ -22,6 +22,7 @@
       <file path="$PROJECT_DIR$/Libraries" />
     </libraryRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/.github" />
       <file path="$PROJECT_DIR$/build" />
     </excludeRoots>
   </component>

@@ -70,6 +70,10 @@ namespace Imagine::Core {
 		MgnImGui::InitializeWindow();
 		MgnImGui::InitializeRenderer();
 #endif
+
+		if (parameters.Renderer) {
+			m_Renderer->LoadExternalModelInScene("C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
+		}
 	}
 
 	Application::~Application() {
@@ -135,6 +139,21 @@ namespace Imagine::Core {
 			if (m_Renderer && canDraw) {
 				if (m_Renderer->BeginDraw()) {
 					m_Renderer->Draw();
+
+					auto loadedScene = SceneManager::GetLoadedScenes();
+					DrawContext ctx{};
+					for (const std::shared_ptr<Scene> & scene: loadedScene) {
+						scene->CacheTransforms();
+						ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
+						scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
+							const Mat4 worldMat = scene->GetWorldTransform(id);
+							MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
+							ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.mesh);
+						});
+
+						m_Renderer->Draw(ctx);
+						ctx.OpaqueSurfaces.clear();
+					}
 
 					m_Renderer->EndDraw();
 					m_Renderer->Present();

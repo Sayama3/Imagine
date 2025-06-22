@@ -84,6 +84,13 @@ namespace Imagine::Vulkan {
 	}
 
 	void GLTFMetallicRoughness::ClearResources(VkDevice device) {
+		vkDestroyPipeline(device,opaquePipeline.pipeline,nullptr);
+		if (opaquePipeline.pipeline != transparentPipeline.pipeline) vkDestroyPipeline(device,transparentPipeline.pipeline,nullptr);
+
+		vkDestroyPipelineLayout(device,opaquePipeline.layout,nullptr);
+		if (opaquePipeline.layout != transparentPipeline.layout) vkDestroyPipelineLayout(device,transparentPipeline.layout,nullptr);
+
+		vkDestroyDescriptorSetLayout(device, materialLayout, nullptr);
 	}
 
 	VulkanMaterialInstance GLTFMetallicRoughness::WriteMaterial(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable & descriptorAllocator) {
