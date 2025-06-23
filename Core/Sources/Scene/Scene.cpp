@@ -306,12 +306,18 @@ namespace Imagine::Core {
 		}
 	}
 
+	void Scene::MoveToRoot(EntityID entity) {
+		RemoveParent(entity);
+		m_Roots.insert(entity);
+	}
+
 	void Scene::RemoveParent(EntityID child) {
 		Parent *pParent = m_Parents.TryGet(child.id);
 		if (pParent) {
 			Parent &parent = *pParent;
 			if (parent.parent.IsValid()) {
-				if (parent.parent == child) {
+				Child& firstChild = m_Children.Get(parent.parent.id);
+				if (firstChild.firstChild == child) {
 					// Removing the parent from having child or attaching the next sibling if there is any.
 					Sibling *sibling = m_Siblings.TryGet(child.id);
 					if (!sibling || !sibling->next.IsValid()) {
@@ -320,19 +326,24 @@ namespace Imagine::Core {
 					else {
 						m_Children.Get(parent.parent.id).firstChild = sibling->next;
 						m_Siblings.Get(sibling->next.id).previous = EntityID::NullID;
+						m_Siblings.Remove(child.id);
 					}
 				}
 				else {
 					// Reordering the siblings to preserve the hierarchy as a linked-list would do.
-					Sibling &sibling = m_Siblings.Get(child.id);
-					Sibling *previous = sibling.previous.IsValid() ? m_Siblings.TryGet(sibling.previous.id) : nullptr;
-					Sibling *next = sibling.next.IsValid() ? m_Siblings.TryGet(sibling.next.id) : nullptr;
+					Sibling *pSibling = m_Siblings.TryGet(child.id);
+					if (pSibling) {
+						Sibling& sibling = *pSibling;
+						Sibling *previous = sibling.previous.IsValid() ? m_Siblings.TryGet(sibling.previous.id) : nullptr;
+						Sibling *next = sibling.next.IsValid() ? m_Siblings.TryGet(sibling.next.id) : nullptr;
 
-					if (previous) {
-						previous->next = next ? sibling.next : EntityID::NullID;
-					}
-					if (next) {
-						next->previous = previous ? sibling.previous : EntityID::NullID;
+						if (previous) {
+							previous->next = next ? sibling.next : EntityID::NullID;
+						}
+						if (next) {
+							next->previous = previous ? sibling.previous : EntityID::NullID;
+						}
+						m_Siblings.Remove(child.id);
 					}
 				}
 			}
@@ -378,6 +389,15 @@ namespace Imagine::Core {
 			const std::string HierarchyName = "Hierarchy##" + ID.string();
 			ImGui::Begin(HierarchyName.c_str());
 			{
+				static std::string newName = "New Entity";
+				ImGui::InputText("##New Entity", &newName);
+				ImGui::SameLine();
+				if (ImGui::Button("Create")) {
+					auto newId = CreateEntity();
+					m_Names.GetOrCreate(newId.id) = newName;
+				}
+
+				ImGui::Separator();
 				auto beg = m_Roots.begin();
 				auto end = m_Roots.end();
 				for (auto it = beg; it != end; ++it) {
@@ -403,6 +423,7 @@ namespace Imagine::Core {
 			ImGui::Begin(PropertiesName.c_str());
 			{
 				if (m_SelectedEntity.IsValid()) {
+					ImGui::LabelText("ID", "%u", m_SelectedEntity.id);
 					ImGui::InputText("Name", &m_Names.GetOrCreate(m_SelectedEntity.id));
 
 					ImGui::Separator();
@@ -420,6 +441,25 @@ namespace Imagine::Core {
 						ImGui::Separator();
 						ImGui::Text("===== %s =====", metadata.name.c_str());
 					}
+
+					if (ImGui::Button("Select Parent")) {
+						m_ChosenParent = m_SelectedEntity;
+					}
+
+					ImGui::BeginDisabled(!m_Parents.Exist(m_SelectedEntity.id));
+					if (ImGui::Button("Move To Root")) {
+						MoveToRoot(m_SelectedEntity);
+					}
+					ImGui::EndDisabled();
+
+					const uint32_t step = 1;
+					const uint32_t step_fast = 100;
+					ImGui::InputScalar("Parent", ImGuiDataType_U32, &m_ChosenParent.id, &step, &step_fast, "%u");
+					ImGui::BeginDisabled(m_ChosenParent == m_SelectedEntity || !m_ChosenParent.IsValid());
+					if (ImGui::Button("Set as child")) {
+						AddToChild(m_ChosenParent, m_SelectedEntity);
+					}
+					ImGui::EndDisabled();
 				}
 			}
 			ImGui::End();

@@ -140,6 +140,7 @@ namespace Imagine::Core {
 		void SetParent(EntityID entity, EntityID parent);
 		void AddToChild(EntityID entity, EntityID child);
 
+		void MoveToRoot(EntityID entity);
 	private:
 		void RemoveParent(EntityID child);
 		void AddChild(EntityID parent, EntityID orphan);
@@ -312,6 +313,7 @@ namespace Imagine::Core {
 	private:
 		// Dedicated to ImGui Rendering.
 		EntityID m_SelectedEntity;
+		EntityID m_ChosenParent;
 	};
 
 
