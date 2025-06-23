@@ -45,6 +45,9 @@ namespace Imagine::Core {
 
 		virtual DrawContext& GetDrawContext() = 0;
 
+
+		virtual Rect GetViewport() const = 0;
+
 		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;
 		//TODO: LoadInternalModelInScene
 

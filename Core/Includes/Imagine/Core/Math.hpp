@@ -7,6 +7,7 @@
 
 #ifndef GLM_FORCE_RADIANS
 #define GLM_FORCE_RADIANS
+#include "Imagine/Core/Size.hpp"
 #endif // GLM_FORCE_RADIANS
 
 #ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -100,10 +101,36 @@ namespace Imagine {
 	typedef glm::mat<2, 2, Real> Mat2;
 	typedef glm::mat<3, 2, Real> Mat3x2;
 
+
+	struct Rect {
+		union {
+			struct{float minX,minY,maxX,maxY;};
+			struct{glm::vec2 min, max;};
+		};
+
+		Vec2 GetCenter() const;
+		Vec2 GetSize() const;
+
+		/// Return a Vec2 between 0 & 1 relative to this rectangle.
+		Vec2 GetRelative(Vec2 globalPos) const;
+
+		/// Return a global Vec2 from a position relative to this rectangle where 0 & 1 are equivalent to min & max.
+		Vec2 GetGlobal(Vec2 relativePos) const;
+
+		bool IsInside(Vec2 globalPos) const;
+	};
+
 	namespace Math {
 
 		inline static constexpr Vec3 Gravity = Vec3(0, -9.81, 0);
 		inline static constexpr Real Epsilon = Real(1e-6);
+
+		inline static Vec2 ToVec2(const Core::Size2 s) {
+			return {s.x, s.y};
+		}
+		inline static Vec3 ToVec3(const Core::Size3 s) {
+			return {s.x, s.y, s.z};
+		}
 
 		inline static void TRS(Mat4 &trs, const Vec3 &position, const glm::quat &rotation, const Vec3 &scale = Vec3(1.0)) {
 			// MGN_PROFILE_FUNCTION();

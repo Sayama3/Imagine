@@ -13,9 +13,13 @@ namespace Imagine::SDL3 {
 		void Update() override;
 		void SendImGuiCommands() override {}
 
+		Vec2 GetPosition() override;
+
 		uint32_t GetWindowWidth() override;
 		uint32_t GetWindowHeight() override;
 		Core::Size2 GetWindowSize() override;
+
+		virtual Rect GetWindowRect() override;
 
 		uint32_t GetFramebufferWidth() override;
 		uint32_t GetFramebufferHeight() override;

@@ -75,7 +75,7 @@ namespace Imagine::Core {
 #endif
 
 		if (parameters.Renderer) {
-			m_Renderer->LoadExternalModelInScene("C:\\Users\\ianpo\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
+			//m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
 		}
 	}
 
@@ -117,7 +117,15 @@ namespace Imagine::Core {
 			}
 
 			{
-				// auto& mouse = Inputs::GetMouse();
+				auto& mouse = Inputs::GetMouse();
+				if (mouse.IsButtonPressed(Mouse::Left)) {
+					Rect window = m_Window->GetWindowRect();
+					Rect viewport = m_Renderer->GetViewport();
+					Vec2 globalPos = mouse.GetPosition() + window.min;
+					MGN_LOG_DEBUG("Viewport Pos {}, and size {}", Math::ToString(viewport.min), Math::ToString(viewport.GetSize()));
+					MGN_LOG_DEBUG("Window Pos {}, and size {}", Math::ToString(window.min), Math::ToString(window.GetSize()));
+					MGN_LOG_DEBUG("Mouse Pos {}", Math::ToString(globalPos));
+				}
 				// Vec2 mPos = mouse.GetPosition();
 				// Vec2 mMov = mouse.GetMovement();
 				// MGN_LOG_DEBUG("Mouse Position : {}", Math::ToString(mPos));

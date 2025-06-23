@@ -84,9 +84,9 @@ namespace Imagine::SDL3 {
 			bool canHandleEvent = true;
 #ifdef MGN_IMGUI
 			canHandleEvent = !ImGui_ImplSDL3_ProcessEvent(&e);
+			// m_Mouse.m_MousePosition = ImGui::GetMousePos();
 #endif
-			//if (!canHandleEvent) continue;
-
+			// if (!canHandleEvent) continue;
 			if (e.type == SDL_EVENT_QUIT) {
 				m_ShouldClose = true;
 			}
@@ -115,6 +115,12 @@ namespace Imagine::SDL3 {
 		}
 	}
 
+	Vec2 SDL3Window::GetPosition() {
+		int x, y;
+		const bool result = SDL_GetWindowPosition(m_Window, &x, &y);
+		MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
+		return Vec2{x,y};
+	}
 	uint32_t SDL3Window::GetWindowWidth() {
 		int width;
 		SDL_GetWindowSize(m_Window, &width, nullptr);
@@ -131,6 +137,19 @@ namespace Imagine::SDL3 {
 		int width, height;
 		SDL_GetWindowSize(m_Window, &width, &height);
 		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+	}
+	Rect SDL3Window::GetWindowRect() {
+		int x, y;
+		{
+			const bool result = SDL_GetWindowPosition(m_Window, &x, &y);
+			MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
+		}
+		int width, height;
+		{
+			const bool result = SDL_GetWindowSize(m_Window, &width, &height);
+			MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
+		}
+		return Rect{(float)x,(float)y,(float)x+width,(float)y+height};
 	}
 
 	uint32_t SDL3Window::GetFramebufferWidth() {

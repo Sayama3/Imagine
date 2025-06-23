@@ -46,6 +46,7 @@ using namespace Imagine::Core;
 namespace Imagine::Vulkan {
 
 	static inline VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
+		constexpr bool c_BreakOnError = false;
 		const char *mt = vkb::to_string_message_type(messageType);
 
 		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
@@ -61,7 +62,9 @@ namespace Imagine::Vulkan {
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 					MGN_CORE_ERROR("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
-					MGN_BREAK();
+					if constexpr (c_BreakOnError) {
+						MGN_BREAK();
+					}
 					break;
 				default:
 					MGN_CORE_ERROR("[Vulkan: {}] [{}] - {}", mt, pCallbackData->pMessageIdName, pCallbackData->pMessage);
@@ -81,7 +84,9 @@ namespace Imagine::Vulkan {
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 					MGN_CORE_ERROR("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
-					MGN_BREAK();
+					if constexpr (c_BreakOnError) {
+						MGN_BREAK();
+					}
 					break;
 				default:
 					MGN_CORE_ERROR("[Vulkan: {}] - {}", mt, pCallbackData->pMessage);
@@ -121,6 +126,18 @@ namespace Imagine::Vulkan {
 		vkDeviceWaitIdle(m_Device);
 	}
 
+	Rect VulkanRenderer::GetViewport() const {
+#ifdef MGN_IMGUI
+		if (MgnImGui::DockingEnabled() && m_ImGuiViewport.has_value()) {
+			return m_ImGuiViewport.value();
+		}
+		else {
+			return Window::Get()->GetWindowRect();
+		}
+#else
+		return Window::Get()->GetWindowRect();
+#endif
+	}
 	VkDevice VulkanRenderer::GetDevice() {
 		return m_Device;
 	}
@@ -908,9 +925,10 @@ namespace Imagine::Vulkan {
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
 		// TODO: Preserve aspect ratio
-		if (MgnImGui::DockingEnabled() && m_ImGuiRenderer.has_value()) {
-			m_DrawExtent.width = std::max(std::ceil(m_ImGuiRenderer.value().width * m_RenderScale), 1.f);
-			m_DrawExtent.height = std::max(std::ceil(m_ImGuiRenderer.value().height * m_RenderScale), 1.f);
+		if (MgnImGui::DockingEnabled() && m_ImGuiViewport.has_value()) {
+			auto size = m_ImGuiViewport.value().GetSize();
+			m_DrawExtent.width = std::max(std::ceil(size.x * m_RenderScale), 1.f);
+			m_DrawExtent.height = std::max(std::ceil(size.y * m_RenderScale), 1.f);
 		}
 		else {
 			m_DrawExtent.width = std::ceil(std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale);
@@ -1081,8 +1099,10 @@ namespace Imagine::Vulkan {
 
 
 		if (ImGui::Begin("Rendering")) {
-			ImVec2 size = ImGui::GetContentRegionAvail();
-			m_ImGuiRenderer = Size2{(uint32_t) size.x, (uint32_t) size.y};
+			const ImVec2 pos = ImGui::GetCursorScreenPos();
+			const ImVec2 size = ImGui::GetContentRegionAvail();
+
+			m_ImGuiViewport = {pos.x, pos.y, pos.x + size.x, pos.y + size.y};
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, 0);
 			ImGui::Image((ImTextureID) m_ImGuiImageDescriptors, {size.x, size.y}, {0.f, 0.f}, {(float) m_DrawExtent.width / (float) m_DrawImage.imageExtent.width, (float) m_DrawExtent.height / (float) m_DrawImage.imageExtent.height});

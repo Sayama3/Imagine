@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "WindowParameters.hpp"
+#include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/Size.hpp"
+#include "WindowParameters.hpp"
 
 namespace Imagine::Core {
 
@@ -28,9 +29,12 @@ namespace Imagine::Core {
 		virtual void Update() = 0;
 		virtual void SendImGuiCommands() = 0;
 	public:
+		virtual Vec2 GetPosition() = 0;
 		virtual uint32_t GetWindowWidth() = 0;
 		virtual uint32_t GetWindowHeight() = 0;
 		virtual Size2 GetWindowSize() = 0;
+
+		virtual Rect GetWindowRect() = 0;
 
 		virtual uint32_t GetFramebufferWidth() = 0;
 		virtual uint32_t GetFramebufferHeight() = 0;

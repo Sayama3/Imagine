@@ -30,6 +30,9 @@ namespace Imagine::Vulkan {
 		static Core::RendererAPI GetStaticAPI() { return Core::RendererAPI::Vulkan; }
 
 	public:
+		virtual Rect GetViewport() const override;
+
+	public:
 		VkDevice GetDevice();
 		VkPhysicalDevice GetPhysicalDevice();
 
@@ -147,7 +150,7 @@ namespace Imagine::Vulkan {
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
-		std::optional<Core::Size2> m_ImGuiRenderer;
+		std::optional<Rect> m_ImGuiViewport;
 
 		GPUSceneData m_SceneData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
