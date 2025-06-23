@@ -3,10 +3,13 @@ cmake_minimum_required(VERSION 3.25)
 target_link_libraries(Core PUBLIC SDL3::SDL3)
 
 target_include_directories(Core PRIVATE Sources)
+target_include_directories(Core PRIVATE Includes)
 
 set(SDL3_WINDOW_SOURCES
-	Sources/SDL3Window.hpp
+		Includes/Imagine/SDL3/SDL3Window.hpp
 	Sources/SDL3Window.cpp
+	Sources/SDL3Inputs.cpp
+		Includes/Imagine/SDL3/SDL3Inputs.hpp
 )
 
 target_sources(Core PRIVATE

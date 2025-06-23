@@ -5,6 +5,7 @@
 #include "Imagine/Application/Application.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/SparseSet.hpp"
+#include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
@@ -113,6 +114,29 @@ namespace Imagine::Core {
 				m_Window->Update();
 				m_ShouldStop |= m_Window->ShouldClose();
 				canDraw = !m_Window->IsMinimized();
+			}
+
+			{
+				// auto& mouse = Inputs::GetMouse();
+				// Vec2 mPos = mouse.GetPosition();
+				// Vec2 mMov = mouse.GetMovement();
+				// MGN_LOG_DEBUG("Mouse Position : {}", Math::ToString(mPos));
+				// MGN_LOG_DEBUG("Mouse Movement : {}", Math::ToString(mMov));
+				//
+				// for (uint8_t i = 1; i <= 5; ++i) {
+				// 	if (mouse.IsButtonPressed(static_cast<Mouse::Button>(i))) {
+				// 		MGN_LOG_DEBUG("Mouse Button {} is Pressed", i);
+				// 	}
+				// 	if (mouse.IsButtonReleased(static_cast<Mouse::Button>(i))) {
+				// 		MGN_LOG_DEBUG("Mouse Button {} is Released", i);
+				// 	}
+				// 	if (mouse.IsButtonDown(static_cast<Mouse::Button>(i))) {
+				// 		MGN_LOG_DEBUG("Mouse Button {} is Down", i);
+				// 	}
+				// 	if (mouse.IsButtonUp(static_cast<Mouse::Button>(i))) {
+				// 		MGN_LOG_DEBUG("Mouse Button {} is Up", i);
+				// 	}
+				// }
 			}
 
 			if (canDraw) {

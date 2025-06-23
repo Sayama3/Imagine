@@ -752,32 +752,6 @@ namespace Imagine::Vulkan {
 	}
 	void VulkanRenderer::InitDefaultData() {
 
-		std::array<Vertex, 4> rect_vertices;
-
-		rect_vertices[0].position = {0.5, -0.5, 0};
-		rect_vertices[1].position = {0.5, 0.5, 0};
-		rect_vertices[2].position = {-0.5, -0.5, 0};
-		rect_vertices[3].position = {-0.5, 0.5, 0};
-
-		rect_vertices[0].color = {0, 0, 0, 1};
-		rect_vertices[1].color = {0.5, 0.5, 0.5, 1};
-		rect_vertices[2].color = {1, 0, 0, 1};
-		rect_vertices[3].color = {0, 1, 0, 1};
-
-		std::array<uint32_t, 6> rect_indices;
-
-		rect_indices[0] = 0;
-		rect_indices[1] = 1;
-		rect_indices[2] = 2;
-
-		rect_indices[3] = 2;
-		rect_indices[4] = 1;
-		rect_indices[5] = 3;
-
-		m_Rectangle = UploadMesh(rect_indices, rect_vertices);
-		m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, m_Rectangle.indexBuffer.allocation, m_Rectangle.indexBuffer.buffer});
-		m_MainDeletionQueue.push(Deleter::VmaBuffer{m_Allocator, m_Rectangle.vertexBuffer.allocation, m_Rectangle.vertexBuffer.buffer});
-
 		// 3 default textures, white, grey, black. 1 pixel each
 		uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
 		m_WhiteImage = CreateImage(&white, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);

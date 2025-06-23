@@ -4,15 +4,14 @@
 
 
 #include "GLFWWindow.hpp"
+#include <GLFW/glfw3.h>
 
-namespace Imagine::Core {
+using namespace Imagine::Core;
+namespace Imagine::GLFW {
 	void *GLFWWindow::GetNativeWindow() {
 		return m_Window;
 	}
 
-	bool GLFWWindow::WindowHasResized() {
-		return frameBufferResized;
-	}
 
 	bool GLFWWindow::ShouldClose() {
 		return glfwWindowShouldClose(static_cast<GLFWwindow *>(m_Window));

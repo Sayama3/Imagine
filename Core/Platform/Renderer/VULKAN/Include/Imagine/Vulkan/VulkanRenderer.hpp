@@ -163,8 +163,6 @@ namespace Imagine::Vulkan {
 		VkPipelineLayout m_MeshPipelineLayout;
 		VkPipeline m_MeshPipeline;
 
-		GPUMeshBuffers m_Rectangle;
-
 		AllocatedImage m_WhiteImage;
 		AllocatedImage m_BlackImage;
 		AllocatedImage m_GreyImage;

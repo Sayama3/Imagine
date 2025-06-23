@@ -7,7 +7,7 @@
 #if defined(MGN_WINDOW_GLFW)
 #include "GLFWWindow.hpp"
 #elif defined(MGN_WINDOW_SDL3)
-#include "SDL3Window.hpp"
+#include "Imagine/SDL3/SDL3Window.hpp"
 #else
 #include "HeadLessWindow.hpp"
 #endif
@@ -19,9 +19,9 @@ namespace Imagine::Core {
 	Window *Window::Create(const std::string &windowName, WindowParameters parameters) {
 		Window *window{nullptr};
 #if defined(MGN_WINDOW_GLFW)
-		window = new GLFWWindow(windowName, std::move(parameters));
+		window = new GLFW::GLFWWindow(windowName, std::move(parameters));
 #elif defined(MGN_WINDOW_SDL3)
-		window = new SDL3Window(windowName, std::move(parameters));
+		window = new SDL3::SDL3Window(windowName, std::move(parameters));
 #else
 		window = new HeadLessWindow(windowName, std::move(parameters));
 #endif
