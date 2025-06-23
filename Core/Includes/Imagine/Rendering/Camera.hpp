@@ -4,12 +4,28 @@
 
 #pragma once
 
-namespace Imagine {
-namespace Core {
+#include "Imagine/Core/Math.hpp"
 
-class Camera {
+namespace Imagine::Core {
 
-};
+	class Camera {
+	public:
+		static Camera* s_MainCamera;
+	public:
+		glm::vec3 velocity{0};
+		glm::vec3 position{0,2,-2};
+		// vertical rotation
+		float pitch { 45.f };
+		// horizontal rotation
+		float yaw { 0.f };
 
-} // Core
-} // Imagine
+		float pitchVelocity { 0.f };
+		float yawVelocity { 0.f };
+
+		glm::mat4 GetViewMatrix();
+		glm::mat4 GetRotationMatrix();
+
+		void Update(Real timestep);
+	};
+
+} // namespace Imagine::Core

@@ -98,8 +98,8 @@ namespace Imagine::Vulkan {
 		virtual void SendImGuiCommands() override;
 
 		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Core::Scene*, Core::EntityID parent = Core::EntityID::NullID) override;
-
 		virtual void LoadCPUMeshInScene(const Core::CPUMesh& path, Core::Scene*, Core::EntityID entity = Core::EntityID::NullID) override;
+
 		void DrawBackground(VkCommandBuffer cmd);
 		void DrawGeometry(VkCommandBuffer cmd);
 
@@ -182,10 +182,6 @@ namespace Imagine::Vulkan {
 
 		Deleter m_MainDeletionQueue;
 		Core::ApplicationParameters m_AppParams;
-
-		glm::vec3 m_CameraPos{0, 40, -25};
-		glm::quat m_CameraRot{glm::rotate(45.f, glm::vec3(1,0,0))};
-		glm::vec3 m_CameraRotEuler{45,0,0};
 
 		bool m_ResizeRequested{false};
 

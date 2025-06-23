@@ -80,6 +80,8 @@ set(CORE_SRC_FILES
 		Sources/Rendering/CPUMesh.cpp
 		Includes/Imagine/Rendering/CPUMesh.hpp
 		Includes/Imagine/Rendering/Vertex.hpp
+		Sources/Rendering/Camera.cpp
+		Includes/Imagine/Rendering/Camera.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

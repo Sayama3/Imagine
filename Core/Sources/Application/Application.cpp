@@ -3,9 +3,10 @@
 //
 
 #include "Imagine/Application/Application.hpp"
+#include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/SparseSet.hpp"
-#include "Imagine/Core/Inputs.hpp"
+#include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
@@ -77,10 +78,10 @@ namespace Imagine::Core {
 		if (parameters.Renderer) {
 			const auto cpuMesh = CPUMesh::LoadExternalModelAsMesh("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Box\\glTF-Binary\\Box.glb");
 			const auto id = SceneManager::GetMainScene()->CreateEntity();
-			SceneManager::GetMainScene()->GetEntity(id).LocalPosition = {0,0,-50};
+			SceneManager::GetMainScene()->GetEntity(id).LocalPosition = {0,0,0};
 			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), id);
 
-			m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
+			// m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
 		}
 	}
 
@@ -120,6 +121,8 @@ namespace Imagine::Core {
 				m_ShouldStop |= m_Window->ShouldClose();
 				canDraw = !m_Window->IsMinimized();
 			}
+
+			Camera::s_MainCamera->Update(m_DeltaTime);
 
 			{
 				auto& mouse = Inputs::GetMouse();

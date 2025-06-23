@@ -98,8 +98,6 @@ namespace Core {
 					auto [node, parentMatrix] = nodes.back();
 					nodes.pop_back();
 
-					const char* cName = node->mName.C_Str();
-
 					const aiMatrix4x4& globalMatrix = node->mTransformation * parentMatrix;
 
 					if (node->mNumMeshes > 0) {
@@ -137,6 +135,8 @@ namespace Core {
 					}
 				}
 			}
+
+			return finalMesh;
 		}
 	} // Core
 } // Imagine

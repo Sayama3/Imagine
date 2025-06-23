@@ -21,6 +21,7 @@
 
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
@@ -966,8 +967,7 @@ namespace Imagine::Vulkan {
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
 
 		{
-			m_SceneData.view = glm::translate(-m_CameraPos);
-			m_SceneData.view = glm::toMat4(glm::inverse(m_CameraRot)) * m_SceneData.view;
+			m_SceneData.view = Camera::s_MainCamera->GetViewMatrix();
 			// camera projection
 			m_SceneData.proj = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
 
@@ -1074,13 +1074,16 @@ namespace Imagine::Vulkan {
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
-			ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPos), 0.1, 0, 0, "%.1f");
-			glm::vec3 rot = glm::eulerAngles(m_CameraRot) * Math::RadToDeg;
-			if (ImGui::DragFloat3("Camera Rotation", glm::value_ptr(m_CameraRotEuler), 0.1, 0, 0, "%.1f")) {
-				m_CameraRot = glm::quat(m_CameraRotEuler * Math::DegToRad);
-			}
+			ImGui::DragFloat3("Camera Position", glm::value_ptr(Camera::s_MainCamera->position), 0.1, 0, 0, "%.1f");
+
+			ImGui::DragFloat("Camera Pitch", &Camera::s_MainCamera->pitch, 0.1, 0, 0, "%.1f");
 			if (ImGui::IsItemDeactivatedAfterEdit()) {
-				m_CameraRotEuler = glm::eulerAngles(m_CameraRot) * Math::RadToDeg;
+				Camera::s_MainCamera->pitch = std::fmodf(Camera::s_MainCamera->pitch, 360.f);
+			}
+
+			ImGui::DragFloat("Camera Yaw", &Camera::s_MainCamera->yaw, 0.1, 0, 0, "%.1f");
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				Camera::s_MainCamera->yaw = std::fmodf(Camera::s_MainCamera->yaw, 360.f);
 			}
 
 			ImGui::Spacing();

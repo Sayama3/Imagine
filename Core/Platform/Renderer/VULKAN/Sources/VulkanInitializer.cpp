@@ -192,6 +192,7 @@ namespace Imagine::Vulkan {
 			Core::Mesh::LOD surface;
 			surface.index = 0;
 			surface.count = cpuMesh.Indices.size();
+			surface.material = engine->GetDefaultMaterial();
 
 			mesh->lods.push_back(surface);
 

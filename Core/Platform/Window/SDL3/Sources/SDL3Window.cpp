@@ -11,6 +11,8 @@
 
 #include "Imagine/SDL3/SDL3Window.hpp"
 
+#include "Imagine/Rendering/Camera.hpp"
+
 #ifdef MGN_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -112,6 +114,38 @@ namespace Imagine::SDL3 {
 				m_Mouse.m_MouseMovement = {e.motion.xrel, e.motion.yrel};
 				m_Mouse.m_MousePosition = {e.motion.x, e.motion.y};
 			}
+			//TODO: properly do so
+			else if (e.type == SDL_EVENT_KEY_DOWN) {
+				if (e.key.key == SDLK_Z) { Core::Camera::s_MainCamera->velocity.z = 1; }
+				if (e.key.key == SDLK_S) { Core::Camera::s_MainCamera->velocity.z = -1; }
+				if (e.key.key == SDLK_Q) { Core::Camera::s_MainCamera->velocity.x = -1; }
+				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = 1; }
+
+				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->yawVelocity = +45; }
+				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->yawVelocity = -45; }
+
+				if (e.key.key == SDLK_RIGHT) { Core::Camera::s_MainCamera->yawVelocity = +45; }
+				if (e.key.key == SDLK_LEFT) { Core::Camera::s_MainCamera->yawVelocity = -45; }
+
+				if (e.key.key == SDLK_UP) { Core::Camera::s_MainCamera->pitchVelocity = +45; }
+				if (e.key.key == SDLK_DOWN) { Core::Camera::s_MainCamera->pitchVelocity = -45; }
+			}
+			else if (e.type == SDL_EVENT_KEY_UP) {
+				if (e.key.key == SDLK_Z) { Core::Camera::s_MainCamera->velocity.z = 0; }
+				if (e.key.key == SDLK_S) { Core::Camera::s_MainCamera->velocity.z = 0; }
+				if (e.key.key == SDLK_Q) { Core::Camera::s_MainCamera->velocity.x = 0; }
+				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = 0; }
+
+				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->yawVelocity = 0; }
+				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->yawVelocity = 0; }
+
+				if (e.key.key == SDLK_RIGHT) { Core::Camera::s_MainCamera->yawVelocity = 0; }
+				if (e.key.key == SDLK_LEFT) { Core::Camera::s_MainCamera->yawVelocity = 0; }
+
+				if (e.key.key == SDLK_UP) { Core::Camera::s_MainCamera->pitchVelocity = 0; }
+				if (e.key.key == SDLK_DOWN) { Core::Camera::s_MainCamera->pitchVelocity = 0; }
+			}
+
 		}
 	}
 
