@@ -37,6 +37,7 @@ set(VULKAN_SOURCES
 		Sources/VulkanRenderObject.cpp
 		Include/Imagine/Vulkan/VulkanMaterial.hpp
 		Sources/VulkanMaterial.cpp
+		Sources/VulkanTypes.cpp
 )
 
 target_sources(Core PRIVATE

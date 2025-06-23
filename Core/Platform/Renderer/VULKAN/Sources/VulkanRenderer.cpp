@@ -147,7 +147,7 @@ namespace Imagine::Vulkan {
 	Vec3 VulkanRenderer::GetWorldPoint(const Vec2 screenPoint) const {
 		const auto viewport = GetViewport();
 		const auto viewportSize = viewport.GetSize();
-		const Vec2 normalizeMousePos = Vec2{(screenPoint.x  / viewportSize.x) * 2_r - 1_r, (screenPoint.y  / viewportSize.y) * 2_r - 1_r};
+		const Vec2 normalizeMousePos = Vec2{(screenPoint.x / viewportSize.x) * 2_r - 1_r, (screenPoint.y / viewportSize.y) * 2_r - 1_r};
 		const Vec4 result = InvViewProjectMatrixCached * Vec4{normalizeMousePos.x, normalizeMousePos.y, 0, 1};
 		const Vec4 resultNormalize = result / result.w;
 		return resultNormalize;
@@ -176,20 +176,23 @@ namespace Imagine::Vulkan {
 	VkPhysicalDevice VulkanRenderer::GetPhysicalDevice() {
 		return m_PhysicalDevice;
 	}
+	VmaAllocator VulkanRenderer::GetAllocator() {
+		return m_Allocator;
+	}
 
 	void VulkanRenderer::InitializeVulkan() {
 		vkb::InstanceBuilder builder;
 
 		// make the vulkan instance, with basic debug features
-		auto inst_ret = builder.set_app_name(m_AppParams.AppName.c_str())
-								.set_engine_name(ApplicationParameters::EngineName)
-								.request_validation_layers(GetRenderParams().EnableDebug)
-								// .use_default_debug_messenger()
-								.set_debug_callback(VkDebugCallback)
-								// .set_debug_callback_user_data_pointer(this)
-								.require_api_version(1, 3, 0) // TODO? See if I better use the 1.2.0 vulkan version.
-								.build();
+		builder.set_app_name(m_AppParams.AppName.c_str())
+				.set_engine_name(ApplicationParameters::EngineName)
+				.require_api_version(1, 3, 0); // TODO? See if I better use the 1.2.0 vulkan version.
 
+		if (GetRenderParams().EnableDebug) {
+			builder.request_validation_layers(GetRenderParams().EnableDebug)
+					.set_debug_callback(VkDebugCallback);
+		}
+		auto inst_ret = builder.build();
 		if (!inst_ret.has_value()) {
 			throw std::runtime_error("Vulkan 1.3.0 couldn't be initialized.");
 		}
@@ -443,8 +446,17 @@ namespace Imagine::Vulkan {
 		InitTrianglePipeline();
 		InitMeshPipeline();
 
+		m_MetalRoughMaterial.topology = Topology::Triangle;
 		m_MetalRoughMaterial.BuildPipeline(this);
 		m_MainDeletionQueue.push(m_MetalRoughMaterial);
+
+		m_LineMetalRoughMaterial.topology = Topology::Line;
+		m_LineMetalRoughMaterial.BuildPipeline(this);
+		m_MainDeletionQueue.push(m_LineMetalRoughMaterial);
+
+		m_PointMetalRoughMaterial.topology = Topology::Point;
+		m_PointMetalRoughMaterial.BuildPipeline(this);
+		m_MainDeletionQueue.push(m_PointMetalRoughMaterial);
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
@@ -848,7 +860,9 @@ namespace Imagine::Vulkan {
 		materialResources.dataBuffer = materialConstants.buffer;
 		materialResources.dataBufferOffset = 0;
 
-		m_DefaultMaterial = std::make_shared<VulkanMaterialInstance>(m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
+		m_DefaultMeshMaterial = std::make_shared<VulkanMaterialInstance>(m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
+		m_DefaultLineMaterial = std::make_shared<VulkanMaterialInstance>(m_LineMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
+		m_DefaultPointMaterial = std::make_shared<VulkanMaterialInstance>(m_PointMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
 	}
 
 	AllocatedImage VulkanRenderer::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
@@ -1109,6 +1123,7 @@ namespace Imagine::Vulkan {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
 			ImGui::DragFloat3("Camera Position", glm::value_ptr(Camera::s_MainCamera->position), 0.1, 0, 0, "%.1f");
+			ImGui::DragFloat("Camera Speed", &Camera::s_MainCamera->velocityMultiplier, 0.1, 0, 0, "%.1f");
 
 			ImGui::DragFloat("Camera Pitch", &Camera::s_MainCamera->pitch, 0.1, 0, 0, "%.1f");
 			if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -1153,13 +1168,13 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene *scene, EntityID parent) {
 		Initializer::LoadModelAsDynamic(this, scene, parent, path);
 	}
-	void VulkanRenderer::LoadCPUMeshInScene(const Core::CPUMesh &m, Core::Scene * scene, Core::EntityID entity) {
+	void VulkanRenderer::LoadCPUMeshInScene(const Core::CPUMesh &m, Core::Scene *scene, Core::EntityID entity) {
 		std::shared_ptr<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
 		if (!entity.IsValid()) {
 			entity = scene->CreateEntity();
 		}
 
-		Renderable* render = scene->GetOrAddComponent<Renderable>(entity);
+		Renderable *render = scene->GetOrAddComponent<Renderable>(entity);
 		if (!render) return;
 		render->mesh = GPUMesh;
 	}
@@ -1195,6 +1210,15 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
+
+		std::shared_ptr<MeshAsset> lineMesh;
+		std::shared_ptr<MeshAsset> pointMesh;
+		if (!ctx.OpaqueLines.empty()) {
+			lineMesh = Initializer::LoadLines(this, (std::vector<LineObject> &) (ctx.OpaqueLines));
+		}
+		if (!ctx.OpaquePoints.empty()) {
+			pointMesh = Initializer::LoadPoints(this, (std::vector<Vertex> &) (ctx.OpaquePoints));
+		}
 
 		VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(m_DrawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		VkRenderingAttachmentInfo depthAttachment = Initializer::DepthAttachmentInfo(m_DepthImage.imageView, 1.0f, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
@@ -1259,6 +1283,54 @@ namespace Imagine::Vulkan {
 			GPUDrawPushConstants pushConstants;
 			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
 			pushConstants.worldMatrix = draw.transform;
+			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+
+			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+		}
+
+		if (lineMesh) {
+
+			MeshAsset *mesh = lineMesh.get();
+
+			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+			// TODO: Do some smart LOD selection instead of the best one everytime
+			const Mesh::LOD &lod = mesh->lods.front();
+
+			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
+
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
+
+			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+			GPUDrawPushConstants pushConstants;
+			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+			pushConstants.worldMatrix = Math::Identity<glm::mat4>();
+			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+
+			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+		}
+
+		if (pointMesh) {
+
+			MeshAsset *mesh = pointMesh.get();
+
+			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+			// TODO: Do some smart LOD selection instead of the best one everytime
+			const Mesh::LOD &lod = mesh->lods.front();
+
+			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
+
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
+
+			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+			GPUDrawPushConstants pushConstants;
+			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+			pushConstants.worldMatrix = Math::Identity<glm::mat4>();
 			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
 			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);

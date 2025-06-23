@@ -34,7 +34,7 @@ namespace Imagine::Core {
 		pitch += pitchVelocity * timestep;
 		
 		const glm::mat4 cameraRotation = GetRotationMatrix();
-		position += glm::vec3(cameraRotation * glm::vec4(velocity * timestep, 0.f));
+		position += glm::vec3(cameraRotation * glm::vec4(velocity * timestep * velocityMultiplier, 0.f));
 
 	}
 

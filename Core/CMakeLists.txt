@@ -91,6 +91,7 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/Triangulation.hpp
 		Includes/Imagine/Math/Basics.hpp
 		Includes/Imagine/Math/Mesh.hpp
+		Includes/Imagine/Rendering/RenderTypes.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

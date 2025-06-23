@@ -15,6 +15,7 @@
 #include "Imagine/Rendering/CPUMesh.hpp"
 #include "Imagine/Scene/Entity.hpp"
 #include "Imagine/Scene/Scene.hpp"
+#include "Imagine/Vulkan/VulkanRenderer.hpp"
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
@@ -236,6 +237,9 @@ namespace Imagine::Vulkan {
 		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& mesh);
 		std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath);
 		void LoadModelAsDynamic(VulkanRenderer *engine, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath);
+
+		std::shared_ptr<MeshAsset> LoadLines(VulkanRenderer* renderer, std::span<Core::LineObject> lines);
+		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer* renderer, std::span<Vertex> points);
 
 	} // namespace Initializer
 } // namespace Imagine::Vulkan

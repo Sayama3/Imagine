@@ -31,14 +31,6 @@ namespace Imagine::Vulkan {
 		VmaAllocationInfo info{};
 	};
 
-	struct Vertex {
-		glm::vec3 position{0,0,0};
-		float uv_x{0};
-		glm::vec3 normal{0,1,0};
-		float uv_y{0};
-		glm::vec4 color{1};
-	};
-
 	// holds the resources needed for a mesh
 	struct GPUMeshBuffers {
 		AllocatedBuffer indexBuffer;
@@ -59,7 +51,9 @@ namespace Imagine::Vulkan {
 
 	struct MeshAsset final : public Core::Mesh {
 		MeshAsset() = default;
-		virtual ~MeshAsset() = default;
+		virtual ~MeshAsset();
+		MeshAsset(const MeshAsset&) = delete;
+		MeshAsset& operator=(const MeshAsset&) = delete;
 
 		GPUMeshBuffers meshBuffers;
 	};

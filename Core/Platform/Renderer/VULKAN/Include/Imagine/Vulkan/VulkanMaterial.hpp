@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.h>
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/Material.hpp"
+#include "Imagine/Rendering/RenderTypes.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/VulkanImage.hpp"
 
@@ -30,8 +31,8 @@ namespace Imagine::Vulkan {
 	struct GLTFMetallicRoughness {
 		VulkanMaterialPipeline opaquePipeline;
 		VulkanMaterialPipeline transparentPipeline;
-
 		VkDescriptorSetLayout materialLayout;
+		Core::Topology topology = Core::Topology::Triangle;
 
 		// Our target for Uniform Buffers is a 256 bytes alignments
 		struct alignas(256) MaterialConstants {

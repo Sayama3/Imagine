@@ -6,6 +6,7 @@
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/Material.hpp"
 #include "Imagine/Rendering/Mesh.hpp"
+#include "Imagine/Rendering/Vertex.hpp"
 
 namespace Imagine::Core {
 
@@ -16,6 +17,16 @@ namespace Imagine::Core {
 		Mat4 transform{};
 		std::shared_ptr<Mesh> mesh{nullptr};
 		//MaterialInstance *material{nullptr};
+	};
+
+	struct LineObject {
+		// Mat4 transform;
+		std::vector<Vertex> points;
+	};
+
+	struct PointObject {
+		// Mat4 transform;
+		Vertex point;
 	};
 
 } // namespace Imagine::Core

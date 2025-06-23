@@ -62,7 +62,7 @@ namespace Imagine::Vulkan {
 										  // Parameters
 										  .AddShader(Core::ShaderStage::Vertex, meshVertexShader)
 										  .AddShader(Core::ShaderStage::Fragment, meshFragShader)
-										  .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+										  // .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
 										  .SetPolygonMode(VK_POLYGON_MODE_FILL)
 										  .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
 										  .SetMultisamplingNone()
@@ -71,7 +71,17 @@ namespace Imagine::Vulkan {
 										  // Render Format
 										  .SetColorAttachmentFormat(renderer->GetColorImageFormat())
 										  .SetDepthFormat(renderer->GetDepthImageFormat());
-
+		switch (topology) {
+			case Topology::Triangle:
+				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+				break;
+			case Topology::Line:
+				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+				break;
+			case Topology::Point:
+				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+				break;
+		}
 		opaquePipeline.pipeline = builder.BuildPipeline(renderer->GetDevice());
 
 		builder.EnableBlendingAdditive();

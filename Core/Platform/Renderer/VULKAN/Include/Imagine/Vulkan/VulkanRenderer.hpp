@@ -41,7 +41,7 @@ namespace Imagine::Vulkan {
 	public:
 		VkDevice GetDevice();
 		VkPhysicalDevice GetPhysicalDevice();
-
+		VmaAllocator GetAllocator();
 	private:
 		void InitializeVulkan();
 		void InitializeSwapChain();
@@ -80,13 +80,23 @@ namespace Imagine::Vulkan {
 		void PushDeletion(VmaAllocation allocation, VmaType data) {
 			m_MainDeletionQueue.push(m_Allocator, allocation, data);
 		}
+		void PushCurrentFrameDeletion(Deleter::VkType data) {
+			GetCurrentFrame().m_DeletionQueue.push(std::move(data));
+		}
+
+		template<typename VmaType>
+		void PushCurrentFrameDeletion(VmaAllocation allocation, VmaType data) {
+			GetCurrentFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
+		}
 	public:
 		VkDescriptorSetLayout GetGPUSceneDescriptorLayout();
 		VkFormat GetColorImageFormat() const;
 		VkFormat GetDepthImageFormat() const;
 		void CreateDefaultSamplers();
 
-		std::shared_ptr<VulkanMaterialInstance> GetDefaultMaterial() {return m_DefaultMaterial;}
+		std::shared_ptr<VulkanMaterialInstance> GetDefaultMeshMaterial() {return m_DefaultMeshMaterial;}
+		std::shared_ptr<VulkanMaterialInstance> GetDefaultLineMaterial() {return m_DefaultLineMaterial;}
+		std::shared_ptr<VulkanMaterialInstance> GetDefaultPointMaterial() {return m_DefaultPointMaterial;}
 
 	private:
 		void ShutdownVulkan();
@@ -182,8 +192,13 @@ namespace Imagine::Vulkan {
 		VkSampler m_DefaultSamplerLinear{nullptr};
 		VkSampler m_DefaultSamplerNearest{nullptr};
 
-		std::shared_ptr<VulkanMaterialInstance> m_DefaultMaterial{};
+		std::shared_ptr<VulkanMaterialInstance> m_DefaultMeshMaterial{};
+		std::shared_ptr<VulkanMaterialInstance> m_DefaultLineMaterial{};
+		std::shared_ptr<VulkanMaterialInstance> m_DefaultPointMaterial{};
+
 		GLTFMetallicRoughness m_MetalRoughMaterial{};
+		GLTFMetallicRoughness m_LineMetalRoughMaterial{};
+		GLTFMetallicRoughness m_PointMetalRoughMaterial{};
 
 		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};
 

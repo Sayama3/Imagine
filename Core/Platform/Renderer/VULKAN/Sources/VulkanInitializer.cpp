@@ -31,7 +31,6 @@ namespace Imagine::Vulkan {
 													 aiProcess_Triangulate |
 															 aiProcess_JoinIdenticalVertices |
 															 aiProcess_GenUVCoords |
-															 aiProcess_FlipUVs |
 															 aiProcess_ConvertToLeftHanded |
 															 aiProcess_SortByPType);
 
@@ -62,8 +61,8 @@ namespace Imagine::Vulkan {
 						continue;
 					}
 
-					MeshAsset mesh;
-					mesh.name = aiMesh->mName.C_Str();
+					std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+					mesh->name = aiMesh->mName.C_Str();
 
 					indices.clear();
 					vertices.clear();
@@ -104,16 +103,13 @@ namespace Imagine::Vulkan {
 					Mesh::LOD surface;
 					surface.index = 0;
 					surface.count = indices.size();
-					surface.material = engine->GetDefaultMaterial();
+					surface.material = engine->GetDefaultMeshMaterial();
 
-					mesh.lods.push_back(surface);
+					mesh->lods.push_back(surface);
 
-					mesh.meshBuffers = engine->UploadMesh(indices, vertices);
+					mesh->meshBuffers = engine->UploadMesh(indices, vertices);
 
-					engine->PushDeletion(mesh.meshBuffers.indexBuffer.allocation, mesh.meshBuffers.indexBuffer.buffer);
-					engine->PushDeletion(mesh.meshBuffers.vertexBuffer.allocation, mesh.meshBuffers.vertexBuffer.buffer);
-
-					meshes.emplace_back(std::make_shared<MeshAsset>(std::move(mesh)));
+					meshes.emplace_back(std::move(mesh));
 				}
 			}
 
@@ -184,6 +180,56 @@ namespace Imagine::Vulkan {
 				}
 			}
 		}
+		std::shared_ptr<MeshAsset> LoadLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
+			std::vector<uint32_t> indices;
+			std::vector<Vertex> vertices;
+
+			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+
+			for (const Core::LineObject & line: lines) {
+				if (line.points.size() < 2) continue;
+				const uint32_t offset = vertices.size();
+				vertices.push_back(line.points.at(0));
+				for (uint32_t i = 1; i < line.points.size(); ++i) {
+					vertices.push_back(line.points.at(i));
+					indices.push_back(offset + (i-1));
+					indices.push_back(offset + i);
+				}
+			}
+
+			Core::Mesh::LOD surface;
+			surface.index = 0;
+			surface.count = indices.size();
+			surface.material = renderer->GetDefaultLineMaterial();
+
+			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
+
+			return mesh;
+		}
+
+		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Vertex> points) {
+			std::vector<uint32_t> indices;
+			indices.reserve(points.size());
+
+			std::vector<Vertex> vertices;
+			vertices.reserve(points.size());
+
+			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+
+			for (const auto & point: points) {
+				vertices.push_back(point);
+				indices.push_back(indices.size());
+			}
+
+			Core::Mesh::LOD surface;
+			surface.index = 0;
+			surface.count = indices.size();
+			surface.material = renderer->GetDefaultPointMaterial();
+
+			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
+
+			return mesh;
+		}
 
 		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& cpuMesh) {
 
@@ -192,16 +238,13 @@ namespace Imagine::Vulkan {
 			Core::Mesh::LOD surface;
 			surface.index = 0;
 			surface.count = cpuMesh.Indices.size();
-			surface.material = engine->GetDefaultMaterial();
+			surface.material = engine->GetDefaultMeshMaterial();
 
 			mesh->lods.push_back(surface);
 
 			std::vector<uint32_t>& indices = (std::vector<uint32_t>&)(cpuMesh.Indices);
 			std::vector<Vertex>& vertices = (std::vector<Vertex>&)(cpuMesh.Vertices);
 			mesh->meshBuffers = engine->UploadMesh(indices, vertices);
-
-			engine->PushDeletion(mesh->meshBuffers.indexBuffer.allocation,mesh->meshBuffers.indexBuffer.buffer);
-			engine->PushDeletion(mesh->meshBuffers.vertexBuffer.allocation,mesh->meshBuffers.vertexBuffer.buffer);
 
 			return mesh;
 		}
@@ -244,8 +287,8 @@ namespace Imagine::Vulkan {
 					continue;
 				}
 
-				MeshAsset mesh;
-				mesh.name = aiMesh->mName.C_Str();
+				std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+				mesh->name = aiMesh->mName.C_Str();
 
 				indices.clear();
 				vertices.clear();
@@ -287,14 +330,11 @@ namespace Imagine::Vulkan {
 				surface.index = 0;
 				surface.count = indices.size();
 
-				mesh.lods.push_back(surface);
+				mesh->lods.push_back(surface);
 
-				mesh.meshBuffers = engine->UploadMesh(indices, vertices);
+				mesh->meshBuffers = engine->UploadMesh(indices, vertices);
 
-				engine->PushDeletion(mesh.meshBuffers.indexBuffer.allocation,mesh.meshBuffers.indexBuffer.buffer);
-				engine->PushDeletion(mesh.meshBuffers.vertexBuffer.allocation,mesh.meshBuffers.vertexBuffer.buffer);
-
-				meshes.emplace_back(std::make_shared<MeshAsset>(std::move(mesh)));
+				meshes.emplace_back(std::move(mesh));
 			}
 
 			// We're done. Everything will be cleaned up by the importer destructor

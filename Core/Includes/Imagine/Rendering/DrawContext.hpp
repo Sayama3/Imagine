@@ -11,6 +11,8 @@ namespace Imagine::Core {
 	class DrawContext {
 	public:
 		std::vector<RenderObject> OpaqueSurfaces;
+		std::vector<LineObject> OpaqueLines;
+		std::vector<PointObject> OpaquePoints;
 	};
 
 } // namespace Imagine::Core

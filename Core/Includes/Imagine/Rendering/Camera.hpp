@@ -22,6 +22,8 @@ namespace Imagine::Core {
 		float pitchVelocity { 0.f };
 		float yawVelocity { 0.f };
 
+		float velocityMultiplier = 2.f;
+
 		glm::mat4 GetViewMatrix() const;
 		glm::mat4 GetRotationMatrix() const;
 		Vec3 GetForward() const;
