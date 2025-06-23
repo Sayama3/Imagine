@@ -46,9 +46,9 @@ using namespace Imagine::Core;
 using namespace Imagine::Literal;
 
 namespace Imagine::Vulkan {
+	constexpr bool c_BreakOnError = false;
 
 	static inline VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-		constexpr bool c_BreakOnError = false;
 		const char *mt = vkb::to_string_message_type(messageType);
 
 		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
@@ -454,9 +454,9 @@ namespace Imagine::Vulkan {
 		m_LineMetalRoughMaterial.BuildPipeline(this);
 		m_MainDeletionQueue.push(m_LineMetalRoughMaterial);
 
-		m_PointMetalRoughMaterial.topology = Topology::Point;
-		m_PointMetalRoughMaterial.BuildPipeline(this);
-		m_MainDeletionQueue.push(m_PointMetalRoughMaterial);
+		// m_PointMetalRoughMaterial.topology = Topology::Point;
+		// m_PointMetalRoughMaterial.BuildPipeline(this);
+		// m_MainDeletionQueue.push(m_PointMetalRoughMaterial);
 	}
 
 	void VulkanRenderer::InitGradientPipeline() {
@@ -862,7 +862,7 @@ namespace Imagine::Vulkan {
 
 		m_DefaultMeshMaterial = std::make_shared<VulkanMaterialInstance>(m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
 		m_DefaultLineMaterial = std::make_shared<VulkanMaterialInstance>(m_LineMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
-		m_DefaultPointMaterial = std::make_shared<VulkanMaterialInstance>(m_PointMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
+		// m_DefaultPointMaterial = std::make_shared<VulkanMaterialInstance>(m_PointMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
 	}
 
 	AllocatedImage VulkanRenderer::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
@@ -961,6 +961,9 @@ namespace Imagine::Vulkan {
 
 	VulkanFrameData &VulkanRenderer::GetCurrentFrame() {
 		return m_Frames[m_FrameIndex];
+	}
+	VulkanFrameData &VulkanRenderer::GetNextFrame() {
+		return m_Frames[(m_FrameIndex + 1) % m_Frames.size()];
 	}
 
 	const Core::RendererParameters &VulkanRenderer::GetRenderParams() const {
@@ -1216,9 +1219,10 @@ namespace Imagine::Vulkan {
 		if (!ctx.OpaqueLines.empty()) {
 			lineMesh = Initializer::LoadLines(this, (std::vector<LineObject> &) (ctx.OpaqueLines));
 		}
-		if (!ctx.OpaquePoints.empty()) {
-			pointMesh = Initializer::LoadPoints(this, (std::vector<Vertex> &) (ctx.OpaquePoints));
-		}
+		// TODO: Implement a point renderer when it's ready. Like, by doing a Geometry shader or some things.
+		// if (!ctx.OpaquePoints.empty()) {
+		// 	pointMesh = Initializer::LoadPoints(this, (std::vector<Vertex> &) (ctx.OpaquePoints));
+		// }
 
 		VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(m_DrawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		VkRenderingAttachmentInfo depthAttachment = Initializer::DepthAttachmentInfo(m_DepthImage.imageView, 1.0f, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
@@ -1312,29 +1316,29 @@ namespace Imagine::Vulkan {
 			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 		}
 
-		if (pointMesh) {
-
-			MeshAsset *mesh = pointMesh.get();
-
-			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
-			// TODO: Do some smart LOD selection instead of the best one everytime
-			const Mesh::LOD &lod = mesh->lods.front();
-
-			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
-
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
-
-			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-			GPUDrawPushConstants pushConstants;
-			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-			pushConstants.worldMatrix = Math::Identity<glm::mat4>();
-			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
-
-			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
-		}
+		// if (pointMesh) {
+		//
+		// 	MeshAsset *mesh = pointMesh.get();
+		//
+		// 	MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+		// 	// TODO: Do some smart LOD selection instead of the best one everytime
+		// 	const Mesh::LOD &lod = mesh->lods.front();
+		//
+		// 	const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
+		//
+		// 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
+		// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+		// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
+		//
+		// 	vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		//
+		// 	GPUDrawPushConstants pushConstants;
+		// 	pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+		// 	pushConstants.worldMatrix = Math::Identity<glm::mat4>();
+		// 	vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+		//
+		// 	vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+		// }
 
 		vkCmdEndRendering(cmd);
 	}

@@ -13,25 +13,25 @@ namespace Imagine::SDL3 {
 		void Update() override;
 		void SendImGuiCommands() override {}
 
-		Vec2 GetPosition() override;
+		[[nodiscard]] Vec2 GetPosition() override;
 
-		uint32_t GetWindowWidth() override;
-		uint32_t GetWindowHeight() override;
-		Core::Size2 GetWindowSize() override;
+		[[nodiscard]] uint32_t GetWindowWidth() override;
+		[[nodiscard]] uint32_t GetWindowHeight() override;
+		[[nodiscard]] Core::Size2 GetWindowSize() override;
 
-		virtual Rect<> GetWindowRect() override;
+		[[nodiscard]] virtual Rect<> GetWindowRect() override;
 
-		uint32_t GetFramebufferWidth() override;
-		uint32_t GetFramebufferHeight() override;
-		Core::Size2 GetFramebufferSize() override;
-		void *GetNativeWindow() override;
+		[[nodiscard]] uint32_t GetFramebufferWidth() override;
+		[[nodiscard]] uint32_t GetFramebufferHeight() override;
+		[[nodiscard]] Core::Size2 GetFramebufferSize() override;
+		[[nodiscard]] void *GetNativeWindow() override;
 
-		bool IsMinimized() override;
-		bool ShouldClose() override;
+		[[nodiscard]] bool IsMinimized() override;
+		[[nodiscard]] bool ShouldClose() override;
 
-		void *GetWindowPtr() override;
+		[[nodiscard]] void *GetWindowPtr() override;
 	public:
-		SDL3Mouse& GetMouse();
+		[[nodiscard]] SDL3Mouse& GetMouse();
 	private:
 		static void framebufferResizeCallback(void *window, int width, int height);
 

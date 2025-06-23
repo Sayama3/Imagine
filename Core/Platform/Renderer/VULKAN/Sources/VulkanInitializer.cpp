@@ -208,6 +208,9 @@ namespace Imagine::Vulkan {
 		}
 
 		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Vertex> points) {
+			MGN_CORE_ASSERT(false, "The load points function is not implemented yet.");
+			return nullptr;
+/*
 			std::vector<uint32_t> indices;
 			indices.reserve(points.size());
 
@@ -229,6 +232,7 @@ namespace Imagine::Vulkan {
 			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
 
 			return mesh;
+*/
 		}
 
 		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& cpuMesh) {

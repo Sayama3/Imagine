@@ -88,6 +88,14 @@ namespace Imagine::Vulkan {
 		void PushCurrentFrameDeletion(VmaAllocation allocation, VmaType data) {
 			GetCurrentFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
 		}
+		void PushNextFrameDeletion(Deleter::VkType data) {
+			GetNextFrame().m_DeletionQueue.push(std::move(data));
+		}
+
+		template<typename VmaType>
+		void PushNextFrameDeletion(VmaAllocation allocation, VmaType data) {
+			GetNextFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
+		}
 	public:
 		VkDescriptorSetLayout GetGPUSceneDescriptorLayout();
 		VkFormat GetColorImageFormat() const;
@@ -96,11 +104,12 @@ namespace Imagine::Vulkan {
 
 		std::shared_ptr<VulkanMaterialInstance> GetDefaultMeshMaterial() {return m_DefaultMeshMaterial;}
 		std::shared_ptr<VulkanMaterialInstance> GetDefaultLineMaterial() {return m_DefaultLineMaterial;}
-		std::shared_ptr<VulkanMaterialInstance> GetDefaultPointMaterial() {return m_DefaultPointMaterial;}
+		// std::shared_ptr<VulkanMaterialInstance> GetDefaultPointMaterial() {return m_DefaultPointMaterial;}
 
 	private:
 		void ShutdownVulkan();
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();
+		[[nodiscard]] VulkanFrameData &GetNextFrame();
 		[[nodiscard]] const Core::RendererParameters &GetRenderParams() const;
 
 		void UpdateCache();
@@ -194,11 +203,11 @@ namespace Imagine::Vulkan {
 
 		std::shared_ptr<VulkanMaterialInstance> m_DefaultMeshMaterial{};
 		std::shared_ptr<VulkanMaterialInstance> m_DefaultLineMaterial{};
-		std::shared_ptr<VulkanMaterialInstance> m_DefaultPointMaterial{};
+		// std::shared_ptr<VulkanMaterialInstance> m_DefaultPointMaterial{};
 
 		GLTFMetallicRoughness m_MetalRoughMaterial{};
 		GLTFMetallicRoughness m_LineMetalRoughMaterial{};
-		GLTFMetallicRoughness m_PointMetalRoughMaterial{};
+		// GLTFMetallicRoughness m_PointMetalRoughMaterial{};
 
 		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};
 

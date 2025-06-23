@@ -14,8 +14,10 @@ set(CPP_RTTI_ENABLED ON)
 set(BUILD_SHARED_LIBS OFF)
 
 # No window backend start the application in headless
-option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backend" OFF)
+option(MGN_WINDOW_GLFW "Launch the application with a window and GLFW as a backend" OFF) # Broken for now.
 option(MGN_WINDOW_SDL3 "Launch the application with a window and SDL3 as a backend" ON)
+
+# All the windows options are not finished for now. GLFW is currently broken as the input system is not thought out yet.
 
 # No renderer backend start the application in CPU mode.
 option(MGN_RENDERER_VULKAN "Launch the application with Vulkan as a render and compute backend." ON)

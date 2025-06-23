@@ -29,27 +29,27 @@ namespace Imagine::Core {
 		virtual void Update() = 0;
 		virtual void SendImGuiCommands() = 0;
 	public:
-		virtual Vec2 GetPosition() = 0;
-		virtual uint32_t GetWindowWidth() = 0;
-		virtual uint32_t GetWindowHeight() = 0;
-		virtual Size2 GetWindowSize() = 0;
+		[[nodiscard]] virtual Vec2 GetPosition() = 0;
+		[[nodiscard]] virtual uint32_t GetWindowWidth() = 0;
+		[[nodiscard]] virtual uint32_t GetWindowHeight() = 0;
+		[[nodiscard]] virtual Size2 GetWindowSize() = 0;
 
-		virtual Rect<> GetWindowRect() = 0;
+		[[nodiscard]] virtual Rect<> GetWindowRect() = 0;
 
-		virtual uint32_t GetFramebufferWidth() = 0;
-		virtual uint32_t GetFramebufferHeight() = 0;
-		virtual Size2 GetFramebufferSize() = 0;
+		[[nodiscard]] virtual uint32_t GetFramebufferWidth() = 0;
+		[[nodiscard]] virtual uint32_t GetFramebufferHeight() = 0;
+		[[nodiscard]] virtual Size2 GetFramebufferSize() = 0;
 
-		virtual bool IsMinimized() = 0;
+		[[nodiscard]] virtual bool IsMinimized() = 0;
 
-		virtual void* GetNativeWindow() = 0;
-		virtual bool ShouldClose() = 0;
+		[[nodiscard]] virtual void* GetNativeWindow() = 0;
+		[[nodiscard]] virtual bool ShouldClose() = 0;
 
 		/**
 		 * This function allow to obtain a pointer to the SDL3 or GLFW window. NOT the native window ptr.
 		 * @return The pointer of the window
 		 */
-		virtual void* GetWindowPtr() = 0;
+		[[nodiscard]] virtual void* GetWindowPtr() = 0;
 	};
 
 }
