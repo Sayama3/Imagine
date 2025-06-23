@@ -154,7 +154,7 @@ namespace Imagine::Vulkan {
 					if (scale.x != scale.y || scale.y != scale.z) {
 						MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
 					}
-					else if (Math::SqrMagnitude(scale) != 1) {
+					else if (Math::Magnitude2(scale) != 1) {
 						// MGN_CORE_WARN("The scale of the node {} in the model {} is not 1. It's preferred to have a uniform scale of 1.");
 					}
 

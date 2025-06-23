@@ -102,6 +102,8 @@ namespace Imagine::Vulkan {
 		Renderer(), m_AppParams(appParams) {
 		InitializeVulkan();
 		InitializeSwapChain();
+		m_DrawExtent.width = std::ceil(std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale);
+		m_DrawExtent.height = std::ceil(std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale);
 		InitializeCommands();
 		InitializeSyncStructures();
 		CreateDefaultSamplers();
@@ -109,6 +111,9 @@ namespace Imagine::Vulkan {
 		InitializePipelines();
 
 		InitDefaultData();
+
+		// Initialize the cache of matrix a first time.
+		UpdateCache();
 	}
 
 	VulkanRenderer::~VulkanRenderer() {
@@ -127,7 +132,31 @@ namespace Imagine::Vulkan {
 		vkDeviceWaitIdle(m_Device);
 	}
 
-	Rect VulkanRenderer::GetViewport() const {
+	Mat4 VulkanRenderer::GetViewMatrix() const {
+		return Camera::s_MainCamera->GetViewMatrix();
+	}
+
+	Mat4 VulkanRenderer::GetProjectionMatrix() const {
+		Mat4 proj = glm::perspective(glm::radians(Real(70)), (Real) m_DrawExtent.width / (Real) m_DrawExtent.height, Real(0.1), Real(10000.));
+		// Inverse Y to have up toward up
+		proj[1][1] *= -1;
+		return proj;
+	}
+
+	Vec3 VulkanRenderer::GetWorldPoint(const Vec2 screenPoint) const {
+		const auto viewport = GetViewport();
+		const auto viewportSize = viewport.GetSize();
+		const Vec2 normalizeMousePos = Vec2{(screenPoint.x  / viewportSize.x), (screenPoint.y  / viewportSize.y)};
+		const Vec4 result = InvViewProjectMatrixCached * Vec4{normalizeMousePos.x, normalizeMousePos.y, 0, 1};
+		const Vec4 resultNormalize = result / result.w;
+		return resultNormalize;
+	}
+
+	Mat4 VulkanRenderer::GetViewProjectMatrix() const {
+		return GetProjectionMatrix() * GetViewMatrix();
+	}
+
+	Rect<> VulkanRenderer::GetViewport() const {
 #ifdef MGN_IMGUI
 		if (MgnImGui::DockingEnabled() && m_ImGuiViewport.has_value()) {
 			return m_ImGuiViewport.value();
@@ -922,6 +951,14 @@ namespace Imagine::Vulkan {
 	const Core::RendererParameters &VulkanRenderer::GetRenderParams() const {
 		return m_AppParams.Renderer.value();
 	}
+
+	void VulkanRenderer::UpdateCache() {
+		ViewMatrixCached = GetViewMatrix();
+		ProjectionMatrixCached = GetProjectionMatrix();
+		ViewProjectMatrixCached = ProjectionMatrixCached * ViewMatrixCached;
+		InvViewProjectMatrixCached = glm::inverse(ViewProjectMatrixCached);
+	}
+
 	bool VulkanRenderer::BeginDraw() {
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
@@ -966,16 +1003,12 @@ namespace Imagine::Vulkan {
 		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
 
-		{
-			m_SceneData.view = Camera::s_MainCamera->GetViewMatrix();
-			// camera projection
-			m_SceneData.proj = glm::perspective(glm::radians(70.f), (float) m_DrawExtent.width / (float) m_DrawExtent.height, 0.1f, 10000.f);
+		UpdateCache();
 
-			// invert the Y direction on projection matrix so that we are more similar
-			// to opengl and gltf axis
-			m_SceneData.proj[1][1] *= -1;
-			// m_SceneData.proj[0][0] *= -1;
-			m_SceneData.viewproj = m_SceneData.proj * m_SceneData.view;
+		{
+			m_SceneData.view = ViewMatrixCached;
+			m_SceneData.proj = ProjectionMatrixCached;
+			m_SceneData.viewproj = ViewProjectMatrixCached;
 
 			// some default lighting parameters
 			m_SceneData.ambientColor = glm::vec4(.1f);

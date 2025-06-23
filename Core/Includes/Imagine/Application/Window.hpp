@@ -34,7 +34,7 @@ namespace Imagine::Core {
 		virtual uint32_t GetWindowHeight() = 0;
 		virtual Size2 GetWindowSize() = 0;
 
-		virtual Rect GetWindowRect() = 0;
+		virtual Rect<> GetWindowRect() = 0;
 
 		virtual uint32_t GetFramebufferWidth() = 0;
 		virtual uint32_t GetFramebufferHeight() = 0;

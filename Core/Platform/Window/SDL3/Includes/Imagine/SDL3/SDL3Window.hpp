@@ -19,7 +19,7 @@ namespace Imagine::SDL3 {
 		uint32_t GetWindowHeight() override;
 		Core::Size2 GetWindowSize() override;
 
-		virtual Rect GetWindowRect() override;
+		virtual Rect<> GetWindowRect() override;
 
 		uint32_t GetFramebufferWidth() override;
 		uint32_t GetFramebufferHeight() override;

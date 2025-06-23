@@ -46,8 +46,13 @@ namespace Imagine::Core {
 
 		virtual DrawContext& GetDrawContext() = 0;
 
+		virtual Mat4 GetViewMatrix() const = 0;
+		virtual Mat4 GetProjectionMatrix() const = 0;
+		virtual Mat4 GetViewProjectMatrix() const = 0;
 
-		virtual Rect GetViewport() const = 0;
+		virtual Rect<> GetViewport() const = 0;
+
+		virtual Vec3 GetWorldPoint(const Vec2 screenPoint) const = 0;
 
 		virtual void LoadCPUMeshInScene(const CPUMesh& path, Scene*, EntityID entity = EntityID::NullID) = 0;
 		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;

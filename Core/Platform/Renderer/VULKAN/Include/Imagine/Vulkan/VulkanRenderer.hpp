@@ -30,7 +30,13 @@ namespace Imagine::Vulkan {
 		static Core::RendererAPI GetStaticAPI() { return Core::RendererAPI::Vulkan; }
 
 	public:
-		virtual Rect GetViewport() const override;
+
+		virtual Mat4 GetViewMatrix() const override;
+		virtual Mat4 GetProjectionMatrix() const override;
+		virtual Mat4 GetViewProjectMatrix() const override;
+		virtual Rect<> GetViewport() const override;
+
+		virtual Vec3 GetWorldPoint(const Vec2 screenPoint) const override;
 
 	public:
 		VkDevice GetDevice();
@@ -87,8 +93,9 @@ namespace Imagine::Vulkan {
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();
 		[[nodiscard]] const Core::RendererParameters &GetRenderParams() const;
 
-	public:
+		void UpdateCache();
 
+	public:
 		virtual bool BeginDraw() override;
 		virtual void EndDraw() override;
 		virtual void Present() override;
@@ -151,7 +158,7 @@ namespace Imagine::Vulkan {
 		VkDescriptorSet m_DrawImageDescriptors{nullptr};
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
-		std::optional<Rect> m_ImGuiViewport;
+		std::optional<Rect<>> m_ImGuiViewport;
 
 		GPUSceneData m_SceneData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
@@ -186,5 +193,10 @@ namespace Imagine::Vulkan {
 		bool m_ResizeRequested{false};
 
 		Core::DrawContext m_MainDrawContext;
+
+		Mat4 ViewMatrixCached;
+		Mat4 ProjectionMatrixCached;
+		Mat4 ViewProjectMatrixCached;
+		Mat4 InvViewProjectMatrixCached;
 	};
 } // namespace Imagine::Vulkan

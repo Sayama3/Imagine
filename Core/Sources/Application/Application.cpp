@@ -126,36 +126,18 @@ namespace Imagine::Core {
 
 			{
 				auto& mouse = Inputs::GetMouse();
-				const Rect window = m_Window->GetWindowRect();
-				const Rect viewport = m_Renderer->GetViewport();
+				const Rect<> window = m_Window->GetWindowRect();
+				const Rect<> viewport = m_Renderer->GetViewport();
 				const Vec2 globalPos = mouse.GetPosition() + window.min;
+				const Vec2 viewportPos = globalPos - viewport.min;
+
 				if (mouse.IsButtonPressed(Mouse::Left)) {
-					Rect window = m_Window->GetWindowRect();
-					Rect viewport = m_Renderer->GetViewport();
-					Vec2 globalPos = mouse.GetPosition() + window.min;
 					MGN_LOG_DEBUG("Viewport Pos {}, and size {}", Math::ToString(viewport.min), Math::ToString(viewport.GetSize()));
 					MGN_LOG_DEBUG("Window Pos {}, and size {}", Math::ToString(window.min), Math::ToString(window.GetSize()));
 					MGN_LOG_DEBUG("Mouse Pos {}", Math::ToString(globalPos));
 				}
-				// Vec2 mPos = mouse.GetPosition();
-				// Vec2 mMov = mouse.GetMovement();
-				// MGN_LOG_DEBUG("Mouse Position : {}", Math::ToString(mPos));
-				// MGN_LOG_DEBUG("Mouse Movement : {}", Math::ToString(mMov));
-				//
-				// for (uint8_t i = 1; i <= 5; ++i) {
-				// 	if (mouse.IsButtonPressed(static_cast<Mouse::Button>(i))) {
-				// 		MGN_LOG_DEBUG("Mouse Button {} is Pressed", i);
-				// 	}
-				// 	if (mouse.IsButtonReleased(static_cast<Mouse::Button>(i))) {
-				// 		MGN_LOG_DEBUG("Mouse Button {} is Released", i);
-				// 	}
-				// 	if (mouse.IsButtonDown(static_cast<Mouse::Button>(i))) {
-				// 		MGN_LOG_DEBUG("Mouse Button {} is Down", i);
-				// 	}
-				// 	if (mouse.IsButtonUp(static_cast<Mouse::Button>(i))) {
-				// 		MGN_LOG_DEBUG("Mouse Button {} is Up", i);
-				// 	}
-				// }
+
+
 			}
 
 			if (canDraw) {
