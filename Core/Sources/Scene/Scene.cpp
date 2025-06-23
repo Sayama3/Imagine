@@ -6,6 +6,10 @@
 #include "Imagine/Scene/Physicalisable.hpp"
 #include "Imagine/Scene/Renderable.hpp"
 
+#ifdef MGN_IMGUI
+#include <imgui.h>
+#include <imgui_stdlib.h>
+#endif
 namespace Imagine::Core {
 	Scene::Scene() {
 		RegisterType<Renderable>();
@@ -89,7 +93,8 @@ namespace Imagine::Core {
 	void Scene::SetName(EntityID entityId, std::string name) {
 		m_Names.GetOrCreate(entityId.id) = std::move(name);
 	}
-	Scene::ChildIterator::ChildIterator(Scene *scene, EntityID parent) : scene(scene) {
+	Scene::ChildIterator::ChildIterator(Scene *scene, EntityID parent) :
+		scene(scene) {
 		if (!scene) return;
 		auto *child = scene->m_Children.TryGet(parent.id);
 		if (child && child->firstChild.IsValid()) {
@@ -170,7 +175,8 @@ namespace Imagine::Core {
 		}
 	}
 
-	Scene::RelationshipIterator::RelationshipIterator(Scene *scene, EntityID id, EntityID parent) : scene(scene), current(id), rootParent(parent) {
+	Scene::RelationshipIterator::RelationshipIterator(Scene *scene, EntityID id, EntityID parent) :
+		scene(scene), current(id), rootParent(parent) {
 	}
 
 	// RelationshipIterator
@@ -261,6 +267,7 @@ namespace Imagine::Core {
 	}
 
 	Scene::RelationshipIterator Scene::EndRelationship() {
+
 		return Scene::RelationshipIterator{this, EntityID::NullID};
 	}
 
@@ -362,8 +369,84 @@ namespace Imagine::Core {
 		});
 	}
 	Mat4 Scene::GetWorldTransform(const EntityID id) const {
-		const Mat4* trs = m_WorldTransform.TryGet(id.id);
+		const Mat4 *trs = m_WorldTransform.TryGet(id.id);
 		return trs ? *trs : Mat4(0);
+	}
+	void Scene::SendImGuiCommands() {
+#ifdef MGN_IMGUI
+		{
+			const std::string HierarchyName = "Hierarchy##" + ID.string();
+			ImGui::Begin(HierarchyName.c_str());
+			{
+				auto beg = m_Roots.begin();
+				auto end = m_Roots.end();
+				for (auto it = beg; it != end; ++it) {
+					EntityID entity = *it;
+					const bool hasChildren = m_Children.Exist(entity.id);
+					const auto id = entity.string();
+					uint32_t flags = ImGuiTreeNodeFlags_None;
+					if (entity == m_SelectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
+					if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf;
+					if (ImGui::TreeNodeEx(id.c_str(), flags, m_Names.Get(entity.id).c_str())) {
+						if (ImGui::IsItemFocused())
+							m_SelectedEntity = entity;
+						if (hasChildren) DrawChildren(entity);
+						ImGui::TreePop();
+					}
+				}
+			}
+			ImGui::End();
+		}
+		{
+			const std::string PropertiesName = "Properties##" + ID.string();
+			ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
+			ImGui::Begin(PropertiesName.c_str());
+			{
+				if (m_SelectedEntity.IsValid()) {
+					ImGui::InputText("Name", &m_Names.GetOrCreate(m_SelectedEntity.id));
+
+					ImGui::Separator();
+					Entity& e = GetEntity(m_SelectedEntity);
+					ImGui::DragFloat3("Position", Math::ValuePtr(e.LocalPosition), 0.1,0,0,"%.3f");
+					auto degRot = e.LocalRotation * Math::RadToDeg;
+					if (ImGui::DragFloat4("Rotation", Math::ValuePtr(degRot), 0.1,0,0,"%.3f")) {
+						e.LocalRotation = Math::Normalize(degRot * Math::DegToRad);
+					}
+					ImGui::DragFloat3("Scale", Math::ValuePtr(e.LocalScale), 0.1,0,0,"%.3f");
+
+					for (const auto& [id, cc] : m_CustomComponents) {
+						if (!cc.Exist(m_SelectedEntity.id)) continue;
+						const auto& metadata = m_CustomComponentsMetadata.at(id);
+						ImGui::Separator();
+						ImGui::Text("===== %s =====", metadata.name.c_str());
+					}
+				}
+			}
+			ImGui::End();
+		}
+#endif
+	}
+	void Scene::DrawChildren(EntityID entity) {
+#ifdef MGN_IMGUI
+		auto it = BeginChild(entity);
+		auto end = EndChild();
+
+		while (it != end) {
+			EntityID child = it.GetCurrentChild();
+			const bool hasChildren = m_Children.Exist(child.id);
+			const auto id = child.string();
+			uint32_t flags = ImGuiTreeNodeFlags_None;
+			if (child == m_SelectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
+			if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf;
+			if (ImGui::TreeNodeEx(id.c_str(), flags, m_Names.Get(child.id).c_str())) {
+				if (ImGui::IsItemFocused())
+					m_SelectedEntity = child;
+				if (hasChildren) DrawChildren(child);
+				ImGui::TreePop();
+			}
+			++it;
+		}
+#endif
 	}
 	void Scene::ForEach(std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)> func) {
 		const auto beg = m_Roots.cbegin();
@@ -390,7 +473,7 @@ namespace Imagine::Core {
 	void Scene::ForEachWithComponent(UUID id, std::function<void(Scene *scene, EntityID entityId, BufferView component)> func) {
 		if (!m_CustomComponents.contains(id)) return;
 
-		auto& components = m_CustomComponents.at(id);
+		auto &components = m_CustomComponents.at(id);
 
 		auto beg = components.begin();
 		auto end = components.begin();
@@ -416,7 +499,7 @@ namespace Imagine::Core {
 	uint64_t Scene::CountComponents(UUID componentID) const {
 		if (!m_CustomComponents.contains(componentID)) return 0;
 
-		const auto& cc = m_CustomComponents.at(componentID);
+		const auto &cc = m_CustomComponents.at(componentID);
 		return cc.Count();
 	}
 

@@ -149,6 +149,11 @@ namespace Imagine::Core {
 		Mat4 GetWorldTransform(EntityID id) const;
 
 	public:
+		void SendImGuiCommands();
+
+	private:
+		void DrawChildren(EntityID entity);
+	public:
 		/// Iterate on all the entity with a function.
 		/// Will iterate recursively on all the entity and will pass some data from parent to children.
 		/// As recusivity imply, this function is as resource intensive as the hierarchy go down.
@@ -303,6 +308,10 @@ namespace Imagine::Core {
 		SparseSet<Sibling, uint32_t> m_Siblings;
 		SparseSet<std::string, uint32_t> m_Names;
 		SparseSet<Mat4, uint32_t> m_WorldTransform;
+
+	private:
+		// Dedicated to ImGui Rendering.
+		EntityID m_SelectedEntity;
 	};
 
 

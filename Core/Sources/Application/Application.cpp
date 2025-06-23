@@ -81,7 +81,7 @@ namespace Imagine::Core {
 			SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = {0,0,0};
 			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), m_CubeEntityID);
 
-			// m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
+			m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
 		}
 	}
 
@@ -132,7 +132,7 @@ namespace Imagine::Core {
 				const Vec2 viewportPos = globalPos - viewport.min;
 
 
-				if (mouse.IsButtonPressed(Mouse::Left)) {
+				if (mouse.IsButtonPressed(Mouse::Right)) {
 					const Vec3 camPos = Camera::s_MainCamera->position;
 					const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
 					const Vec3 fwd = Camera::s_MainCamera->GetForward();
@@ -162,6 +162,10 @@ namespace Imagine::Core {
 
 				if (m_Renderer) {
 					m_Renderer->SendImGuiCommands();
+				}
+
+				{
+					SceneManager::GetMainScene()->SendImGuiCommands();
 				}
 
 				// TODO: Other imgui rendering functions
