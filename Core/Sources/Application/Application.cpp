@@ -75,7 +75,12 @@ namespace Imagine::Core {
 #endif
 
 		if (parameters.Renderer) {
-			//m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
+			const auto cpuMesh = CPUMesh::LoadExternalModelAsMesh("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Box\\glTF-Binary\\Box.glb");
+			const auto id = SceneManager::GetMainScene()->CreateEntity();
+			SceneManager::GetMainScene()->GetEntity(id).LocalPosition = {0,0,-50};
+			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), id);
+
+			m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
 		}
 	}
 
@@ -118,6 +123,9 @@ namespace Imagine::Core {
 
 			{
 				auto& mouse = Inputs::GetMouse();
+				const Rect window = m_Window->GetWindowRect();
+				const Rect viewport = m_Renderer->GetViewport();
+				const Vec2 globalPos = mouse.GetPosition() + window.min;
 				if (mouse.IsButtonPressed(Mouse::Left)) {
 					Rect window = m_Window->GetWindowRect();
 					Rect viewport = m_Renderer->GetViewport();

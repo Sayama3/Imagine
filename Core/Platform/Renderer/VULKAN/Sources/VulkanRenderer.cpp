@@ -1116,6 +1116,16 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene *scene, EntityID parent) {
 		Initializer::LoadModelAsDynamic(this, scene, parent, path);
 	}
+	void VulkanRenderer::LoadCPUMeshInScene(const Core::CPUMesh &m, Core::Scene * scene, Core::EntityID entity) {
+		std::shared_ptr<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
+		if (!entity.IsValid()) {
+			entity = scene->CreateEntity();
+		}
+
+		Renderable* render = scene->GetOrAddComponent<Renderable>(entity);
+		if (!render) return;
+		render->mesh = GPUMesh;
+	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
 		//    	// make a clear-color from Time.

@@ -9,7 +9,7 @@
 #include <SDL3/SDL_vulkan.h>
 #endif
 
-#include "../Includes/Imagine/SDL3/SDL3Window.hpp"
+#include "Imagine/SDL3/SDL3Window.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>

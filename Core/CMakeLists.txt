@@ -77,6 +77,9 @@ set(CORE_SRC_FILES
 		Sources/Core/Math.cpp
 		Sources/Core/Inputs.cpp
 		Includes/Imagine/Core/Inputs.hpp
+		Sources/Rendering/CPUMesh.cpp
+		Includes/Imagine/Rendering/CPUMesh.hpp
+		Includes/Imagine/Rendering/Vertex.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

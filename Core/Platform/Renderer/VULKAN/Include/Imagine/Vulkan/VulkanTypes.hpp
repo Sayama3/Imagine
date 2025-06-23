@@ -7,6 +7,7 @@
 #include <vk_mem_alloc.h>
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/Mesh.hpp"
+#include "Imagine/Rendering/Vertex.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Imagine/Application/ApplicationParameters.hpp"
+#include "Imagine/Rendering/CPUMesh.hpp"
 #include "Imagine/Rendering/DrawContext.hpp"
 #include "Imagine/Rendering/RendererParameters.hpp"
 #include "Imagine/Scene/Entity.hpp"
@@ -48,6 +49,7 @@ namespace Imagine::Core {
 
 		virtual Rect GetViewport() const = 0;
 
+		virtual void LoadCPUMeshInScene(const CPUMesh& path, Scene*, EntityID entity = EntityID::NullID) = 0;
 		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;
 		//TODO: LoadInternalModelInScene
 

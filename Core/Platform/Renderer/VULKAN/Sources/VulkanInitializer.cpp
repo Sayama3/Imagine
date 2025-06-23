@@ -41,9 +41,9 @@ namespace Imagine::Vulkan {
 				return;
 			}
 
-			//TODO: Load the textures first.
+			// TODO: Load the textures first.
 
-			//TODO: Load the material seconds.
+			// TODO: Load the material seconds.
 
 			std::vector<std::shared_ptr<MeshAsset>> meshes;
 			meshes.reserve(scene->mNumMeshes);
@@ -110,8 +110,8 @@ namespace Imagine::Vulkan {
 
 					mesh.meshBuffers = engine->UploadMesh(indices, vertices);
 
-					engine->PushDeletion(mesh.meshBuffers.indexBuffer.allocation,mesh.meshBuffers.indexBuffer.buffer);
-					engine->PushDeletion(mesh.meshBuffers.vertexBuffer.allocation,mesh.meshBuffers.vertexBuffer.buffer);
+					engine->PushDeletion(mesh.meshBuffers.indexBuffer.allocation, mesh.meshBuffers.indexBuffer.buffer);
+					engine->PushDeletion(mesh.meshBuffers.vertexBuffer.allocation, mesh.meshBuffers.vertexBuffer.buffer);
 
 					meshes.emplace_back(std::make_shared<MeshAsset>(std::move(mesh)));
 				}
@@ -127,20 +127,20 @@ namespace Imagine::Vulkan {
 					auto [node, parentEntityID] = nodes.back();
 					nodes.pop_back();
 
-					const char* cName = node->mName.C_Str();
+					const char *cName = node->mName.C_Str();
 
-					const aiMatrix4x4& localMatrix = node->mTransformation;// * parentMatrix;
+					const aiMatrix4x4 &localMatrix = node->mTransformation; // * parentMatrix;
 
 					// Going from ASSIMP to GLM is going from row major to column major.
 					//  Therefore, I create the glm matrix by rotating the matrix and
 					//  setting the data properly using the constructor with 4 column
 					//  (or vec4 basically) to be explicit and not have any issue later on.
 					const glm::mat4 glmLocalMatrix{
-						{localMatrix.a1,localMatrix.b1,localMatrix.c1,localMatrix.d1}, // Col 1
-						{localMatrix.a2,localMatrix.b2,localMatrix.c2,localMatrix.d2}, // col 2
-						{localMatrix.a3,localMatrix.b3,localMatrix.c3,localMatrix.d3}, // col 3
-						{localMatrix.a4,localMatrix.b4,localMatrix.c4,localMatrix.d4}, // col 4
-				};
+							{localMatrix.a1, localMatrix.b1, localMatrix.c1, localMatrix.d1}, // Col 1
+							{localMatrix.a2, localMatrix.b2, localMatrix.c2, localMatrix.d2}, // col 2
+							{localMatrix.a3, localMatrix.b3, localMatrix.c3, localMatrix.d3}, // col 3
+							{localMatrix.a4, localMatrix.b4, localMatrix.c4, localMatrix.d4}, // col 4
+					};
 					glm::vec3 pos;
 					glm::quat rot;
 					glm::vec3 scale;
@@ -149,11 +149,12 @@ namespace Imagine::Vulkan {
 					glm::decompose(glmLocalMatrix, scale, rot, pos, skew, perspective);
 
 					MGN_CORE_ASSERT(skew == glm::vec3(0), "skew transformation not supported.");
-					MGN_CORE_ASSERT(perspective == glm::vec4(0,0,0,1), "perspective transformation not supported.");
+					MGN_CORE_ASSERT(perspective == glm::vec4(0, 0, 0, 1), "perspective transformation not supported.");
 
 					if (scale.x != scale.y || scale.y != scale.z) {
 						MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
-					} else if (Math::SqrMagnitude(scale) != 1) {
+					}
+					else if (Math::SqrMagnitude(scale) != 1) {
 						// MGN_CORE_WARN("The scale of the node {} in the model {} is not 1. It's preferred to have a uniform scale of 1.");
 					}
 
@@ -177,11 +178,31 @@ namespace Imagine::Vulkan {
 
 
 					for (int i = 0; i < node->mNumChildren; ++i) {
-						aiNode* child = node->mChildren[i];
+						aiNode *child = node->mChildren[i];
 						nodes.push_back({child, entityId});
 					}
 				}
 			}
+		}
+
+		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& cpuMesh) {
+
+			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+
+			Core::Mesh::LOD surface;
+			surface.index = 0;
+			surface.count = cpuMesh.Indices.size();
+
+			mesh->lods.push_back(surface);
+
+			std::vector<uint32_t>& indices = (std::vector<uint32_t>&)(cpuMesh.Indices);
+			std::vector<Vertex>& vertices = (std::vector<Vertex>&)(cpuMesh.Vertices);
+			mesh->meshBuffers = engine->UploadMesh(indices, vertices);
+
+			engine->PushDeletion(mesh->meshBuffers.indexBuffer.allocation,mesh->meshBuffers.indexBuffer.buffer);
+			engine->PushDeletion(mesh->meshBuffers.vertexBuffer.allocation,mesh->meshBuffers.vertexBuffer.buffer);
+
+			return mesh;
 		}
 
 		std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath) {
