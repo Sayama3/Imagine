@@ -6,8 +6,8 @@
 
 #include "Basics.hpp"
 #include "Geometry.hpp"
+#include "MeshGraph2D.hpp"
 #include "Shells.hpp"
-#include "Mesh.hpp"
 
 namespace Imagine::Math {
 

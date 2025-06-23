@@ -84,12 +84,13 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/Camera.hpp
 		Includes/Imagine/Math/Core.hpp
 		Includes/Imagine/Math/Geometry.hpp
-		Includes/Imagine/Math/Mesh.hpp
+		Includes/Imagine/Math/MeshGraph2D.hpp
 		Includes/Imagine/Math/Shells.hpp
 		Includes/Imagine/Math/Types.hpp
 		Includes/Imagine/Math/Raycast.hpp
 		Includes/Imagine/Math/Triangulation.hpp
 		Includes/Imagine/Math/Basics.hpp
+		Includes/Imagine/Math/Mesh.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

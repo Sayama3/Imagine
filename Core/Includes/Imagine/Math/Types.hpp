@@ -104,4 +104,34 @@ namespace Imagine {
 	typedef Ray<2, Real> Ray2;
 
 
+	template<typename T, typename U>
+	struct ReversiblePair {
+	public:
+		ReversiblePair() = default;
+		~ReversiblePair() = default;
+		ReversiblePair(const T &f, const U &s) : first(f), second(s) {
+		}
+
+	public:
+		T first;
+		U second;
+
+		[[nodiscard]] bool operator==(const ReversiblePair &other) const {
+			return (first == other.first && second == other.second) ||
+				   (first == other.second && second == other.first);
+		}
+
+		[[nodiscard]] bool operator!=(const ReversiblePair &other) const {
+			return !(*this == other);
+		}
+	};
+
+	struct ReversiblePairHash {
+	public:
+		template<typename T, typename U>
+		std::size_t operator()(const ReversiblePair<T, U> &x) const {
+			return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+		}
+	};
+
 }
