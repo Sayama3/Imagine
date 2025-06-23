@@ -43,6 +43,7 @@
 #endif
 
 using namespace Imagine::Core;
+using namespace Imagine::Literal;
 
 namespace Imagine::Vulkan {
 
@@ -146,7 +147,7 @@ namespace Imagine::Vulkan {
 	Vec3 VulkanRenderer::GetWorldPoint(const Vec2 screenPoint) const {
 		const auto viewport = GetViewport();
 		const auto viewportSize = viewport.GetSize();
-		const Vec2 normalizeMousePos = Vec2{(screenPoint.x  / viewportSize.x), (screenPoint.y  / viewportSize.y)};
+		const Vec2 normalizeMousePos = Vec2{(screenPoint.x  / viewportSize.x) * 2_r - 1_r, (screenPoint.y  / viewportSize.y) * 2_r - 1_r};
 		const Vec4 result = InvViewProjectMatrixCached * Vec4{normalizeMousePos.x, normalizeMousePos.y, 0, 1};
 		const Vec4 resultNormalize = result / result.w;
 		return resultNormalize;

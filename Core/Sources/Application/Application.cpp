@@ -77,9 +77,9 @@ namespace Imagine::Core {
 
 		if (parameters.Renderer) {
 			const auto cpuMesh = CPUMesh::LoadExternalModelAsMesh("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Box\\glTF-Binary\\Box.glb");
-			const auto id = SceneManager::GetMainScene()->CreateEntity();
-			SceneManager::GetMainScene()->GetEntity(id).LocalPosition = {0,0,0};
-			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), id);
+			m_CubeEntityID = SceneManager::GetMainScene()->CreateEntity();
+			SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = {0,0,0};
+			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), m_CubeEntityID);
 
 			// m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
 		}
@@ -131,10 +131,17 @@ namespace Imagine::Core {
 				const Vec2 globalPos = mouse.GetPosition() + window.min;
 				const Vec2 viewportPos = globalPos - viewport.min;
 
+
 				if (mouse.IsButtonPressed(Mouse::Left)) {
-					MGN_LOG_DEBUG("Viewport Pos {}, and size {}", Math::ToString(viewport.min), Math::ToString(viewport.GetSize()));
-					MGN_LOG_DEBUG("Window Pos {}, and size {}", Math::ToString(window.min), Math::ToString(window.GetSize()));
-					MGN_LOG_DEBUG("Mouse Pos {}", Math::ToString(globalPos));
+					const Vec3 camPos = Camera::s_MainCamera->position;
+					const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
+					const Vec3 fwd = Camera::s_MainCamera->GetForward();
+					const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
+
+					const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0,0,0},Vec3{0,1,0}}, ray);
+					if (mouseOnGround) {
+						SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = mouseOnGround.value();
+					}
 				}
 
 

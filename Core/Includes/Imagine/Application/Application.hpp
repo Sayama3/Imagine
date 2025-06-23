@@ -36,6 +36,8 @@ namespace Imagine::Core {
 		Window *m_Window{nullptr};
 		Renderer *m_Renderer{nullptr};
 
+		EntityID m_CubeEntityID;
+
 	private:
 		std::chrono::high_resolution_clock::time_point m_Start;
 		std::chrono::high_resolution_clock::time_point m_LastFrame;

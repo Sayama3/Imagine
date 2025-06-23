@@ -7,7 +7,7 @@
 namespace Imagine::Core {
 	Camera* Camera::s_MainCamera = new Camera();
 
-	glm::mat4 Camera::GetViewMatrix() {
+	glm::mat4 Camera::GetViewMatrix() const {
 		// to create a correct model view, we need to move the world in opposite
 		// direction to the camera
 		//  so we will create the camera model matrix and invert
@@ -16,7 +16,7 @@ namespace Imagine::Core {
 		return glm::inverse(cameraTranslation * cameraRotation);
 	}
 
-	glm::mat4 Camera::GetRotationMatrix() {
+	glm::mat4 Camera::GetRotationMatrix() const {
 		// fairly typical FPS style camera. we join the pitch and yaw rotations into
 		// the final rotation matrix
 
@@ -24,6 +24,10 @@ namespace Imagine::Core {
 		glm::quat yawRotation = glm::angleAxis(glm::radians(yaw), glm::vec3{0.f, 1.f, 0.f});
 
 		return glm::toMat4(yawRotation) * glm::toMat4(pitchRotation);
+	}
+	Vec3 Camera::GetForward() const {
+		const Mat4 cameraRotation = GetRotationMatrix();
+		return Vec3(cameraRotation * Vec4{0,0,1,0});
 	}
 	void Camera::Update(Real timestep) {
 		yaw += yawVelocity * timestep;
