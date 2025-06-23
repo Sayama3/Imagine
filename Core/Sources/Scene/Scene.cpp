@@ -68,15 +68,32 @@ namespace Imagine::Core {
 	const Entity &Scene::GetEntity(const EntityID id) const {
 		return m_SparseEntities.Get(id.id);
 	}
+	bool Scene::Exist(EntityID id) const {
+		return m_SparseEntities.Exist(id.id);
+	}
 
-	void Scene::DestroyEntity(const EntityID id) {
-		m_SparseEntities.Remove(id.id);
-		for (auto &[uuid, rawSparseSet]: m_CustomComponents) {
-			rawSparseSet.Remove(id.id);
+	void Scene::DestroyEntity(const EntityID entityToRemove) {
+		std::vector<EntityID> toRemove{};
+		RemoveParent(entityToRemove);
+		auto it = BeginRelationship(entityToRemove);
+		auto end = EndRelationship();
+		while (it != end) {
+			const auto id = (it++).GetID();
+			toRemove.push_back(id);
+			m_Roots.erase(id);
 		}
-		m_Names.Remove(id.id);
-		// TODO: Delete all children too
-		// TODO: Reorder the sibling hierarchy
+
+		for (EntityID id: toRemove) {
+			m_SparseEntities.Remove(id.id);
+			for (auto &[uuid, rawSparseSet]: m_CustomComponents) {
+				rawSparseSet.Remove(id.id);
+			}
+			m_Names.Remove(id.id);
+			m_Siblings.Remove(id.id);
+			m_Parents.Remove(id.id);
+			m_Children.Remove(id.id);
+			m_WorldTransform.Remove(id.id);
+		}
 	}
 
 	void Scene::Clear() {
@@ -422,7 +439,7 @@ namespace Imagine::Core {
 			ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
 			ImGui::Begin(PropertiesName.c_str());
 			{
-				if (m_SelectedEntity.IsValid()) {
+				if (m_SelectedEntity.IsValid() && Exist(m_SelectedEntity)) {
 					ImGui::LabelText("ID", "%u", m_SelectedEntity.id);
 					ImGui::InputText("Name", &m_Names.GetOrCreate(m_SelectedEntity.id));
 
@@ -455,11 +472,16 @@ namespace Imagine::Core {
 					const uint32_t step = 1;
 					const uint32_t step_fast = 100;
 					ImGui::InputScalar("Parent", ImGuiDataType_U32, &m_ChosenParent.id, &step, &step_fast, "%u");
-					ImGui::BeginDisabled(m_ChosenParent == m_SelectedEntity || !m_ChosenParent.IsValid());
+					ImGui::BeginDisabled(m_ChosenParent == m_SelectedEntity || !m_ChosenParent.IsValid() || !Exist(m_ChosenParent));
 					if (ImGui::Button("Set as child")) {
 						AddToChild(m_ChosenParent, m_SelectedEntity);
 					}
 					ImGui::EndDisabled();
+
+					if (ImGui::Button("Delete")) {
+						DestroyEntity(m_SelectedEntity);
+						m_SelectedEntity = EntityID::NullID;
+					}
 				}
 			}
 			ImGui::End();

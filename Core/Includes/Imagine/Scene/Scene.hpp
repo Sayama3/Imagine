@@ -53,6 +53,7 @@ namespace Imagine::Core {
 		EntityID CreateEntity(EntityID parentId);
 		Entity &GetEntity(EntityID id);
 		const Entity &GetEntity(EntityID id) const;
+		bool Exist(EntityID id) const;
 		void DestroyEntity(EntityID id);
 		void Clear();
 
@@ -113,6 +114,8 @@ namespace Imagine::Core {
 			[[nodiscard]] bool IsValid() const { return scene && current != EntityID::NullID; }
 			[[nodiscard]] explicit operator bool() const { return IsValid(); }
 
+			EntityID GetID() const {return current;}
+
 			[[nodiscard]] Entity &Get();
 			[[nodiscard]] const Entity &Get() const;
 
@@ -131,6 +134,13 @@ namespace Imagine::Core {
 
 			RelationshipIterator operator++(int);
 			RelationshipIterator &operator++();
+
+			bool operator==(const RelationshipIterator & o) const {
+				return scene == o.scene && current == o.current;
+			}
+			bool operator!=(const RelationshipIterator & o) const {
+				return !(*this == o);
+			}
 		};
 
 		RelationshipIterator BeginRelationship(EntityID);

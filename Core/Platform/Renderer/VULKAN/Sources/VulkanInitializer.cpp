@@ -148,8 +148,8 @@ namespace Imagine::Vulkan {
 					glm::vec4 perspective;
 					glm::decompose(glmLocalMatrix, scale, rot, pos, skew, perspective);
 
-					MGN_CORE_ASSERT(skew == glm::vec3(0), "skew transformation not supported.");
-					MGN_CORE_ASSERT(perspective == glm::vec4(0, 0, 0, 1), "perspective transformation not supported.");
+					MGN_CORE_CHECK(Math::Approx(skew, glm::vec3(0)), "skew transformation not supported.");
+					MGN_CORE_CHECK(Math::Approx(perspective, glm::vec4(0, 0, 0, 1)), "perspective transformation not supported.");
 
 					if (scale.x != scale.y || scale.y != scale.z) {
 						MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());

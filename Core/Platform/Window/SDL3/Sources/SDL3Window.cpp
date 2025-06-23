@@ -12,6 +12,9 @@
 #include "Imagine/SDL3/SDL3Window.hpp"
 
 #include "Imagine/Rendering/Camera.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Scene/Scene.hpp"
+#include "Imagine/Scene/SceneManager.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -91,6 +94,10 @@ namespace Imagine::SDL3 {
 			// if (!canHandleEvent) continue;
 			if (e.type == SDL_EVENT_QUIT) {
 				m_ShouldClose = true;
+			}
+			else if (e.type == SDL_EVENT_DROP_FILE) {
+				Renderer* renderer = Renderer::Get();
+				if (renderer) renderer->LoadExternalModelInScene(e.drop.data, SceneManager::GetMainScene().get());
 			}
 			else if (e.type == SDL_EVENT_WINDOW_MINIMIZED) {
 				m_Minimized = true;

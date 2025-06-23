@@ -22,9 +22,13 @@ namespace Imagine::Math {
 		return glm::determinant(mat);
 	}
 
-	template<typename T>
-	[[nodiscard]] inline static bool Approx(const T a, const T b) {
-		return std::abs(b - a) < std::numeric_limits<T>::epsilon();
+	template<glm::length_t L, typename T = Real, glm::qualifier Q = glm::qualifier::defaultp>
+	[[nodiscard]] inline static bool Approx(const glm::vec<L,T,Q>& a, const glm::vec<L,T,Q>& b) {
+		bool same = true;
+		for (glm::length_t i = 0; i < L; ++i) {
+			same &= Abs(a[i] - b[i]) < std::numeric_limits<T>::epsilon();
+		}
+		return same;
 	}
 
 	/**

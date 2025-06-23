@@ -76,12 +76,12 @@ namespace Imagine::Core {
 #endif
 
 		if (parameters.Renderer) {
-			const auto cpuMesh = CPUMesh::LoadExternalModelAsMesh("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Box\\glTF-Binary\\Box.glb");
+			const auto cpuMesh = CPUMesh::LoadExternalModelAsMesh("Assets/Models/Box.glb");
 			m_CubeEntityID = SceneManager::GetMainScene()->CreateEntity();
 			SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = {0,0,0};
 			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), m_CubeEntityID);
 
-			m_Renderer->LoadExternalModelInScene("C:\\Users\\Iannis\\Documents\\GitHub\\glTF-Sample-Assets\\Models\\Sponza\\glTF\\Sponza.gltf", SceneManager::GetMainScene().get(), EntityID::NullID);
+			m_Renderer->LoadExternalModelInScene("Assets/Models/house.glb", SceneManager::GetMainScene().get());
 		}
 	}
 
@@ -139,7 +139,7 @@ namespace Imagine::Core {
 					const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
 
 					const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0,0,0},Vec3{0,1,0}}, ray);
-					if (mouseOnGround) {
+					if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_CubeEntityID)) {
 						SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = mouseOnGround.value();
 					}
 				}
