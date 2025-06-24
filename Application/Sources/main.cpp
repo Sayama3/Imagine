@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Imagine/Application/Application.hpp"
+#include "Imagine/ApplicationLayer.hpp"
 #include "Imagine/Core/Logger.hpp"
 #include "Imagine/Core/Macros.hpp"
 
@@ -42,11 +43,13 @@ int main(int argc, char **argv) {
 	// 	std::nullopt,
 	// };
 
-	Application *application = Application::Initialize(params);
+	Core::Application *application = Core::Application::Initialize(params);
+
+	application->PushLayer<Imagine::Application::ApplicationLayer>();
 
 	application->Run();
 
-	Application::Shutdown();
+	Core::Application::Shutdown();
 	Imagine::Core::Log::Shutdown();
 
 	return 0;

@@ -9,7 +9,7 @@ typedef double TimeType;
 namespace Imagine::Core {
 	struct TimeStep {
 	public:
-		TimeStep(TimeType timeInSeconds = 1.0);
+		TimeStep(const TimeType timeInSeconds = 1.0) : m_Time(timeInSeconds) {}
 
 		inline operator TimeType() const { return m_Time; }
 

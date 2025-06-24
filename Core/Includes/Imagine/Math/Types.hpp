@@ -8,18 +8,51 @@
 
 namespace Imagine {
 
+	template<glm::length_t L, typename T = Real, glm::qualifier Q = glm::qualifier::defaultp> struct Ray;
+
 	template<glm::length_t L, typename T = Real, glm::qualifier Q = glm::qualifier::defaultp>
+	struct Line {
+		using vec = glm::vec<L,T,Q>;
+		Line() = default;
+		~Line() = default;
+		Line(vec begin, vec end) : Begin(begin), End(end) {}
+
+		/// A value between 0 & 1 will give a point inside the line.
+		vec GetPoint(T t) const {
+			const vec dir = End - Begin;
+			return Begin + (dir * t);
+		}
+
+		Ray<L,T,Q> AsRay() const;
+		Line Reverse() const {return {End,Begin};}
+
+		vec Begin, End;
+	};
+
+	template<glm::length_t L, typename T, glm::qualifier Q>
 	struct Ray {
+		using vec = glm::vec<L,T,Q>;
 		Ray() = default;
 		~Ray() = default;
-		Ray(glm::vec<L,T,Q> origin, glm::vec<L,T,Q> direction) : Origin(origin), Direction(direction) {}
 
-		glm::vec<L,T,Q> GetPoint(T t) const {
+		Ray(vec origin, vec direction) : Origin(origin), Direction(direction) {}
+
+		vec GetPoint(T t) const {
 			return Origin + Direction * t;
 		}
-		glm::vec<L,T,Q> Origin;
-		glm::vec<L,T,Q> Direction;
+		Line<L,T,Q> AsLine() const;
+
+		vec Origin;
+		vec Direction;
 	};
+
+	template <glm::length_t L, typename T, glm::qualifier Q> Line<L, T, Q> Ray<L, T, Q>::AsLine() const{
+		return LIne(Origin, Origin + Direction);
+	}
+
+	template <glm::length_t L, typename T, glm::qualifier Q> Ray<L, T, Q> Line<L, T, Q>::AsRay() const{
+		return Ray{Begin, End-Begin};
+	}
 
 	template<typename T = Real, glm::qualifier Q = glm::qualifier::defaultp>
 	struct Plane {

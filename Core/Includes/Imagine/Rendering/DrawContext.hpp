@@ -13,6 +13,12 @@ namespace Imagine::Core {
 		std::vector<RenderObject> OpaqueSurfaces;
 		std::vector<LineObject> OpaqueLines;
 		std::vector<PointObject> OpaquePoints;
+
+		void Clear() {
+			OpaqueSurfaces.clear();
+			OpaqueLines.clear();
+			OpaquePoints.clear();
+		}
 	};
 
 } // namespace Imagine::Core

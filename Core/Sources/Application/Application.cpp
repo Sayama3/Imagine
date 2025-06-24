@@ -76,12 +76,6 @@ namespace Imagine::Core {
 #endif
 
 		if (parameters.Renderer) {
-			const auto cpuMesh = CPUMesh::LoadExternalModelAsMesh("Assets/Models/Box.glb");
-			m_CubeEntityID = SceneManager::GetMainScene()->CreateEntity();
-			SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = {0,0,0};
-			m_Renderer->LoadCPUMeshInScene(cpuMesh, SceneManager::GetMainScene().get(), m_CubeEntityID);
-
-			m_Renderer->LoadExternalModelInScene("Assets/Models/house.glb", SceneManager::GetMainScene().get());
 		}
 	}
 
@@ -109,6 +103,18 @@ namespace Imagine::Core {
 		}
 	}
 
+	void Application::PushLayer(Layer *layer) {
+		/*MGN_PROFILE_FUNCTION();*/
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void Application::PushOverlay(Layer *overlay) {
+		/*MGN_PROFILE_FUNCTION();*/
+		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
+	}
+
 	void Application::Stop() {
 		m_ShouldStop = true;
 	}
@@ -124,27 +130,8 @@ namespace Imagine::Core {
 
 			Camera::s_MainCamera->Update(m_DeltaTime);
 
-			{
-				auto& mouse = Inputs::GetMouse();
-				const Rect<> window = m_Window->GetWindowRect();
-				const Rect<> viewport = m_Renderer->GetViewport();
-				const Vec2 globalPos = mouse.GetPosition() + window.min;
-				const Vec2 viewportPos = globalPos - viewport.min;
-
-
-				if (mouse.IsButtonPressed(Mouse::Right)) {
-					const Vec3 camPos = Camera::s_MainCamera->position;
-					const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
-					const Vec3 fwd = Camera::s_MainCamera->GetForward();
-					const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
-
-					const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0,0,0},Vec3{0,1,0}}, ray);
-					if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_CubeEntityID)) {
-						SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = mouseOnGround.value();
-					}
-				}
-
-
+			for (Layer *layer: m_LayerStack) {
+				layer->OnUpdate(m_DeltaTime);
 			}
 
 			if (canDraw) {
@@ -164,6 +151,10 @@ namespace Imagine::Core {
 					m_Renderer->SendImGuiCommands();
 				}
 
+				for (Layer *layer: m_LayerStack) {
+					layer->OnImGuiRender();
+				}
+
 				{
 					SceneManager::GetMainScene()->SendImGuiCommands();
 				}
@@ -178,9 +169,17 @@ namespace Imagine::Core {
 				if (m_Renderer->BeginDraw()) {
 					m_Renderer->Draw();
 
-					auto loadedScene = SceneManager::GetLoadedScenes();
 					DrawContext ctx{};
-					for (const std::shared_ptr<Scene> & scene: loadedScene) {
+
+					for (Layer *layer: m_LayerStack) {
+						layer->OnRender(ctx);
+						m_Renderer->Draw(ctx);
+						ctx.Clear();
+					}
+
+					auto loadedScene = SceneManager::GetLoadedScenes();
+
+					for (const std::shared_ptr<Scene> &scene: loadedScene) {
 						scene->CacheTransforms();
 						ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
 						scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
@@ -188,19 +187,9 @@ namespace Imagine::Core {
 							MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
 							ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.mesh);
 						});
-						{
-							Vertex v1{};
-							v1.position = {0, 0, 0};
-							Vertex v2{};
-							v2.position = {0, 1, 0};
-							LineObject line;
-							line.width = 5;
-							line.points.push_back(v1);
-							line.points.push_back(v2);
-							ctx.OpaqueLines.push_back(line);
-						}
+
 						m_Renderer->Draw(ctx);
-						ctx.OpaqueSurfaces.clear();
+						ctx.Clear();
 					}
 
 					m_Renderer->EndDraw();

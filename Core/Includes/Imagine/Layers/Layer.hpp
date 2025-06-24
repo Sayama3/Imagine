@@ -6,6 +6,7 @@
 
 #include "Imagine/Core/TimeStep.hpp"
 #include "Imagine/Events/Event.hpp"
+#include "Imagine/Rendering/DrawContext.hpp"
 
 // We shouldn't search layer by name!!
 
@@ -17,8 +18,10 @@ namespace Imagine::Core {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
+
 		virtual void OnUpdate(TimeStep timeStep) {}
 		virtual void OnImGuiRender() {}
+		virtual void OnRender(DrawContext&) {}
 		virtual void OnEvent(Event &event) {}
 
 		inline const std::string &GetName() const { return m_DebugName; }

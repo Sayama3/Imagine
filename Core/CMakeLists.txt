@@ -92,6 +92,9 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/Basics.hpp
 		Includes/Imagine/Math/Mesh.hpp
 		Includes/Imagine/Rendering/RenderTypes.hpp
+		Includes/Imagine/Math/MeshGraph3D.hpp
+		Includes/Imagine/Math/ChaikinCurves.hpp
+		Sources/Layers/LayerStack.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
