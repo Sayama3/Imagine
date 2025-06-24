@@ -202,6 +202,7 @@ namespace Imagine::Vulkan {
 			surface.count = indices.size();
 			surface.material = renderer->GetDefaultLineMaterial();
 
+			mesh->lods.push_back(surface);
 			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
 
 			return mesh;
@@ -229,6 +230,7 @@ namespace Imagine::Vulkan {
 			surface.count = indices.size();
 			surface.material = renderer->GetDefaultPointMaterial();
 
+			mesh->lods.push_back(surface);
 			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
 
 			return mesh;

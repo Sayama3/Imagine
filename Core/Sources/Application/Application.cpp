@@ -188,7 +188,17 @@ namespace Imagine::Core {
 							MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
 							ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.mesh);
 						});
-
+						{
+							Vertex v1{};
+							v1.position = {0, 0, 0};
+							Vertex v2{};
+							v2.position = {0, 1, 0};
+							LineObject line;
+							line.width = 5;
+							line.points.push_back(v1);
+							line.points.push_back(v2);
+							ctx.OpaqueLines.push_back(line);
+						}
 						m_Renderer->Draw(ctx);
 						ctx.OpaqueSurfaces.clear();
 					}

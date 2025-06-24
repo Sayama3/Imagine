@@ -22,6 +22,7 @@ namespace Imagine::Core {
 	struct LineObject {
 		// Mat4 transform;
 		std::vector<Vertex> points;
+		float width = 1.0f;
 	};
 
 	struct PointObject {

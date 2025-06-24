@@ -123,13 +123,12 @@ namespace Imagine::SDL3 {
 			}
 			//TODO: properly do so
 			else if (e.type == SDL_EVENT_KEY_DOWN) {
-				if (e.key.key == SDLK_Z) { Core::Camera::s_MainCamera->velocity.z = 1; }
+				if (e.key.key == SDLK_Z) { Core::Camera::s_MainCamera->velocity.z = +1; }
 				if (e.key.key == SDLK_S) { Core::Camera::s_MainCamera->velocity.z = -1; }
 				if (e.key.key == SDLK_Q) { Core::Camera::s_MainCamera->velocity.x = -1; }
-				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = 1; }
-
-				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->yawVelocity = +45; }
-				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->yawVelocity = -45; }
+				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = +1; }
+				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->velocity.y = +1; }
+				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->velocity.y = -1; }
 
 				if (e.key.key == SDLK_RIGHT) { Core::Camera::s_MainCamera->yawVelocity = +45; }
 				if (e.key.key == SDLK_LEFT) { Core::Camera::s_MainCamera->yawVelocity = -45; }
@@ -142,9 +141,8 @@ namespace Imagine::SDL3 {
 				if (e.key.key == SDLK_S) { Core::Camera::s_MainCamera->velocity.z = 0; }
 				if (e.key.key == SDLK_Q) { Core::Camera::s_MainCamera->velocity.x = 0; }
 				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = 0; }
-
-				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->yawVelocity = 0; }
-				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->yawVelocity = 0; }
+				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->velocity.y = 0; }
+				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->velocity.y = 0; }
 
 				if (e.key.key == SDLK_RIGHT) { Core::Camera::s_MainCamera->yawVelocity = 0; }
 				if (e.key.key == SDLK_LEFT) { Core::Camera::s_MainCamera->yawVelocity = 0; }

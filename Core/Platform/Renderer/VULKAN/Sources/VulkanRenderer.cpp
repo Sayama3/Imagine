@@ -220,6 +220,8 @@ namespace Imagine::Vulkan {
 		features12.bufferDeviceAddress = true;
 		features12.descriptorIndexing = true;
 
+		// VkPhysicalDeviceVulkan11Features features11{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
+
 
 		// use vkbootstrap to select a gpu.
 		// We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
@@ -233,6 +235,7 @@ namespace Imagine::Vulkan {
 													 .value();
 
 		physicalDevice.enable_extension_if_present(VK_KHR_DISPLAY_EXTENSION_NAME);
+		// physicalDevice.enable_features_if_present(VK_FEATURE)
 
 		// create the final vulkan device
 		vkb::DeviceBuilder deviceBuilder{physicalDevice};
@@ -1214,10 +1217,12 @@ namespace Imagine::Vulkan {
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
-		std::shared_ptr<MeshAsset> lineMesh;
+		std::vector<std::shared_ptr<MeshAsset>> lineMeshes;
 		std::shared_ptr<MeshAsset> pointMesh;
 		if (!ctx.OpaqueLines.empty()) {
-			lineMesh = Initializer::LoadLines(this, (std::vector<LineObject> &) (ctx.OpaqueLines));
+			for (const LineObject & line: ctx.OpaqueLines) {
+				lineMeshes.push_back(Initializer::LoadLines(this, {(LineObject*)&line, 1}));
+			}
 		}
 		// TODO: Implement a point renderer when it's ready. Like, by doing a Geometry shader or some things.
 		// if (!ctx.OpaquePoints.empty()) {
@@ -1292,15 +1297,16 @@ namespace Imagine::Vulkan {
 			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 		}
 
-		if (lineMesh) {
-
-			MeshAsset *mesh = lineMesh.get();
+		for (uint64_t i = 0; i < lineMeshes.size(); ++i) {
+			MeshAsset *mesh = lineMeshes[i].get();
+			if (!mesh) continue;
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
 			const Mesh::LOD &lod = mesh->lods.front();
 
 			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
+			vkCmdSetLineWidth(cmd, ctx.OpaqueLines[i].width);
 
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
