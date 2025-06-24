@@ -17,16 +17,18 @@ namespace Imagine::Math {
 	public:
 		class SegmentIterator {
 		public:
-			ChaikinCurves* curve{nullptr};
+			ChaikinCurves *curve{nullptr};
 			uint64_t segmentIndex{0};
+
 		public:
-			Line<L,T,Q> GetSegment() const {
+			Line<L, T, Q> GetSegment() const {
 				if constexpr (Loops) {
 					const auto pointCount = curve->line.size();
 					const auto p1 = segmentIndex % pointCount;
 					const auto p2 = (segmentIndex + 1) % pointCount;
 					return Line{curve->line[p1], curve->line[p2]};
-				} else {
+				}
+				else {
 					const auto p1 = segmentIndex;
 					const auto p2 = segmentIndex + 1;
 					return Line{curve->line[p1], curve->line[p2]};
@@ -34,13 +36,45 @@ namespace Imagine::Math {
 			}
 
 		public:
-			SegmentIterator &operator++() {segmentIndex += 1; return *this;}
-			SegmentIterator operator++(int) {SegmentIterator it = *this; ++*this; return it;}
+			SegmentIterator &operator++() {
+				segmentIndex += 1;
+				return *this;
+			}
+			SegmentIterator operator++(int) {
+				SegmentIterator it = *this;
+				++*this;
+				return it;
+			}
+
+			bool operator==(const SegmentIterator &o) const {
+				return curve == o.curve && segmentIndex == o.segmentIndex;
+			}
+			bool operator!=(const SegmentIterator &o) const {
+				return !(*this == o);
+			}
+
+			auto operator<=>(const SegmentIterator &o) const {
+				return segmentIndex <=> o.segmentIndex;
+			}
 		};
 
-		SegmentIterator begin() {return {this, 0};}
-		SegmentIterator end() { if constexpr (Loops) { return {this, line.size()}; } else { return {this, line.size() - 1}; } }
+		SegmentIterator begin() { return {this, 0}; }
+		SegmentIterator end() {
+			if constexpr (Loops) {
+				return {this, line.size()};
+			}
+			else {
+				return {this, line.size() - 1};
+			}
+		}
+
 	public:
+		T GetU() const;
+		T GetV() const;
+		uint64_t GetStepCount() const;
+
+		ChaikinCurves &SetU(T u);
+		ChaikinCurves &SetV(T v);
 		ChaikinCurves &SetUV(T u, T v);
 		ChaikinCurves &SetStepCount(uint64_t stepCount);
 		ChaikinCurves &AddPoint(vec point);
@@ -48,16 +82,68 @@ namespace Imagine::Math {
 		ChaikinCurves &ClearPoints();
 
 		std::vector<vec> CalculateChaikin();
+
 	private:
-		vec GetFirst() const {return line.front();}
-		vec GetLast() const {if constexpr (Loops) return line.front(); else return line.back();}
+		vec GetFirst() const { return line.front(); }
+		vec GetLast() const {
+			if constexpr (Loops)
+				return line.front();
+			else
+				return line.back();
+		}
+
 	private:
 		T u, v; // The U/V ratio
 		T oneMinus;
 		uint64_t steps = 1;
+
 	public:
 		std::vector<vec> line;
 	};
+
+	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
+	T ChaikinCurves<L, T, Q, Loops>::GetU() const {
+		return u;
+	}
+	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
+	T ChaikinCurves<L, T, Q, Loops>::GetV() const {
+		return v;
+	}
+	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
+	uint64_t ChaikinCurves<L, T, Q, Loops>::GetStepCount() const {
+		return steps;
+	}
+	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
+	ChaikinCurves<L, T, Q, Loops> &ChaikinCurves<L, T, Q, Loops>::SetU(T _u) {
+		u = _u;
+		if (u < 0) u = 0;
+		if (v < 0) v = 0;
+		const auto combined = u + v;
+		if (combined > 1) {
+			const auto excess = combined - T(1);
+			u -= excess * T(0.5);
+			v -= excess * T(0.5);
+		}
+
+		oneMinus = T(1) - (u + v);
+		return *this;
+	}
+
+	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
+	ChaikinCurves<L, T, Q, Loops> &ChaikinCurves<L, T, Q, Loops>::SetV(T _v) {
+		v = _v;
+		if (u < 0) u = 0;
+		if (v < 0) v = 0;
+		const auto combined = u + v;
+		if (combined > 1) {
+			const auto excess = combined - T(1);
+			u -= excess * T(0.5);
+			v -= excess * T(0.5);
+		}
+
+		oneMinus = T(1) - (u + v);
+		return *this;
+	}
 
 	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
 	ChaikinCurves<L, T, Q, Loops> &ChaikinCurves<L, T, Q, Loops>::SetUV(const T _u, const T _v) {
@@ -97,6 +183,7 @@ namespace Imagine::Math {
 	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
 	ChaikinCurves<L, T, Q, Loops> &ChaikinCurves<L, T, Q, Loops>::ClearPoints() {
 		line.clear();
+		return *this;
 	}
 
 	template<glm::length_t L, typename T, glm::qualifier Q, bool Loops>
@@ -108,18 +195,15 @@ namespace Imagine::Math {
 		while (result.steps != 0) {
 			newLine.clear();
 			newLine.reserve(result.line.size() + 2);
-			newLine.push_back(result.GetFirst());
 			const auto beg = result.begin();
 			const auto end = result.end();
 			for (auto it = beg; it != end; ++it) {
 				const vec p1 = it.GetSegment().GetPoint(u);
-				const vec p2 = it.GetSegment().GetPoint(T(1)-v);
+				const vec p2 = it.GetSegment().GetPoint(T(1) - v);
 
 				newLine.push_back(p1);
 				newLine.push_back(p2);
 			}
-
-			if constexpr (!Loops) newLine.push_back(result.GetLast());
 
 			--result.steps;
 			std::swap(result.line, newLine);

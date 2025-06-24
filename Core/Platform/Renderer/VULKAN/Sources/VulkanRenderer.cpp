@@ -1306,7 +1306,7 @@ namespace Imagine::Vulkan {
 			const Mesh::LOD &lod = mesh->lods.front();
 
 			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
-			vkCmdSetLineWidth(cmd, ctx.OpaqueLines[i].width);
+			// vkCmdSetLineWidth(cmd, ctx.OpaqueLines[i].width);
 
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);

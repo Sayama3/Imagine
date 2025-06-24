@@ -23,6 +23,7 @@ namespace Imagine::Application {
 		Core::Renderer *m_Renderer{nullptr};
 
 		Math::ChaikinCurves<> m_ChaikinCurves;
+		LineObject m_Line;
 		Core::CPUMesh m_Mesh;
 
 		Core::EntityID m_CubeEntityID;
