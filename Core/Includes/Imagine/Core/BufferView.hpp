@@ -113,6 +113,11 @@ namespace Imagine::Core {
 		const void *Get() const;
 
 		uint64_t Size() const;
+		template<typename  T>
+
+		uint64_t Count() const {
+			return Size() / sizeof(T);
+		}
 
 		template<typename T>
 		const T *Get() const {
