@@ -80,6 +80,115 @@ namespace Imagine::Core {
 			sparse.clear();
 		}
 
+	public:
+	public:
+		class Iterator {
+		public:
+			Iterator() = default;
+			~Iterator() = default;
+			Iterator(const Iterator&) = default;
+			Iterator& operator=(const Iterator&) = default;
+			Iterator(SparseSet* sparseSet, UnsignedInteger index) : sparseSet(sparseSet), index(index) {}
+		public:
+			inline static Iterator FromID(SparseSet* sparseSet, UnsignedInteger id) {
+				return Iterator {sparseSet, sparseSet->sparse[id]};
+			}
+		public:
+			using iterator_category = std::bidirectional_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = T*;
+			using reference = T&;
+		public:
+			Iterator operator++(int) {
+				Iterator res{*this};
+				++(*this);
+				return res;
+			}
+			Iterator &operator++() {
+				++index;
+				return *this;
+			}
+			Iterator operator--(int) {
+				Iterator res{*this};
+				--(*this);
+				return res;
+			}
+			Iterator &operator--() {
+				--index;
+				return *this;
+			}
+
+			reference operator*() const { return GetElement(); }
+			pointer operator->() const { return &GetElement(); }
+
+			bool operator==(const Iterator &o) const { return sparseSet == o.sparseSet && index == o.index; }
+			bool operator!=(const Iterator &o) const { return !(*this == o); }
+			auto operator<=>(const Iterator &o) const { return index <=> o.index; }
+		public:
+			UnsignedInteger GetID() const {return sparseSet->dense[index];}
+			UnsignedInteger GetIndex() const {return index;}
+			reference GetElement()  {return sparseSet->elements.get(index);}
+		private:
+			SparseSet* sparseSet{nullptr};
+			UnsignedInteger index{0};
+		};
+
+		class ConstIterator {
+		public:
+			using iterator_category = std::bidirectional_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = const T*;
+			using reference = const T&;
+		public:
+			ConstIterator() = default;
+			~ConstIterator() = default;
+			ConstIterator(const ConstIterator&) = default;
+			ConstIterator& operator=(const ConstIterator&) = default;
+			ConstIterator(const SparseSet* sparseSet, UnsignedInteger index) : sparseSet(sparseSet), index(index) {}
+		public:
+			ConstIterator operator++(int) {
+				ConstIterator res{*this};
+				++(*this);
+				return res;
+			}
+			ConstIterator &operator++() {
+				++index;
+				return *this;
+			}
+			ConstIterator operator--(int) {
+				ConstIterator res{*this};
+				--(*this);
+				return res;
+			}
+			ConstIterator &operator--() {
+				--index;
+				return *this;
+			}
+
+			reference operator*() const { return GetElement(); }
+			pointer operator->() const { return &GetElement(); }
+
+			bool operator==(const ConstIterator &o) const { return sparseSet == o.sparseSet && index == o.index; }
+			bool operator!=(const ConstIterator &o) const { return !(*this == o); }
+			auto operator<=>(const ConstIterator &o) const { return index <=> o.index; }
+		public:
+			UnsignedInteger GetID() const {return sparseSet->dense[index];}
+			UnsignedInteger GetIndex() const {return index;}
+			reference GetElement() const  {return sparseSet->elements.get(index);}
+		private:
+			const SparseSet* sparseSet{nullptr};
+			UnsignedInteger index{0};
+		};
+
+		Iterator begin() {return Iterator{this, 0};}
+		Iterator end() {return Iterator(this, dense.size());}
+
+		ConstIterator cbegin() const {return ConstIterator{this, 0};}
+		ConstIterator cend() const {return ConstIterator(this, dense.size());}
+	public:
+
 		[[nodiscard]] bool Exist(const UnsignedInteger id) const {
 			if (id >= sparse.size()) return false;
 			const UnsignedInteger index = sparse[id];

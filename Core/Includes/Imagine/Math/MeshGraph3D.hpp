@@ -15,8 +15,9 @@ namespace Imagine::Math {
 	template<typename T = Real, glm::qualifier Q = glm::defaultp>
 	class MeshGraph3D {
 	public:
+		static inline constexpr glm::length_t L = 3;
 		// type definitions
-		using vec = glm::vec<3, T, Q>;
+		using vec = glm::vec<L, T, Q>;
 		using IdType = uint32_t;
 
 	public:
@@ -57,27 +58,172 @@ namespace Imagine::Math {
 
 		struct Vertex {
 			vec position;
-			std::unordered_set<IdType> linkedEdges;
-			std::unordered_set<IdType> linkedTriangles;
+			std::set<EdgeID> linkedEdges;
+			std::set<TriangleID> linkedTriangles;
 		};
 		struct Edge {
 			VertexID begin;
 			VertexID end;
 			std::array<std::optional<TriangleID>, 2> linkedTriangles;
+
+			VertexID GetOtherVertex(VertexID id) const {
+				if (begin == id) return end;
+				MGN_CORE_ASSERT(id == end, "The point id {} is not part of this edge.", id.id);
+				return begin;
+			}
+
+			bool IsBegin(VertexID id) const {
+				return id == begin;
+			}
 		};
 		struct Triangle {
-			VertexID vertices[3];
-			EdgeID edges[3];
+			std::array<VertexID, 3> vertices;
+			std::array<EdgeID, 3> edges;
+
+			VertexID GetOther(VertexID one, VertexID two) {
+				auto it = std::find_if(vertices.begin(), vertices.end(), [one,two](auto v) {
+					return v != one && v != two;
+				});
+				return *it;
+			}
 		};
 
+	public:
+		using VertexSparseSet = Core::AutoIdSparseSet<Vertex, IdType>;
+		using EdgeSparseSet = Core::AutoIdSparseSet<Edge, IdType>;
+		using TriangleSparseSet = Core::AutoIdSparseSet<Triangle, IdType>;
+
+	public:
+		struct VertexIterator {
+		public:
+			using iterator_category = std::forward_iterator_tag;
+			using value_type = Vertex;
+			using difference_type = std::ptrdiff_t;
+			using pointer = Vertex *;
+			using reference = Vertex &;
+
+		public:
+			explicit VertexIterator(MeshGraph3D *graph, VertexID vertex) :
+				graph(graph), iterator(EdgeSparseSet::Iterator::FromID(graph->m_Vertices, vertex.id)) {}
+			explicit VertexIterator(MeshGraph3D *graph, uint32_t index) :
+				graph(graph), iterator(graph->m_Vertices, index) {}
+
+			VertexIterator operator++(int) {
+				VertexIterator res{*this};
+				++(*this);
+				return res;
+			}
+			VertexIterator &operator++() {
+				++iterator;
+				return *this;
+			}
+			reference operator*() const { return GetVertex(); }
+			pointer operator->() const { return &GetVertex(); }
+
+			bool operator==(const VertexIterator & o) const {return graph == o.graph && iterator == o.iterator;}
+			bool operator!=(const VertexIterator & o) const {return !(*this == o);}
+		public:
+			Vertex &GetVertex() { return iterator.GetElement(); }
+			VertexID GetID() { return {iterator.GetID()}; }
+
+			uint64_t GetEdgeCount() const {
+				iterator->linkedEdges.count();
+			}
+
+			typename std::set<EdgeID>::iterator GetEdgeBegin() { return iterator->linkedEdges.begin();}
+			typename std::set<EdgeID>::iterator GetEdgeEnd() { return iterator->linkedEdges.end();}
+		
+		private:
+			MeshGraph3D *graph{nullptr};
+			typename VertexSparseSet::Iterator iterator;
+		};
+
+		struct EdgeIterator {
+		public:
+			using iterator_category = std::forward_iterator_tag;
+			using value_type = Edge;
+			using difference_type = std::ptrdiff_t;
+			using pointer = Edge *;
+			using reference = Edge &;
+
+		public:
+			EdgeIterator() = default;
+			~EdgeIterator() = default;
+			explicit EdgeIterator(MeshGraph3D *graph, EdgeID edge) :
+				graph(graph), iterator(EdgeSparseSet::Iterator::FromID(graph->m_Edges, edge.id)) {}
+			explicit EdgeIterator(MeshGraph3D *graph, uint32_t index) :
+				graph(graph), iterator(graph->m_Edges, index) {}
+
+		public:
+			EdgeIterator operator++(int) {
+				EdgeIterator res{*this};
+				++(*this);
+				return res;
+			}
+			EdgeIterator &operator++() {
+				++iterator;
+				return *this;
+			}
+
+			bool operator==(const EdgeIterator & o) const {return graph == o.graph && iterator == o.iterator;}
+			bool operator!=(const EdgeIterator & o) const {return !(*this == o);}
+
+		public:
+			reference operator*() const { return GetEdge(); }
+			pointer operator->() const { return &GetEdge(); }
+
+		public:
+			Edge &GetEdge() { return iterator.GetElement(); }
+			EdgeID GetID() { return {iterator.GetID()}; }
+
+			VertexID GetBeginID() { return GetEdge().begin; }
+			VertexID GetEndID() { return GetEdge().end; }
+
+			Vertex &GetBegin() { return graph->m_Vertices.Get(GetBeginID()); }
+			Vertex &GetEnd() { return graph->m_Vertices.Get(GetEndID()); }
+
+			std::optional<TriangleID> GetSideTriangleID() { return GetEdge().linkedTriangles[0]; }
+			std::optional<TriangleID> GetOtherSideTriangleID() { return GetEdge().linkedTriangles[1]; }
+
+			TriangleID *GetSideTriangle() {
+				const std::optional<TriangleID> id = GetSideTriangle();
+				if (id.has_value())
+					graph->m_Triangle.TryGet(id.value().id);
+				else
+					return nullptr;
+			}
+			TriangleID *GetOtherSideTriangle() {
+				const std::optional<TriangleID> id = GetOtherSideTriangle();
+				if (id.has_value())
+					graph->m_Triangle.TryGet(id.value().id);
+				else
+					return nullptr;
+			}
+
+			Line<L, T, Q> GetLine() const { return {GetBegin().position, GetEnd().position}; }
+
+		private:
+			MeshGraph3D *graph{nullptr};
+			typename EdgeSparseSet::Iterator iterator;
+		};
+
+		VertexIterator BeginVertex() { return VertexIterator(this, 0); }
+		VertexIterator EndVertex() { return VertexIterator(this, m_Vertices.Count()); }
+		EdgeIterator BeginEdge() { return EdgeIterator(this, 0); }
+		EdgeIterator EndEdge() { return EdgeIterator(this, m_Edges.Count()); }
+
+	public:
 		void AddTriangle(vec a, vec b, vec c);
-		void AddMesh(Core::ConstBufferView vertices, Core::ConstBufferView indices);
 		void AddMesh(const Core::CPUMesh &mesh);
+		void AddMesh(Core::ConstBufferView vertices, Core::ConstBufferView indices);
+
+	public:
+		void SubdivideLoop();
 
 	private:
-		Core::AutoIdSparseSet<Vertex, IdType> m_Vertices{50};
-		Core::AutoIdSparseSet<Edge, IdType> m_Edges{50};
-		Core::AutoIdSparseSet<Triangle, IdType> m_Triangle{50};
+		VertexSparseSet m_Vertices{50};
+		EdgeSparseSet m_Edges{50};
+		TriangleSparseSet m_Triangle{50};
 	};
 } // namespace Imagine::Math
 
@@ -199,18 +345,66 @@ namespace Imagine::Math {
 					m_Vertices.Get(vertId2).linkedTriangles.insert(triangleID.id);
 					m_Vertices.Get(vertId3).linkedTriangles.insert(triangleID.id);
 
-					Edge& edge1 = m_Edges.Get(edge1Id);
-					if(!edge1.linkedTriangles[0].has_value()) {edge1.linkedTriangles[0] = triangleID;}
-					else {MGN_CORE_ASSERT(!edge1.linkedTriangles[1].has_value(), "The two possible trianlge of the edge are filled."); edge1.linkedTriangles[1] = triangleID;}
-					Edge& edge2 = m_Edges.Get(edge2Id);
-					if(!edge1.linkedTriangles[0].has_value()) {edge1.linkedTriangles[0] = triangleID;}
-					else {MGN_CORE_ASSERT(!edge1.linkedTriangles[1].has_value(), "The two possible trianlge of the edge are filled."); edge1.linkedTriangles[1] = triangleID;}
-					Edge& edge3 = m_Edges.Get(edge3Id);
-					if(!edge1.linkedTriangles[0].has_value()) {edge1.linkedTriangles[0] = triangleID;}
-					else {MGN_CORE_ASSERT(!edge1.linkedTriangles[1].has_value(), "The two possible trianlge of the edge are filled."); edge1.linkedTriangles[1] = triangleID;}
+					Edge &edge1 = m_Edges.Get(edge1Id);
+					if (!edge1.linkedTriangles[0].has_value()) {
+						edge1.linkedTriangles[0] = triangleID;
+					}
+					else {
+						MGN_CORE_ASSERT(!edge1.linkedTriangles[1].has_value(), "The two possible trianlge of the edge are filled.");
+						edge1.linkedTriangles[1] = triangleID;
+					}
+					Edge &edge2 = m_Edges.Get(edge2Id);
+					if (!edge1.linkedTriangles[0].has_value()) {
+						edge1.linkedTriangles[0] = triangleID;
+					}
+					else {
+						MGN_CORE_ASSERT(!edge1.linkedTriangles[1].has_value(), "The two possible trianlge of the edge are filled.");
+						edge1.linkedTriangles[1] = triangleID;
+					}
+					Edge &edge3 = m_Edges.Get(edge3Id);
+					if (!edge1.linkedTriangles[0].has_value()) {
+						edge1.linkedTriangles[0] = triangleID;
+					}
+					else {
+						MGN_CORE_ASSERT(!edge1.linkedTriangles[1].has_value(), "The two possible trianlge of the edge are filled.");
+						edge1.linkedTriangles[1] = triangleID;
+					}
 				}
 			}
 		}
+	}
+
+
+	template<typename T, glm::qualifier Q>
+	void MeshGraph3D<T, Q>::SubdivideLoop() {
+		std::vector<std::tuple<vec, EdgeID>> newPoints;
+
+		// Create the Edge Points "e"
+		newPoints.reserve(m_Edges.Count());
+		for (auto it = BeginEdge(); it != EndEdge(); ++it) {
+			Triangle* some = it.GetSideTriangle();
+			Triangle* other = it.GetOtherSideTriangle();
+
+			vec newPoint;
+			// Calculate newPoint based one whether we have adjacent triangles.
+			if (!some || !other) {
+				newPoint = it.GetLine().GetPoint(0.5);
+			} else {
+				const auto beginId = it.GetBeginID();
+				const auto endId = it.GetBeginID();
+				const Vertex& begin = m_Vertices.Get(beginId);
+				const Vertex& end = m_Vertices.Get(endId);
+				const Vertex& someVert = m_Vertices.Get(some->GetOther(beginId, endId()));
+				const Vertex& otherVert = m_Vertices.Get(other->GetOther(beginId, endId()));
+
+				constexpr T threeEight = (T(3.0)/T(8.0));
+				constexpr T oneEight = (T(1.0)/T(8.0));
+				newPoint = threeEight*(begin.position + end.position) + oneEight*(someVert.position + otherVert.position);
+			}
+
+			newPoints.emplace_back(newPoint, it.GetID());
+		}
+
 
 	}
 
