@@ -4,6 +4,7 @@
 
 #include "Imagine/Rendering/CPUMesh.hpp"
 
+#include "Imagine/Core/Math.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h> // Post processing flags

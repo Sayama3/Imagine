@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/Vertex.hpp"
 
 namespace Imagine::Core {

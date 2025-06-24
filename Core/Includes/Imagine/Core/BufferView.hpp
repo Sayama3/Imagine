@@ -21,6 +21,11 @@ namespace Imagine::Core {
 			if (offset + size > buffer->Size()) return BufferView{};
 			return BufferView{buffer->Get(), offset, size};
 		}
+		template<typename T>
+		inline static BufferView Make(std::vector<T>& vector) {
+			if (vector.empty()) return {};
+			return {vector.data(), vector.size() * sizeof(T)};
+		}
 
 	public:
 		BufferView();
@@ -94,6 +99,12 @@ namespace Imagine::Core {
 			if (!buffer) return ConstBufferView{};
 			if (offset + size > buffer->Size()) return ConstBufferView{};
 			return ConstBufferView{buffer->Get(), offset, size};
+		}
+
+		template<typename T>
+		inline static ConstBufferView Make(const std::vector<T>& vector) {
+			if (vector.empty()) return {};
+			return {vector.data(), vector.size() * sizeof(T)};
 		}
 
 	public:

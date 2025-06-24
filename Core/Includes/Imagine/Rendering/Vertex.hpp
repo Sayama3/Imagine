@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Imagine/Core/Math.hpp"
+#include "Imagine/Math/Core.hpp"
 
 namespace Imagine {
 	struct Vertex {
