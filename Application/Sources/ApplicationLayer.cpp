@@ -5,6 +5,7 @@
 #include "Imagine/ApplicationLayer.hpp"
 
 #include "Imagine/Core/Inputs.hpp"
+#include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
@@ -84,11 +85,38 @@ namespace Imagine::Application {
 	}
 
 	void ApplicationLayer::OnEvent(Event &event) {
+		EventDispatcher dispatch{event};
+		dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
+			for (const std::filesystem::path &path: e) {
+				if (std::filesystem::exists(path)) {
+					if (this->ChangeModelAndPath(path)) return true;
+				}
+			}
+			return false;
+		});
+	}
 
+	bool ApplicationLayer::ChangeModelAndPath(const std::filesystem::path &path) {
+		std::error_code e;
+		if (std::filesystem::equivalent(path, m_ModelPath, e)) return true;
+
+		const auto mesh = CPUMesh::LoadExternalModelAsMesh(path);
+		if (mesh.Vertices.empty()) {
+			return false;
+		}
+
+		m_ModelPath = path;
+		m_Mesh = std::move(mesh);
+		m_MeshGraph.Clear();
+		m_MeshGraph.AddMesh(m_Mesh);
+		m_MeshChanged = true;
+		return true;
 	}
 
 #ifdef MGN_IMGUI
 	void ApplicationLayer::ImGuiChaikin() {
+
+		ImGui::SetNextWindowSize({200,400}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Chaikin Curve");
 		{
 			{
@@ -123,7 +151,7 @@ namespace Imagine::Application {
 			}
 			{
 				for (uint64_t i = 0; i < m_ChaikinCurves.line.size(); ++i) {
-					auto& p = m_ChaikinCurves.line[i];
+					auto &p = m_ChaikinCurves.line[i];
 					std::string label{"Point " + std::to_string(i)};
 					ImGui::PushID(i);
 					ImGui::DragFloat3(label.c_str(), Math::ValuePtr(p), 0.01);
@@ -152,14 +180,32 @@ namespace Imagine::Application {
 		}
 		ImGui::End();
 	}
+
 	void ApplicationLayer::ImGuiLoop() {
+
+		ImGui::SetNextWindowSize({200,400}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Loop Subdivide");
 		{
-			static std::string s_MeshPath;
+			static std::string s_ModelPath;
+			static int s_Step = 1;
+			ImGui::InputText("Model Path", &s_ModelPath);
+			if (ImGui::Button("Reload")) {
+				ChangeModelAndPath(s_ModelPath);
+			}
+
+			ImGui::DragInt("Step Count", &s_Step, 0.5, 1, INT_MAX);
+
+			if (ImGui::Button("Loop Subdivide")) {
+				m_MeshGraph.SubdivideLoop();
+				m_SubdividedMesh = m_MeshGraph.GetCPUMesh();
+			}
+
+
 
 		}
 		ImGui::End();
 	}
+
 	void ApplicationLayer::ImGuiKobbelt() {
 	}
 #else
