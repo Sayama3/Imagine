@@ -1125,6 +1125,7 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::SendImGuiCommands() {
 #ifdef MGN_IMGUI
 
+		ImGui::SetNextWindowSize({400,600}, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
@@ -1156,6 +1157,7 @@ namespace Imagine::Vulkan {
 		ImGui::End();
 
 
+		ImGui::SetNextWindowSize({400,400}, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Rendering")) {
 			const ImVec2 pos = ImGui::GetCursorScreenPos();
 			const ImVec2 size = ImGui::GetContentRegionAvail();
