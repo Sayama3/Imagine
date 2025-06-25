@@ -79,7 +79,7 @@ namespace Imagine::Core {
 			using reference = const value_type &;
 
 		public:
-			explicit Iterator(const WindowDropFileEvent *pEvent, const uint32_t index) :
+			explicit Iterator(const WindowDropFileEvent *pEvent, const uint64_t index) :
 				pEvent(pEvent), index(index) {}
 
 			Iterator operator++(int) {

@@ -56,7 +56,7 @@ namespace Imagine::Math {
 		void RemoveDelaunayPoint(Vector2 point);
 		void RemoveDelaunayPoint(uint32_t pointId);
 	public:
-		std::pair<std::unordered_map<uint32_t, MeshGraph::Vector2>, std::unordered_set<ReversiblePair<uint32_t, uint32_t>, ReversiblePairHash>> GetVoronoi();
+		std::pair<std::unordered_map<uint32_t, MeshGraph::Vector2>, std::unordered_set<ReversiblePair<uint32_t>, ReversiblePairHash>> GetVoronoi();
 	public:
 		std::optional<uint32_t> GetClosestPoint(Vector2 point);
 	public:
@@ -85,11 +85,11 @@ namespace Imagine::Math {
 		uint32_t m_TriangleIdGenerator{0};
 	};
 
-	inline std::pair<std::unordered_map<uint32_t, MeshGraph::Vector2>, std::unordered_set<ReversiblePair<uint32_t, uint32_t>, ReversiblePairHash>> MeshGraph::GetVoronoi() {
+	inline std::pair<std::unordered_map<uint32_t, MeshGraph::Vector2>, std::unordered_set<ReversiblePair<uint32_t>, ReversiblePairHash>> MeshGraph::GetVoronoi() {
 		uint32_t localGenerator = m_TriangleIdGenerator;
 		std::unordered_map<uint32_t, uint32_t> exteriorsPoints;
 		std::unordered_map<uint32_t, Vector2> trianglePoints;
-		std::unordered_set<ReversiblePair<uint32_t, uint32_t>, ReversiblePairHash> lines;
+		std::unordered_set<ReversiblePair<uint32_t>, ReversiblePairHash> lines;
 
 		for (const auto& [triangleId, triangle]: m_Triangles) {
 			const auto abId = triangle.EdgeAB;
@@ -320,7 +320,7 @@ namespace Imagine::Math {
 		m_Vertices[newVertId] = {point};
 		if (m_Vertices.size() > 2 && !m_Triangles.empty()) {
 			std::vector<uint32_t> edgeToTriangulate;
-			std::unordered_map<ReversiblePair<uint32_t, uint32_t>, uint32_t, ReversiblePairHash> vertexPairToEdge;
+			std::unordered_map<ReversiblePair<uint32_t>, uint32_t, ReversiblePairHash> vertexPairToEdge;
 			edgeToTriangulate.reserve(1024);
 			vertexPairToEdge.reserve(1024);
 
@@ -506,7 +506,7 @@ namespace Imagine::Math {
 
 			if (createAllTheTriangles) {
 
-				std::unordered_map<ReversiblePair<uint32_t, uint32_t>, uint32_t, ReversiblePairHash> VertexPairToEdge;
+				std::unordered_map<ReversiblePair<uint32_t>, uint32_t, ReversiblePairHash> VertexPairToEdge;
 				std::vector<std::pair<Vector2, uint32_t>> pointOrdered;
 				pointOrdered.reserve(m_Vertices.size() - 1);
 
@@ -975,7 +975,7 @@ namespace Imagine::Math {
 		const Vertex &s1 = m_Vertices.at(s1Id);
 		const Vertex &s2 = m_Vertices.at(s2Id);
 
-		std::unordered_map<ReversiblePair<uint32_t, uint32_t>, std::pair<uint32_t, Edge *>, ReversiblePairHash>
+		std::unordered_map<ReversiblePair<uint32_t>, std::pair<uint32_t, Edge *>, ReversiblePairHash>
 				VertexPairToEdge;
 		VertexPairToEdge[ReversiblePair{s1Id, s2Id}] = {edgeId, &m_Edges.at(edgeId)};
 

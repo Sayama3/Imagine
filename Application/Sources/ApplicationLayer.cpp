@@ -37,6 +37,13 @@ namespace Imagine::Application {
 	}
 
 	void ApplicationLayer::OnUpdate(Core::TimeStep timeStep) {
+
+		if (m_MeshChanged) {
+			m_MeshGraph.Clear();
+			m_MeshGraph.AddMesh(m_Mesh);
+			m_MeshChanged = false;
+		}
+
 		auto &mouse = Inputs::GetMouse();
 		const Rect<> window = m_Window->GetWindowRect();
 		const Rect<> viewport = m_Renderer->GetViewport();
@@ -107,8 +114,6 @@ namespace Imagine::Application {
 
 		m_ModelPath = path;
 		m_Mesh = std::move(mesh);
-		m_MeshGraph.Clear();
-		m_MeshGraph.AddMesh(m_Mesh);
 		m_MeshChanged = true;
 		return true;
 	}
@@ -195,13 +200,15 @@ namespace Imagine::Application {
 
 			ImGui::DragInt("Step Count", &s_Step, 0.5, 1, INT_MAX);
 
+			ImGui::BeginDisabled(m_MeshChanged);
 			if (ImGui::Button("Loop Subdivide")) {
-				m_MeshGraph.SubdivideLoop();
+				for (int i = 0; i < s_Step; ++i) {
+					m_MeshGraph.SubdivideLoop();
+				}
 				m_SubdividedMesh = m_MeshGraph.GetCPUMesh();
+				m_MeshChanged = true;
 			}
-
-
-
+			ImGui::EndDisabled();
 		}
 		ImGui::End();
 	}

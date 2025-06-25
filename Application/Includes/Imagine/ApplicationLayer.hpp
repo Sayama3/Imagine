@@ -7,6 +7,7 @@
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Layers/Layer.hpp"
 #include "Imagine/Math/ChaikinCurves.hpp"
+#include "Imagine/Math/MeshGraph3D.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
 
 namespace Imagine::Application {

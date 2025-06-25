@@ -119,8 +119,11 @@ namespace Imagine::Core {
 				return *this;
 			}
 
-			reference operator*() const { return GetElement(); }
-			pointer operator->() const { return &GetElement(); }
+			reference operator*() { return GetElement(); }
+			pointer operator->() { return &GetElement(); }
+
+			const reference operator*() const { return GetElement(); }
+			const pointer operator->() const { return &GetElement(); }
 
 			bool operator==(const Iterator &o) const { return sparseSet == o.sparseSet && index == o.index; }
 			bool operator!=(const Iterator &o) const { return !(*this == o); }
@@ -129,6 +132,7 @@ namespace Imagine::Core {
 			UnsignedInteger GetID() const {return sparseSet->dense[index];}
 			UnsignedInteger GetIndex() const {return index;}
 			reference GetElement()  {return sparseSet->elements.get(index);}
+			const reference GetElement() const  {return sparseSet->elements.get(index);}
 		private:
 			SparseSet* sparseSet{nullptr};
 			UnsignedInteger index{0};

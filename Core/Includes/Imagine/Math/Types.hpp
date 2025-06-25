@@ -15,7 +15,7 @@ namespace Imagine {
 		using vec = glm::vec<L,T,Q>;
 		Line() = default;
 		~Line() = default;
-		Line(vec begin, vec end) : Begin(begin), End(end) {}
+		Line(const vec& begin, const vec& end) : Begin(begin), End(end) {}
 
 		/// A value between 0 & 1 will give a point inside the line.
 		vec GetPoint(T t) const {
@@ -137,17 +137,17 @@ namespace Imagine {
 	typedef Ray<2, Real> Ray2;
 
 
-	template<typename T, typename U>
+	template<typename T>
 	struct ReversiblePair {
 	public:
 		ReversiblePair() = default;
 		~ReversiblePair() = default;
-		ReversiblePair(const T &f, const U &s) : first(f), second(s) {
+		ReversiblePair(const T &f, const T &s) : first(f), second(s) {
 		}
 
 	public:
 		T first;
-		U second;
+		T second;
 
 		[[nodiscard]] bool operator==(const ReversiblePair &other) const {
 			return (first == other.first && second == other.second) ||
@@ -161,9 +161,9 @@ namespace Imagine {
 
 	struct ReversiblePairHash {
 	public:
-		template<typename T, typename U>
-		std::size_t operator()(const ReversiblePair<T, U> &x) const {
-			return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+		template<typename T>
+		std::size_t operator()(const ReversiblePair<T> &x) const {
+			return std::hash<T>()(x.first) ^ std::hash<T>()(x.second);
 		}
 	};
 
