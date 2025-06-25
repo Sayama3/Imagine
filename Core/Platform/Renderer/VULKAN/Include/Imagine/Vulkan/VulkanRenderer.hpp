@@ -71,7 +71,7 @@ namespace Imagine::Vulkan {
 		void DestroyImage(const AllocatedImage &img);
 
 	public:
-		GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+		GPUMeshBuffers UploadMesh(Core::ConstBufferView indices, Core::ConstBufferView vertices);
 		void PushDeletion(Deleter::VkType data) {
 			m_MainDeletionQueue.push(std::move(data));
 		}

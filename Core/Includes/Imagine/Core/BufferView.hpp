@@ -133,7 +133,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T *Get() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<const T *>(Get());
 		}
@@ -141,7 +141,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T &As() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_ASSERT(m_Size == sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return *reinterpret_cast<const T *>(Get());
 		}

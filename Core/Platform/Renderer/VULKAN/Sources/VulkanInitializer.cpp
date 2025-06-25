@@ -19,10 +19,6 @@ namespace Imagine::Vulkan {
 	namespace Initializer {
 		constexpr bool c_OverrideColorVertex = true;
 
-		std::optional<std::shared_ptr<MeshAsset>> LoadModelAsMesh(VulkanRenderer *engine, const std::filesystem::path &filePath) {
-			return std::nullopt;
-		}
-
 		void LoadModelAsDynamic(VulkanRenderer *engine, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath) {
 			using namespace Imagine::Core;
 			Assimp::Importer importer;
@@ -107,7 +103,7 @@ namespace Imagine::Vulkan {
 
 					mesh->lods.push_back(surface);
 
-					mesh->meshBuffers = engine->UploadMesh(indices, vertices);
+					mesh->meshBuffers = engine->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
 
 					meshes.emplace_back(std::move(mesh));
 				}
@@ -203,7 +199,7 @@ namespace Imagine::Vulkan {
 			surface.material = renderer->GetDefaultLineMaterial();
 
 			mesh->lods.push_back(surface);
-			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
+			mesh->meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
 
 			return mesh;
 		}
@@ -248,9 +244,7 @@ namespace Imagine::Vulkan {
 
 			mesh->lods.push_back(surface);
 
-			std::vector<uint32_t>& indices = (std::vector<uint32_t>&)(cpuMesh.Indices);
-			std::vector<Vertex>& vertices = (std::vector<Vertex>&)(cpuMesh.Vertices);
-			mesh->meshBuffers = engine->UploadMesh(indices, vertices);
+			mesh->meshBuffers = engine->UploadMesh(Core::ConstBufferView::Make(cpuMesh.Indices), Core::ConstBufferView::Make(cpuMesh.Vertices));
 
 			return mesh;
 		}
@@ -338,7 +332,7 @@ namespace Imagine::Vulkan {
 
 				mesh->lods.push_back(surface);
 
-				mesh->meshBuffers = engine->UploadMesh(indices, vertices);
+				mesh->meshBuffers = engine->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
 
 				meshes.emplace_back(std::move(mesh));
 			}

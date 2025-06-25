@@ -528,7 +528,7 @@ namespace Imagine::Core {
 				const UnsignedInteger nextIDs = (id + 1);
 				const UnsignedInteger numberIdToAddInFreeList = nextIDs - IDs;
 				FreeList.reserve(FreeList.size() + numberIdToAddInFreeList + RawSparseSet<UnsignedInteger>::c_OverheadResize);
-				FreeList.redimension(FreeList.size() + numberIdToAddInFreeList);
+				//FreeList.redimension(FreeList.size() + numberIdToAddInFreeList);
 				for (int i = IDs; i < id; ++i) {
 					FreeList.push_back(i);
 				}

@@ -62,9 +62,9 @@ namespace Imagine::Math {
 			else next = *nextIt;
 			const glm::vec<3,T,Q> current = *it;
 
-			normal.x += (current.y - nextIt.y) * (current.z + next.z);
-			normal.y += (current.z - nextIt.z) * (current.x + next.x);
-			normal.z += (current.x - nextIt.x) * (current.y + next.y);
+			normal.x += (next.y - current.y) * (next.z + current.z);
+			normal.y += (next.z - current.z) * (next.x + current.x);
+			normal.z += (next.x - current.x) * (next.y + current.y);
 		}
 		return Normalize(normal);
 	}

@@ -43,7 +43,8 @@ namespace Imagine::Application {
 		Math::MeshGraph3D<> m_MeshGraph;
 		Core::CPUMesh m_SubdividedMesh;
 
-		Core::EntityID m_CubeEntityID;
+		Core::EntityID m_OriginalMeshEntityID;
+		Core::EntityID m_LoopMeshEntityID;
 	};
 
 } // namespace Imagine::Application

@@ -41,7 +41,7 @@ namespace Imagine::Core {
 			if (other.Capacity != Capacity) {
 				free(data);
 				Capacity = other.Capacity;
-				data = malloc(sizeof(T) * Capacity);
+				data = (T*)malloc(sizeof(T) * Capacity);
 			}
 			Count = other.Count;
 			if (other.data) {

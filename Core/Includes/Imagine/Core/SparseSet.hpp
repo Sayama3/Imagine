@@ -15,7 +15,7 @@ namespace Imagine::Core {
 	 * @tparam T The Type of data stored in the sparse set
 	 * @tparam UnsignedInteger The type of integer used in the sparse set
 	 */
-	template<typename T, typename UnsignedInteger = uint32_t>
+	template<typename T, typename UnsignedInteger = uint32_t, bool CallDestructorT = true>
 	class SparseSet {
 		static_assert(std::is_unsigned_v<UnsignedInteger> == true);
 
@@ -61,8 +61,28 @@ namespace Imagine::Core {
 			dense.reserve(capacity);
 			elements.reserve(capacity);
 		}
-		SparseSet(const SparseSet&) = default;
-		SparseSet& operator=(const SparseSet&) = default;
+		SparseSet(const SparseSet& o) {
+			sparse = o.sparse;
+			dense = o.dense;
+			elements.redimension(dense.size());
+			for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+				new (&elements[i]) T(o.elements[i]);
+			}
+		}
+		SparseSet& operator=(const SparseSet& o) {
+			if constexpr (CallDestructorT) {
+				for (UnsignedInteger i = 0; i < elements.size(); ++i) {
+					elements.get(i).~T();
+				}
+			}
+			sparse = o.sparse;
+			dense = o.dense;
+			elements.redimension(dense.size());
+			for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+				new (&elements[i]) T(o.elements[i]);
+			}
+			return *this;
+		}
 		SparseSet(SparseSet&&s) noexcept {swap(s);}
 		SparseSet& operator=(SparseSet&& s) noexcept { swap(s); return *this;}
 		void swap(SparseSet& s) noexcept {
@@ -72,8 +92,10 @@ namespace Imagine::Core {
 		}
 
 		virtual ~SparseSet() {
-			for (int i = 0; i < elements.size(); ++i) {
-				elements[i].~T();
+			if constexpr( CallDestructorT) {
+				for (int i = 0; i < elements.size(); ++i) {
+					 elements[i].~T();
+				}
 			}
 			elements.clear();
 			dense.clear();
@@ -239,7 +261,9 @@ namespace Imagine::Core {
 			}
 
 			// Calling destructor cause the type T is not in use anymore.
-			elements[index].~T();
+			if constexpr (CallDestructorT) {
+				elements[index].~T();
+			}
 
 			// Removing the index from existing.
 			elements.pop_back();
@@ -305,6 +329,16 @@ namespace Imagine::Core {
 			return elements[sparse[id]];
 		}
 
+		UnsignedInteger GetIndex(const UnsignedInteger id) const {
+			MGN_CORE_ASSERT(dense[sparse[id]] == id, "ID '{}' is not valid.", id);
+			return sparse[id];
+		}
+
+		UnsignedInteger GetID(const UnsignedInteger index) const {
+			MGN_CORE_ASSERT(sparse[dense[index]] == index, "Index '{}' is not valid.", index);
+			return dense[index];
+		}
+
 		[[nodiscard]] UnsignedInteger Count() const {
 			return dense.size();
 		}
@@ -324,21 +358,29 @@ namespace Imagine::Core {
 	 * A Raw Sparse Set where we manage the IDs inside the Data Structure using a FreeList and incremental IDs.
 	 * @tparam UnsignedInteger The unsigned integer used to count, measure, etc. wherever it's necessary.
 	 */
-	template<typename T, typename UnsignedInteger = uint32_t>
-	class AutoIdSparseSet : public SparseSet<T, UnsignedInteger> {
+	template<typename T, typename UnsignedInteger = uint32_t, bool CallDestructorT = true>
+	class AutoIdSparseSet : public SparseSet<T, UnsignedInteger, CallDestructorT> {
 	public:
 		AutoIdSparseSet() :
-			SparseSet<T, UnsignedInteger>() {
+			SparseSet<T, UnsignedInteger, CallDestructorT>() {
 			FreeList.reserve(256);
 			FreeList.reserve(256);
 		}
 		explicit AutoIdSparseSet(const UnsignedInteger capacity) :
-			SparseSet<T, UnsignedInteger>(capacity) {
+			SparseSet<T, UnsignedInteger, CallDestructorT>(capacity) {
 			FreeList.reserve(capacity);
 			FreeList.reserve(capacity);
 		}
-		AutoIdSparseSet(const AutoIdSparseSet&) = default;
-		AutoIdSparseSet& operator=(const AutoIdSparseSet&) = default;
+		AutoIdSparseSet(const AutoIdSparseSet& o) : SparseSet<T, UnsignedInteger, CallDestructorT>(o) {
+			FreeList = o.FreeList;
+			IDs = o.IDs;
+		}
+		AutoIdSparseSet& operator=(const AutoIdSparseSet& o) {
+			SparseSet<T, UnsignedInteger, CallDestructorT>::operator=(o);
+			FreeList = o.FreeList;
+			IDs = o.IDs;
+			return *this;
+		}
 
 		AutoIdSparseSet(AutoIdSparseSet&& aiss) noexcept {swap(aiss);}
 		AutoIdSparseSet& operator=(AutoIdSparseSet&& aiss) noexcept {swap(aiss); return *this;}
@@ -349,7 +391,7 @@ namespace Imagine::Core {
 		}
 
 		void swap(AutoIdSparseSet& aiss) noexcept {
-			SparseSet<T,UnsignedInteger>::swap(aiss);
+			SparseSet<T, UnsignedInteger, CallDestructorT>::swap(aiss);
 			FreeList.swap(aiss.FreeList);
 			std::swap(IDs, aiss.IDs);
 		}
@@ -370,9 +412,9 @@ namespace Imagine::Core {
 			if (id >= IDs) {
 				const UnsignedInteger nextIDs = (id + 1);
 				const UnsignedInteger numberIdToAddInFreeList = nextIDs - IDs;
-				FreeList.reserve(FreeList.size() + numberIdToAddInFreeList + SparseSet<T, UnsignedInteger>::c_OverheadResize);
-				FreeList.redimension(FreeList.size() + numberIdToAddInFreeList);
-				for (int i = IDs; i < id; ++i) {
+				FreeList.reserve(FreeList.size() + numberIdToAddInFreeList + SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize);
+				//FreeList.redimension(FreeList.size() + numberIdToAddInFreeList);
+				for (UnsignedInteger i = IDs; i < id; ++i) {
 					FreeList.push_back(i);
 				}
 				IDs = nextIDs;
@@ -394,57 +436,57 @@ namespace Imagine::Core {
 	public:
 		virtual UnsignedInteger Create() {
 			const UnsignedInteger id = CreateID();
-			const bool result = SparseSet<T, UnsignedInteger>::Create(id);
+			const bool result = SparseSet<T, UnsignedInteger, CallDestructorT>::Create(id);
 			return result ? id : NullId;
 		}
 
 		virtual UnsignedInteger Create(const T &data) {
 			const UnsignedInteger id = CreateID();
-			const bool result = SparseSet<T, UnsignedInteger>::Create(id, data);
+			const bool result = SparseSet<T, UnsignedInteger, CallDestructorT>::Create(id, data);
 			return result ? id : NullId;
 		}
 
 		virtual bool Create(const UnsignedInteger id) override {
 			if (id == NullId) return false;
 			EnsureFreelistContinuityOnCreate(id);
-			return SparseSet<T, UnsignedInteger>::Create(id);
+			return SparseSet<T, UnsignedInteger, CallDestructorT>::Create(id);
 		}
 
 		virtual bool Create(const UnsignedInteger id, const T &data) override {
 			if (id == NullId) return false;
 			EnsureFreelistContinuityOnCreate(id);
-			return SparseSet<T, UnsignedInteger>::Create(id, data);
+			return SparseSet<T, UnsignedInteger, CallDestructorT>::Create(id, data);
 		}
 
 		virtual T& GetOrCreate(const UnsignedInteger id) override {
 			EnsureFreelistContinuityOnCreate(id);
-			return SparseSet<T, UnsignedInteger>::GetOrCreate(id);
+			return SparseSet<T, UnsignedInteger, CallDestructorT>::GetOrCreate(id);
 		}
 
 		virtual T& GetOrCreate(const UnsignedInteger id, const T &data) override {
 			EnsureFreelistContinuityOnCreate(id);
-			return SparseSet<T, UnsignedInteger>::GetOrCreate(id, data);
+			return SparseSet<T, UnsignedInteger, CallDestructorT>::GetOrCreate(id, data);
 		}
 
 		virtual void Remove(const UnsignedInteger id) override {
 			if (id == NullId) return;
-			if (!SparseSet<T, UnsignedInteger>::Exist(id)) {
+			if (!SparseSet<T, UnsignedInteger, CallDestructorT>::Exist(id)) {
 				return;
 			}
 			FreeList.push_back(id);
-			SparseSet<T, UnsignedInteger>::Remove(id);
+			SparseSet<T, UnsignedInteger, CallDestructorT>::Remove(id);
 		}
 
 		virtual void Clear() override {
-			for (int i = SparseSet<T, UnsignedInteger>::dense.size() - 1; i >= 0; --i) {
-				const auto id = SparseSet<T, UnsignedInteger>::dense[i];
+			while (!SparseSet<T, UnsignedInteger, CallDestructorT>::dense.empty()) {
+				const auto id = SparseSet<T, UnsignedInteger, CallDestructorT>::dense.get(SparseSet<T, UnsignedInteger, CallDestructorT>::dense.size() - 1);
 				FreeList.push_back(id);
-				SparseSet<T, UnsignedInteger>::Remove(id);
+				SparseSet<T, UnsignedInteger, CallDestructorT>::Remove(id);
 			}
 		}
 
 	protected:
-		HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger>::c_OverheadResize};
+		HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize};
 		UnsignedInteger IDs{0};
 	};
 } // namespace Imagine::Core

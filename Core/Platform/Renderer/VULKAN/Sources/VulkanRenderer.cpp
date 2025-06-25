@@ -747,9 +747,9 @@ namespace Imagine::Vulkan {
 		buffer = AllocatedBuffer{}; // Reset the buffer to avoid access to deleted ptr.
 	}
 
-	GPUMeshBuffers VulkanRenderer::UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices) {
-		const uint64_t vertexBufferSize = vertices.size() * sizeof(Vertex);
-		const uint64_t indexBufferSize = indices.size() * sizeof(uint32_t);
+	GPUMeshBuffers VulkanRenderer::UploadMesh(ConstBufferView indices, ConstBufferView vertices) {
+		const uint64_t vertexBufferSize = vertices.Size();
+		const uint64_t indexBufferSize = indices.Size();
 
 		GPUMeshBuffers GPUMesh;
 
@@ -766,9 +766,9 @@ namespace Imagine::Vulkan {
 		void *data = staging.allocation->GetMappedData();
 
 		// copy vertex buffer
-		memcpy(data, vertices.data(), vertexBufferSize);
+		memcpy(data, vertices.Get(), vertexBufferSize);
 		// copy index buffer
-		memcpy((uint8_t *) data + vertexBufferSize, indices.data(), indexBufferSize);
+		memcpy((uint8_t *) data + vertexBufferSize, indices.Get(), indexBufferSize);
 
 		ImmediateSubmit([&](VkCommandBuffer cmd) {
 			VkBufferCopy vertexCopy{0};

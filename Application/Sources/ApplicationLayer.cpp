@@ -22,13 +22,20 @@ namespace Imagine::Application {
 		m_Window = Window::Get();
 		m_Renderer = Renderer::Get();
 
-
 		m_Mesh = CPUMesh::LoadExternalModelAsMesh("Assets/Models/Box.glb");
-		m_CubeEntityID = SceneManager::GetMainScene()->CreateEntity();
-		SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = {0, 0, 0};
-		m_Renderer->LoadCPUMeshInScene(m_Mesh, SceneManager::GetMainScene().get(), m_CubeEntityID);
 
-		m_Renderer->LoadExternalModelInScene("Assets/Models/house.glb", SceneManager::GetMainScene().get());
+		m_OriginalMeshEntityID = SceneManager::GetMainScene()->CreateEntity();
+		SceneManager::GetMainScene()->GetEntity(m_OriginalMeshEntityID).LocalPosition = {-1, 0, 0};
+
+		m_Renderer->LoadCPUMeshInScene(m_Mesh, SceneManager::GetMainScene().get(), m_OriginalMeshEntityID);
+
+		m_LoopMeshEntityID = SceneManager::GetMainScene()->CreateEntity();
+		SceneManager::GetMainScene()->GetEntity(m_LoopMeshEntityID).LocalPosition = {1, 0, 0};
+
+		m_MeshGraph.AddMesh(m_Mesh);
+
+		m_MeshGraph.EnsureLink();
+		m_MeshChanged = false;
 
 		m_ChaikinCurves.SetUV(0.3, 0.3);
 	}
@@ -58,9 +65,9 @@ namespace Imagine::Application {
 			const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
 
 			const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0, 0, 0}, Vec3{0, 1, 0}}, ray);
-			if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_CubeEntityID)) {
+			if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_OriginalMeshEntityID)) {
 				m_ChaikinCurves.AddPoint(mouseOnGround.value());
-				// SceneManager::GetMainScene()->GetEntity(m_CubeEntityID).LocalPosition = mouseOnGround.value();
+				// SceneManager::GetMainScene()->GetEntity(m_OriginalMeshEntityID).LocalPosition = mouseOnGround.value();
 			}
 		}
 	}
@@ -191,7 +198,7 @@ namespace Imagine::Application {
 		ImGui::SetNextWindowSize({200,400}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Loop Subdivide");
 		{
-			static std::string s_ModelPath;
+			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
 			ImGui::InputText("Model Path", &s_ModelPath);
 			if (ImGui::Button("Reload")) {
@@ -204,8 +211,10 @@ namespace Imagine::Application {
 			if (ImGui::Button("Loop Subdivide")) {
 				for (int i = 0; i < s_Step; ++i) {
 					m_MeshGraph.SubdivideLoop();
+					//m_MeshGraph.EnsureLink();
 				}
 				m_SubdividedMesh = m_MeshGraph.GetCPUMesh();
+				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
 				m_MeshChanged = true;
 			}
 			ImGui::EndDisabled();
