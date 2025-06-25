@@ -46,6 +46,9 @@ set(CORE_SRC_FILES
 		Sources/Core/RawSparseSet.cpp
 		Includes/Imagine/Core/RawSparseSet.hpp
 		Includes/Imagine/Events/Event.hpp
+		Includes/Imagine/Events/MouseEvent.hpp
+		Includes/Imagine/Events/KeyEvent.hpp
+		Includes/Imagine/Events/ApplicationEvent.hpp
 		Sources/Layers/Layer.cpp
 		Includes/Imagine/Scene/Terrain.hpp
 		Sources/Scene/Terrain.cpp
@@ -75,6 +78,8 @@ set(CORE_SRC_FILES
 		Sources/Scene/SceneManager.cpp
 		Includes/Imagine/Scene/SceneManager.hpp
 		Sources/Core/Math.cpp
+		Includes/Imagine/Core/MouseButtonCodes.hpp
+		Includes/Imagine/Core/KeyCodes.hpp
 		Sources/Core/Inputs.cpp
 		Includes/Imagine/Core/Inputs.hpp
 		Sources/Rendering/CPUMesh.cpp
