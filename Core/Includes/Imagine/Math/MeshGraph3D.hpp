@@ -29,7 +29,7 @@ namespace Imagine::Math {
 				id(_id) {}
 			IdType id;
 
-			operator IdType() const {return id;}
+			operator IdType() const { return id; }
 
 			bool operator==(const VertexID &o) const { return id == o.id; }
 			bool operator!=(const VertexID &o) const { return !(*this == o); }
@@ -42,7 +42,7 @@ namespace Imagine::Math {
 				id(_id) {}
 			IdType id;
 
-			operator IdType() const {return id;}
+			operator IdType() const { return id; }
 
 			bool operator==(const EdgeID &o) const { return id == o.id; }
 			bool operator!=(const EdgeID &o) const { return !(*this == o); }
@@ -55,7 +55,7 @@ namespace Imagine::Math {
 				id(_id) {}
 			IdType id;
 
-			operator IdType() const {return id;}
+			operator IdType() const { return id; }
 
 			bool operator==(const FaceID &o) const { return id == o.id; }
 			bool operator!=(const FaceID &o) const { return !(*this == o); }
@@ -167,6 +167,7 @@ namespace Imagine::Math {
 
 			bool operator==(const VertexIterator &o) const { return graph == o.graph && iterator == o.iterator; }
 			bool operator!=(const VertexIterator &o) const { return !(*this == o); }
+			auto operator<=>(const VertexIterator &o) const { return iterator <=> o.iterator; }
 
 		public:
 			Vertex &GetVertex() { return iterator.GetElement(); }
@@ -261,47 +262,50 @@ namespace Imagine::Math {
 			using difference_type = std::ptrdiff_t;
 			using pointer = Face *;
 			using reference = Face &;
+
 		public:
 			explicit FaceIterator(MeshGraph3D *graph, FaceID face) :
 				graph(graph), iterator(FaceSparseSet::Iterator::FromID(graph->m_Faces, face.id)) {}
 			explicit FaceIterator(MeshGraph3D *graph, uint32_t index) :
 				graph(graph), iterator(&graph->m_Faces, index) {}
+
 		public:
-			EdgeIterator operator++(int) {
+			FaceIterator operator++(int) {
 				EdgeIterator res{*this};
 				++(*this);
 				return res;
 			}
-			EdgeIterator &operator++() {
+			FaceIterator &operator++() {
 				++iterator;
 				return *this;
 			}
 
-			bool operator==(const EdgeIterator &o) const { return graph == o.graph && iterator == o.iterator; }
-			bool operator!=(const EdgeIterator &o) const { return !(*this == o); }
-			auto operator<=>(const EdgeIterator &o) const { return iterator <=> o.iterator; }
+			bool operator==(const FaceIterator &o) const { return graph == o.graph && iterator == o.iterator; }
+			bool operator!=(const FaceIterator &o) const { return !(*this == o); }
+			auto operator<=>(const FaceIterator &o) const { return iterator <=> o.iterator; }
 
 			reference operator*() { return GetFace(); }
 			pointer operator->() { return &GetFace(); }
 
 		public:
-			Face& GetFace() {return iterator.GetElement();}
-			FaceID GetID() {return FaceID{iterator.GetID()};}
+			Face &GetFace() { return iterator.GetElement(); }
+			FaceID GetID() { return FaceID{iterator.GetID()}; }
 
-			constexpr uint64_t GetEdgeCount() const {return Face::VertexCount;}
-			constexpr uint64_t GetVertexCount() const {return Face::VertexCount;}
+			constexpr uint64_t GetEdgeCount() const { return Face::VertexCount; }
+			constexpr uint64_t GetVertexCount() const { return Face::VertexCount; }
 
-			VertexID& GetVertexID(const uint64_t index) {return iterator->vertices[index];}
-			EdgeID& GetEdgeID(const uint64_t index) {return iterator->edges[index];}
+			VertexID &GetVertexID(const uint64_t index) { return iterator->vertices[index]; }
+			EdgeID &GetEdgeID(const uint64_t index) { return iterator->edges[index]; }
 
-			std::array<VertexID, Face::VertexCount>::iterator GetVertexIDBegin() {return iterator->vertices.begin();}
-			std::array<VertexID, Face::VertexCount>::iterator GetVertexIDEnd() {return iterator->vertices.end();}
+			std::array<VertexID, Face::VertexCount>::iterator GetVertexIDBegin() { return iterator->vertices.begin(); }
+			std::array<VertexID, Face::VertexCount>::iterator GetVertexIDEnd() { return iterator->vertices.end(); }
 
-			std::array<EdgeID, Face::VertexCount>::iterator GetEdgeIDBegin() {return iterator->edges.begin();}
-			std::array<EdgeID, Face::VertexCount>::iterator GetEdgeIDEnd() {return iterator->edges.end();}
+			std::array<EdgeID, Face::VertexCount>::iterator GetEdgeIDBegin() { return iterator->edges.begin(); }
+			std::array<EdgeID, Face::VertexCount>::iterator GetEdgeIDEnd() { return iterator->edges.end(); }
 
-			Vertex& GetVertex(const uint64_t index) {return graph->m_Vertices.Get(iterator->vertices[index]);}
-			Edge& GetEdge(const uint64_t index) {return graph->m_Edges.Get(iterator->edges[index]);}
+			Vertex &GetVertex(const uint64_t index) { return graph->m_Vertices.Get(iterator->vertices[index]); }
+			Edge &GetEdge(const uint64_t index) { return graph->m_Edges.Get(iterator->edges[index]); }
+
 		private:
 			MeshGraph3D *graph{nullptr};
 			typename FaceSparseSet::Iterator iterator;
@@ -331,6 +335,8 @@ namespace Imagine::Math {
 
 		Core::CPUMesh GetCPUMesh() const;
 
+	private:
+		void AddTriangle(std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash>& edgeIds, VertexSparseSet& newVertices, EdgeSparseSet& newEdges, FaceSparseSet& newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3);
 	private:
 		VertexSparseSet m_Vertices{50};
 		EdgeSparseSet m_Edges{50};
@@ -487,11 +493,109 @@ namespace Imagine::Math {
 
 
 	template<typename T, glm::qualifier Q>
+	void MeshGraph3D<T, Q>::AddTriangle( std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash>& edgeIds, VertexSparseSet& newVertices, EdgeSparseSet& newEdges, FaceSparseSet& newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3) {
+		EdgeID edge1Id;
+		EdgeID edge2Id;
+		EdgeID edge3Id;
+
+		FaceID faceID;
+
+		{
+			Edge edge1 = {vertId1, vertId2};
+			Edge edge2 = {vertId2, vertId3};
+			Edge edge3 = {vertId3, vertId1};
+
+			if (edgeIds.contains({edge1.begin, edge1.end})) {
+				edge1Id = edgeIds.at({edge1.begin, edge1.end});
+				edge1 = newEdges.Get(edge1Id);
+			}
+			else {
+				edge1Id = EdgeID{newEdges.Create(edge1)};
+				edgeIds[{edge1.begin, edge1.end}] = edge1Id;
+			}
+
+			if (edgeIds.contains({edge2.begin, edge2.end})) {
+				edge2Id = edgeIds.at({edge2.begin, edge2.end});
+				edge2 = newEdges.Get(edge2Id);
+			}
+			else {
+				edge2Id = EdgeID{newEdges.Create(edge2)};
+				edgeIds[{edge2.begin, edge2.end}] = edge2Id;
+			}
+
+			if (edgeIds.contains({edge3.begin, edge3.end})) {
+				edge3Id = edgeIds.at({edge3.begin, edge3.end});
+				edge3 = newEdges.Get(edge3Id);
+			}
+			else {
+				edge3Id = EdgeID{newEdges.Create(edge3)};
+				edgeIds[{edge3.begin, edge3.end}] = edge3Id;
+			}
+
+			const Face face{
+					{vertId1, vertId2, vertId3},
+					{edge1Id, edge2Id, edge3Id},
+			};
+
+			faceID = FaceID{newFaces.Create(face)};
+		}
+
+		// Backpropagate the links
+		{
+			newVertices.Get(vertId1.id).linkedEdges.insert(edge3Id);
+			newVertices.Get(vertId1.id).linkedEdges.insert(edge1Id);
+
+			newVertices.Get(vertId2.id).linkedEdges.insert(edge1Id);
+			newVertices.Get(vertId2.id).linkedEdges.insert(edge2Id);
+
+			newVertices.Get(vertId3.id).linkedEdges.insert(edge2Id);
+			newVertices.Get(vertId3.id).linkedEdges.insert(edge3Id);
+
+			newVertices.Get(vertId1.id).linkedFaces.insert(faceID);
+			newVertices.Get(vertId2.id).linkedFaces.insert(faceID);
+			newVertices.Get(vertId3.id).linkedFaces.insert(faceID);
+
+			Edge &edge1 = newEdges.Get(edge1Id);
+			if (!edge1.linkedFaces[0].has_value()) {
+				edge1.linkedFaces[0] = faceID;
+			}
+			else {
+				MGN_CORE_ASSERT(!edge1.linkedFaces[1].has_value(), "The two possible trianlge of the edge are filled.");
+				edge1.linkedFaces[1] = faceID;
+			}
+			Edge &edge2 = newEdges.Get(edge2Id);
+			if (!edge1.linkedFaces[0].has_value()) {
+				edge1.linkedFaces[0] = faceID;
+			}
+			else {
+				MGN_CORE_ASSERT(!edge1.linkedFaces[1].has_value(), "The two possible trianlge of the edge are filled.");
+				edge1.linkedFaces[1] = faceID;
+			}
+			Edge &edge3 = newEdges.Get(edge3Id);
+			if (!edge1.linkedFaces[0].has_value()) {
+				edge1.linkedFaces[0] = faceID;
+			}
+			else {
+				MGN_CORE_ASSERT(!edge1.linkedFaces[1].has_value(), "The two possible trianlge of the edge are filled.");
+				edge1.linkedFaces[1] = faceID;
+			}
+		}
+	}
+
+	template<typename T, glm::qualifier Q>
 	void MeshGraph3D<T, Q>::SubdivideLoop() {
-		std::vector<std::tuple<vec, EdgeID>> newPoints;
+		struct EdgePoint {
+			vec position;
+			EdgeID edge;
+			VertexID id;
+		};
+		std::unordered_map<ReversiblePair<VertexID>, EdgePoint, VertexIDPairHash> edgePoints;
+		edgePoints.reserve(m_Edges.Count());
+
+		VertexSparseSet newVertices = m_Vertices;
+		newVertices.Prepare(edgePoints.size());
 
 		// Create the Edge Points "e"
-		newPoints.reserve(m_Edges.Count());
 		for (auto edgeIt = BeginEdge(); edgeIt != EndEdge(); ++edgeIt) {
 			Face *some = edgeIt.GetSideFace();
 			Face *other = edgeIt.GetOtherSideFace();
@@ -516,15 +620,17 @@ namespace Imagine::Math {
 				newPoint = threeEight * (begin.position + end.position) + oneEight * (someVert.position + otherVert.position);
 			}
 
-			newPoints.emplace_back(newPoint, edgeIt.GetID());
+
+			Vertex newVertex;
+			newVertex.position = newPoint;
+			const auto newVertId = newVertices.Create(newVertex);
+			edgePoints[{edgeIt->begin, edgeIt->end}] = {newPoint, edgeIt.GetID(), VertexID{newVertId}};
+			// newPoints.emplace_back(newPoint, edgeIt.GetID());
 		}
 
-		VertexSparseSet movedVert = m_Vertices;
-		movedVert.Prepare(newPoints.size());
-
 		for (VertexIterator vertIt = BeginVertex(); vertIt != EndVertex(); ++vertIt) {
-			Vertex& vertex = *vertIt;
-			vec& vertPos = vertex.position;
+			Vertex &vertex = *vertIt;
+			vec &vertPos = vertex.position;
 			const uint64_t adjacentVertices = vertIt.GetEdgeCount();
 			const T tAdj = T(adjacentVertices);
 
@@ -537,35 +643,67 @@ namespace Imagine::Math {
 			}
 			else if (adjacentVertices > 3) {
 				const T oneN = T(1) / tAdj;
-				constexpr T fiveHeight = (T(5)/T(8));
-				constexpr T threeHeight = (T(3)/T(8));
-				constexpr T oneFourth = (T(1)/T(4));
+				constexpr T fiveHeight = (T(5) / T(8));
+				constexpr T threeHeight = (T(3) / T(8));
+				constexpr T oneFourth = (T(1) / T(4));
 				const T tauN = Math::Tau / tAdj;
 				const T cosTauN = std::cos(tauN);
-				alpha = threeHeight+(oneFourth*cosTauN);
+				alpha = threeHeight + (oneFourth * cosTauN);
 				alpha = alpha * alpha;
 				alpha = fiveHeight - alpha;
 				alpha = oneN * alpha;
 			}
 
-			vec vertPrim = (T(1)-(tAdj*alpha)) * vertPos;
+			vec vertPrim = (T(1) - (tAdj * alpha)) * vertPos;
 
 			const auto begin = vertIt.GetEdgeBegin();
 			const auto end = vertIt.GetEdgeEnd();
 			for (auto it = begin; it != end; ++it) {
-				Edge& edge = m_Edges.Get(*it);
+				Edge &edge = m_Edges.Get(*it);
 				const auto vertId = edge.GetOtherVertex(vertIt.GetID());
-				const auto& vert = m_Vertices.Get(vertId);
+				const auto &vert = m_Vertices.Get(vertId);
 				vertPrim += vert.position * alpha;
 			}
 
-			movedVert.Get(vertIt.GetID().id).position = vertPrim;
+			newVertices.Get(vertIt.GetID().id).position = vertPrim;
 		}
 
 		std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> edgeIds;
-		edgeIds.reserve(m_Edges.Count() + newPoints.size() * 3);
-		EdgeSparseSet newEdges{static_cast<IdType>(m_Edges.Count() + newPoints.size() * 3)};
+		edgeIds.reserve(m_Edges.Count() + edgePoints.size() * 3);
+		EdgeSparseSet newEdges{static_cast<IdType>(m_Edges.Count() + edgePoints.size() * 3)};
 		FaceSparseSet newFaces{static_cast<IdType>(m_Faces.Count() * 3)};
+
+
+		const auto begFace = BeginFace();
+		const auto endFace = EndFace();
+
+		for (FaceIterator it = begFace; it != endFace; ++it) {
+			Face face;
+
+			auto p1ID = it.GetVertexID(0);
+			auto p2ID = it.GetVertexID(1);
+			auto p3ID = it.GetVertexID(2);
+
+			// TODO: Handle other than 3 vertex faces
+			const auto &edge1 = it.GetEdge(0);
+			auto &pE1 = edgePoints.at({edge1.begin, edge1.end});
+
+			const auto &edge2 = it.GetEdge(1);
+			auto &pE2 = edgePoints.at({edge2.begin, edge2.end});
+
+			const auto &edge3 = it.GetEdge(2);
+			auto &pE3 = edgePoints.at({edge3.begin, edge3.end});
+
+			AddTriangle(edgeIds, newVertices, newEdges, newFaces, pE1.id, pE2.id, pE3.id);
+
+			AddTriangle(edgeIds, newVertices, newEdges, newFaces, p1ID, pE1.id, pE3.id);
+			AddTriangle(edgeIds, newVertices, newEdges, newFaces, p2ID, pE2.id, pE1.id);
+			AddTriangle(edgeIds, newVertices, newEdges, newFaces, p3ID, pE3.id, pE2.id);
+		}
+
+		std::swap(m_Vertices, newVertices);
+		std::swap(m_Edges, newEdges);
+		std::swap(m_Faces, newFaces);
 	}
 
 	template<typename T, glm::qualifier Q>
