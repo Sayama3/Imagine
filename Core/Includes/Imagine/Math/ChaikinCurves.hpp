@@ -15,6 +15,9 @@ namespace Imagine::Math {
 		using vec = glm::vec<L, T, Q>;
 
 	public:
+		ChaikinCurves() = default;
+		~ChaikinCurves() = default;
+	public:
 		class SegmentIterator {
 		public:
 			ChaikinCurves *curve{nullptr};

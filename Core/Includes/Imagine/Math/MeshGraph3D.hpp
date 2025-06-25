@@ -81,7 +81,7 @@ namespace Imagine::Math {
 			std::array<EdgeID, 3> edges;
 
 			VertexID GetOther(VertexID one, VertexID two) {
-				auto it = std::find_if(vertices.begin(), vertices.end(), [one,two](auto v) {
+				auto it = std::find_if(vertices.begin(), vertices.end(), [one, two](auto v) {
 					return v != one && v != two;
 				});
 				return *it;
@@ -120,8 +120,9 @@ namespace Imagine::Math {
 			reference operator*() const { return GetVertex(); }
 			pointer operator->() const { return &GetVertex(); }
 
-			bool operator==(const VertexIterator & o) const {return graph == o.graph && iterator == o.iterator;}
-			bool operator!=(const VertexIterator & o) const {return !(*this == o);}
+			bool operator==(const VertexIterator &o) const { return graph == o.graph && iterator == o.iterator; }
+			bool operator!=(const VertexIterator &o) const { return !(*this == o); }
+
 		public:
 			Vertex &GetVertex() { return iterator.GetElement(); }
 			VertexID GetID() { return {iterator.GetID()}; }
@@ -130,9 +131,9 @@ namespace Imagine::Math {
 				iterator->linkedEdges.count();
 			}
 
-			typename std::set<EdgeID>::iterator GetEdgeBegin() { return iterator->linkedEdges.begin();}
-			typename std::set<EdgeID>::iterator GetEdgeEnd() { return iterator->linkedEdges.end();}
-		
+			typename std::set<EdgeID>::iterator GetEdgeBegin() { return iterator->linkedEdges.begin(); }
+			typename std::set<EdgeID>::iterator GetEdgeEnd() { return iterator->linkedEdges.end(); }
+
 		private:
 			MeshGraph3D *graph{nullptr};
 			typename VertexSparseSet::Iterator iterator;
@@ -165,8 +166,8 @@ namespace Imagine::Math {
 				return *this;
 			}
 
-			bool operator==(const EdgeIterator & o) const {return graph == o.graph && iterator == o.iterator;}
-			bool operator!=(const EdgeIterator & o) const {return !(*this == o);}
+			bool operator==(const EdgeIterator &o) const { return graph == o.graph && iterator == o.iterator; }
+			bool operator!=(const EdgeIterator &o) const { return !(*this == o); }
 
 		public:
 			reference operator*() const { return GetEdge(); }
@@ -213,12 +214,19 @@ namespace Imagine::Math {
 		EdgeIterator EndEdge() { return EdgeIterator(this, m_Edges.Count()); }
 
 	public:
+		void Clear() {
+			m_Vertices.Clear();
+			m_Edges.Clear();
+			m_Triangle.Clear();
+		}
 		void AddTriangle(vec a, vec b, vec c);
 		void AddMesh(const Core::CPUMesh &mesh);
 		void AddMesh(Core::ConstBufferView vertices, Core::ConstBufferView indices);
 
 	public:
 		void SubdivideLoop();
+
+		Core::CPUMesh GetCPUMesh() const;
 
 	private:
 		VertexSparseSet m_Vertices{50};
@@ -382,30 +390,34 @@ namespace Imagine::Math {
 		// Create the Edge Points "e"
 		newPoints.reserve(m_Edges.Count());
 		for (auto it = BeginEdge(); it != EndEdge(); ++it) {
-			Triangle* some = it.GetSideTriangle();
-			Triangle* other = it.GetOtherSideTriangle();
+			Triangle *some = it.GetSideTriangle();
+			Triangle *other = it.GetOtherSideTriangle();
 
 			vec newPoint;
 			// Calculate newPoint based one whether we have adjacent triangles.
 			if (!some || !other) {
 				newPoint = it.GetLine().GetPoint(0.5);
-			} else {
+			}
+			else {
 				const auto beginId = it.GetBeginID();
 				const auto endId = it.GetBeginID();
-				const Vertex& begin = m_Vertices.Get(beginId);
-				const Vertex& end = m_Vertices.Get(endId);
-				const Vertex& someVert = m_Vertices.Get(some->GetOther(beginId, endId()));
-				const Vertex& otherVert = m_Vertices.Get(other->GetOther(beginId, endId()));
+				const Vertex &begin = m_Vertices.Get(beginId);
+				const Vertex &end = m_Vertices.Get(endId);
+				const Vertex &someVert = m_Vertices.Get(some->GetOther(beginId, endId()));
+				const Vertex &otherVert = m_Vertices.Get(other->GetOther(beginId, endId()));
 
-				constexpr T threeEight = (T(3.0)/T(8.0));
-				constexpr T oneEight = (T(1.0)/T(8.0));
-				newPoint = threeEight*(begin.position + end.position) + oneEight*(someVert.position + otherVert.position);
+				constexpr T threeEight = (T(3.0) / T(8.0));
+				constexpr T oneEight = (T(1.0) / T(8.0));
+				newPoint = threeEight * (begin.position + end.position) + oneEight * (someVert.position + otherVert.position);
 			}
 
 			newPoints.emplace_back(newPoint, it.GetID());
 		}
+	}
 
-
+	template<typename T, glm::qualifier Q>
+	Core::CPUMesh MeshGraph3D<T, Q>::GetCPUMesh() const {
+		return {};
 	}
 
 } // namespace Imagine::Math
