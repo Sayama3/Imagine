@@ -18,6 +18,13 @@ namespace Imagine::Application {
 		virtual void OnUpdate(Core::TimeStep timeStep) override;
 		virtual void OnImGuiRender() override;
 		virtual void OnRender(Core::DrawContext &) override;
+		virtual void OnEvent(Event &event) override;
+
+	private:
+		[[maybe_unused]] void ImGuiChaikin();
+		[[maybe_unused]] void ImGuiLoop();
+		[[maybe_unused]] void ImGuiKobbelt();
+
 	private:
 		Core::Window* m_Window{nullptr};
 		Core::Renderer *m_Renderer{nullptr};

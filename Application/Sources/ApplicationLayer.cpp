@@ -58,7 +58,37 @@ namespace Imagine::Application {
 	}
 
 	void ApplicationLayer::OnImGuiRender() {
+		ImGuiChaikin();
+
+		ImGuiLoop();
+
+		ImGuiKobbelt();
+	}
+
+	void ApplicationLayer::OnRender(Core::DrawContext &ctx) {
+		LineObject line;
+		if (!m_ChaikinCurves.line.empty()) {
+			line.points.clear();
+			line.points.reserve(m_ChaikinCurves.line.size() + 1);
+			for (const auto &p: m_ChaikinCurves.line) {
+				Vertex v{};
+				v.position = p;
+				v.color = {0.2, 0.3, 0.8, 1.0};
+				line.points.push_back(v);
+			}
+			line.points.push_back(line.points.front());
+		}
+
+		if (m_Line.points.size() > 1) ctx.OpaqueLines.push_back(m_Line);
+		if (line.points.size() > 1) ctx.OpaqueLines.push_back(line);
+	}
+
+	void ApplicationLayer::OnEvent(Event &event) {
+
+	}
+
 #ifdef MGN_IMGUI
+	void ApplicationLayer::ImGuiChaikin() {
 		ImGui::Begin("Chaikin Curve");
 		{
 			{
@@ -121,24 +151,20 @@ namespace Imagine::Application {
 			}
 		}
 		ImGui::End();
-#endif
 	}
+	void ApplicationLayer::ImGuiLoop() {
+		ImGui::Begin("Loop Subdivide");
+		{
+			static std::string s_MeshPath;
 
-	void ApplicationLayer::OnRender(Core::DrawContext &ctx) {
-		LineObject line;
-		if (!m_ChaikinCurves.line.empty()) {
-			line.points.clear();
-			line.points.reserve(m_ChaikinCurves.line.size() + 1);
-			for (const auto &p: m_ChaikinCurves.line) {
-				Vertex v{};
-				v.position = p;
-				v.color = {0.2, 0.3, 0.8, 1.0};
-				line.points.push_back(v);
-			}
-			line.points.push_back(line.points.front());
 		}
-
-		if (m_Line.points.size() > 1) ctx.OpaqueLines.push_back(m_Line);
-		if (line.points.size() > 1) ctx.OpaqueLines.push_back(line);
+		ImGui::End();
 	}
+	void ApplicationLayer::ImGuiKobbelt() {
+	}
+#else
+	void ApplicationLayer::ImGuiChaikin() {}
+	void ApplicationLayer::ImGuiLoop() {}
+	void ApplicationLayer::ImGuiKobbelt() {}
+#endif
 } // namespace Imagine::Application
