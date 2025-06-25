@@ -11,6 +11,8 @@ namespace Imagine::Core {
 
 	class Mouse {
 	public:
+		//TODO: Change the buttons for the 'Imagine/Core/MouseButtonCodes.hpp'.
+
 		enum Button : uint8_t {
 			Left = 1,
 			Middle = 2,
