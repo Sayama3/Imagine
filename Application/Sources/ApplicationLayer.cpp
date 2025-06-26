@@ -8,7 +8,6 @@
 #include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
-#include "Imagine/Math/MeshGraph3D.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>

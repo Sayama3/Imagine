@@ -8,10 +8,7 @@
 #include "Imagine/Layers/Layer.hpp"
 #include "Imagine/Math/ChaikinCurves.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
-
-namespace Imagine::Math {
-	class MeshGraph3D;
-}
+#include "Imagine/Math/MeshGraph3D.hpp"
 
 namespace Imagine::Application {
 	using namespace Imagine::Core;
