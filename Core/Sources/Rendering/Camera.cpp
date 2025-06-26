@@ -4,6 +4,7 @@
 
 #include "Imagine/Rendering/Camera.hpp"
 
+
 namespace Imagine::Core {
 	Camera* Camera::s_MainCamera = new Camera();
 
@@ -29,12 +30,12 @@ namespace Imagine::Core {
 		const Mat4 cameraRotation = GetRotationMatrix();
 		return Vec3(cameraRotation * Vec4{0,0,1,0});
 	}
-	void Camera::Update(Real timestep) {
+	void Camera::Update(TimeStep timestep) {
 		yaw += yawVelocity * timestep;
 		pitch += pitchVelocity * timestep;
 		
 		const glm::mat4 cameraRotation = GetRotationMatrix();
-		position += glm::vec3(cameraRotation * glm::vec4(velocity * timestep * velocityMultiplier, 0.f));
+		position += glm::vec3(cameraRotation * glm::vec4(velocity * (Real)timestep.GetSeconds() * velocityMultiplier, 0.f));
 
 	}
 

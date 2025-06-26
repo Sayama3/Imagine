@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Core/TimeStep.hpp"
 
 namespace Imagine::Core {
 
@@ -28,7 +29,7 @@ namespace Imagine::Core {
 		glm::mat4 GetRotationMatrix() const;
 		Vec3 GetForward() const;
 
-		void Update(Real timestep);
+		void Update(TimeStep timestep);
 
 	};
 

@@ -121,14 +121,17 @@ namespace Imagine::Application {
 
 		m_ModelPath = path;
 		m_Mesh = std::move(mesh);
+
+		m_Renderer->LoadCPUMeshInScene(m_Mesh, SceneManager::GetMainScene().get(), m_OriginalMeshEntityID);
 		m_MeshChanged = true;
+
 		return true;
 	}
 
 #ifdef MGN_IMGUI
 	void ApplicationLayer::ImGuiChaikin() {
 
-		ImGui::SetNextWindowSize({200,400}, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({200, 400}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Chaikin Curve");
 		{
 			{
@@ -195,7 +198,7 @@ namespace Imagine::Application {
 
 	void ApplicationLayer::ImGuiLoop() {
 
-		ImGui::SetNextWindowSize({200,400}, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({200, 400}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Loop Subdivide");
 		{
 			static std::string s_ModelPath{"Assets/Models/Box.glb"};
@@ -209,10 +212,17 @@ namespace Imagine::Application {
 
 			ImGui::BeginDisabled(m_MeshChanged);
 			if (ImGui::Button("Loop Subdivide")) {
-				for (int i = 0; i < s_Step; ++i) {
+				long double total{0};
+				for (uint32_t i = 0; i < s_Step; ++i) {
+					const auto before = std::chrono::high_resolution_clock::now();
 					m_MeshGraph.SubdivideLoop();
-					//m_MeshGraph.EnsureLink();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					total += ms;
+					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
+					// m_MeshGraph.EnsureLink();
 				}
+				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
 				m_SubdividedMesh = m_MeshGraph.GetCPUMesh();
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
 				m_MeshChanged = true;

@@ -761,17 +761,20 @@ namespace Imagine::Math {
 		for (auto vertIt = vertBeg; vertIt != vertEnd; ++vertIt) {
 			const VertexID vertId = vertIt.GetID();
 			const Vertex &vert = *vertIt;
-			std::vector<vec> points{vert.position};
 
-			for (uint64_t i = 0; i < vert.linkedEdges.size(); ++i) {
-				const EdgeID eId = vert.linkedEdges[i];
-				const Edge &edge = m_Edges.Get(eId.id);
-				const VertexID otherId = edge.GetOtherVertex(vertId);
-				const Vertex &otherVert = m_Vertices.Get(otherId);
-				points.push_back(otherVert.position);
+			vec normal{0};
+
+			if (true) {
+				for (uint64_t i = 0; i < vert.linkedFaces.size(); ++i) {
+					FaceID faceId = vert.linkedFaces[i];
+					Face& face = m_Faces.Get(faceId.id);
+					const Vertex& one = m_Vertices.Get(face.vertices[0]);
+					const Vertex& two = m_Vertices.Get(face.vertices[1]);
+					const Vertex& three = m_Vertices.Get(face.vertices[2]);
+					normal += Math::CalculateTriangleNormal(one.position, two.position,three.position);
+				}
+				Math::NormalizeInPlace(normal);
 			}
-
-			vec normal = Math::CalculateSurfaceNormal(points.begin(), points.end());
 
 			Imagine::Vertex vertex;
 			vertex.position = vert.position;
