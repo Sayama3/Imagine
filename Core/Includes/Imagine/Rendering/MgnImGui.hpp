@@ -10,10 +10,14 @@ namespace Imagine::Core {
 	class MgnImGui {
 	private:
 		inline static bool s_DockingEnabled { false };
+		inline static bool s_IsDarkTheme { true };
 	public:
 		static void CreateContext();
 		static void InitializeWindow();
 		static void InitializeRenderer();
+
+		static void SetDarkThemeColors();
+		static void SetLightThemeColors();
 
 		static void EnableDocking();
 		static void DisableDocking();
