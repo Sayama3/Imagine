@@ -425,6 +425,8 @@ namespace Imagine::Math {
 
 	public:
 		void SubdivideLoop();
+		void SubdivideKobbelt();
+		void SubdivideButterfly();
 
 		Core::CPUMesh GetSmoothCPUMesh();
 		Core::CPUMesh GetHardCPUMesh();
@@ -738,18 +740,27 @@ namespace Imagine::Math {
 			EdgePoint &pE3 = *ppE3;
 
 			AddTriangle(edgeIds, newVertices, newEdges, newFaces, pE1.id, pE2.id, pE3.id);
-			//EnsureLink(newVertices, newEdges);
+			// EnsureLink(newVertices, newEdges);
 			AddTriangle(edgeIds, newVertices, newEdges, newFaces, p1ID, pE1.id, pE3.id);
-			//EnsureLink(newVertices, newEdges);
+			// EnsureLink(newVertices, newEdges);
 			AddTriangle(edgeIds, newVertices, newEdges, newFaces, p2ID, pE2.id, pE1.id);
-			//EnsureLink(newVertices, newEdges);
+			// EnsureLink(newVertices, newEdges);
 			AddTriangle(edgeIds, newVertices, newEdges, newFaces, p3ID, pE3.id, pE2.id);
-			//EnsureLink(newVertices, newEdges);
+			// EnsureLink(newVertices, newEdges);
 		}
 
 		m_Vertices = newVertices;
 		m_Edges = newEdges;
 		m_Faces = newFaces;
+	}
+	template<typename T, glm::qualifier Q>
+	void MeshGraph3D<T, Q>::SubdivideKobbelt() {
+		MGN_CORE_ERROR("Function 'void MeshGraph3D<T, Q>::SubdivideKobbelt(void);' not implemented.");
+	}
+
+	template<typename T, glm::qualifier Q>
+	void MeshGraph3D<T, Q>::SubdivideButterfly() {
+		MGN_CORE_ERROR("Function 'void MeshGraph3D<T, Q>::SubdivideButterfly(void);' not implemented.");
 	}
 
 	template<typename T, glm::qualifier Q>

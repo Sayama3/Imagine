@@ -25,8 +25,7 @@ namespace Imagine::Application {
 		bool ChangeModelAndPath(const std::filesystem::path& path);
 	private:
 		[[maybe_unused]] void ImGuiChaikin();
-		[[maybe_unused]] void ImGuiLoop();
-		[[maybe_unused]] void ImGuiKobbelt();
+		[[maybe_unused]] void ImGuiSubdivide();
 
 	private:
 		Core::Window* m_Window{nullptr};

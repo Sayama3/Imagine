@@ -75,9 +75,7 @@ namespace Imagine::Application {
 	void ApplicationLayer::OnImGuiRender() {
 		ImGuiChaikin();
 
-		ImGuiLoop();
-
-		ImGuiKobbelt();
+		ImGuiSubdivide();
 	}
 
 	void ApplicationLayer::OnRender(Core::DrawContext &ctx) {
@@ -196,10 +194,10 @@ namespace Imagine::Application {
 		ImGui::End();
 	}
 
-	void ApplicationLayer::ImGuiLoop() {
+	void ApplicationLayer::ImGuiSubdivide() {
 
 		ImGui::SetNextWindowSize({200, 400}, ImGuiCond_FirstUseEver);
-		ImGui::Begin("Loop Subdivide");
+		ImGui::Begin("Subdivisions");
 		{
 			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
@@ -209,7 +207,9 @@ namespace Imagine::Application {
 				ChangeModelAndPath(s_ModelPath);
 			}
 
-			ImGui::DragInt("Step Count", &s_Step, 0.5, 1, INT_MAX);
+			ImGui::InputInt("Step Count", &s_Step, 1, 10, 0);
+			s_Step = std::max(s_Step, 1);
+
 
 			ImGui::Checkbox("Shade Smooth", &s_Smooth);
 
@@ -244,16 +244,75 @@ namespace Imagine::Application {
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
 				m_MeshChanged = true;
 			}
+
+			if (ImGui::Button("Butterfly Subdivide")) {
+				long double total{0};
+				for (uint32_t i = 0; i < s_Step; ++i) {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_MeshGraph.SubdivideButterfly();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					total += ms;
+					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
+					// m_MeshGraph.EnsureLink();
+				}
+				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
+
+				if (s_Smooth) {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_SubdividedMesh = m_MeshGraph.GetSmoothCPUMesh();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
+				} else {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_SubdividedMesh = m_MeshGraph.GetHardCPUMesh();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
+				}
+
+				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
+				m_MeshChanged = true;
+			}
+
+			if (ImGui::Button("Kobbelt Subdivide")) {
+				long double total{0};
+				for (uint32_t i = 0; i < s_Step; ++i) {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_MeshGraph.SubdivideKobbelt();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					total += ms;
+					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
+					// m_MeshGraph.EnsureLink();
+				}
+				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
+
+				if (s_Smooth) {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_SubdividedMesh = m_MeshGraph.GetSmoothCPUMesh();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
+				} else {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_SubdividedMesh = m_MeshGraph.GetHardCPUMesh();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
+				}
+
+				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
+				m_MeshChanged = true;
+			}
 			ImGui::EndDisabled();
 		}
 		ImGui::End();
 	}
 
-	void ApplicationLayer::ImGuiKobbelt() {
-	}
 #else
 	void ApplicationLayer::ImGuiChaikin() {}
-	void ApplicationLayer::ImGuiLoop() {}
-	void ApplicationLayer::ImGuiKobbelt() {}
+	void ApplicationLayer::ImGuiSubdivide() {}
 #endif
 } // namespace Imagine::Application
