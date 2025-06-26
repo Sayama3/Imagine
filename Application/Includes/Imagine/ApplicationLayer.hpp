@@ -7,12 +7,18 @@
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Layers/Layer.hpp"
 #include "Imagine/Math/ChaikinCurves.hpp"
-#include "Imagine/Math/MeshGraph3D.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
+
+namespace Imagine::Math {
+	class MeshGraph3D;
+}
 
 namespace Imagine::Application {
 	using namespace Imagine::Core;
 	class ApplicationLayer final : public Core::Layer {
+	public:
+		ApplicationLayer();
+		~ApplicationLayer() override;
 	public:
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -32,14 +38,14 @@ namespace Imagine::Application {
 		Core::Renderer *m_Renderer{nullptr};
 
 
-		Math::ChaikinCurves<> m_ChaikinCurves;
-		LineObject m_Line;
+		Math::ChaikinCurves<> m_ChaikinCurves{};
+		LineObject m_Line{};
 
 
 		std::filesystem::path m_ModelPath;
 		bool m_MeshChanged = true;
 		Core::CPUMesh m_Mesh;
-		Math::MeshGraph3D<> m_MeshGraph;
+		Math::MeshGraph3D* m_MeshGraph{};
 		Core::CPUMesh m_SubdividedMesh;
 
 		Core::EntityID m_OriginalMeshEntityID;

@@ -8,6 +8,7 @@
 #include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
+#include "Imagine/Math/MeshGraph3D.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -18,6 +19,12 @@ using namespace Imagine::Core;
 
 namespace Imagine::Application {
 
+	ApplicationLayer::ApplicationLayer() {
+		m_MeshGraph = new Math::MeshGraph3D();
+	}
+	ApplicationLayer::~ApplicationLayer() {
+		delete m_MeshGraph;
+	}
 	void ApplicationLayer::OnAttach() {
 		m_Window = Window::Get();
 		m_Renderer = Renderer::Get();
@@ -32,22 +39,24 @@ namespace Imagine::Application {
 		m_LoopMeshEntityID = SceneManager::GetMainScene()->CreateEntity();
 		SceneManager::GetMainScene()->GetEntity(m_LoopMeshEntityID).LocalPosition = {1, 0, 0};
 
-		m_MeshGraph.AddMesh(m_Mesh);
+		m_MeshGraph->Clear();
+		m_MeshGraph->AddMesh(m_Mesh);
 
-		m_MeshGraph.EnsureLink();
+		m_MeshGraph->EnsureLink();
 		m_MeshChanged = false;
 
 		m_ChaikinCurves.SetUV(0.3, 0.3);
 	}
 
 	void ApplicationLayer::OnDetach() {
+		m_MeshGraph->Clear();
 	}
 
 	void ApplicationLayer::OnUpdate(Core::TimeStep timeStep) {
 
 		if (m_MeshChanged) {
-			m_MeshGraph.Clear();
-			m_MeshGraph.AddMesh(m_Mesh);
+			m_MeshGraph->Clear();
+			m_MeshGraph->AddMesh(m_Mesh);
 			m_MeshChanged = false;
 		}
 
@@ -218,24 +227,24 @@ namespace Imagine::Application {
 				long double total{0};
 				for (uint32_t i = 0; i < s_Step; ++i) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_MeshGraph.SubdivideLoop();
+					m_MeshGraph->SubdivideLoop();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					total += ms;
 					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
-					// m_MeshGraph.EnsureLink();
+					// m_MeshGraph->EnsureLink();
 				}
 				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph.GetSmoothCPUMesh();
+					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
 				} else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph.GetHardCPUMesh();
+					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
@@ -249,24 +258,24 @@ namespace Imagine::Application {
 				long double total{0};
 				for (uint32_t i = 0; i < s_Step; ++i) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_MeshGraph.SubdivideButterfly();
+					m_MeshGraph->SubdivideButterfly();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					total += ms;
 					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
-					// m_MeshGraph.EnsureLink();
+					// m_MeshGraph->EnsureLink();
 				}
 				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph.GetSmoothCPUMesh();
+					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
 				} else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph.GetHardCPUMesh();
+					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
@@ -280,24 +289,24 @@ namespace Imagine::Application {
 				long double total{0};
 				for (uint32_t i = 0; i < s_Step; ++i) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_MeshGraph.SubdivideKobbelt();
+					m_MeshGraph->SubdivideKobbelt();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					total += ms;
 					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
-					// m_MeshGraph.EnsureLink();
+					// m_MeshGraph->EnsureLink();
 				}
 				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph.GetSmoothCPUMesh();
+					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
 				} else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph.GetHardCPUMesh();
+					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);

@@ -32,4 +32,12 @@ namespace Imagine::Core {
 	bool operator!=(const UUID &lft, const UUID &rht) {
 		return !(lft == rht);
 	}
+
+	std::strong_ordering UUID::operator<=>(const UUID &rht) const {
+		const auto& lft = *this;
+		if (lft.m_UUID1 == rht.m_UUID1) {
+			return lft.m_UUID2 <=> rht.m_UUID2;
+		}
+		return lft.m_UUID1 <=> rht.m_UUID1;
+	}
 } // namespace Imagine::Core

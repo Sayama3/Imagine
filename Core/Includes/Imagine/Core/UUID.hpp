@@ -33,6 +33,7 @@ namespace Imagine::Core {
 	public:
 		friend bool operator==(const UUID &lft, const UUID &rht);
 		friend bool operator!=(const UUID &lft, const UUID &rht);
+		std::strong_ordering operator<=>(const UUID &rht) const;
 
 	private:
 		uint64_t m_UUID1, m_UUID2;
