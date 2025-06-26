@@ -141,7 +141,6 @@ namespace Imagine::Math {
 					}
 				}
 			}
-
 			void AddFace(const FaceID face) {
 				if (linkedFaces.empty()) {
 					linkedFaces.push_back(face);
@@ -159,6 +158,20 @@ namespace Imagine::Math {
 					}
 				}
 			}
+			void RemoveEdge(const EdgeID edge) {
+				bool found = false;
+				auto it = std::find(linkedEdges.begin(), linkedEdges.end(), edge);
+				if (it != linkedEdges.end()) {
+					linkedEdges.erase(it);
+				}
+			}
+			void RemoveFace(const FaceID face) {
+				bool found = false;
+				auto it = std::find(linkedFaces.begin(), linkedFaces.end(), face);
+				if (it != linkedFaces.end()) {
+					linkedFaces.erase(it);
+				}
+			}
 
 			std::vector<EdgeID> linkedEdges{};
 			std::vector<FaceID> linkedFaces{};
@@ -173,9 +186,9 @@ namespace Imagine::Math {
 
 			VertexID begin;
 			VertexID end;
-			std::array<std::optional<FaceID>, 2> linkedFaces;
+			std::array<std::optional<FaceID>, 2> linkedFaces{std::nullopt, std::nullopt};
 
-			VertexID GetOtherVertex(VertexID id) const {
+			[[nodiscard]] VertexID GetOtherVertexID(VertexID id) const {
 				if (begin == id) return end;
 				MGN_CORE_ASSERT(id == end, "The point id {} is not part of this edge.", id.id);
 				return begin;
@@ -191,21 +204,26 @@ namespace Imagine::Math {
 				}
 			}
 
-			FaceID* GetFace(FaceID faceId) {
+			[[nodiscard]] FaceID* GetFaceID(FaceID faceId) {
 				if (linkedFaces[0].has_value() && linkedFaces[0].value() == faceId) {return &(linkedFaces[0].value());}
 				if (linkedFaces[1].has_value() && linkedFaces[1].value() == faceId) {return &(linkedFaces[1].value());}
 				return nullptr;
 			}
-			FaceID* GetOtherFace(FaceID faceId) {
+			[[nodiscard]] FaceID* GetOtherFaceID(FaceID faceId) {
 				if (linkedFaces[0].has_value() && linkedFaces[0].value() != faceId) {return &(linkedFaces[0].value());}
 				if (linkedFaces[1].has_value() && linkedFaces[1].value() != faceId) {return &(linkedFaces[1].value());}
 				return nullptr;
 			}
 
-			bool IsBegin(VertexID id) const {
+			[[nodiscard]] bool IsBegin(VertexID id) const {
 				return id == begin;
 			}
-			ReversiblePair<VertexID> GetPair() { return MGN_MAKE_PAIR_TYPE(begin, end, ReversiblePair<VertexID>); }
+
+			[[nodiscard]] bool HasTwoTriangle() const {
+				return linkedFaces[0].has_value() && linkedFaces[1].has_value();
+			}
+
+			[[nodiscard]] ReversiblePair<VertexID> GetPair() { return MGN_MAKE_PAIR_TYPE(begin, end, ReversiblePair<VertexID>); }
 		};
 		struct Face {
 			inline static constexpr uint64_t VertexCount = 3;
@@ -223,7 +241,14 @@ namespace Imagine::Math {
 			std::array<VertexID, VertexCount> vertices;
 			std::array<EdgeID, VertexCount> edges;
 
-			VertexID GetOther(VertexID one, VertexID two) {
+			std::optional<VertexID> GetFollowing(const VertexID v) const {
+				for (uint64_t i = 0; i < VertexCount; ++i) {
+					if (vertices[i] == v) return vertices[(i+1)%VertexCount];
+				}
+				return std::nullopt;
+			}
+
+			VertexID GetOther(const VertexID one, const VertexID two) const {
 				auto it = std::find_if(vertices.begin(), vertices.end(), [one, two](auto v) {
 					return v != one && v != two;
 				});
@@ -232,6 +257,7 @@ namespace Imagine::Math {
 		};
 
 	public:
+		using VerticesToEdgeMap = std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash>;
 		using VertexSparseSet = Core::AutoIdSparseSet<Vertex, IdType, true>;
 		using EdgeSparseSet = Core::AutoIdSparseSet<Edge, IdType, false>;
 		using FaceSparseSet = Core::AutoIdSparseSet<Face, IdType, false>;
@@ -421,6 +447,7 @@ namespace Imagine::Math {
 
 	public:
 		void Clear() {
+			m_VertToEdge.clear();
 			m_Vertices.Clear();
 			m_Edges.Clear();
 			m_Faces.Clear();
@@ -443,10 +470,10 @@ namespace Imagine::Math {
 		Core::CPUMesh GetHardCPUMesh();
 
 	private:
-		static void AddTriangle(std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3);
+		static void AddTriangle(VerticesToEdgeMap &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3);
 
 	private:
-		std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> m_VertToEdge;
+		VerticesToEdgeMap m_VertToEdge{};
 		VertexSparseSet m_Vertices{50};
 		EdgeSparseSet m_Edges{50};
 		FaceSparseSet m_Faces{50};
@@ -533,7 +560,7 @@ namespace Imagine::Math {
 
 
 	template<typename T, glm::qualifier Q>
-	void MeshGraph3D<T, Q>::AddTriangle(std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3) {
+	void MeshGraph3D<T, Q>::AddTriangle(VerticesToEdgeMap &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3) {
 		EdgeID edge1Id;
 		EdgeID edge2Id;
 		EdgeID edge3Id;
@@ -629,7 +656,6 @@ namespace Imagine::Math {
 
 		for (auto it = m_Vertices.begin(); it != m_Vertices.end(); ++it) {
 			IdType id = it.GetID();
-			MGN_CORE_ASSERT(id < m_Vertices.Count(), "wtf");
 			Vertex v{it->position};
 			newVertices.Create(id, v);
 		}
@@ -700,7 +726,7 @@ namespace Imagine::Math {
 			for (uint64_t i = 0; i < vertIt->linkedEdges.size(); ++i) {
 				EdgeID edgeId = vertIt->linkedEdges[i];
 				Edge &edge = m_Edges.Get(edgeId);
-				const auto vertId = edge.GetOtherVertex(vertIt.GetID());
+				const auto vertId = edge.GetOtherVertexID(vertIt.GetID());
 				const auto &vert = m_Vertices.Get(vertId);
 				vertPrim += vert.position * alpha;
 			}
@@ -709,7 +735,7 @@ namespace Imagine::Math {
 			newVertices.Get(vertIt.GetID().id).position = vertPrim;
 		}
 
-		std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> edgeIds;
+		VerticesToEdgeMap edgeIds;
 		edgeIds.reserve(m_Edges.Count() + edgePoints.size() * 3);
 		EdgeSparseSet newEdges{static_cast<IdType>(m_Edges.Count() + edgePoints.size() * 3)};
 		FaceSparseSet newFaces{static_cast<IdType>(m_Faces.Count() * 3)};
@@ -760,38 +786,94 @@ namespace Imagine::Math {
 			// EnsureLink(newVertices, newEdges);
 		}
 
+		m_VertToEdge = edgeIds;
 		m_Vertices = newVertices;
 		m_Edges = newEdges;
 		m_Faces = newFaces;
 	}
 	template<typename T, glm::qualifier Q>
 	void MeshGraph3D<T, Q>::SubdivideKobbelt() {
+
+		// We initialize our kobbel with a fresh copy of our data structure but clearing all the linked types.
+		//  Theses will be filled in back as we go. Only works as we used kinda set and check for no doubles.
+		std::unordered_set<EdgeID, EdgeIDHash> originalEdges;
+		VerticesToEdgeMap vertToEdgeMap = m_VertToEdge;
+		VertexSparseSet newVertices(m_Vertices.Count());
+		EdgeSparseSet newEdges(m_Edges.Count());
 		FaceSparseSet newFaces;
+
 		const auto endFaces=EndFace();
+		originalEdges.reserve(m_Edges.Count());
+
+
+		//Perturb the initial position in the initial vertex set and cleanup the vertex link.
+		// Copy is not working so manual copy. To fix later.
+		for(uint64_t i = 0; i < m_Vertices.Count(); ++i) {
+			const auto vertId = m_Vertices.GetID(i);
+			newVertices.GetOrCreate(vertId).position = m_Vertices.Get(vertId).position;
+		}
+
+		for (uint64_t i = 0; i < m_Edges.Count(); ++i) {
+			const auto edgeId = m_Edges.GetID(i);
+			const auto& edge = m_Edges.Get(edgeId);
+			Edge newEdge{edge.begin, edge.end};
+			newEdges.GetOrCreate(edgeId).begin = newEdge.begin;
+			newEdges.GetOrCreate(edgeId).end = newEdge.end;
+		}
+
+		const auto endNewVert = m_Vertices.end();
+		for (auto it = m_Vertices.begin(); it != endNewVert; ++it) {
+			constexpr T oneNine = T(1) / T(9);
+
+			const uint64_t neighCount = it->linkedEdges.size();
+			const T tNeighCount = T(neighCount);
+			const T alpha = oneNine * (4 - (2*Math::Cos(T(Math::Tau)/tNeighCount)));
+
+			vec cumulatedNeigh{0};
+
+			const T alphaOnN = alpha / tNeighCount;
+
+			for (uint64_t i = 0; i < neighCount; ++i) {
+				cumulatedNeigh += newVertices.Get(m_Edges.Get(it->linkedEdges[i]).GetOtherVertexID(VertexID{it.GetID()})).position * alphaOnN;
+			}
+			const vec new_pos = (1 - alpha) * it->position + cumulatedNeigh;
+			m_Vertices.Get(it.GetID()).position = new_pos;
+		}
+
+		// Iterate on all triangles to create the new triangles. 1 to 3
 		for (auto it = BeginFace(); it != endFaces; ++it) {
 			const VertexID v1Id = it.GetVertexID(0);
-			Vertex& v1 = m_Vertices.Get(v1Id);
+			Vertex& v1 = newVertices.Get(v1Id);
+
+
 			const VertexID v2Id = it.GetVertexID(1);
-			Vertex& v2 = m_Vertices.Get(v2Id);
+			Vertex& v2 = newVertices.Get(v2Id);
+
+
 			const VertexID v3Id = it.GetVertexID(2);
-			Vertex& v3 = m_Vertices.Get(v3Id);
-
-			const EdgeID v1v2Id = it.GetEdgeID(0);
-			Edge& v1v2 = m_Edges.Get(v1v2Id);
-			const EdgeID v2v3Id = it.GetEdgeID(1);
-			Edge& v2v3 = m_Edges.Get(v2v3Id);
-			const EdgeID v3v1Id = it.GetEdgeID(2);
-			Edge& v3v1 = m_Edges.Get(v3v1Id);
-
+			Vertex& v3 = newVertices.Get(v3Id);
 
 			VertexID v4Id;
 			{
 				constexpr T oneThird = T(1) / T(3);
 				Vertex v4;
 				v4.position = v1.position * oneThird + v2.position * oneThird + v3.position * oneThird;
-				v4Id = m_Vertices.Create(v4);
+				v4Id.id = newVertices.Create(v4);
 			}
-			Vertex& v4 = m_Vertices.Get(v4Id);
+			Vertex& v4 = newVertices.Get(v4Id);
+
+			const EdgeID v1v2Id = it.GetEdgeID(0);
+			Edge& v1v2 = newEdges.Get(v1v2Id);
+			originalEdges.emplace(v1v2Id);
+
+			const EdgeID v2v3Id = it.GetEdgeID(1);
+			Edge& v2v3 = newEdges.Get(v2v3Id);
+			newEdges.Create(v2v3Id, v2v3);
+			originalEdges.emplace(v2v3Id);
+
+			const EdgeID v3v1Id = it.GetEdgeID(2);
+			Edge& v3v1 = newEdges.Get(v3v1Id);
+			originalEdges.emplace(v3v1Id);
 
 			EdgeID v1v4Id;
 			EdgeID v2v4Id;
@@ -799,40 +881,176 @@ namespace Imagine::Math {
 
 			{
 				Edge v1v4{v1Id, v4Id};
-				v1v4Id = m_Edges.Create(v1v4);
-				m_VertToEdge[{v1Id, v4Id}] = v1v4Id;
+				v1v4Id.id = newEdges.Create(v1v4);
+				vertToEdgeMap[{v1Id, v4Id}] = v1v4Id;
 				Edge v2v4{v2Id, v4Id};
-				v2v4Id = m_Edges.Create(v2v4);
-				m_VertToEdge[{v2Id, v4Id}] = v2v4Id;
+				v2v4Id.id = newEdges.Create(v2v4);
+				vertToEdgeMap[{v2Id, v4Id}] = v2v4Id;
 				Edge v3v4{v3Id, v4Id};
-				v3v4Id = m_Edges.Create(v3v4);
-				m_VertToEdge[{v3Id, v4Id}] = v3v4Id;
+				v3v4Id.id = newEdges.Create(v3v4);
+				vertToEdgeMap[{v3Id, v4Id}] = v3v4Id;
 			}
 
-			Edge& v1v4 = m_Edges.Get(v1v4Id);
-			Edge& v2v4 = m_Edges.Get(v2v4Id);
-			Edge& v3v4 = m_Edges.Get(v3v4Id);
+			Edge& v1v4 = newEdges.Get(v1v4Id);
+			Edge& v2v4 = newEdges.Get(v2v4Id);
+			Edge& v3v4 = newEdges.Get(v3v4Id);
 
-			Face f1 {
+			const Face f1 {
 				{v1Id,v2Id,v4Id},
 				{v1v2Id,v2v4Id,v1v4Id}
 			};
-			FaceID f1Id = newFaces.Create(f1);
+			FaceID f1Id = FaceID{newFaces.Create(f1)};
 
-			Face f2 {
+			const Face f2 {
 				{v2Id, v3Id, v4Id},
 				{v2v3Id, v3v4Id, v2v4Id}
 			};
-			FaceID f2Id = newFaces.Create(f2);
+			FaceID f2Id = FaceID{newFaces.Create(f2)};
 
-			Face f3 {
+			const Face f3 {
 				{v3Id, v1Id, v4Id},
 				{v3v1Id, v1v4Id, v3v4Id}
 			};
-			FaceID f3Id = newFaces.Create(f3);
+			FaceID f3Id = FaceID{newFaces.Create(f3)};
 
-			//TODO: Backpropagate the new faceID and the links of this current face.
+
+			// Original Vertices - New Faces
+			v1.AddFace(f3Id);
+			v1.AddFace(f1Id);
+
+			v2.AddFace(f1Id);
+			v2.AddFace(f2Id);
+
+			v3.AddFace(f2Id);
+			v3.AddFace(f3Id);
+
+			// Original Vertices - New Edges
+			v1.AddEdge(v3v1Id);
+			v1.AddEdge(v1v2Id);
+			v1.AddEdge(v1v4Id);
+
+			v2.AddEdge(v1v2Id);
+			v2.AddEdge(v2v3Id);
+			v2.AddEdge(v2v4Id);
+
+			v3.AddEdge(v2v3Id);
+			v3.AddEdge(v3v1Id);
+			v3.AddEdge(v3v4Id);
+
+			// Original Edges - New Faces
+			v1v2.AddFace(f1Id);
+			v2v3.AddFace(f2Id);
+			v3v1.AddFace(f3Id);
+
+			// New Vertices - New Edges
+			v4.AddEdge(v1v4Id);
+			v4.AddEdge(v2v4Id);
+			v4.AddEdge(v3v4Id);
+
+			// New Vertices - New Faces
+			v4.AddFace(f1Id);
+			v4.AddFace(f2Id);
+			v4.AddFace(f3Id);
+
+			// New Edges - New Faces
+			v1v4.AddFace(f3Id);
+			v1v4.AddFace(f1Id);
+
+			v2v4.AddFace(f1Id);
+			v2v4.AddFace(f2Id);
+
+			v3v4.AddFace(f2Id);
+			v3v4.AddFace(f3Id);
+
 		}
+
+		// Apply the perturbed position.
+		const auto vertEnd = m_Vertices.end();
+		for (auto it = m_Vertices.begin(); it != vertEnd; ++it) {
+			newVertices.Get(it.GetID()).position = it->position;
+		}
+
+
+		// We can now move onto the flipping.
+		for (EdgeID edgeId : originalEdges) {
+			Edge& edge = newEdges.Get(edgeId.id);
+
+			if (!edge.HasTwoTriangle()) continue;
+
+			const VertexID v1Id = edge.begin;
+			const VertexID v2Id = edge.end;
+
+
+			const FaceID f1Id = edge.linkedFaces[0].value();
+			const FaceID f2Id = edge.linkedFaces[1].value();
+
+			Face& f1 = newFaces.Get(f1Id);
+			Face& f2 = newFaces.Get(f2Id);
+
+			const VertexID v3Id = f1.GetOther(edge.begin, edge.end);
+			const VertexID v4Id = f2.GetOther(edge.begin, edge.end);
+
+
+			// Change edge
+			edge.begin = v3Id;
+			edge.end = v4Id;
+
+			// Swap the link to this edges
+			vertToEdgeMap.erase({v1Id, v2Id});
+			vertToEdgeMap[{v3Id, v4Id}] = edgeId;
+
+			// Remove the edge from the vertice
+			newVertices.Get(v1Id).RemoveEdge(edgeId);
+			newVertices.Get(v2Id).RemoveEdge(edgeId);
+
+			// Remove the face of the vertice before we know which is who
+			newVertices.Get(v1Id).RemoveFace(f1Id);
+			newVertices.Get(v2Id).RemoveFace(f2Id);
+
+			// Add the new Edge to the vertex
+			newVertices.Get(v3Id).AddEdge(edgeId);
+			newVertices.Get(v4Id).AddEdge(edgeId);
+
+			// Add the missing face to the Edges.
+			newVertices.Get(v3Id).AddFace(f2Id);
+			newVertices.Get(v4Id).AddFace(f1Id);
+
+			Face newf1;
+			if (f1.GetFollowing(v3Id) == v1Id) {
+				MGN_CORE_ASSERT(f1.GetFollowing(v1Id) == v2Id, "WTF is this triangle !");
+
+				newf1.vertices = {v3Id, v1Id, v4Id};
+				newf1.edges = {vertToEdgeMap.at({v3Id, v1Id}),vertToEdgeMap.at({v1Id, v4Id}),vertToEdgeMap.at({v4Id, v3Id})};
+			} else {
+				MGN_CORE_ASSERT(f1.GetFollowing(v3Id) == v2Id, "WTF is this triangle !");
+				MGN_CORE_ASSERT(f1.GetFollowing(v2Id) == v1Id, "WTF is this triangle !");
+				newf1.vertices = {v3Id, v2Id, v4Id};
+				newf1.edges = {vertToEdgeMap.at({v3Id, v2Id}),vertToEdgeMap.at({v2Id, v4Id}),vertToEdgeMap.at({v4Id, v3Id})};
+			}
+
+			Face newf2;
+			if (f2.GetFollowing(v4Id) == v1Id) {
+				MGN_CORE_ASSERT(f2.GetFollowing(v1Id) == v2Id, "WTF is this triangle !");
+
+				newf2.vertices = {v4Id, v1Id, v3Id};
+				newf2.edges = {vertToEdgeMap.at({v4Id, v1Id}),vertToEdgeMap.at({v1Id, v3Id}),vertToEdgeMap.at({v3Id, v4Id})};
+			} else {
+				MGN_CORE_ASSERT(f2.GetFollowing(v4Id) == v2Id, "WTF is this triangle !");
+				MGN_CORE_ASSERT(f2.GetFollowing(v2Id) == v1Id, "WTF is this triangle !");
+				newf2.vertices = {v4Id, v2Id, v3Id};
+				newf2.edges = {vertToEdgeMap.at({v4Id, v2Id}),vertToEdgeMap.at({v2Id, v3Id}),vertToEdgeMap.at({v3Id, v4Id})};
+			}
+
+			MGN_CORE_ASSERT(newf1.vertices[1] != newf2.vertices[1], "We used the same vertice for the two triangles, there is a problem somewhere.");
+
+			f1 = newf1;
+			f2 = newf2;
+		}
+
+		m_VertToEdge = vertToEdgeMap;
+		m_Vertices = newVertices;
+		m_Edges = newEdges;
+		m_Faces = newFaces;
 	}
 
 	template<typename T, glm::qualifier Q>

@@ -62,25 +62,31 @@ namespace Imagine::Core {
 			elements.reserve(capacity);
 		}
 		SparseSet(const SparseSet& o) {
+			// sparse = o.sparse;
+			// dense = o.dense;
+			// elements.redimension(dense.size());
+			// for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+			// 	new (&elements[i]) T(o.elements[i]);
+			// }
 			sparse = o.sparse;
 			dense = o.dense;
-			elements.redimension(dense.size());
-			for (UnsignedInteger i = 0; i < dense.size(); ++i) {
-				new (&elements[i]) T(o.elements[i]);
-			}
+			elements = o.elements;
 		}
 		SparseSet& operator=(const SparseSet& o) {
-			if constexpr (CallDestructorT) {
-				for (UnsignedInteger i = 0; i < elements.size(); ++i) {
-					elements.get(i).~T();
-				}
-			}
+			//if constexpr (CallDestructorT) {
+			//	for (UnsignedInteger i = 0; i < elements.size(); ++i) {
+			//		elements.get(i).~T();
+			//	}
+			//}
+			//sparse = o.sparse;
+			//dense = o.dense;
+			//elements.redimension(dense.size());
+			//for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+			//	new (&elements[i]) T(o.elements[i]);
+			//}
 			sparse = o.sparse;
 			dense = o.dense;
-			elements.redimension(dense.size());
-			for (UnsignedInteger i = 0; i < dense.size(); ++i) {
-				new (&elements[i]) T(o.elements[i]);
-			}
+			elements = o.elements;
 			return *this;
 		}
 		SparseSet(SparseSet&&s) noexcept {swap(s);}
@@ -92,11 +98,11 @@ namespace Imagine::Core {
 		}
 
 		virtual ~SparseSet() {
-			if constexpr( CallDestructorT) {
-				for (int i = 0; i < elements.size(); ++i) {
-					 elements[i].~T();
-				}
-			}
+			// if constexpr( CallDestructorT) {
+			// 	for (int i = 0; i < elements.size(); ++i) {
+			// 		 elements[i].~T();
+			// 	}
+			// }
 			elements.clear();
 			dense.clear();
 			sparse.clear();
@@ -153,8 +159,12 @@ namespace Imagine::Core {
 		public:
 			UnsignedInteger GetID() const {return sparseSet->dense[index];}
 			UnsignedInteger GetIndex() const {return index;}
-			reference GetElement()  {return sparseSet->elements.get(index);}
-			const reference GetElement() const  {return sparseSet->elements.get(index);}
+			reference GetElement()  {return sparseSet->elements.at(index);}
+			const reference GetElement() const  {return sparseSet->elements.at(index);}
+		public:
+			UnsignedInteger GetMaxID() const {
+				return std::max(dense.begin(), dense.end());
+			}
 		private:
 			SparseSet* sparseSet{nullptr};
 			UnsignedInteger index{0};
@@ -202,7 +212,7 @@ namespace Imagine::Core {
 		public:
 			UnsignedInteger GetID() const {return sparseSet->dense[index];}
 			UnsignedInteger GetIndex() const {return index;}
-			reference GetElement() const  {return sparseSet->elements.get(index);}
+			reference GetElement() const  {return sparseSet->elements.at(index);}
 		private:
 			const SparseSet* sparseSet{nullptr};
 			UnsignedInteger index{0};
@@ -226,7 +236,7 @@ namespace Imagine::Core {
 			if (!RawCreate(id)) return false;
 
 			// Initialize the data.
-			new (&elements[sparse[id]]) T();
+			// new (&elements[sparse[id]]) T();
 
 			return true;
 		}
@@ -235,8 +245,8 @@ namespace Imagine::Core {
 			if (!RawCreate(id)) return false;
 
 			// Initialize the data.
-			new (&elements[sparse[id]]) T(data);
-
+			// new (&elements[sparse[id]]) T(data);
+			elements[sparse[id]] = data;
 			return true;
 		}
 
@@ -262,7 +272,7 @@ namespace Imagine::Core {
 
 			// Calling destructor cause the type T is not in use anymore.
 			if constexpr (CallDestructorT) {
-				elements[index].~T();
+				// elements[index].~T();
 			}
 
 			// Removing the index from existing.
@@ -302,8 +312,8 @@ namespace Imagine::Core {
 
 		virtual void Prepare(const UnsignedInteger additional_capacity) {
 			sparse.reserve(dense.size() + additional_capacity);
-			dense.prepare(additional_capacity);
-			elements.prepare(additional_capacity);
+			dense.reserve(dense.size() + additional_capacity);
+			elements.reserve(elements.size() + additional_capacity);
 		}
 
 		[[nodiscard]] virtual T *TryGet(const UnsignedInteger id) {
@@ -348,9 +358,9 @@ namespace Imagine::Core {
 		}
 
 	protected:
-		HeapArray<UnsignedInteger, UnsignedInteger> sparse{};
-		HeapArray<UnsignedInteger, UnsignedInteger> dense{};
-		HeapArray<T, UnsignedInteger> elements{};
+		std::vector<UnsignedInteger> sparse{};
+		std::vector<UnsignedInteger> dense{};
+		std::vector<T> elements{};
 	};
 
 
@@ -425,7 +435,8 @@ namespace Imagine::Core {
 
 				auto it = std::find(begin, end, id);
 				if (it != end) {
-					FreeList.swap_and_remove(it);
+					FreeList.erase(it);
+					// FreeList.swap_and_remove(it);
 				}
 			}
 		}
@@ -479,14 +490,14 @@ namespace Imagine::Core {
 
 		virtual void Clear() override {
 			while (!SparseSet<T, UnsignedInteger, CallDestructorT>::dense.empty()) {
-				const auto id = SparseSet<T, UnsignedInteger, CallDestructorT>::dense.get(SparseSet<T, UnsignedInteger, CallDestructorT>::dense.size() - 1);
+				const auto id = SparseSet<T, UnsignedInteger, CallDestructorT>::dense.at(SparseSet<T, UnsignedInteger, CallDestructorT>::dense.size() - 1);
 				FreeList.push_back(id);
 				SparseSet<T, UnsignedInteger, CallDestructorT>::Remove(id);
 			}
 		}
 
 	protected:
-		HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize};
+		std::vector<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize};
 		UnsignedInteger IDs{0};
 	};
 } // namespace Imagine::Core
