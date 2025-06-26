@@ -191,6 +191,17 @@ namespace Imagine::Math {
 				}
 			}
 
+			FaceID* GetFace(FaceID faceId) {
+				if (linkedFaces[0].has_value() && linkedFaces[0].value() == faceId) {return &(linkedFaces[0].value());}
+				if (linkedFaces[1].has_value() && linkedFaces[1].value() == faceId) {return &(linkedFaces[1].value());}
+				return nullptr;
+			}
+			FaceID* GetOtherFace(FaceID faceId) {
+				if (linkedFaces[0].has_value() && linkedFaces[0].value() != faceId) {return &(linkedFaces[0].value());}
+				if (linkedFaces[1].has_value() && linkedFaces[1].value() != faceId) {return &(linkedFaces[1].value());}
+				return nullptr;
+			}
+
 			bool IsBegin(VertexID id) const {
 				return id == begin;
 			}
@@ -435,6 +446,7 @@ namespace Imagine::Math {
 		static void AddTriangle(std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3);
 
 	private:
+		std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> m_VertToEdge;
 		VertexSparseSet m_Vertices{50};
 		EdgeSparseSet m_Edges{50};
 		FaceSparseSet m_Faces{50};
@@ -487,12 +499,11 @@ namespace Imagine::Math {
 		}
 
 		{
-			std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> edges;
 
 			const auto count = indices.Count<uint32_t>();
 			const auto *array = indices.Get<uint32_t>();
 			for (uint64_t i = 0; i < count; i += 3) {
-				AddTriangle(edges, m_Vertices, m_Edges, m_Faces, m_IDMap[array[i + 0]], m_IDMap[array[i + 1]], m_IDMap[array[i + 2]]);
+				AddTriangle(m_VertToEdge, m_Vertices, m_Edges, m_Faces, m_IDMap[array[i + 0]], m_IDMap[array[i + 1]], m_IDMap[array[i + 2]]);
 				//EnsureLink(m_Vertices, m_Edges);
 			}
 		}
@@ -755,7 +766,73 @@ namespace Imagine::Math {
 	}
 	template<typename T, glm::qualifier Q>
 	void MeshGraph3D<T, Q>::SubdivideKobbelt() {
-		MGN_CORE_ERROR("Function 'void MeshGraph3D<T, Q>::SubdivideKobbelt(void);' not implemented.");
+		FaceSparseSet newFaces;
+		const auto endFaces=EndFace();
+		for (auto it = BeginFace(); it != endFaces; ++it) {
+			const VertexID v1Id = it.GetVertexID(0);
+			Vertex& v1 = m_Vertices.Get(v1Id);
+			const VertexID v2Id = it.GetVertexID(1);
+			Vertex& v2 = m_Vertices.Get(v2Id);
+			const VertexID v3Id = it.GetVertexID(2);
+			Vertex& v3 = m_Vertices.Get(v3Id);
+
+			const EdgeID v1v2Id = it.GetEdgeID(0);
+			Edge& v1v2 = m_Edges.Get(v1v2Id);
+			const EdgeID v2v3Id = it.GetEdgeID(1);
+			Edge& v2v3 = m_Edges.Get(v2v3Id);
+			const EdgeID v3v1Id = it.GetEdgeID(2);
+			Edge& v3v1 = m_Edges.Get(v3v1Id);
+
+
+			VertexID v4Id;
+			{
+				constexpr T oneThird = T(1) / T(3);
+				Vertex v4;
+				v4.position = v1.position * oneThird + v2.position * oneThird + v3.position * oneThird;
+				v4Id = m_Vertices.Create(v4);
+			}
+			Vertex& v4 = m_Vertices.Get(v4Id);
+
+			EdgeID v1v4Id;
+			EdgeID v2v4Id;
+			EdgeID v3v4Id;
+
+			{
+				Edge v1v4{v1Id, v4Id};
+				v1v4Id = m_Edges.Create(v1v4);
+				m_VertToEdge[{v1Id, v4Id}] = v1v4Id;
+				Edge v2v4{v2Id, v4Id};
+				v2v4Id = m_Edges.Create(v2v4);
+				m_VertToEdge[{v2Id, v4Id}] = v2v4Id;
+				Edge v3v4{v3Id, v4Id};
+				v3v4Id = m_Edges.Create(v3v4);
+				m_VertToEdge[{v3Id, v4Id}] = v3v4Id;
+			}
+
+			Edge& v1v4 = m_Edges.Get(v1v4Id);
+			Edge& v2v4 = m_Edges.Get(v2v4Id);
+			Edge& v3v4 = m_Edges.Get(v3v4Id);
+
+			Face f1 {
+				{v1Id,v2Id,v4Id},
+				{v1v2Id,v2v4Id,v1v4Id}
+			};
+			FaceID f1Id = newFaces.Create(f1);
+
+			Face f2 {
+				{v2Id, v3Id, v4Id},
+				{v2v3Id, v3v4Id, v2v4Id}
+			};
+			FaceID f2Id = newFaces.Create(f2);
+
+			Face f3 {
+				{v3Id, v1Id, v4Id},
+				{v3v1Id, v1v4Id, v3v4Id}
+			};
+			FaceID f3Id = newFaces.Create(f3);
+
+			//TODO: Backpropagate the new faceID and the links of this current face.
+		}
 	}
 
 	template<typename T, glm::qualifier Q>
