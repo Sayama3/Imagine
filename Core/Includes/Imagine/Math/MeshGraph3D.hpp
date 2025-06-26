@@ -426,7 +426,8 @@ namespace Imagine::Math {
 	public:
 		void SubdivideLoop();
 
-		Core::CPUMesh GetCPUMesh();
+		Core::CPUMesh GetSmoothCPUMesh();
+		Core::CPUMesh GetHardCPUMesh();
 
 	private:
 		static void AddTriangle(std::unordered_map<ReversiblePair<VertexID>, EdgeID, VertexIDPairHash> &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3);
@@ -752,7 +753,7 @@ namespace Imagine::Math {
 	}
 
 	template<typename T, glm::qualifier Q>
-	Core::CPUMesh MeshGraph3D<T, Q>::GetCPUMesh() {
+	Core::CPUMesh MeshGraph3D<T, Q>::GetSmoothCPUMesh() {
 		Core::CPUMesh mesh;
 		mesh.Vertices.resize(m_Vertices.Count());
 
@@ -781,9 +782,6 @@ namespace Imagine::Math {
 			vertex.normal = normal;
 			mesh.Vertices[vertIt.GetIndex()] = vertex;
 		}
-		for (auto it = m_Vertices.cbegin(); it != m_Vertices.cend(); ++it) {
-			// TODO: Calculate the normal from adjacent vertices.
-		}
 
 		mesh.Indices.reserve(m_Faces.Count() * ((Face::VertexCount - 3) * 3 + 3));
 		for (auto it = m_Faces.cbegin(); it != m_Faces.cend(); ++it) {
@@ -795,6 +793,51 @@ namespace Imagine::Math {
 				mesh.Indices.push_back(last);
 				mesh.Indices.push_back(newLast);
 				last = newLast;
+			}
+		}
+
+		return mesh;
+	}
+
+	template<typename T, glm::qualifier Q>
+	Core::CPUMesh MeshGraph3D<T, Q>::GetHardCPUMesh() {
+		Core::CPUMesh mesh;
+		const auto triangleCount = m_Faces.Count() * ((Face::VertexCount - 3) * 3 + 3);
+		mesh.Vertices.resize(triangleCount*3);
+		mesh.Indices.reserve(triangleCount);
+
+		for (auto it = m_Faces.cbegin(); it != m_Faces.cend(); ++it) {
+			const VertexID firstId = it->vertices[0];
+			VertexID lastId = it->vertices[1];
+			for (uint64_t i = 2; i < Face::VertexCount; ++i) {
+				const VertexID newLastId = it->vertices[i];
+
+				const Vertex& first = m_Vertices.Get(firstId);
+				Imagine::Vertex vFirst{first.position};
+
+				const Vertex& last = m_Vertices.Get(lastId);
+				Imagine::Vertex vLast{last.position};
+
+				const Vertex& newLast = m_Vertices.Get(newLastId);
+				Imagine::Vertex vNewLast{newLast.position};
+
+				vec normal = Math::CalculateTriangleNormal(first.position, last.position, newLast.position);
+
+				vFirst.normal = normal;
+				vLast.normal = normal;
+				vNewLast.normal = normal;
+
+				const uint32_t offset = mesh.Vertices.size();
+
+				mesh.Vertices.push_back(vFirst);
+				mesh.Vertices.push_back(vLast);
+				mesh.Vertices.push_back(vNewLast);
+
+				mesh.Indices.push_back(offset + 0);
+				mesh.Indices.push_back(offset + 1);
+				mesh.Indices.push_back(offset + 2);
+
+				lastId = newLastId;
 			}
 		}
 

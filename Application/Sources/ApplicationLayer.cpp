@@ -203,12 +203,15 @@ namespace Imagine::Application {
 		{
 			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
+			static bool s_Smooth = true;
 			ImGui::InputText("Model Path", &s_ModelPath);
 			if (ImGui::Button("Reload")) {
 				ChangeModelAndPath(s_ModelPath);
 			}
 
 			ImGui::DragInt("Step Count", &s_Step, 0.5, 1, INT_MAX);
+
+			ImGui::Checkbox("Shade Smooth", &s_Smooth);
 
 			ImGui::BeginDisabled(m_MeshChanged);
 			if (ImGui::Button("Loop Subdivide")) {
@@ -223,7 +226,21 @@ namespace Imagine::Application {
 					// m_MeshGraph.EnsureLink();
 				}
 				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
-				m_SubdividedMesh = m_MeshGraph.GetCPUMesh();
+
+				if (s_Smooth) {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_SubdividedMesh = m_MeshGraph.GetSmoothCPUMesh();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
+				} else {
+					const auto before = std::chrono::high_resolution_clock::now();
+					m_SubdividedMesh = m_MeshGraph.GetHardCPUMesh();
+					const auto after = std::chrono::high_resolution_clock::now();
+					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
+					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
+				}
+
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
 				m_MeshChanged = true;
 			}
