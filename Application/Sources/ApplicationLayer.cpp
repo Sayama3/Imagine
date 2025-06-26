@@ -152,10 +152,9 @@ namespace Imagine::Application {
 				}
 			}
 			{
-				uint64_t steps = m_ChaikinCurves.GetStepCount();
-				const uint64_t step = 1;
-				const uint64_t step_fast = 100;
-				if (ImGui::InputScalar("Steps", ImGuiDataType_U64, &steps, &step, &step_fast, "%ull")) {
+				int steps = static_cast<int>(m_ChaikinCurves.GetStepCount());
+				if (ImGui::InputInt("Steps", &steps)) {
+					steps = std::max(steps, 1);
 					m_ChaikinCurves.SetStepCount(steps);
 				}
 			}
@@ -210,16 +209,20 @@ namespace Imagine::Application {
 			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
 			static bool s_Smooth = true;
+			static bool s_ResetMeshAfterSubdivision = true;
 			ImGui::InputText("Model Path", &s_ModelPath);
 			if (ImGui::Button("Reload")) {
 				ChangeModelAndPath(s_ModelPath);
 			}
 
 			ImGui::InputInt("Step Count", &s_Step, 1, 10, 0);
-			s_Step = std::max(s_Step, 1);
+			s_Step = std::max(s_Step, 0);
 
 
 			ImGui::Checkbox("Shade Smooth", &s_Smooth);
+			if (ImGui::Checkbox("Reset Mesh Graph After Subdivision", &s_ResetMeshAfterSubdivision) && s_ResetMeshAfterSubdivision) {
+				m_MeshChanged = true;
+			}
 
 			ImGui::BeginDisabled(m_MeshChanged);
 			if (ImGui::Button("Loop Subdivide")) {
@@ -250,7 +253,7 @@ namespace Imagine::Application {
 				}
 
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
-				m_MeshChanged = true;
+				if(s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 
 			if (ImGui::Button("Butterfly Subdivide")) {
@@ -281,7 +284,7 @@ namespace Imagine::Application {
 				}
 
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
-				m_MeshChanged = true;
+				if(s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 
 			if (ImGui::Button("Kobbelt Subdivide")) {
@@ -312,7 +315,7 @@ namespace Imagine::Application {
 				}
 
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
-				m_MeshChanged = true;
+				if(s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 			ImGui::EndDisabled();
 		}
