@@ -273,9 +273,10 @@ namespace Imagine::Vulkan {
 
 
 		// draw image size will match the window
+		// Max screen size currently usable is Samsung G3 {7680u, 2160u}
 		VkExtent3D drawImageExtent = {
-				maxDrawImage.width,
-				maxDrawImage.height,
+				std::min(maxDrawImage.width,std::max(7680u, framebufferSize.width)),
+				std::min(maxDrawImage.height,std::max(2160u, framebufferSize.height)),
 				1};
 
 		// hardcoding the draw format to 16-bit float
