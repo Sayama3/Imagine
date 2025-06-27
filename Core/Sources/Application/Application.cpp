@@ -11,6 +11,10 @@
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
+#include "Imagine/Events/ApplicationEvent.hpp"
+#include "Imagine/Events/KeyEvent.hpp"
+#include "Imagine/Events/MouseEvent.hpp"
+
 #ifdef MGN_IMGUI
 #include <imgui.h>
 #include "Imagine/Rendering/MgnImGui.hpp"
@@ -62,6 +66,7 @@ namespace Imagine::Core {
 
 		if (parameters.Window) {
 			m_Window = Window::Initialize(parameters.AppName, parameters.Window.value());
+			m_Window->SetEventCallback(MGN_BIND_EVENT_FN(Application::OnEvent));
 		}
 
 		if (parameters.Renderer) {
@@ -124,7 +129,6 @@ namespace Imagine::Core {
 			bool canDraw = true;
 			if (m_Window) {
 				m_Window->Update();
-				m_ShouldStop |= m_Window->ShouldClose();
 				canDraw = !m_Window->IsMinimized();
 			}
 
@@ -217,5 +221,10 @@ namespace Imagine::Core {
 	double Application::Time() const {
 		std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();
 		return std::chrono::duration<double, std::chrono::seconds::period>(newFrame - m_Start).count();
+	}
+
+	void Application::OnEvent(Event &e) {
+		EventDispatcher ed{e};
+		ed.Dispatch<WindowCloseEvent>([this](WindowCloseEvent&){m_ShouldStop = true; return false;});
 	}
 } // namespace Imagine::Core

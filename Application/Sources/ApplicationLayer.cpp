@@ -208,8 +208,9 @@ namespace Imagine::Application {
 		{
 			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
-			static bool s_Smooth = true;
+			static bool s_Smooth = false;
 			static bool s_ResetMeshAfterSubdivision = true;
+			static bool s_RandomColor = true;
 			ImGui::InputText("Model Path", &s_ModelPath);
 			if (ImGui::Button("Reload")) {
 				ChangeModelAndPath(s_ModelPath);
@@ -223,6 +224,10 @@ namespace Imagine::Application {
 			if (ImGui::Checkbox("Reset Mesh Graph After Subdivision", &s_ResetMeshAfterSubdivision) && s_ResetMeshAfterSubdivision) {
 				m_MeshChanged = true;
 			}
+
+			ImGui::BeginDisabled(s_Smooth);
+			ImGui::Checkbox("Random Color", &s_RandomColor);
+			ImGui::EndDisabled();
 
 			ImGui::BeginDisabled(m_MeshChanged);
 			if (ImGui::Button("Loop Subdivide")) {
@@ -246,7 +251,8 @@ namespace Imagine::Application {
 					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
 				} else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
+					if(s_RandomColor) m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+					else m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
@@ -277,7 +283,8 @@ namespace Imagine::Application {
 					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
 				} else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
+					if(s_RandomColor) m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+					else m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
@@ -308,7 +315,8 @@ namespace Imagine::Application {
 					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
 				} else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
+					if(s_RandomColor) m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+					else m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);

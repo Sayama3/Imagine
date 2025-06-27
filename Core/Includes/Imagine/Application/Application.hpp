@@ -65,6 +65,8 @@ namespace Imagine::Core {
 		double Time() const;
 
 	private:
+		void OnEvent(Event& e);
+	private:
 		ApplicationParameters m_Parameters;
 
 	private:

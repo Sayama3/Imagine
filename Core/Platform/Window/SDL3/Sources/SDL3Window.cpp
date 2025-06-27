@@ -98,12 +98,15 @@ namespace Imagine::SDL3 {
 			// m_Mouse.m_MousePosition = ImGui::GetMousePos();
 #endif
 
+			if (e.type == SDL_EVENT_QUIT) {
+				m_ShouldClose = true;
+			}
+
 			if (!m_EventCallBack) { continue; }
-			// if (!canHandleEvent) continue;
+
 			if (e.type == SDL_EVENT_QUIT) {
 				WindowCloseEvent event{};
 				m_EventCallBack(event);
-				m_ShouldClose = true;
 			}
 			else if (e.type == SDL_EVENT_DROP_FILE) {
 				WindowDropFileEvent event{1, &e.drop.data};
@@ -120,15 +123,15 @@ namespace Imagine::SDL3 {
 				m_Minimized = false;
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-				m_Mouse.m_ButtonStates[e.button.button] &= ~(SDL3Mouse::Released | SDL3Mouse::Up);
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Pressed;
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Down;
+				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] &= ~(SDL3Mouse::Released | SDL3Mouse::Up);
+				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Pressed;
+				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Down;
 				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-				m_Mouse.m_ButtonStates[e.button.button] &= ~(SDL3Mouse::Pressed | SDL3Mouse::Down);
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Released;
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Up;
+				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] &= ~(SDL3Mouse::Pressed | SDL3Mouse::Down);
+				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Released;
+				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Up;
 				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
 			}
 			else if (e.type == SDL_EVENT_MOUSE_MOTION) {
@@ -138,70 +141,70 @@ namespace Imagine::SDL3 {
 			}
 			// TODO: properly do so
 			else if (e.type == SDL_EVENT_KEY_DOWN) {
-				if (e.key.key == SDLK_Z) {
+				if (e.key.scancode == SDL_SCANCODE_W) {
 					Core::Camera::s_MainCamera->velocity.z = +1;
 				}
-				if (e.key.key == SDLK_S) {
+				if (e.key.scancode == SDL_SCANCODE_S) {
 					Core::Camera::s_MainCamera->velocity.z = -1;
 				}
-				if (e.key.key == SDLK_Q) {
+				if (e.key.scancode == SDL_SCANCODE_A) {
 					Core::Camera::s_MainCamera->velocity.x = -1;
 				}
-				if (e.key.key == SDLK_D) {
+				if (e.key.scancode == SDL_SCANCODE_D) {
 					Core::Camera::s_MainCamera->velocity.x = +1;
 				}
-				if (e.key.key == SDLK_E) {
+				if (e.key.scancode == SDL_SCANCODE_E) {
 					Core::Camera::s_MainCamera->velocity.y = +1;
 				}
-				if (e.key.key == SDLK_A) {
+				if (e.key.scancode == SDL_SCANCODE_Q) {
 					Core::Camera::s_MainCamera->velocity.y = -1;
 				}
 
-				if (e.key.key == SDLK_RIGHT) {
+				if (e.key.scancode == SDL_SCANCODE_RIGHT) {
 					Core::Camera::s_MainCamera->yawVelocity = +45;
 				}
-				if (e.key.key == SDLK_LEFT) {
+				if (e.key.scancode == SDL_SCANCODE_LEFT) {
 					Core::Camera::s_MainCamera->yawVelocity = -45;
 				}
 
-				if (e.key.key == SDLK_UP) {
+				if (e.key.scancode == SDL_SCANCODE_UP) {
 					Core::Camera::s_MainCamera->pitchVelocity = +45;
 				}
-				if (e.key.key == SDLK_DOWN) {
+				if (e.key.scancode == SDL_SCANCODE_DOWN) {
 					Core::Camera::s_MainCamera->pitchVelocity = -45;
 				}
 			}
 			else if (e.type == SDL_EVENT_KEY_UP) {
-				if (e.key.key == SDLK_Z) {
+				if (e.key.scancode == SDL_SCANCODE_W) {
 					Core::Camera::s_MainCamera->velocity.z = 0;
 				}
-				if (e.key.key == SDLK_S) {
+				if (e.key.scancode == SDL_SCANCODE_S) {
 					Core::Camera::s_MainCamera->velocity.z = 0;
 				}
-				if (e.key.key == SDLK_Q) {
+				if (e.key.scancode == SDL_SCANCODE_A) {
 					Core::Camera::s_MainCamera->velocity.x = 0;
 				}
-				if (e.key.key == SDLK_D) {
+				if (e.key.scancode == SDL_SCANCODE_D) {
 					Core::Camera::s_MainCamera->velocity.x = 0;
 				}
-				if (e.key.key == SDLK_E) {
+				if (e.key.scancode == SDL_SCANCODE_E) {
 					Core::Camera::s_MainCamera->velocity.y = 0;
 				}
-				if (e.key.key == SDLK_A) {
+				if (e.key.scancode == SDL_SCANCODE_Q) {
 					Core::Camera::s_MainCamera->velocity.y = 0;
 				}
 
-				if (e.key.key == SDLK_RIGHT) {
+				if (e.key.scancode == SDL_SCANCODE_RIGHT) {
 					Core::Camera::s_MainCamera->yawVelocity = 0;
 				}
-				if (e.key.key == SDLK_LEFT) {
+				if (e.key.scancode == SDL_SCANCODE_LEFT) {
 					Core::Camera::s_MainCamera->yawVelocity = 0;
 				}
 
-				if (e.key.key == SDLK_UP) {
+				if (e.key.scancode == SDL_SCANCODE_UP) {
 					Core::Camera::s_MainCamera->pitchVelocity = 0;
 				}
-				if (e.key.key == SDLK_DOWN) {
+				if (e.key.scancode == SDL_SCANCODE_DOWN) {
 					Core::Camera::s_MainCamera->pitchVelocity = 0;
 				}
 			}
