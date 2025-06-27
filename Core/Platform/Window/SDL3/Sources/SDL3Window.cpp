@@ -11,8 +11,8 @@
 
 #include "Imagine/SDL3/SDL3Window.hpp"
 
-#include "Imagine/Events/Event.hpp"
 #include "Imagine/Events/ApplicationEvent.hpp"
+#include "Imagine/Events/Event.hpp"
 #include "Imagine/Events/KeyEvent.hpp"
 #include "Imagine/Events/MouseEvent.hpp"
 
@@ -71,11 +71,11 @@ namespace Imagine::SDL3 {
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
 
 		auto state = SDL_GetMouseState(&m_Mouse.m_MousePosition.x, &m_Mouse.m_MousePosition.y);
-		m_Mouse.m_ButtonStates[(int32_t)Mouse::Left]    = (state & SDL_BUTTON_LMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[(int32_t)Mouse::Middle]  = (state & SDL_BUTTON_MMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[(int32_t)Mouse::Right]   = (state & SDL_BUTTON_RMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[(int32_t)Mouse::Button4] = (state & SDL_BUTTON_X1MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[(int32_t)Mouse::Button5] = (state & SDL_BUTTON_X2MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t) Mouse::Left] = (state & SDL_BUTTON_LMASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t) Mouse::Middle] = (state & SDL_BUTTON_MMASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t) Mouse::Right] = (state & SDL_BUTTON_RMASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t) Mouse::Button4] = (state & SDL_BUTTON_X1MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t) Mouse::Button5] = (state & SDL_BUTTON_X2MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
 	}
 
 	SDL3Window::~SDL3Window() {
@@ -102,7 +102,9 @@ namespace Imagine::SDL3 {
 				m_ShouldClose = true;
 			}
 
-			if (!m_EventCallBack) { continue; }
+			if (!m_EventCallBack) {
+				continue;
+			}
 
 			if (e.type == SDL_EVENT_QUIT) {
 				WindowCloseEvent event{};
@@ -123,15 +125,15 @@ namespace Imagine::SDL3 {
 				m_Minimized = false;
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] &= ~(SDL3Mouse::Released | SDL3Mouse::Up);
-				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Pressed;
-				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Down;
+				m_Mouse.m_ButtonStates[(int32_t) GetMouseButton(e.button.button)] &= ~(SDL3Mouse::Released | SDL3Mouse::Up);
+				m_Mouse.m_ButtonStates[(int32_t) GetMouseButton(e.button.button)] |= SDL3Mouse::Pressed;
+				m_Mouse.m_ButtonStates[(int32_t) GetMouseButton(e.button.button)] |= SDL3Mouse::Down;
 				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] &= ~(SDL3Mouse::Pressed | SDL3Mouse::Down);
-				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Released;
-				m_Mouse.m_ButtonStates[(int32_t)GetMouseButton(e.button.button)] |= SDL3Mouse::Up;
+				m_Mouse.m_ButtonStates[(int32_t) GetMouseButton(e.button.button)] &= ~(SDL3Mouse::Pressed | SDL3Mouse::Down);
+				m_Mouse.m_ButtonStates[(int32_t) GetMouseButton(e.button.button)] |= SDL3Mouse::Released;
+				m_Mouse.m_ButtonStates[(int32_t) GetMouseButton(e.button.button)] |= SDL3Mouse::Up;
 				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
 			}
 			else if (e.type == SDL_EVENT_MOUSE_MOTION) {
@@ -219,7 +221,7 @@ namespace Imagine::SDL3 {
 		int x, y;
 		const bool result = SDL_GetWindowPosition(m_Window, &x, &y);
 		MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
-		return Vec2{x,y};
+		return Vec2{x, y};
 	}
 	uint32_t SDL3Window::GetWindowWidth() {
 		int width;
@@ -249,7 +251,7 @@ namespace Imagine::SDL3 {
 			const bool result = SDL_GetWindowSize(m_Window, &width, &height);
 			MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
 		}
-		return Rect<>{(float)x,(float)y,(float)x+width,(float)y+height};
+		return Rect<>{(float) x, (float) y, (float) x + width, (float) y + height};
 	}
 
 	uint32_t SDL3Window::GetFramebufferWidth() {
