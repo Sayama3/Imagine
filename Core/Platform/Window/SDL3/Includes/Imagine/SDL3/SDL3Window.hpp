@@ -32,8 +32,6 @@ namespace Imagine::SDL3 {
 		[[nodiscard]] bool ShouldClose() override;
 
 		[[nodiscard]] void *GetWindowPtr() override;
-	public:
-		[[nodiscard]] SDL3Mouse& GetMouse();
 	private:
 		static void framebufferResizeCallback(void *window, int width, int height);
 
@@ -42,6 +40,5 @@ namespace Imagine::SDL3 {
 		struct SDL_Window *m_Window{nullptr};
 		bool m_ShouldClose = false;
 		bool m_Minimized = false;
-		SDL3Mouse m_Mouse;
 	};
 } // namespace Imagine::Core

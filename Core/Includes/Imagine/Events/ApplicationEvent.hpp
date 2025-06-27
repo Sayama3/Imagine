@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Event.hpp"
+#include "Imagine/Core/TimeStep.hpp"
 
 namespace Imagine::Core {
 
@@ -109,8 +110,8 @@ namespace Imagine::Core {
 			uint64_t index;
 		};
 
-		Iterator begin() const {return Iterator{this, 0};}
-		Iterator end() const {return Iterator{this, m_DropFilesPath.size()};}
+		Iterator begin() const { return Iterator{this, 0}; }
+		Iterator end() const { return Iterator{this, m_DropFilesPath.size()}; }
 
 	public:
 		[[nodiscard]] inline uint64_t GetFileCount() const { return m_DropFilesPath.size(); }
@@ -145,25 +146,61 @@ namespace Imagine::Core {
 
 	class AppTickEvent : public Event {
 	public:
-		AppTickEvent() = default;
+		AppTickEvent(TimeStep ts) : m_TimeStep(ts) {}
+		virtual ~AppTickEvent() = default;
 
 		EVENT_CLASS_TYPE(EventType::AppTick)
 		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication)
+
+	public:
+		inline TimeStep GetTimeStep() const { return m_TimeStep; }
+
+	private:
+		TimeStep m_TimeStep;
 	};
 
 	class AppUpdateEvent : public Event {
 	public:
-		AppUpdateEvent() = default;
+		AppUpdateEvent(TimeStep ts) : m_TimeStep(ts) {}
+		virtual ~AppUpdateEvent() = default;
 
 		EVENT_CLASS_TYPE(EventType::AppUpdate)
 		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication)
+
+	public:
+		inline TimeStep GetTimeStep() const { return m_TimeStep; }
+
+	private:
+		TimeStep m_TimeStep;
 	};
 
 	class AppRenderEvent : public Event {
 	public:
-		AppRenderEvent() = default;
+		AppRenderEvent(TimeStep ts) : m_TimeStep(ts) {}
+		virtual ~AppRenderEvent() = default;
 
 		EVENT_CLASS_TYPE(EventType::AppRender)
 		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication)
+
+	public:
+		inline TimeStep GetTimeStep() const { return m_TimeStep; }
+
+	private:
+		TimeStep m_TimeStep;
+	};
+
+	class ImGuiEvent : public Event {
+	public:
+		ImGuiEvent(TimeStep ts) : m_TimeStep(ts) {}
+		virtual ~ImGuiEvent() = default;
+
+		EVENT_CLASS_TYPE(EventType::ImGui)
+		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication)
+
+	public:
+		inline TimeStep GetTimeStep() const { return m_TimeStep; }
+
+	private:
+		TimeStep m_TimeStep;
 	};
 } // namespace Imagine::Core

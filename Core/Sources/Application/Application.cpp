@@ -127,16 +127,35 @@ namespace Imagine::Core {
 	void Application::Run() {
 		while (!m_ShouldStop) {
 			bool canDraw = true;
+
 			if (m_Window) {
 				m_Window->Update();
 				canDraw = !m_Window->IsMinimized();
 			}
 
-			Camera::s_MainCamera->Update(m_DeltaTime);
 
-			for (Layer *layer: m_LayerStack) {
-				layer->OnUpdate(m_DeltaTime);
+			{
+				AppTickEvent event{m_DeltaTime};
+				for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+					(*it)->OnEvent(event);
+					if (event.m_Handled) {
+						break;
+					}
+				}
 			}
+
+
+			if (canDraw) {
+				AppUpdateEvent event{m_DeltaTime};
+				for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+					(*it)->OnEvent(event);
+					if (event.m_Handled) {
+						break;
+					}
+				}
+			}
+
+			Camera::s_MainCamera->Update(m_DeltaTime);
 
 			if (canDraw) {
 #ifdef MGN_IMGUI
@@ -155,8 +174,12 @@ namespace Imagine::Core {
 					m_Renderer->SendImGuiCommands();
 				}
 
-				for (Layer *layer: m_LayerStack) {
-					layer->OnImGuiRender();
+				ImGuiEvent event(m_DeltaTime);
+				for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+					(*it)->OnEvent(event);
+					if (event.m_Handled) {
+						break;
+					}
 				}
 
 				{
@@ -173,16 +196,19 @@ namespace Imagine::Core {
 				if (m_Renderer->BeginDraw()) {
 					m_Renderer->Draw();
 
-					DrawContext ctx{};
 
-					for (Layer *layer: m_LayerStack) {
-						layer->OnRender(ctx);
-						m_Renderer->Draw(ctx);
-						ctx.Clear();
+					// TODO: See if I wanna do it this way
+					AppRenderEvent event{m_DeltaTime};
+					for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+						(*it)->OnEvent(event);
+						if (event.m_Handled) {
+							break;
+						}
 					}
 
 					auto loadedScene = SceneManager::GetLoadedScenes();
 
+					DrawContext ctx{};
 					for (const std::shared_ptr<Scene> &scene: loadedScene) {
 						scene->CacheTransforms();
 						ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
@@ -209,12 +235,11 @@ namespace Imagine::Core {
 			std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();
 			m_DeltaTime = std::chrono::duration<double, std::chrono::seconds::period>(newFrame - m_LastFrame).count();
 			m_LastFrame = newFrame;
+			m_CurrentFrame += 1;
 
 			// MGN_CORE_INFO("Frame #{}", m_CurrentFrame);
 			// MGN_CORE_INFO("DeltaTime #{}", m_DeltaTime);
 			// MGN_CORE_INFO("Time #{}", Time());
-
-			m_CurrentFrame += 1;
 		}
 	}
 
@@ -224,7 +249,31 @@ namespace Imagine::Core {
 	}
 
 	void Application::OnEvent(Event &e) {
-		EventDispatcher ed{e};
-		ed.Dispatch<WindowCloseEvent>([this](WindowCloseEvent&){m_ShouldStop = true; return false;});
+		EventDispatcher dispatcher(e);
+
+		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+			(*it)->OnEvent(e);
+			if (e.m_Handled) {
+				break;
+			}
+		}
+	}
+
+
+	bool Application::OnWindowClose(WindowCloseEvent &e) {
+		m_ShouldStop = true;
+		return false;
+	}
+
+	bool Application::OnWindowResize(WindowResizeEvent &e) {
+		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
+			return false;
+		}
+
+		// m_Renderer->Resize(e.GetWidth(), e.GetHeight());
+		return false;
 	}
 } // namespace Imagine::Core

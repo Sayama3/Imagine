@@ -10,23 +10,11 @@ namespace Imagine::Core {
 
 	enum class EventType : uint32_t {
 		None = 0,
-		WindowClose,
-		WindowResize,
-		WindowMinify,
-		WindowFocus,
-		WindowLostFocus,
-		WindowMoved,
-		WindowDropFile,
-		AppTick,
-		AppUpdate,
-		AppRender,
-		KeyPressed,
-		KeyReleased,
-		KeyTyped,
-		MouseButtonPressed,
-		MouseButtonReleased,
-		MouseMoved,
-		MouseScrolled,
+		WindowClose, WindowResize, WindowMinify, WindowFocus, WindowLostFocus, WindowMoved, WindowDropFile,
+		AppTick, AppUpdate, AppRender,
+		ImGui,
+		KeyPressed, KeyReleased, TextTyped,
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled,
 	};
 
 	enum EventCategory : uint32_t {

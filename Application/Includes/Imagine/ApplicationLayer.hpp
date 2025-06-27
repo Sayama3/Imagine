@@ -19,11 +19,14 @@ namespace Imagine::Application {
 	public:
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(Core::TimeStep timeStep) override;
-		virtual void OnImGuiRender() override;
-		virtual void OnRender(Core::DrawContext &) override;
 		virtual void OnEvent(Event &event) override;
+	private:
 
+		void OnUpdate(Core::TimeStep timeStep);
+		void OnImGuiRender();
+		void OnRender(Core::DrawContext &);
+	private:
+		void MoveMouse(Vec2 pos);
 	public:
 		bool ChangeModelAndPath(const std::filesystem::path& path);
 	private:
@@ -47,6 +50,8 @@ namespace Imagine::Application {
 
 		Core::EntityID m_OriginalMeshEntityID;
 		Core::EntityID m_LoopMeshEntityID;
+
+		Vec2 m_MousePos;
 	};
 
 } // namespace Imagine::Application

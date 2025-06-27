@@ -19,9 +19,6 @@ namespace Imagine::Core {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 
-		virtual void OnUpdate(TimeStep timeStep) {}
-		virtual void OnImGuiRender() {}
-		virtual void OnRender(DrawContext&) {}
 		virtual void OnEvent(Event &event) {}
 
 		inline const std::string &GetName() const { return m_DebugName; }

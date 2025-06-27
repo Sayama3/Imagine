@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ApplicationParameters.hpp"
+#include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Layers/LayerStack.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Window.hpp"
@@ -64,6 +65,9 @@ namespace Imagine::Core {
 		void Run();
 		double Time() const;
 
+	private:
+		bool OnWindowClose(WindowCloseEvent &e);
+		bool OnWindowResize(WindowResizeEvent &e);
 	private:
 		void OnEvent(Event& e);
 	private:
