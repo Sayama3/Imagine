@@ -4,6 +4,5 @@
 
 #include "Imagine/Core/SparseSet.hpp"
 
-namespace Imagine::Core
-{
+namespace Imagine::Core {
 }

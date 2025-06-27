@@ -10,36 +10,39 @@ namespace Imagine::Core {
 
 	class UUID {
 	public:
-		static constexpr UUID Null() {return UUID{0,0};}
+		static constexpr UUID Null() { return UUID{0, 0}; }
 
 		template<typename T>
 		inline static UUID FromType() {
-			return UUID{ typeid(T).hash_code() };
+			return UUID{typeid(T).hash_code()};
 		}
 
 	public:
 		UUID();
-		constexpr explicit UUID(const uint64_t id) : m_UUID1(id), m_UUID2(id) {}
-		constexpr explicit UUID(const uint64_t id1, const uint64_t id2) : m_UUID1(id1), m_UUID2(id2) {}
+		constexpr explicit UUID(const uint64_t id) :
+			m_UUID1(id), m_UUID2(id) {}
+		constexpr explicit UUID(const uint64_t id1, const uint64_t id2) :
+			m_UUID1(id1), m_UUID2(id2) {}
 
-		UUID(const UUID&) = default;
-		UUID& operator=(const UUID&) = default;
+		UUID(const UUID &) = default;
+		UUID &operator=(const UUID &) = default;
 
 		[[nodiscard]] std::string string() const;
 		[[nodiscard]] explicit operator bool() const;
+
 	public:
-		friend bool operator ==(const UUID& lft, const UUID& rht);
-		friend bool operator !=(const UUID& lft, const UUID& rht);
+		friend bool operator==(const UUID &lft, const UUID &rht);
+		friend bool operator!=(const UUID &lft, const UUID &rht);
+		std::strong_ordering operator<=>(const UUID &rht) const;
+
 	private:
 		uint64_t m_UUID1, m_UUID2;
 	};
-}
+} // namespace Imagine::Core
 
 template<>
-struct std::hash<Imagine::Core::UUID>
-{
-	std::size_t operator()(const Imagine::Core::UUID& s) const noexcept
-	{
+struct std::hash<Imagine::Core::UUID> {
+	std::size_t operator()(const Imagine::Core::UUID &s) const noexcept {
 		static_assert(sizeof(Imagine::Core::UUID) == (sizeof(uint64_t[2])));
 
 		const uint64_t v1 = reinterpret_raw<uint64_t[2]>(s)[0];
@@ -54,6 +57,6 @@ struct std::hash<Imagine::Core::UUID>
 	}
 };
 
-inline std::ostream& operator << (std::ostream & os, const Imagine::Core::UUID& value){
+inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::UUID &value) {
 	return os << value.string();
 }

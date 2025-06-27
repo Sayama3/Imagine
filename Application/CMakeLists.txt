@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.25)
 set(APPLICATION_SOURCES
 	Sources/main.cpp
 	Includes/Imagine/Header.hpp
+		Sources/ApplicationLayer.cpp
+		Includes/Imagine/ApplicationLayer.hpp
 )
 
 add_executable(Imagine

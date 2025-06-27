@@ -46,13 +46,60 @@ set(CORE_SRC_FILES
 		Sources/Core/RawSparseSet.cpp
 		Includes/Imagine/Core/RawSparseSet.hpp
 		Includes/Imagine/Events/Event.hpp
+		Includes/Imagine/Events/MouseEvent.hpp
+		Includes/Imagine/Events/KeyEvent.hpp
+		Includes/Imagine/Events/ApplicationEvent.hpp
 		Sources/Layers/Layer.cpp
-		Includes/Imagine/Core/TypeDefinition.hpp
-		Sources/Core/TypeDefinition.cpp
 		Includes/Imagine/Scene/Terrain.hpp
 		Sources/Scene/Terrain.cpp
 		Sources/Core/FileSystem.cpp
 		Includes/Imagine/Core/FileSystem.hpp
+		Includes/Imagine/Core/DeletionQueue.hpp
+		Includes/Imagine/Core/Size.hpp
+		Includes/Imagine/Rendering/RendererParameters.hpp
+		Sources/Application/ApplicationParameters.cpp
+		Includes/Imagine/Rendering/MgnImGui.hpp
+		Sources/Rendering/ImGui.cpp
+		Sources/Rendering/Material.cpp
+		Includes/Imagine/Rendering/Material.hpp
+		Sources/Rendering/PushConstant.cpp
+		Includes/Imagine/Rendering/PushConstant.hpp
+		Sources/Rendering/Shader.cpp
+		Includes/Imagine/Rendering/Shader.hpp
+		Includes/Imagine/Rendering/ShaderParameters.hpp
+		Includes/Imagine/Rendering/DrawContext.hpp
+		Includes/Imagine/Scene/Relationship.hpp
+		Sources/Rendering/RenderObject.cpp
+		Includes/Imagine/Rendering/RenderObject.hpp
+		Sources/Rendering/Mesh.cpp
+		Includes/Imagine/Rendering/Mesh.hpp
+		Sources/Rendering/Model.cpp
+		Includes/Imagine/Rendering/Model.hpp
+		Sources/Scene/SceneManager.cpp
+		Includes/Imagine/Scene/SceneManager.hpp
+		Sources/Core/Math.cpp
+		Includes/Imagine/Core/MouseButtonCodes.hpp
+		Includes/Imagine/Core/KeyCodes.hpp
+		Sources/Core/Inputs.cpp
+		Includes/Imagine/Core/Inputs.hpp
+		Sources/Rendering/CPUMesh.cpp
+		Includes/Imagine/Rendering/CPUMesh.hpp
+		Includes/Imagine/Rendering/Vertex.hpp
+		Sources/Rendering/Camera.cpp
+		Includes/Imagine/Rendering/Camera.hpp
+		Includes/Imagine/Math/Core.hpp
+		Includes/Imagine/Math/Geometry.hpp
+		Includes/Imagine/Math/MeshGraph2D.hpp
+		Includes/Imagine/Math/Shells.hpp
+		Includes/Imagine/Math/Types.hpp
+		Includes/Imagine/Math/Raycast.hpp
+		Includes/Imagine/Math/Triangulation.hpp
+		Includes/Imagine/Math/Basics.hpp
+		Includes/Imagine/Math/Mesh.hpp
+		Includes/Imagine/Rendering/RenderTypes.hpp
+		Includes/Imagine/Math/MeshGraph3D.hpp
+		Includes/Imagine/Math/ChaikinCurves.hpp
+		Sources/Layers/LayerStack.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})
@@ -93,6 +140,7 @@ target_precompile_headers(Core PUBLIC
 		<string_view>
 
 		# Containers
+		<deque>
 		<array>
 		<vector>
 		<unordered_set>
@@ -100,6 +148,7 @@ target_precompile_headers(Core PUBLIC
 		<unordered_map>
 		<map>
 		<any>
+		<span>
 		<variant>
 		<optional>
 		<tuple>
@@ -114,22 +163,24 @@ target_precompile_headers(Core PUBLIC
 
 target_compile_definitions(Core PUBLIC GLM_ENABLE_EXPERIMENTAL=1)
 
+target_include_directories(Core PUBLIC IncludesExternals)
 target_include_directories(Core PUBLIC Includes)
 target_include_directories(Core PRIVATE Sources)
 
 target_compile_features(Core PUBLIC cxx_std_20)
 
-target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp)
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp xxhash)
 
 add_library(Imagine::Core ALIAS Core)
 
 add_subdirectory(Platform)
 
+target_compile_definitions(Core PUBLIC NOMINMAX=1)
+
 if(MGN_IMGUI)
 	target_link_libraries(Core PUBLIC imgui)
+	target_compile_definitions(Core PUBLIC MGN_IMGUI=1)
 endif()
-
-target_compile_definitions(Core PUBLIC NOMINMAX=1)
 
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
 	target_compile_definitions(Core PUBLIC MGN_DEBUG=1)

@@ -10,7 +10,7 @@ namespace Imagine::Core {
 	HeadLessWindow::~HeadLessWindow() {}
 
 	void HeadLessWindow::Update() {
-		//TODO: Poll Events ?
+		// TODO: Poll Events ?
 	}
 
 	uint32_t HeadLessWindow::GetWindowWidth() {
@@ -29,7 +29,7 @@ namespace Imagine::Core {
 		return 0;
 	}
 
-	void * HeadLessWindow::GetNativeWindow() {
+	void *HeadLessWindow::GetNativeWindow() {
 		return nullptr;
 	}
 
@@ -40,4 +40,4 @@ namespace Imagine::Core {
 	bool HeadLessWindow::ShouldClose() {
 		return false;
 	}
-}
+} // namespace Imagine::Core

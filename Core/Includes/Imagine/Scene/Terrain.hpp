@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "Imagine/Core/Macros.hpp"
-#include "Imagine/Core/HeapArray.hpp"
-#include "Imagine/Core/RawHeapArray.hpp"
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
+#include "Imagine/Core/HeapArray.hpp"
+#include "Imagine/Core/Macros.hpp"
+#include "Imagine/Core/RawHeapArray.hpp"
 
 namespace Imagine::Core {
 
@@ -16,8 +16,9 @@ namespace Imagine::Core {
 	public:
 		Terrain();
 		~Terrain();
+
 	private:
 		HeapArray<float> m_Terrain;
 	};
 
-} // Imagine::Core
+} // namespace Imagine::Core

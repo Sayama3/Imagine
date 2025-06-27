@@ -3,30 +3,62 @@
 //
 
 #pragma once
-#include <Imagine/Application/ApplicationParameters.hpp>
+
+#include "Imagine/Application/ApplicationParameters.hpp"
+#include "Imagine/Rendering/CPUMesh.hpp"
+#include "Imagine/Rendering/DrawContext.hpp"
+#include "Imagine/Rendering/RendererParameters.hpp"
+#include "Imagine/Scene/Entity.hpp"
 
 namespace Imagine::Core {
-#ifdef MGN_DEBUG
-	inline static constexpr bool c_DefaultDebugRendering = true;
-#else
-	inline static constexpr bool c_DefaultDebugRendering = false;
-#endif
+	class Scene;
 
-	struct RendererParameter
-	{
-		uint16_t NbrFrameInFlight = 2;
-		bool EnableDebug = c_DefaultDebugRendering;
+	enum class RendererAPI {
+		CPU,
+		Vulkan,
 	};
 
 	class Renderer {
 	public:
-		static Renderer* CreateRenderer(const RendererParameter& renderParams, const ApplicationParameters& appParams);
+		static Renderer *Create(ApplicationParameters appParams);
+		static Renderer *Initialize(ApplicationParameters appParams);
+		static void Shutdown();
+		static Renderer *Get();
+
+		static RendererAPI GetStaticAPI();
+	private:
+		static Renderer *s_Renderer;
+
 	public:
 		Renderer() = default;
-		virtual ~Renderer() {}
-		Renderer(const Renderer&) = delete;
-		Renderer& operator=(const Renderer&) = delete;
-	public:
+		virtual ~Renderer() = default;
+		Renderer(const Renderer &) = delete;
+		Renderer &operator=(const Renderer &) = delete;
 
+	public:
+		virtual RendererAPI GetAPI() = 0;
+
+		virtual bool BeginDraw() = 0;
+		virtual void EndDraw() = 0;
+		virtual void Present() = 0;
+		virtual void Draw() = 0;
+		virtual void Draw(const DrawContext& ctx) = 0;
+
+		virtual DrawContext& GetDrawContext() = 0;
+
+		virtual Mat4 GetViewMatrix() const = 0;
+		virtual Mat4 GetProjectionMatrix() const = 0;
+		virtual Mat4 GetViewProjectMatrix() const = 0;
+
+		virtual Rect<> GetViewport() const = 0;
+
+		virtual Vec3 GetWorldPoint(const Vec2 screenPoint) const = 0;
+
+		virtual void LoadCPUMeshInScene(const CPUMesh& path, Scene*, EntityID entity = EntityID::NullID) = 0;
+		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;
+		//TODO: LoadInternalModelInScene
+
+		virtual void SendImGuiCommands() = 0;
+		virtual void PrepareShutdown() = 0;
 	};
-}
+} // namespace Imagine::Core

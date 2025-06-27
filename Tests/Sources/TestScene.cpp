@@ -6,10 +6,11 @@
 
 struct Physcs {
 	Physcs() = default;
-	Physcs(const Vec3& vel) : vel(vel) {};
+	Physcs(const Vec3 &vel) :
+		vel(vel) {};
 	~Physcs() = default;
-	Physcs(const Physcs& other) = default;
-	Physcs& operator=(const Physcs&) = default;
+	Physcs(const Physcs &other) = default;
+	Physcs &operator=(const Physcs &) = default;
 	Vec3 vel{};
 };
 using PhyscsCounter = InstanceCount<Physcs>;
@@ -17,8 +18,8 @@ using PhyscsCounter = InstanceCount<Physcs>;
 struct Render {
 	Render() = default;
 	~Render() = default;
-	Render(const Render&) = default;
-	Render& operator=(const Render&) = default;
+	Render(const Render &) = default;
+	Render &operator=(const Render &) = default;
 	Core::UUID meshId{};
 };
 using RenderCounter = InstanceCount<Render>;
@@ -31,8 +32,8 @@ TEST(CoreScene, RAII) {
 	ASSERT_EQ(scene->Count(), 0);
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 0);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 0);
-	scene->AddComponentType<PhyscsCounter>();
-	scene->AddComponentType<RenderCounter>();
+	scene->RegisterType<PhyscsCounter>();
+	scene->RegisterType<RenderCounter>();
 
 	ASSERT_EQ(PhyscsCounter::s_InstanceCount, 0);
 	ASSERT_EQ(RenderCounter::s_InstanceCount, 0);
@@ -121,7 +122,7 @@ TEST(CoreScene, Persistence) {
 
 	Scene scene;
 
-	scene.AddComponentType<Physcs>();
+	scene.RegisterType<Physcs>();
 	scene.Prepare(50);
 
 	EntityID ids[50];
@@ -132,20 +133,20 @@ TEST(CoreScene, Persistence) {
 	}
 
 	for (int i = 0; i < 50; ++i) {
-		const Physcs* comp = scene.GetComponent<Physcs>(ids[i]);
-		const Vec3 reference =  Vec3{static_cast<Real>(i)};
+		const Physcs *comp = scene.GetComponent<Physcs>(ids[i]);
+		const Vec3 reference = Vec3{static_cast<Real>(i)};
 		ASSERT_TRUE(comp != nullptr);
 		ASSERT_EQ(reference, comp->vel);
 	}
 
 	for (int i = 0; i < 50; ++i) {
-		auto* comp = scene.GetComponent<Physcs>(ids[i]);
-		comp->vel = Vec3{static_cast<Real>(50-i)};
+		auto *comp = scene.GetComponent<Physcs>(ids[i]);
+		comp->vel = Vec3{static_cast<Real>(50 - i)};
 	}
 
 	for (int i = 0; i < 50; ++i) {
-		const Physcs* comp = scene.GetComponent<Physcs>(ids[i]);
-		const Vec3 reference =  Vec3{static_cast<Real>(50-i)};
+		const Physcs *comp = scene.GetComponent<Physcs>(ids[i]);
+		const Vec3 reference = Vec3{static_cast<Real>(50 - i)};
 		ASSERT_TRUE(comp != nullptr);
 		ASSERT_EQ(reference, comp->vel);
 	}

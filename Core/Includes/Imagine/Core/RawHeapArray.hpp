@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "Imagine/Core/Macros.hpp"
-#include "Imagine/Core/MemoryHelper.hpp"
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
+#include "Imagine/Core/Macros.hpp"
+#include "Imagine/Core/MemoryHelper.hpp"
 
 namespace Imagine::Core {
 
@@ -20,13 +20,12 @@ namespace Imagine::Core {
 	template<typename UnsignedInteger = uint32_t>
 	class RawHeapArray {
 	private:
-
-		void* GetPtr(const UnsignedInteger index) {
-			return reinterpret_cast<uint8_t*>(data) + (DataSize * index);
+		void *GetPtr(const UnsignedInteger index) {
+			return reinterpret_cast<uint8_t *>(data) + (DataSize * index);
 		}
 
-		const void* GetPtr(const UnsignedInteger index) const {
-			return reinterpret_cast<uint8_t*>(data) + (DataSize * index);
+		const void *GetPtr(const UnsignedInteger index) const {
+			return reinterpret_cast<uint8_t *>(data) + (DataSize * index);
 		}
 
 		UnsignedInteger GetByteCapacity() const { return Capacity * DataSize; }
@@ -38,8 +37,10 @@ namespace Imagine::Core {
 		 * Construct the RawHeapArray and set the data size that will be used for the rest of it's lifetime.
 		 * @param dataSize The size of the component the array will use. Can only be set once.
 		 */
-		explicit RawHeapArray(const UnsignedInteger dataSize) noexcept : DataSize(dataSize) {}
-		RawHeapArray(const UnsignedInteger dataSize, const UnsignedInteger capacity) : DataSize(dataSize) { reserve(capacity); }
+		explicit RawHeapArray(const UnsignedInteger dataSize) noexcept :
+			DataSize(dataSize) {}
+		RawHeapArray(const UnsignedInteger dataSize, const UnsignedInteger capacity) :
+			DataSize(dataSize) { reserve(capacity); }
 		~RawHeapArray() {
 			free(data);
 			data = nullptr;
@@ -47,7 +48,7 @@ namespace Imagine::Core {
 			Capacity = 0;
 		}
 
-		RawHeapArray(const RawHeapArray& other) {
+		RawHeapArray(const RawHeapArray &other) {
 			if (this == &other) return;
 			if (!other.is_valid()) return;
 
@@ -55,12 +56,12 @@ namespace Imagine::Core {
 			Count = other.Count;
 			Capacity = other.Capacity;
 
-			data = malloc(Capacity*DataSize);
+			data = malloc(Capacity * DataSize);
 
-			memcpy(data, other.data, Count*DataSize);
+			memcpy(data, other.data, Count * DataSize);
 		}
 
-		RawHeapArray& operator=(const RawHeapArray& other) {
+		RawHeapArray &operator=(const RawHeapArray &other) {
 			if (this == &other) return *this;
 
 			// Fast exist if the other is invalid. We just become invalid too. Like a NaN propagation.
@@ -73,9 +74,9 @@ namespace Imagine::Core {
 			}
 
 			// reallocation only if necessary because we might just be good.
-			if (Capacity*DataSize != other.Capacity*other.DataSize) {
+			if (Capacity * DataSize != other.Capacity * other.DataSize) {
 				free(data);
-				data = malloc(other.Capacity*other.DataSize);
+				data = malloc(other.Capacity * other.DataSize);
 			}
 
 			Capacity = other.Capacity;
@@ -83,63 +84,62 @@ namespace Imagine::Core {
 			Count = other.Count;
 
 			// Only copy the necessary. The rest is just garbage anyway.
-			memcpy(data, other.data, Count*DataSize);
+			memcpy(data, other.data, Count * DataSize);
 
 			return *this;
 		}
 
-		RawHeapArray(RawHeapArray&& other) noexcept {swap(other);}
-		RawHeapArray& operator=(RawHeapArray&& other) noexcept {swap(other); return *this;}
-		void swap(RawHeapArray& other) noexcept {
+		RawHeapArray(RawHeapArray &&other) noexcept { swap(other); }
+		RawHeapArray &operator=(RawHeapArray &&other) noexcept {
+			swap(other);
+			return *this;
+		}
+		void swap(RawHeapArray &other) noexcept {
 			std::swap(data, other.data);
 			std::swap(Count, other.Count);
 			std::swap(Capacity, other.Capacity);
 			std::swap(DataSize, other.DataSize);
 		}
+
 	private:
-		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2)
-		{
+		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2) {
 			MGN_CORE_ASSERT(id1 < Capacity, "THe index {} is out of bound.", id1);
 			MGN_CORE_ASSERT(id2 < Capacity, "THe index {} is out of bound.", id2);
-			MemoryHelper::c_swap_memory(&reinterpret_cast<uint8_t*>(data)[id1*DataSize], &reinterpret_cast<uint8_t*>(data)[id2*DataSize], DataSize);
+			MemoryHelper::c_swap_memory(&reinterpret_cast<uint8_t *>(data)[id1 * DataSize], &reinterpret_cast<uint8_t *>(data)[id2 * DataSize], DataSize);
 		}
-		void reallocate_and_copy(const UnsignedInteger size)
-		{
-			void* new_data = realloc(data, DataSize * size)
+		void reallocate_and_copy(const UnsignedInteger size) {
+			void *new_data = realloc(data, DataSize * size);
 			MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
 			if (new_data) {
 				data = new_data;
 				Capacity = size;
 			}
 		}
-		void reallocate_if_necessary(const UnsignedInteger minimumCapacity)
-		{
-			if (Capacity < minimumCapacity)
-			{
+		void reallocate_if_necessary(const UnsignedInteger minimumCapacity) {
+			if (Capacity < minimumCapacity) {
 				reallocate_and_copy(minimumCapacity);
 			}
 		}
 
-		template <typename... Args>
-		void raw_push_back(const void* data, const uint64_t size, spdlog::format_string_t<Args...> fmt, Args &&...args) {
+		template<typename... Args>
+		void raw_push_back(const void *data, const uint64_t size, spdlog::format_string_t<Args...> fmt, Args &&...args) {
 			const UnsignedInteger index = Count++;
 			reallocate_if_necessary(Count);
 
-			if (!data)
-			{
+			if (!data) {
 				return;
 			}
 
 			MGN_CORE_CHECK(size == DataSize, fmt, std::forward<Args>(args)...);
 
 			memcpy(GetPtr(index), data, std::min(size, static_cast<uint64_t>(DataSize)));
-
 		}
+
 	public:
-		[[nodiscard]] UnsignedInteger is_valid() const {return data && DataSize>0;}
-		[[nodiscard]] UnsignedInteger size() const {return Count;}
-		[[nodiscard]] UnsignedInteger capacity() const {return Capacity;}
-		[[nodiscard]] bool empty() const {return Count == 0;}
+		[[nodiscard]] UnsignedInteger is_valid() const { return data && DataSize > 0; }
+		[[nodiscard]] UnsignedInteger size() const { return Count; }
+		[[nodiscard]] UnsignedInteger capacity() const { return Capacity; }
+		[[nodiscard]] bool empty() const { return Count == 0; }
 
 		/**
 		 * Will reallocate the array if the desired capacity exceeds the one we have.
@@ -166,10 +166,8 @@ namespace Imagine::Core {
 		 * This function will reallocate the whole buffer if the size isn't exactly the size passed as parameters.
 		 * @param size the new size of the HeapArray.
 		 */
-		void resize(const UnsignedInteger size)
-		{
-			if (size != Capacity)
-			{
+		void resize(const UnsignedInteger size) {
+			if (size != Capacity) {
 				reallocate_and_copy(size);
 			}
 			Count = Capacity;
@@ -180,8 +178,7 @@ namespace Imagine::Core {
 		 * Capacity is not high enough to accommodate the new size.
 		 * @param size the new count of the HeapArray
 		 */
-		void redimension(const UnsignedInteger size)
-		{
+		void redimension(const UnsignedInteger size) {
 			reallocate_if_necessary(size);
 			Count = size;
 		}
@@ -190,7 +187,7 @@ namespace Imagine::Core {
 			return DataSize;
 		}
 
-		void* get(const UnsignedInteger index) {
+		void *get(const UnsignedInteger index) {
 #ifdef MGN_DEBUG
 			MGN_ASSERT(data, "The buffer is not allocated yet.");
 			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
@@ -199,7 +196,7 @@ namespace Imagine::Core {
 			return GetPtr(index);
 		}
 
-		const void* get(const UnsignedInteger index) const {
+		const void *get(const UnsignedInteger index) const {
 #ifdef MGN_DEBUG
 			MGN_ASSERT(data, "The buffer is not allocated yet.");
 			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
@@ -208,11 +205,11 @@ namespace Imagine::Core {
 			return GetPtr(index);
 		}
 
-		void* try_get(const UnsignedInteger index) {
+		void *try_get(const UnsignedInteger index) {
 			return ((!data) || index >= Count) ? nullptr : GetPtr(index);
 		}
 
-		const void* try_get(const UnsignedInteger index) const {
+		const void *try_get(const UnsignedInteger index) const {
 			return ((!data) || index >= Count) ? nullptr : GetPtr(index);
 		}
 
@@ -222,7 +219,7 @@ namespace Imagine::Core {
 			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
 			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
-			Buffer buff{ DataSize };
+			Buffer buff{DataSize};
 			memcpy(buff.Get(), GetPtr(index), DataSize);
 			return std::move(buff);
 		}
@@ -230,7 +227,7 @@ namespace Imagine::Core {
 		Buffer try_get_buffer(const UnsignedInteger index) const {
 			if (!data || index >= Count) return Buffer{};
 
-			Buffer buff{ DataSize };
+			Buffer buff{DataSize};
 			memcpy(buff.Get(), GetPtr(index), DataSize);
 			return std::move(buff);
 		}
@@ -263,20 +260,20 @@ namespace Imagine::Core {
 			return {GetPtr(index), 0, DataSize};
 		}
 
-		void push_back(const BufferView& view) {
+		void push_back(const BufferView &view) {
 			raw_push_back(view.Get(), view.Size(), "The BufferView sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", view.Size(), DataSize);
 		}
 
-		void push_back(const Buffer& buffer) {
+		void push_back(const Buffer &buffer) {
 			raw_push_back(buffer.Get(), buffer.Size(), "The Buffer sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", buffer.Size(), DataSize);
 		}
 
-		void push_back(const void* ptr, const uint64_t size) {
+		void push_back(const void *ptr, const uint64_t size) {
 			raw_push_back(ptr, size, "The pointer sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", size, DataSize);
 		}
 
 		template<typename T>
-		void push_back(const T& data) {
+		void push_back(const T &data) {
 			raw_push_back(&data, sizeof(T), "The Type '{}' sized '{}' given in parameter is not the same size as the DataSize '{}'. We will copy what we can.", typeid(T).name(), sizeof(T), DataSize);
 		}
 
@@ -285,11 +282,11 @@ namespace Imagine::Core {
 			reallocate_if_necessary(Count);
 		}
 
-		void* back() {
+		void *back() {
 			return GetPtr(Count - 1);
 		}
 
-		const void* back() const {
+		const void *back() const {
 			return GetPtr(Count - 1);
 		}
 
@@ -298,27 +295,24 @@ namespace Imagine::Core {
 		}
 
 		/**
-		* This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
-		*/
-		void remove(const UnsignedInteger index)
-		{
+		 * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
+		 */
+		void remove(const UnsignedInteger index) {
 			if (index >= Count) return;
 			const UnsignedInteger element_to_move = Count - index;
-			for (int i = index + 1; i < element_to_move; ++i)
-			{
-				const auto previous = (i-1)*DataSize;
+			for (int i = index + 1; i < element_to_move; ++i) {
+				const auto previous = (i - 1) * DataSize;
 				const auto current = i * DataSize;
-				memcpy(reinterpret_cast<uint8_t*>(data) + previous, reinterpret_cast<uint8_t*>(data) + current, DataSize);
+				memcpy(reinterpret_cast<uint8_t *>(data) + previous, reinterpret_cast<uint8_t *>(data) + current, DataSize);
 			}
 			--Count;
 		}
 
 		/**
-		* This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
-		* But the data will remain at index Count until further operation but not recommended to do it after.
-		*/
-		void swap_and_remove(const UnsignedInteger index)
-		{
+		 * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
+		 * But the data will remain at index Count until further operation but not recommended to do it after.
+		 */
+		void swap_and_remove(const UnsignedInteger index) {
 			c_swap_elements(index, Count - 1);
 			--Count;
 		}
@@ -326,10 +320,11 @@ namespace Imagine::Core {
 		void clear() {
 			Count = 0;
 		}
+
 	public:
 		// RawHeapArrayElement operator[](const UnsignedInteger index);
 	private:
-		void* data{nullptr};
+		void *data{nullptr};
 		UnsignedInteger Count{0};
 		UnsignedInteger Capacity{0};
 		/**
@@ -338,4 +333,4 @@ namespace Imagine::Core {
 		 */
 		UnsignedInteger DataSize{0};
 	};
-}
+} // namespace Imagine::Core

@@ -69,7 +69,7 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 6);
 	for (int i = 0; i < 5; ++i) {
-		const int n = i+1;
+		const int n = i + 1;
 		heapArray.push_back(n);
 		ASSERT_EQ(heapArray.size(), n);
 		ASSERT_EQ(heapArray.back(), n);
@@ -80,7 +80,7 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 5);
 	ASSERT_EQ(heapArray.capacity(), 10);
 	for (int i = 5; i < 10; ++i) {
-		const int n = i+1;
+		const int n = i + 1;
 		heapArray.push_back(n);
 		ASSERT_EQ(heapArray.size(), n);
 		ASSERT_EQ(heapArray.back(), n);
@@ -93,7 +93,7 @@ TEST(CoreHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.back(), 10);
 	ASSERT_EQ(heapArray.back(), heapArray.get(8));
 	for (int i = 0; i < 9; ++i) {
-		ASSERT_EQ(heapArray.get(i), i+2);
+		ASSERT_EQ(heapArray.get(i), i + 2);
 	}
 
 	heapArray.swap_and_remove(3);
@@ -145,8 +145,8 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 	heapArray.push_back(-1);
 	ASSERT_TRUE(heapArray.is_valid());
 	ASSERT_FALSE(heapArray.empty());
-	ASSERT_EQ(*reinterpret_cast<int*>(heapArray.back()), -1);
-	ASSERT_EQ(*reinterpret_cast<int*>(heapArray.get(0)), -1);
+	ASSERT_EQ(*reinterpret_cast<int *>(heapArray.back()), -1);
+	ASSERT_EQ(*reinterpret_cast<int *>(heapArray.get(0)), -1);
 	ASSERT_EQ(heapArray.size(), 1);
 	ASSERT_EQ(heapArray.capacity(), 1);
 
@@ -157,15 +157,15 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 
 	int data2 = 1;
 	memcpy(heapArray.back(), &data2, sizeof(int));
-	ASSERT_EQ(*static_cast<int*>(heapArray.back()), 1);
-	ASSERT_EQ(*static_cast<int*>(heapArray.get(1)), 1);
+	ASSERT_EQ(*static_cast<int *>(heapArray.back()), 1);
+	ASSERT_EQ(*static_cast<int *>(heapArray.get(1)), 1);
 
 	heapArray.pop_back();
 	ASSERT_TRUE(heapArray.is_valid());
 	ASSERT_EQ(heapArray.size(), 1);
 	ASSERT_EQ(heapArray.capacity(), 2);
-	ASSERT_EQ(*static_cast<int*>(heapArray.back()), -1);
-	ASSERT_EQ(*static_cast<int*>(heapArray.get(0)), -1);
+	ASSERT_EQ(*static_cast<int *>(heapArray.back()), -1);
+	ASSERT_EQ(*static_cast<int *>(heapArray.get(0)), -1);
 
 	heapArray.pop_back();
 	ASSERT_TRUE(heapArray.is_valid());
@@ -176,38 +176,38 @@ TEST(CoreRawHeapArray, PushPopRemoveAssertions) {
 	ASSERT_EQ(heapArray.size(), 0);
 	ASSERT_EQ(heapArray.capacity(), 6);
 	for (int i = 0; i < 5; ++i) {
-		const int n = i+1;
+		const int n = i + 1;
 		heapArray.push_back(&n, sizeof(int));
 		ASSERT_EQ(heapArray.size(), n);
-		ASSERT_EQ(*static_cast<int*>(heapArray.back()), n);
-		ASSERT_EQ(*static_cast<int*>(heapArray.get(i)), n);
+		ASSERT_EQ(*static_cast<int *>(heapArray.back()), n);
+		ASSERT_EQ(*static_cast<int *>(heapArray.get(i)), n);
 	}
 
 	heapArray.prepare(5);
 	ASSERT_EQ(heapArray.size(), 5);
 	ASSERT_EQ(heapArray.capacity(), 10);
 	for (int i = 5; i < 10; ++i) {
-		const int n = i+1;
+		const int n = i + 1;
 		heapArray.push_back(&n, sizeof(int));
 		ASSERT_EQ(heapArray.size(), n);
-		ASSERT_EQ(*static_cast<int*>(heapArray.back()), n);
-		ASSERT_EQ(*static_cast<int*>(heapArray.get(i)), n);
+		ASSERT_EQ(*static_cast<int *>(heapArray.back()), n);
+		ASSERT_EQ(*static_cast<int *>(heapArray.get(i)), n);
 	}
 
 	heapArray.remove(0);
 	ASSERT_EQ(heapArray.size(), 9);
 	ASSERT_EQ(heapArray.capacity(), 10);
-	ASSERT_EQ(*static_cast<int*>(heapArray.back()), 10);
-	ASSERT_EQ(*static_cast<int*>(heapArray.back()), *static_cast<int*>(heapArray.get(8)));
+	ASSERT_EQ(*static_cast<int *>(heapArray.back()), 10);
+	ASSERT_EQ(*static_cast<int *>(heapArray.back()), *static_cast<int *>(heapArray.get(8)));
 	for (int i = 0; i < 9; ++i) {
-		ASSERT_EQ(*static_cast<int*>(heapArray.get(i)), i+2);
+		ASSERT_EQ(*static_cast<int *>(heapArray.get(i)), i + 2);
 	}
 
 	heapArray.swap_and_remove(3);
 	ASSERT_EQ(heapArray.size(), 8);
 	ASSERT_EQ(heapArray.capacity(), 10);
-	ASSERT_EQ(*static_cast<int*>(heapArray.back()), 9);
-	ASSERT_EQ(*static_cast<int*>(heapArray.get(3)), 10);
+	ASSERT_EQ(*static_cast<int *>(heapArray.back()), 9);
+	ASSERT_EQ(*static_cast<int *>(heapArray.get(3)), 10);
 
 	heapArray.clear();
 	ASSERT_EQ(heapArray.size(), 0);

@@ -5,4 +5,4 @@
 #include "Imagine/Core.hpp"
 
 namespace Imagine {
-} // Imagine
+} // namespace Imagine

@@ -5,9 +5,26 @@
   </component>
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
+    <sourceRoots>
+      <file path="$PROJECT_DIR$/Application/Includes" />
+      <file path="$PROJECT_DIR$/Application/Sources" />
+      <file path="$PROJECT_DIR$/Core/Includes" />
+      <file path="$PROJECT_DIR$/Core/Platform/Renderer/CPU_RENDERER/Sources" />
+      <file path="$PROJECT_DIR$/Core/Platform/Renderer/VULKAN/Include" />
+      <file path="$PROJECT_DIR$/Core/Platform/Renderer/VULKAN/Sources" />
+      <file path="$PROJECT_DIR$/Core/Platform/Window/GLFW/Sources" />
+      <file path="$PROJECT_DIR$/Core/Platform/Window/HEADLESS/Sources" />
+      <file path="$PROJECT_DIR$/Core/Platform/Window/SDL3/Sources" />
+      <file path="$PROJECT_DIR$/Core/Sources" />
+    </sourceRoots>
+    <libraryRoots>
+      <file path="$PROJECT_DIR$/Core/IncludeExternals" />
+      <file path="$PROJECT_DIR$/Libraries" />
+    </libraryRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/.github" />
       <file path="$PROJECT_DIR$/build" />
     </excludeRoots>
   </component>
-  <component name="WestSettings"><![CDATA[{}]]></component>
+  <component name="WestSettings">{}</component>
 </project>

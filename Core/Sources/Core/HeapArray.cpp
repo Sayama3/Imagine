@@ -4,6 +4,5 @@
 
 #include "Imagine/Core/HeapArray.hpp"
 
-namespace Imagine::Core
-{
+namespace Imagine::Core {
 }

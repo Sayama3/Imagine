@@ -1,0 +1,40 @@
+[submodule "Libraries/imgui"]
+	path = Libraries/imgui
+	url = https://github.com/Sayama3/imgui.git
+	branch = docking
+[submodule "Libraries/glm"]
+	path = Libraries/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Libraries/spdlog"]
+	path = Libraries/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "Libraries/tracy"]
+	path = Libraries/tracy
+	url = https://github.com/wolfpld/tracy.git
+[submodule "Libraries/xxHash"]
+	path = Libraries/xxHash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "Libraries/assimp"]
+	path = Libraries/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "Libraries/EASTL"]
+	path = Libraries/EASTL
+	url = https://github.com/electronicarts/EASTL.git
+[submodule "Libraries/meshoptimizer"]
+	path = Libraries/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer.git
+[submodule "Libraries/glfw"]
+	path = Libraries/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Libraries/SDL"]
+	path = Libraries/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "Libraries/vk-bootstrap"]
+	path = Libraries/vk-bootstrap
+	url = https://github.com/charles-lunarg/vk-bootstrap.git
+[submodule "Libraries/VulkanMemoryAllocator"]
+	path = Libraries/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "Libraries/volk"]
+	path = Libraries/volk
+	url = https://github.com/zeux/volk.git
