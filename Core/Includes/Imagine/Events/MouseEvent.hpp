@@ -12,10 +12,12 @@ namespace Imagine::Core {
     class MouseMovedEvent : public Event
     {
     public:
-        inline MouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) {}
+        inline MouseMovedEvent(const float x, const float y, float const xMov, const float yMov) : m_MouseX(x), m_MouseY(y), m_MouseMovX(xMov), m_MouseMovY(yMov) {}
 
         inline float GetX() const { return m_MouseX; }
         inline float GetY() const { return m_MouseY; }
+        inline float GetXMovement() const { return m_MouseMovX; }
+        inline float GetYMovement() const { return m_MouseMovY; }
 
         inline std::string string() const override
         {
@@ -28,6 +30,7 @@ namespace Imagine::Core {
         EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput)
     private:
         float m_MouseX, m_MouseY;
+        float m_MouseMovX, m_MouseMovY;
     };
 
     class MouseScrolledEvent : public Event

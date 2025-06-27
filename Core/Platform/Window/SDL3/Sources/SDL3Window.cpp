@@ -101,17 +101,22 @@ namespace Imagine::SDL3 {
 			if (!m_EventCallBack) { continue; }
 			// if (!canHandleEvent) continue;
 			if (e.type == SDL_EVENT_QUIT) {
-
+				WindowCloseEvent event{};
+				m_EventCallBack(event);
 				m_ShouldClose = true;
 			}
 			else if (e.type == SDL_EVENT_DROP_FILE) {
-				Renderer *renderer = Renderer::Get();
-				if (renderer) renderer->LoadExternalModelInScene(e.drop.data, SceneManager::GetMainScene().get());
+				WindowDropFileEvent event{1, &e.drop.data};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_WINDOW_MINIMIZED) {
+				WindowMinifyEvent event{true};
+				m_EventCallBack(event);
 				m_Minimized = true;
 			}
 			else if (e.type == SDL_EVENT_WINDOW_RESTORED) {
+				WindowMinifyEvent event{false};
+				m_EventCallBack(event);
 				m_Minimized = false;
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
@@ -127,6 +132,7 @@ namespace Imagine::SDL3 {
 				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
 			}
 			else if (e.type == SDL_EVENT_MOUSE_MOTION) {
+				MouseMovedEvent event{e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel};
 				m_Mouse.m_MouseMovement = {e.motion.xrel, e.motion.yrel};
 				m_Mouse.m_MousePosition = {e.motion.x, e.motion.y};
 			}
