@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
 			std::string{"Imagine"},
 			MGN_MAKE_VERSION(0, 0, 1),
 			WindowParameters{
-					1600,
 					1200,
+					900,
 					true,
 			},
 			RendererParameters{
