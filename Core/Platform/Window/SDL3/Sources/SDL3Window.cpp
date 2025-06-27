@@ -91,12 +91,13 @@ namespace Imagine::SDL3 {
 			canHandleEvent = !ImGui_ImplSDL3_ProcessEvent(&e);
 			// m_Mouse.m_MousePosition = ImGui::GetMousePos();
 #endif
+
 			// if (!canHandleEvent) continue;
 			if (e.type == SDL_EVENT_QUIT) {
 				m_ShouldClose = true;
 			}
 			else if (e.type == SDL_EVENT_DROP_FILE) {
-				Renderer* renderer = Renderer::Get();
+				Renderer *renderer = Renderer::Get();
 				if (renderer) renderer->LoadExternalModelInScene(e.drop.data, SceneManager::GetMainScene().get());
 			}
 			else if (e.type == SDL_EVENT_WINDOW_MINIMIZED) {
@@ -121,37 +122,80 @@ namespace Imagine::SDL3 {
 				m_Mouse.m_MouseMovement = {e.motion.xrel, e.motion.yrel};
 				m_Mouse.m_MousePosition = {e.motion.x, e.motion.y};
 			}
-			//TODO: properly do so
+			// TODO: properly do so
 			else if (e.type == SDL_EVENT_KEY_DOWN) {
-				if (e.key.key == SDLK_Z) { Core::Camera::s_MainCamera->velocity.z = +1; }
-				if (e.key.key == SDLK_S) { Core::Camera::s_MainCamera->velocity.z = -1; }
-				if (e.key.key == SDLK_Q) { Core::Camera::s_MainCamera->velocity.x = -1; }
-				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = +1; }
-				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->velocity.y = +1; }
-				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->velocity.y = -1; }
+				if (e.key.key == SDLK_Z) {
+					Core::Camera::s_MainCamera->velocity.z = +1;
+				}
+				if (e.key.key == SDLK_S) {
+					Core::Camera::s_MainCamera->velocity.z = -1;
+				}
+				if (e.key.key == SDLK_Q) {
+					Core::Camera::s_MainCamera->velocity.x = -1;
+				}
+				if (e.key.key == SDLK_D) {
+					Core::Camera::s_MainCamera->velocity.x = +1;
+				}
+				if (e.key.key == SDLK_E) {
+					Core::Camera::s_MainCamera->velocity.y = +1;
+				}
+				if (e.key.key == SDLK_A) {
+					Core::Camera::s_MainCamera->velocity.y = -1;
+				}
 
-				if (e.key.key == SDLK_RIGHT) { Core::Camera::s_MainCamera->yawVelocity = +45; }
-				if (e.key.key == SDLK_LEFT) { Core::Camera::s_MainCamera->yawVelocity = -45; }
+				if (e.key.key == SDLK_RIGHT) {
+					Core::Camera::s_MainCamera->yawVelocity = +45;
+				}
+				if (e.key.key == SDLK_LEFT) {
+					Core::Camera::s_MainCamera->yawVelocity = -45;
+				}
 
-				if (e.key.key == SDLK_UP) { Core::Camera::s_MainCamera->pitchVelocity = +45; }
-				if (e.key.key == SDLK_DOWN) { Core::Camera::s_MainCamera->pitchVelocity = -45; }
+				if (e.key.key == SDLK_UP) {
+					Core::Camera::s_MainCamera->pitchVelocity = +45;
+				}
+				if (e.key.key == SDLK_DOWN) {
+					Core::Camera::s_MainCamera->pitchVelocity = -45;
+				}
 			}
 			else if (e.type == SDL_EVENT_KEY_UP) {
-				if (e.key.key == SDLK_Z) { Core::Camera::s_MainCamera->velocity.z = 0; }
-				if (e.key.key == SDLK_S) { Core::Camera::s_MainCamera->velocity.z = 0; }
-				if (e.key.key == SDLK_Q) { Core::Camera::s_MainCamera->velocity.x = 0; }
-				if (e.key.key == SDLK_D) { Core::Camera::s_MainCamera->velocity.x = 0; }
-				if (e.key.key == SDLK_E) { Core::Camera::s_MainCamera->velocity.y = 0; }
-				if (e.key.key == SDLK_A) { Core::Camera::s_MainCamera->velocity.y = 0; }
+				if (e.key.key == SDLK_Z) {
+					Core::Camera::s_MainCamera->velocity.z = 0;
+				}
+				if (e.key.key == SDLK_S) {
+					Core::Camera::s_MainCamera->velocity.z = 0;
+				}
+				if (e.key.key == SDLK_Q) {
+					Core::Camera::s_MainCamera->velocity.x = 0;
+				}
+				if (e.key.key == SDLK_D) {
+					Core::Camera::s_MainCamera->velocity.x = 0;
+				}
+				if (e.key.key == SDLK_E) {
+					Core::Camera::s_MainCamera->velocity.y = 0;
+				}
+				if (e.key.key == SDLK_A) {
+					Core::Camera::s_MainCamera->velocity.y = 0;
+				}
 
-				if (e.key.key == SDLK_RIGHT) { Core::Camera::s_MainCamera->yawVelocity = 0; }
-				if (e.key.key == SDLK_LEFT) { Core::Camera::s_MainCamera->yawVelocity = 0; }
+				if (e.key.key == SDLK_RIGHT) {
+					Core::Camera::s_MainCamera->yawVelocity = 0;
+				}
+				if (e.key.key == SDLK_LEFT) {
+					Core::Camera::s_MainCamera->yawVelocity = 0;
+				}
 
-				if (e.key.key == SDLK_UP) { Core::Camera::s_MainCamera->pitchVelocity = 0; }
-				if (e.key.key == SDLK_DOWN) { Core::Camera::s_MainCamera->pitchVelocity = 0; }
+				if (e.key.key == SDLK_UP) {
+					Core::Camera::s_MainCamera->pitchVelocity = 0;
+				}
+				if (e.key.key == SDLK_DOWN) {
+					Core::Camera::s_MainCamera->pitchVelocity = 0;
+				}
 			}
-
 		}
+	}
+
+	void SDL3Window::SetEventCallback(const EventCallBackFn &callback) {
+		m_EventCallBack = callback;
 	}
 
 	Vec2 SDL3Window::GetPosition() {

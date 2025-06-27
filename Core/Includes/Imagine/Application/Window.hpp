@@ -6,11 +6,15 @@
 
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/Size.hpp"
+#include "Imagine/Events/Event.hpp"
 #include "WindowParameters.hpp"
 
 namespace Imagine::Core {
 
+
 	class Window {
+	public:
+        using EventCallBackFn = std::function<void(Imagine::Core::Event&)>;
 	public:
 		static Window* Create(const std::string &windowName, WindowParameters parameters);
 		static Window* Initialize(const std::string &windowName, WindowParameters parameters);
@@ -28,6 +32,8 @@ namespace Imagine::Core {
 	public:
 		virtual void Update() = 0;
 		virtual void SendImGuiCommands() = 0;
+	public:
+        virtual void SetEventCallback(const EventCallBackFn& callback) = 0;
 	public:
 		[[nodiscard]] virtual Vec2 GetPosition() = 0;
 		[[nodiscard]] virtual uint32_t GetWindowWidth() = 0;

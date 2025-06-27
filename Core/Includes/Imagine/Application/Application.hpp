@@ -4,14 +4,15 @@
 
 #pragma once
 
-#include "../Rendering/Renderer.hpp"
 #include "ApplicationParameters.hpp"
 #include "Imagine/Layers/LayerStack.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
 #include "Window.hpp"
 
 namespace Imagine::Core {
 
 	class Application {
+	public:
 	private:
 		static Application *s_Instance;
 
@@ -26,42 +27,38 @@ namespace Imagine::Core {
 		~Application();
 
 	public:
+		void PushLayer(Layer *layer);
+		void PushOverlay(Layer *overlay);
 
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* overlay);
-
-		template<typename T, typename ... Args>
-		void PushLayer(Args&& ... args) {PushLayer(new T(std::forward<Args>(args)...));}
-		template<typename T, typename ... Args>
-		void PushOverlay(Args&& ... args) {PushOverlay(new T(std::forward<Args>(args)...));}
+		template<typename T, typename... Args>
+		void PushLayer(Args &&...args) { PushLayer(new T(std::forward<Args>(args)...)); }
+		template<typename T, typename... Args>
+		void PushOverlay(Args &&...args) { PushOverlay(new T(std::forward<Args>(args)...)); }
 
 		template<typename T>
-		inline T* FindLayer()
-		{
+		inline T *FindLayer() {
 			/*MGN_PROFILE_FUNCTION();*/
 			return m_LayerStack.GetLayer<T>();
 		}
 
 		template<typename T>
-		inline const T* FindLayer() const
-		{
+		inline const T *FindLayer() const {
 			/*MGN_PROFILE_FUNCTION();*/
 			return m_LayerStack.GetLayer<T>();
 		}
 
 		template<typename T>
-		inline bool TryGetLayer(T*& ptr)
-		{
+		inline bool TryGetLayer(T *&ptr) {
 			/*MGN_PROFILE_FUNCTION();*/
 			return m_LayerStack.TryGetLayer(ptr);
 		}
 
 		template<typename T>
-		inline bool TryGetLayer(const T*& ptr) const
-		{
+		inline bool TryGetLayer(const T *&ptr) const {
 			/*MGN_PROFILE_FUNCTION();*/
 			return m_LayerStack.TryGetLayer(ptr);
 		}
+
 	public:
 		void Stop();
 		void Run();

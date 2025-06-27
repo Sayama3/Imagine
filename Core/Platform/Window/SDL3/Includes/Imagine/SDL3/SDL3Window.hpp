@@ -13,6 +13,8 @@ namespace Imagine::SDL3 {
 		void Update() override;
 		void SendImGuiCommands() override {}
 
+        virtual void SetEventCallback(const EventCallBackFn& callback) override;
+
 		[[nodiscard]] Vec2 GetPosition() override;
 
 		[[nodiscard]] uint32_t GetWindowWidth() override;
@@ -36,6 +38,7 @@ namespace Imagine::SDL3 {
 		static void framebufferResizeCallback(void *window, int width, int height);
 
 	private:
+		EventCallBackFn m_EventCallBack{};
 		struct SDL_Window *m_Window{nullptr};
 		bool m_ShouldClose = false;
 		bool m_Minimized = false;
