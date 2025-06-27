@@ -54,20 +54,26 @@ namespace Imagine::Core {
 		EVENT_CLASS_TYPE(EventType::KeyReleased)
 	};
 
-	class KeyTypedEvent : public KeyEvent
+	class TextTypedEvent : public Event
 	{
 	public:
-		KeyTypedEvent(const Key keycode) : KeyEvent(keycode) {}
-		KeyTypedEvent(const int keycode) : KeyEvent(keycode) {}
+		explicit TextTypedEvent(const char *text) : m_TextTyped(text) {}
+		explicit TextTypedEvent(std::string text) : m_TextTyped(std::move(text)) {}
+
+		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryInput | EventCategory::EventCategoryKeyboard)
+		EVENT_CLASS_TYPE(EventType::TextTyped)
 
 		inline std::string string() const override
 		{
 			std::stringstream ss;
-			ss << "KeyTypedEvent: " << static_cast<int>(m_KeyCode);
+			ss << "TextTypedEvent: '" << m_TextTyped << "'";
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(EventType::KeyTyped)
+		inline const std::string& GetTextTyped() const { return m_TextTyped; }
+	private:
+		std::string m_TextTyped;
+
 	};
 
 }

@@ -477,6 +477,7 @@ namespace Imagine::Math {
 		void SubdivideButterfly();
 
 		Core::CPUMesh GetSmoothCPUMesh();
+		template<bool UseRandomColor = false>
 		Core::CPUMesh GetHardCPUMesh();
 
 	private:
@@ -1125,6 +1126,7 @@ namespace Imagine::Math {
 	}
 
 	// template<typename T, glm::qualifier Q>
+	template<bool UseRandomColor>
 	inline Core::CPUMesh MeshGraph3D::GetHardCPUMesh() {
 		Core::CPUMesh mesh;
 		const auto triangleCount = m_Faces.size() * ((Face::VertexCount - 3) * 3 + 3);
@@ -1145,6 +1147,18 @@ namespace Imagine::Math {
 
 				const Vertex& newLast = m_Vertices.at(newLastId);
 				Imagine::Vertex vNewLast{newLast.position};
+
+				glm::vec<4,T,Q> color{1,1,1,1};
+
+				if constexpr (UseRandomColor) {
+					color.r = (T)(rand()) / (T)(RAND_MAX);
+					color.g = (T)(rand()) / (T)(RAND_MAX);
+					color.b = (T)(rand()) / (T)(RAND_MAX);
+				}
+
+				vFirst.color = color;
+				vLast.color = color;
+				vNewLast.color = color;
 
 				vec normal = Math::CalculateTriangleNormal(first.position, last.position, newLast.position);
 

@@ -11,8 +11,14 @@
 
 #include "Imagine/SDL3/SDL3Window.hpp"
 
+#include "Imagine/Events/ApplicationEvent.hpp"
+#include "Imagine/Events/Event.hpp"
+#include "Imagine/Events/KeyEvent.hpp"
+#include "Imagine/Events/MouseEvent.hpp"
+
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
+
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
@@ -40,10 +46,6 @@ namespace Imagine::SDL3 {
 		return m_Window;
 	}
 
-	SDL3Mouse &SDL3Window::GetMouse() {
-		return m_Mouse;
-	}
-
 	void SDL3Window::framebufferResizeCallback(void *window, int width, int height) {
 	}
 
@@ -63,13 +65,6 @@ namespace Imagine::SDL3 {
 
 		// TODO: Use `parameters.Resizable`.
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
-
-		auto state = SDL_GetMouseState(&m_Mouse.m_MousePosition.x, &m_Mouse.m_MousePosition.y);
-		m_Mouse.m_ButtonStates[Mouse::Left]   = (state & SDL_BUTTON_LMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::Middle] = (state & SDL_BUTTON_MMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::Right]  = (state & SDL_BUTTON_RMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::X1]     = (state & SDL_BUTTON_X1MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::X2]     = (state & SDL_BUTTON_X2MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
 	}
 
 	SDL3Window::~SDL3Window() {
@@ -80,116 +75,70 @@ namespace Imagine::SDL3 {
 	}
 
 	void SDL3Window::Update() {
-		for (int i = 0; i < m_Mouse.m_ButtonStates.size(); ++i) {
-			m_Mouse.m_ButtonStates[i] &= ~(SDL3Mouse::Released | SDL3Mouse::Pressed);
-		}
-
 		SDL_Event e;
 		while (SDL_PollEvent(&e) != 0) {
-			bool canHandleEvent = true;
+
 #ifdef MGN_IMGUI
-			canHandleEvent = !ImGui_ImplSDL3_ProcessEvent(&e);
-			// m_Mouse.m_MousePosition = ImGui::GetMousePos();
+			ImGui_ImplSDL3_ProcessEvent(&e);
 #endif
 
-			// if (!canHandleEvent) continue;
 			if (e.type == SDL_EVENT_QUIT) {
 				m_ShouldClose = true;
 			}
+
+			if (!m_EventCallBack) {
+				continue;
+			}
+
+			if (e.type == SDL_EVENT_QUIT) {
+				WindowCloseEvent event{};
+				m_EventCallBack(event);
+			}
 			else if (e.type == SDL_EVENT_DROP_FILE) {
-				Renderer *renderer = Renderer::Get();
-				if (renderer) renderer->LoadExternalModelInScene(e.drop.data, SceneManager::GetMainScene().get());
+				WindowDropFileEvent event{1, &e.drop.data};
+				m_EventCallBack(event);
+			}
+			else if (e.type == SDL_EVENT_WINDOW_RESIZED) {
+				WindowResizeEvent event{static_cast<uint32_t>(e.window.data1), static_cast<uint32_t>(e.window.data2)};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_WINDOW_MINIMIZED) {
 				m_Minimized = true;
+				WindowMinifyEvent event{true};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_WINDOW_RESTORED) {
 				m_Minimized = false;
+				WindowMinifyEvent event{false};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-				m_Mouse.m_ButtonStates[e.button.button] &= ~(SDL3Mouse::Released | SDL3Mouse::Up);
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Pressed;
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Down;
-				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
+				MouseButtonPressedEvent event{GetMouseButton(e.button.button)};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-				m_Mouse.m_ButtonStates[e.button.button] &= ~(SDL3Mouse::Pressed | SDL3Mouse::Down);
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Released;
-				m_Mouse.m_ButtonStates[e.button.button] |= SDL3Mouse::Up;
-				m_Mouse.m_MousePosition = {e.button.x, e.button.y};
+				MouseButtonReleasedEvent event{GetMouseButton(e.button.button)};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_MOUSE_MOTION) {
-				m_Mouse.m_MouseMovement = {e.motion.xrel, e.motion.yrel};
-				m_Mouse.m_MousePosition = {e.motion.x, e.motion.y};
+				MouseMovedEvent event{e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel};
+				m_EventCallBack(event);
 			}
-			// TODO: properly do so
+			else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
+				MouseScrolledEvent event{e.wheel.x, e.wheel.y};
+				m_EventCallBack(event);
+			}
 			else if (e.type == SDL_EVENT_KEY_DOWN) {
-				if (e.key.key == SDLK_Z) {
-					Core::Camera::s_MainCamera->velocity.z = +1;
-				}
-				if (e.key.key == SDLK_S) {
-					Core::Camera::s_MainCamera->velocity.z = -1;
-				}
-				if (e.key.key == SDLK_Q) {
-					Core::Camera::s_MainCamera->velocity.x = -1;
-				}
-				if (e.key.key == SDLK_D) {
-					Core::Camera::s_MainCamera->velocity.x = +1;
-				}
-				if (e.key.key == SDLK_E) {
-					Core::Camera::s_MainCamera->velocity.y = +1;
-				}
-				if (e.key.key == SDLK_A) {
-					Core::Camera::s_MainCamera->velocity.y = -1;
-				}
-
-				if (e.key.key == SDLK_RIGHT) {
-					Core::Camera::s_MainCamera->yawVelocity = +45;
-				}
-				if (e.key.key == SDLK_LEFT) {
-					Core::Camera::s_MainCamera->yawVelocity = -45;
-				}
-
-				if (e.key.key == SDLK_UP) {
-					Core::Camera::s_MainCamera->pitchVelocity = +45;
-				}
-				if (e.key.key == SDLK_DOWN) {
-					Core::Camera::s_MainCamera->pitchVelocity = -45;
-				}
+				KeyPressedEvent event{GetKeyCode(e.key.scancode), e.key.repeat ? 1 : 0};
+				m_EventCallBack(event);
 			}
 			else if (e.type == SDL_EVENT_KEY_UP) {
-				if (e.key.key == SDLK_Z) {
-					Core::Camera::s_MainCamera->velocity.z = 0;
-				}
-				if (e.key.key == SDLK_S) {
-					Core::Camera::s_MainCamera->velocity.z = 0;
-				}
-				if (e.key.key == SDLK_Q) {
-					Core::Camera::s_MainCamera->velocity.x = 0;
-				}
-				if (e.key.key == SDLK_D) {
-					Core::Camera::s_MainCamera->velocity.x = 0;
-				}
-				if (e.key.key == SDLK_E) {
-					Core::Camera::s_MainCamera->velocity.y = 0;
-				}
-				if (e.key.key == SDLK_A) {
-					Core::Camera::s_MainCamera->velocity.y = 0;
-				}
-
-				if (e.key.key == SDLK_RIGHT) {
-					Core::Camera::s_MainCamera->yawVelocity = 0;
-				}
-				if (e.key.key == SDLK_LEFT) {
-					Core::Camera::s_MainCamera->yawVelocity = 0;
-				}
-
-				if (e.key.key == SDLK_UP) {
-					Core::Camera::s_MainCamera->pitchVelocity = 0;
-				}
-				if (e.key.key == SDLK_DOWN) {
-					Core::Camera::s_MainCamera->pitchVelocity = 0;
-				}
+				KeyReleasedEvent event{GetKeyCode(e.key.scancode)};
+				m_EventCallBack(event);
+			}
+			else if (e.type == SDL_EVENT_TEXT_INPUT) {
+				TextTypedEvent event{e.text.text};
+				m_EventCallBack(event);
 			}
 		}
 	}
@@ -202,7 +151,7 @@ namespace Imagine::SDL3 {
 		int x, y;
 		const bool result = SDL_GetWindowPosition(m_Window, &x, &y);
 		MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
-		return Vec2{x,y};
+		return Vec2{x, y};
 	}
 	uint32_t SDL3Window::GetWindowWidth() {
 		int width;
@@ -232,7 +181,7 @@ namespace Imagine::SDL3 {
 			const bool result = SDL_GetWindowSize(m_Window, &width, &height);
 			MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
 		}
-		return Rect<>{(float)x,(float)y,(float)x+width,(float)y+height};
+		return Rect<>{(float) x, (float) y, (float) x + width, (float) y + height};
 	}
 
 	uint32_t SDL3Window::GetFramebufferWidth() {

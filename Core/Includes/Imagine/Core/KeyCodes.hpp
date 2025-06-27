@@ -138,7 +138,7 @@
 namespace Imagine {
 
 	enum class Key : int32_t {
-		Unknown = MGN_KEY_UNKNOWN,
+ 		Unknown = MGN_KEY_UNKNOWN,
 		Space = MGN_KEY_SPACE,
 		Apostrophe = MGN_KEY_APOSTROPHE,
 		Comma = MGN_KEY_COMMA,

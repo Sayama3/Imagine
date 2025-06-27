@@ -6,6 +6,8 @@
 
 #include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Events/ApplicationEvent.hpp"
+#include "Imagine/Events/KeyEvent.hpp"
+#include "Imagine/Events/MouseEvent.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
@@ -52,31 +54,10 @@ namespace Imagine::Application {
 	}
 
 	void ApplicationLayer::OnUpdate(Core::TimeStep timeStep) {
-
 		if (m_MeshChanged) {
 			m_MeshGraph->Clear();
 			m_MeshGraph->AddMesh(m_Mesh);
 			m_MeshChanged = false;
-		}
-
-		auto &mouse = Inputs::GetMouse();
-		const Rect<> window = m_Window->GetWindowRect();
-		const Rect<> viewport = m_Renderer->GetViewport();
-		const Vec2 globalPos = mouse.GetPosition() + window.min;
-		const Vec2 viewportPos = globalPos - viewport.min;
-
-
-		if (mouse.IsButtonPressed(Mouse::Right)) {
-			const Vec3 camPos = Camera::s_MainCamera->position;
-			const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
-			const Vec3 fwd = Camera::s_MainCamera->GetForward();
-			const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
-
-			const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0, 0, 0}, Vec3{0, 1, 0}}, ray);
-			if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_OriginalMeshEntityID)) {
-				m_ChaikinCurves.AddPoint(mouseOnGround.value());
-				// SceneManager::GetMainScene()->GetEntity(m_OriginalMeshEntityID).LocalPosition = mouseOnGround.value();
-			}
 		}
 	}
 
@@ -105,8 +86,58 @@ namespace Imagine::Application {
 	}
 
 	void ApplicationLayer::OnEvent(Event &event) {
+
 		EventDispatcher dispatch{event};
-		dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
+
+		bool handled = dispatch.Dispatch<AppUpdateEvent>([this](AppUpdateEvent& event) {
+			OnUpdate(event.GetTimeStep());
+			return false;
+		});
+
+		if(handled) return;
+		handled = dispatch.Dispatch<ImGuiEvent>([this](ImGuiEvent& event) {
+			OnImGuiRender();
+			return false;
+		});
+
+		if(handled) return;
+		handled = dispatch.Dispatch<AppRenderEvent>([this](AppRenderEvent& event) {
+			Core::DrawContext ctx;
+			OnRender(ctx);
+			Renderer::Get()->Draw(ctx);
+			return false;
+		});
+
+		if(handled) return;
+		handled = dispatch.Dispatch<MouseMovedEvent>([this](MouseMovedEvent &mouse) -> bool {
+			MoveMouse({mouse.GetX(), mouse.GetY()});
+			return false;
+		});
+
+		if(handled) return;
+		handled = dispatch.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &mouse) -> bool {
+			if (mouse.GetMouseButton() == Imagine::Mouse::Right) {
+				const Rect<> window = m_Window->GetWindowRect();
+				const Rect<> viewport = m_Renderer->GetViewport();
+				const Vec2 globalPos = m_MousePos + window.min;
+				const Vec2 viewportPos = globalPos - viewport.min;
+
+				const Vec3 camPos = Camera::s_MainCamera->position;
+				const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
+				const Vec3 fwd = Camera::s_MainCamera->GetForward();
+				const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
+
+				const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0, 0, 0}, Vec3{0, 1, 0}}, ray);
+				if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_OriginalMeshEntityID)) {
+					m_ChaikinCurves.AddPoint(mouseOnGround.value());
+					return true;
+				}
+			}
+			return false;
+		});
+
+		if(handled) return;
+		handled = dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
 			for (const std::filesystem::path &path: e) {
 				if (std::filesystem::exists(path)) {
 					if (this->ChangeModelAndPath(path)) return true;
@@ -114,6 +145,88 @@ namespace Imagine::Application {
 			}
 			return false;
 		});
+
+		// Handle Camera movement.
+		if(handled) return;
+		handled = dispatch.Dispatch<KeyPressedEvent>([](KeyPressedEvent &e) -> bool {
+			if (e.GetKeyCode() == Imagine::Key::W) {
+				Core::Camera::s_MainCamera->velocity.z = +1;
+			}
+			if (e.GetKeyCode() == Imagine::Key::S) {
+				Core::Camera::s_MainCamera->velocity.z = -1;
+			}
+			if (e.GetKeyCode() == Imagine::Key::A) {
+				Core::Camera::s_MainCamera->velocity.x = -1;
+			}
+			if (e.GetKeyCode() == Imagine::Key::D) {
+				Core::Camera::s_MainCamera->velocity.x = +1;
+			}
+			if (e.GetKeyCode() == Imagine::Key::E) {
+				Core::Camera::s_MainCamera->velocity.y = +1;
+			}
+			if (e.GetKeyCode() == Imagine::Key::Q) {
+				Core::Camera::s_MainCamera->velocity.y = -1;
+			}
+
+			if (e.GetKeyCode() == Imagine::Key::Right) {
+				Core::Camera::s_MainCamera->yawVelocity = +45;
+			}
+			if (e.GetKeyCode() == Imagine::Key::Left) {
+				Core::Camera::s_MainCamera->yawVelocity = -45;
+			}
+
+			if (e.GetKeyCode() == Imagine::Key::Up) {
+				Core::Camera::s_MainCamera->pitchVelocity = +45;
+			}
+			if (e.GetKeyCode() == Imagine::Key::Down) {
+				Core::Camera::s_MainCamera->pitchVelocity = -45;
+			}
+
+			return true;
+		});
+
+		// Handle Camera movement.
+		if(handled) return;
+		dispatch.Dispatch<KeyReleasedEvent>([](const KeyReleasedEvent &e) -> bool {
+			if (e.GetKeyCode() == Imagine::Key::W) {
+				Core::Camera::s_MainCamera->velocity.z = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::S) {
+				Core::Camera::s_MainCamera->velocity.z = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::A) {
+				Core::Camera::s_MainCamera->velocity.x = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::D) {
+				Core::Camera::s_MainCamera->velocity.x = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::E) {
+				Core::Camera::s_MainCamera->velocity.y = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::Q) {
+				Core::Camera::s_MainCamera->velocity.y = 0;
+			}
+
+			if (e.GetKeyCode() == Imagine::Key::Right) {
+				Core::Camera::s_MainCamera->yawVelocity = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::Left) {
+				Core::Camera::s_MainCamera->yawVelocity = 0;
+			}
+
+			if (e.GetKeyCode() == Imagine::Key::Up) {
+				Core::Camera::s_MainCamera->pitchVelocity = 0;
+			}
+			if (e.GetKeyCode() == Imagine::Key::Down) {
+				Core::Camera::s_MainCamera->pitchVelocity = 0;
+			}
+
+			return true;
+		});
+	}
+
+	void ApplicationLayer::MoveMouse(Vec2 pos) {
+		m_MousePos = pos;
 	}
 
 	bool ApplicationLayer::ChangeModelAndPath(const std::filesystem::path &path) {
@@ -208,8 +321,9 @@ namespace Imagine::Application {
 		{
 			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
-			static bool s_Smooth = true;
+			static bool s_Smooth = false;
 			static bool s_ResetMeshAfterSubdivision = true;
+			static bool s_RandomColor = true;
 			ImGui::InputText("Model Path", &s_ModelPath);
 			if (ImGui::Button("Reload")) {
 				ChangeModelAndPath(s_ModelPath);
@@ -224,6 +338,10 @@ namespace Imagine::Application {
 				m_MeshChanged = true;
 			}
 
+			ImGui::BeginDisabled(s_Smooth);
+			ImGui::Checkbox("Random Color", &s_RandomColor);
+			ImGui::EndDisabled();
+
 			ImGui::BeginDisabled(m_MeshChanged);
 			if (ImGui::Button("Loop Subdivide")) {
 				long double total{0};
@@ -233,27 +351,31 @@ namespace Imagine::Application {
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					total += ms;
-					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
+					MGN_INFO("Subdivision {} took {}ms", i + 1, ms);
 					// m_MeshGraph->EnsureLink();
 				}
-				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
+				MGN_INFO("Total of {} subdivision took {}ms", s_Step, total);
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
 					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
-					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
-				} else {
+					MGN_INFO("Creating a smooth mesh took {}ms", ms);
+				}
+				else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
+					if (s_RandomColor)
+						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+					else
+						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
-					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
+					MGN_INFO("Creating a hard mesh took {}ms", ms);
 				}
 
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
-				if(s_ResetMeshAfterSubdivision) m_MeshChanged = true;
+				if (s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 
 			if (ImGui::Button("Butterfly Subdivide")) {
@@ -264,27 +386,31 @@ namespace Imagine::Application {
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					total += ms;
-					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
+					MGN_INFO("Subdivision {} took {}ms", i + 1, ms);
 					// m_MeshGraph->EnsureLink();
 				}
-				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
+				MGN_INFO("Total of {} subdivision took {}ms", s_Step, total);
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
 					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
-					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
-				} else {
+					MGN_INFO("Creating a smooth mesh took {}ms", ms);
+				}
+				else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
+					if (s_RandomColor)
+						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+					else
+						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
-					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
+					MGN_INFO("Creating a hard mesh took {}ms", ms);
 				}
 
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
-				if(s_ResetMeshAfterSubdivision) m_MeshChanged = true;
+				if (s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 
 			if (ImGui::Button("Kobbelt Subdivide")) {
@@ -295,27 +421,31 @@ namespace Imagine::Application {
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					total += ms;
-					MGN_CORE_INFO("Subdivision {} took {}ms", i+1, ms);
+					MGN_INFO("Subdivision {} took {}ms", i + 1, ms);
 					// m_MeshGraph->EnsureLink();
 				}
-				MGN_CORE_INFO("Total of {} subdivision took {}ms", s_Step, total);
+				MGN_INFO("Total of {} subdivision took {}ms", s_Step, total);
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
 					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
-					MGN_CORE_INFO("Creating a smooth mesh took {}ms", ms);
-				} else {
+					MGN_INFO("Creating a smooth mesh took {}ms", ms);
+				}
+				else {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh();
+					if (s_RandomColor)
+						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+					else
+						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
-					MGN_CORE_INFO("Creating a hard mesh took {}ms", ms);
+					MGN_INFO("Creating a hard mesh took {}ms", ms);
 				}
 
 				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
-				if(s_ResetMeshAfterSubdivision) m_MeshChanged = true;
+				if (s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 			ImGui::EndDisabled();
 		}

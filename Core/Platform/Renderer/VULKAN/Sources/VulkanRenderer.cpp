@@ -1442,7 +1442,6 @@ namespace Imagine::Vulkan {
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
 
 		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D, deviceProperties.limits.maxImageDimension2D};
-		MGN_CORE_INFO("Max Draw Image: {} x {}", maxDrawImage.width, maxDrawImage.height);
 
 #endif
 	}
