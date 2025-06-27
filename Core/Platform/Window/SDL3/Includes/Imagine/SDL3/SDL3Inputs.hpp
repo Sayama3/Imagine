@@ -8,7 +8,7 @@
 namespace Imagine {
 namespace SDL3 {
 
-	class SDL3Mouse final : public Core::Mouse {
+	class SDL3Mouse final : public Core::MouseInput {
 	public:
 	public:
 		SDL3Mouse() = default;
@@ -16,11 +16,11 @@ namespace SDL3 {
 	public:
 		virtual Vec2 GetPosition() override;
 		virtual Vec2 GetMovement() override;
-		virtual ButtonState GetButtonState(Button button) override;
-		virtual bool IsButtonPressed(Button button) override;
-		virtual bool IsButtonReleased(Button button) override;
-		virtual bool IsButtonDown(Button button) override;
-		virtual bool IsButtonUp(Button button) override;
+		virtual ButtonState GetButtonState(Imagine::Mouse button) override;
+		virtual bool IsButtonPressed(Imagine::Mouse button) override;
+		virtual bool IsButtonReleased(Imagine::Mouse button) override;
+		virtual bool IsButtonDown(Imagine::Mouse button) override;
+		virtual bool IsButtonUp(Imagine::Mouse button) override;
 	public:
 		Vec2 m_MousePosition{0};
 		Vec2 m_MouseMovement{0};

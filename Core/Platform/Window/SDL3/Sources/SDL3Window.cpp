@@ -11,8 +11,14 @@
 
 #include "Imagine/SDL3/SDL3Window.hpp"
 
+#include "Imagine/Events/Event.hpp"
+#include "Imagine/Events/ApplicationEvent.hpp"
+#include "Imagine/Events/KeyEvent.hpp"
+#include "Imagine/Events/MouseEvent.hpp"
+
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
+
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
@@ -65,11 +71,11 @@ namespace Imagine::SDL3 {
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
 
 		auto state = SDL_GetMouseState(&m_Mouse.m_MousePosition.x, &m_Mouse.m_MousePosition.y);
-		m_Mouse.m_ButtonStates[Mouse::Left]   = (state & SDL_BUTTON_LMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::Middle] = (state & SDL_BUTTON_MMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::Right]  = (state & SDL_BUTTON_RMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::X1]     = (state & SDL_BUTTON_X1MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
-		m_Mouse.m_ButtonStates[Mouse::X2]     = (state & SDL_BUTTON_X2MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t)Mouse::Left]    = (state & SDL_BUTTON_LMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t)Mouse::Middle]  = (state & SDL_BUTTON_MMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t)Mouse::Right]   = (state & SDL_BUTTON_RMASK)  ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t)Mouse::Button4] = (state & SDL_BUTTON_X1MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
+		m_Mouse.m_ButtonStates[(int32_t)Mouse::Button5] = (state & SDL_BUTTON_X2MASK) ? SDL3Mouse::Down : SDL3Mouse::Up;
 	}
 
 	SDL3Window::~SDL3Window() {
@@ -92,8 +98,10 @@ namespace Imagine::SDL3 {
 			// m_Mouse.m_MousePosition = ImGui::GetMousePos();
 #endif
 
+			if (!m_EventCallBack) { continue; }
 			// if (!canHandleEvent) continue;
 			if (e.type == SDL_EVENT_QUIT) {
+
 				m_ShouldClose = true;
 			}
 			else if (e.type == SDL_EVENT_DROP_FILE) {

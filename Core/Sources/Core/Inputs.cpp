@@ -14,7 +14,7 @@
 #endif
 
 namespace Imagine::Core {
-	Mouse &Inputs::GetMouse() {
+	MouseInput &Inputs::GetMouse() {
 #if defined(MGN_WINDOW_SDL3)
 		return reinterpret_cast<SDL3::SDL3Window*>(Window::Get())->GetMouse();
 #elif defined(MGN_WINDOW_GLFW)

@@ -11,19 +11,19 @@ namespace Imagine::SDL3 {
 	Vec2 SDL3Mouse::GetMovement() {
 		return m_MouseMovement;
 	}
-	Core::Mouse::ButtonState SDL3Mouse::GetButtonState(Button button) {
-		return static_cast<ButtonState>(m_ButtonStates.at(button));
+	Core::MouseInput::ButtonState SDL3Mouse::GetButtonState(Imagine::Mouse button) {
+		return static_cast<ButtonState>(m_ButtonStates.at(static_cast<int32_t>(button)));
 	}
-	bool SDL3Mouse::IsButtonPressed(Button button) {
-		return m_ButtonStates.at(button) & ButtonState::Pressed;
+	bool SDL3Mouse::IsButtonPressed(Imagine::Mouse button) {
+		return m_ButtonStates.at(static_cast<int32_t>(button)) & ButtonState::Pressed;
 	}
-	bool SDL3Mouse::IsButtonReleased(Button button) {
-		return m_ButtonStates.at(button) & ButtonState::Released;
+	bool SDL3Mouse::IsButtonReleased(Imagine::Mouse button) {
+		return m_ButtonStates.at(static_cast<int32_t>(button)) & ButtonState::Released;
 	}
-	bool SDL3Mouse::IsButtonDown(Button button) {
-		return m_ButtonStates.at(button) & ButtonState::Down;
+	bool SDL3Mouse::IsButtonDown(Imagine::Mouse button) {
+		return m_ButtonStates.at(static_cast<int32_t>(button)) & ButtonState::Down;
 	}
-	bool SDL3Mouse::IsButtonUp(Button button) {
-		return m_ButtonStates.at(button) & ButtonState::Up;
+	bool SDL3Mouse::IsButtonUp(Imagine::Mouse button) {
+		return m_ButtonStates.at(static_cast<int32_t>(button)) & ButtonState::Up;
 	}
 } // namespace Imagine::SDL3

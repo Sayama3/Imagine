@@ -24,7 +24,7 @@ namespace Imagine::GLFW {
 	void *GLFWWindow::GetWindowPtr() {
 		return m_Window;
 	}
-	Core::Mouse &GLFWWindow::GetMouse() {
+	Core::MouseInput &GLFWWindow::GetMouse() {
 		//TODO: Implement input system properly
 	}
 

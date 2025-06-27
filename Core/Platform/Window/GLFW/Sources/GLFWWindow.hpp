@@ -32,7 +32,7 @@ namespace Imagine::GLFW {
 		bool ShouldClose() override;
 
 		void *GetWindowPtr() override;
-		Core::Mouse & GetMouse();
+		Core::MouseInput & GetMouse();
 
 	private:
 		static void framebufferResizeCallback(void *window, int width, int height);
