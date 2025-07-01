@@ -1172,6 +1172,7 @@ namespace Imagine::Vulkan {
 			// const bool viewportHovered = ImGui::IsWindowHovered();
 			if (m_ViewportFocused != viewportFocused) {
 				MgnImGui::SetEventsBlocked(!viewportFocused);
+				m_ViewportFocused = viewportFocused;
 				//TODO: Launch event for viewport focus changed.
 			}
 
