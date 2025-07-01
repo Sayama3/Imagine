@@ -13,22 +13,10 @@
 #endif
 
 namespace Imagine::Core {
-	ImGuiLayer::ImGuiLayer(const bool blockEvents) :
-		m_BlockEvents(blockEvents) {
-	}
 	ImGuiLayer::~ImGuiLayer() {
 	}
+
 #ifdef MGN_IMGUI
-
-	void ImGuiLayer::BlockEvents(const bool block) {
-		m_BlockEvents = block;
-	}
-
-	void ImGuiLayer::OnAttach() {
-	}
-
-	void ImGuiLayer::OnDetach() {
-	}
 
 	void ImGuiLayer::OnEvent(Event &e) {
 		EventDispatcher dispatch(e);
@@ -36,7 +24,7 @@ namespace Imagine::Core {
 		dispatch.Dispatch<ImGuiEvent>(MGN_BIND_EVENT_FN(ImGuiLayer::OnImGui));
 		dispatch.Dispatch<WindowResizeEvent>(MGN_BIND_EVENT_FN(ImGuiLayer::OnResize));
 
-		if (m_BlockEvents) {
+		if (MgnImGui::EventsBlocked()) {
 			const ImGuiIO &io = ImGui::GetIO();
 			e.m_Handled |= e.IsInCategory(EventCategory::EventCategoryMouse) & io.WantCaptureMouse;
 			e.m_Handled |= e.IsInCategory(EventCategory::EventCategoryKeyboard) & io.WantCaptureKeyboard;
@@ -107,8 +95,6 @@ namespace Imagine::Core {
 		}
 	}
 #else
-	void ImGuiLayer::OnAttach() {}
-	void ImGuiLayer::OnDetach() {}
 	void ImGuiLayer::OnEvent(Event &event) {}
 	void ImGuiLayer::OnImGui(ImGuiEvent &e) {}
 	void ImGuiLayer::RenderImGuiDockspace() {}

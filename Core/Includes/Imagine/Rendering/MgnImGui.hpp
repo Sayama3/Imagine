@@ -10,6 +10,7 @@ namespace Imagine::Core {
 	class MgnImGui {
 	private:
 		inline static bool s_DockingEnabled { false };
+		inline static bool s_EventBlocked { true };
 		inline static bool s_IsDarkTheme { true };
 	public:
 		static void CreateContext();
@@ -34,6 +35,11 @@ namespace Imagine::Core {
 		static void Shutdown();
 		static void ShutdownWindow();
 		static void ShutdownRenderer();
+
+		static void BlockEvents();
+		static void UnblockEvents();
+		static void SetEventsBlocked(bool eventBlocked);
+		static bool EventsBlocked();
 	};
 
 	struct ImGuiImage {

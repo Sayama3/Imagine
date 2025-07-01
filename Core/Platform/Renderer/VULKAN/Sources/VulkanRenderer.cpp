@@ -1168,6 +1168,13 @@ namespace Imagine::Vulkan {
 			const ImVec2 pos = ImGui::GetCursorScreenPos();
 			const ImVec2 size = ImGui::GetContentRegionAvail();
 
+			const bool viewportFocused = ImGui::IsWindowFocused();
+			// const bool viewportHovered = ImGui::IsWindowHovered();
+			if (m_ViewportFocused != viewportFocused) {
+				MgnImGui::SetEventsBlocked(!viewportFocused);
+				//TODO: Launch event for viewport focus changed.
+			}
+
 			m_ImGuiViewport = {pos.x, pos.y, pos.x + size.x, pos.y + size.y};
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, 0);

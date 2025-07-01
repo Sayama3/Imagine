@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Imagine/Application/Window.hpp"
-#include "Imagine/SDL3/SDL3Inputs.hpp"
+#include "Imagine/Core/Inputs.hpp"
+
+#include <SDL3/SDL.h>
 
 
 namespace Imagine::SDL3 {
@@ -32,12 +34,18 @@ namespace Imagine::SDL3 {
 		[[nodiscard]] bool ShouldClose() override;
 
 		[[nodiscard]] void *GetWindowPtr() override;
-
+	public:
+		const Core::KeyboardState& GetKeyboardState() const;
+		const Core::MouseState& GetMouseState() const;
 	private:
 		static bool OnPixelSizeChanged(void *userdata, SDL_Event *event);
 	private:
 		EventCallBackFn m_EventCallBack{};
 		struct SDL_Window *m_Window{nullptr};
+
+		Core::MouseState m_Mouse;
+		Core::KeyboardState m_Keyboard;
+
 		bool m_ShouldClose = false;
 		bool m_Minimized = false;
 	};

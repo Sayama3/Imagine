@@ -18,6 +18,7 @@
 
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/SDL3/SDL3Inputs.hpp"
 
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
@@ -44,6 +45,14 @@ namespace Imagine::SDL3 {
 
 	void *SDL3Window::GetWindowPtr() {
 		return m_Window;
+	}
+
+	const Core::KeyboardState &SDL3Window::GetKeyboardState() const {
+		return m_Keyboard;
+	}
+
+	const Core::MouseState &SDL3Window::GetMouseState() const {
+		return m_Mouse;
 	}
 
 	bool SDL3Window::OnPixelSizeChanged(void *userdata, SDL_Event *e) {
@@ -81,6 +90,24 @@ namespace Imagine::SDL3 {
 		// TODO: Use `parameters.Resizable`.
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
 		SDL_SetEventFilter(SDL3Window::OnPixelSizeChanged, this);
+
+		//Initialze Inputs
+		SDL_MouseButtonFlags buttons = SDL_GetMouseState(&m_Mouse.x, &m_Mouse.y);
+		m_Mouse[Mouse::Button1] = buttons & SDL_BUTTON_LMASK ? Button::DOWN : Button::UP;
+		m_Mouse[Mouse::Button2] = buttons & SDL_BUTTON_MMASK ? Button::DOWN : Button::UP;
+		m_Mouse[Mouse::Button3] = buttons & SDL_BUTTON_RMASK ? Button::DOWN : Button::UP;
+		m_Mouse[Mouse::Button4] = buttons & SDL_BUTTON_X1MASK ? Button::DOWN : Button::UP;
+		m_Mouse[Mouse::Button5] = buttons & SDL_BUTTON_X2MASK ? Button::DOWN : Button::UP;
+		m_Mouse.WindowId = SDL_GetWindowID(SDL_GetMouseFocus());
+
+		int keyCount;
+		const bool* keysPressed = SDL_GetKeyboardState(&keyCount);
+		for (int key = 0; key < keyCount; ++key) {
+			const Key k = GetKeyCode(static_cast<SDL_Scancode>(key));
+			if (k == Key::Unknown) continue;
+			m_Keyboard[k] = keysPressed[key] ? Button::DOWN : Button::UP;
+		}
+		m_Keyboard.WindowId = SDL_GetWindowID(SDL_GetKeyboardFocus());
 	}
 
 	SDL3Window::~SDL3Window() {
@@ -91,6 +118,15 @@ namespace Imagine::SDL3 {
 	}
 
 	void SDL3Window::Update() {
+
+		// Reset the PRESSED & RELEASED that should only be for a frame
+		for (Core::Button & button: m_Mouse.Buttons) {
+			button &= ~(Button::PRESSED|Button::RELEASED);
+		}
+		for (Core::Button & key: m_Keyboard.Keys) {
+			key &= ~(Button::PRESSED|Button::RELEASED);
+		}
+
 		SDL_Event e;
 		while (SDL_PollEvent(&e) != 0) {
 
@@ -141,30 +177,50 @@ namespace Imagine::SDL3 {
 					m_EventCallBack(event, true);
 				} break;
 				case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-					MouseButtonPressedEvent event{GetMouseButton(e.button.button)};
+					const auto mouseButton = GetMouseButton(e.button.button);
+					m_Mouse[mouseButton] = (Button::DOWN | Button::PRESSED);
+					m_Mouse.WindowId = e.button.windowID;
+					MouseButtonPressedEvent event{mouseButton};
 					m_EventCallBack(event, true);
 				} break;
 				case SDL_EVENT_MOUSE_BUTTON_UP: {
-					MouseButtonReleasedEvent event{GetMouseButton(e.button.button)};
+					const auto mouseButton = GetMouseButton(e.button.button);
+					m_Mouse[mouseButton] = (Button::UP | Button::RELEASED);
+					m_Mouse.WindowId = e.button.windowID;
+					MouseButtonReleasedEvent event{mouseButton};
 					m_EventCallBack(event, true);
 				} break;
 				case SDL_EVENT_MOUSE_MOTION: {
 					MouseMovedEvent event{e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel};
+					m_Mouse.X = e.motion.x;
+					m_Mouse.Y =  e.motion.y;
+
+					m_Mouse.MotionX = e.motion.xrel;
+					m_Mouse.MotionY =  e.motion.yrel;
+
+					m_Mouse.WindowId = e.motion.windowID;
 					m_EventCallBack(event, true);
 				} break;
 				case SDL_EVENT_MOUSE_WHEEL: {
 					MouseScrolledEvent event{e.wheel.x, e.wheel.y};
+					m_Mouse.WheelX = e.wheel.x;
+					m_Mouse.WheelY = e.wheel.y;
+					m_Mouse.WindowId = e.wheel.windowID;
 					m_EventCallBack(event, true);
 				} break;
 				case SDL_EVENT_KEY_DOWN: {
 					const Key key = GetKeyCode(e.key.scancode);
 					if (key == Key::Unknown) continue;
+					if (!e.key.repeat) m_Keyboard[key] = (Button::DOWN|Button::PRESSED);
+					m_Keyboard.WindowId = e.key.windowID;
 					KeyPressedEvent event{key, e.key.repeat ? 1 : 0};
 					m_EventCallBack(event, true);
 				} break;
 				case SDL_EVENT_KEY_UP: {
 					const Key key = GetKeyCode(e.key.scancode);
 					if (key == Key::Unknown) continue;
+					m_Keyboard[key] = (Button::UP|Button::RELEASED);
+					m_Keyboard.WindowId = e.key.windowID;
 					KeyReleasedEvent event{key};
 					m_EventCallBack(event, true);
 				} break;

@@ -180,6 +180,7 @@ namespace Imagine::Vulkan {
 		VkDescriptorSetLayout m_DrawImageDescriptorLayout{nullptr};
 
 		std::optional<Rect<>> m_ImGuiViewport;
+		bool m_ViewportFocused = false;
 
 		GPUSceneData m_SceneData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};

@@ -100,6 +100,19 @@ namespace Imagine::Core {
 		ImGui::DestroyContext();
 	}
 
+	void MgnImGui::BlockEvents() {
+		SetEventsBlocked(true);
+	}
+	void MgnImGui::UnblockEvents(){
+		SetEventsBlocked(false);
+	}
+	void MgnImGui::SetEventsBlocked(const bool eventBlocked) {
+		s_EventBlocked = eventBlocked;
+	}
+	bool MgnImGui::EventsBlocked() {
+		return s_EventBlocked;
+	}
+
 #else
 
 	bool MgnImGui::DockingEnabled() {
@@ -118,5 +131,9 @@ namespace Imagine::Core {
 	void MgnImGui::Shutdown() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 	void MgnImGui::ShutdownWindow() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 	void MgnImGui::ShutdownRenderer() { MGN_LOG_ERROR("ImGui Not Implemented."); }
+	void MgnImGui::BlockEvents() { MGN_LOG_ERROR("ImGui Not Implemented."); }
+	void MgnImGui::UnblockEvents(){ MGN_LOG_ERROR("ImGui Not Implemented."); }
+	bool MgnImGui::EventsBlocked() { MGN_LOG_ERROR("ImGui Not Implemented."); return false;}
+	void MgnImGui::SetEventsBlocked() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 #endif
 } // namespace Imagine::Core

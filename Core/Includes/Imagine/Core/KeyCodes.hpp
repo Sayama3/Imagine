@@ -134,6 +134,7 @@
 #define MGN_KEY_RIGHT_SUPER        347
 #define MGN_KEY_MENU               348
 #define MGN_KEY_LAST               MGN_KEY_MENU
+#define MGN_KEY_COUNT              (MGN_KEY_LAST + 1)
 
 namespace Imagine {
 

@@ -6,11 +6,9 @@
 #include <SDL3/SDL.h>
 #include "Imagine/Core/Inputs.hpp"
 
-#include "Imagine/Core/KeyCodes.hpp"
-#include "Imagine/Core/MouseButtonCodes.hpp"
 
-namespace Imagine {
-namespace SDL3 {
+
+namespace Imagine::SDL3 {
 
 	inline Imagine::Mouse GetMouseButton(const SDL_MouseButtonFlags mb) {
 		switch (mb) {
@@ -19,7 +17,7 @@ namespace SDL3 {
 			case SDL_BUTTON_RIGHT: return Imagine::Mouse::Right;
 			case SDL_BUTTON_X1: return Imagine::Mouse::Button4;
 			case SDL_BUTTON_X2: return Imagine::Mouse::Button5;
-			default: return Imagine::Mouse(mb-1);
+			default: return static_cast<Imagine::Mouse>(mb - 1);
 		}
 	}
 
@@ -150,4 +148,4 @@ namespace SDL3 {
 	}
 
 } // SDL3
-} // Imagine
+// Imagine
