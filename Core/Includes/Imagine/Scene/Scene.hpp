@@ -38,11 +38,6 @@ namespace Imagine::Core {
 		/// The copy assignment WILL keep the same ID. Be mindful.
 		Scene &operator=(const Scene &s) = default;
 
-		Scene(Scene &&o) noexcept;
-		Scene &operator=(Scene &&s) noexcept;
-
-		void swap(Scene &s) noexcept;
-
 	public:
 		/// Create a copy of the scene with a different ID.
 		Scene Duplicate() const;

@@ -168,6 +168,8 @@ public:
 		return *this;
 	}
 
+	[[nodiscard]] T &operator*() { return *ptr; }
+	[[nodiscard]] const T &operator*() const { return *ptr; }
 	[[nodiscard]] T *operator->() { return ptr; }
 	[[nodiscard]] const T *operator->() const { return ptr; }
 	[[nodiscard]] explicit operator bool() const { return ptr != nullptr; }

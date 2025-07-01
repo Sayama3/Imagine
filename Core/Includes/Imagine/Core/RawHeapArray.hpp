@@ -75,13 +75,20 @@ namespace Imagine::Core {
 
 			// reallocation only if necessary because we might just be good.
 			if (Capacity * DataSize != other.Capacity * other.DataSize) {
-				free(data);
-				data = malloc(other.Capacity * other.DataSize);
+				void *new_data = realloc(data, other.Capacity * other.DataSize);
+				if (new_data) {
+					data = new_data;
+					Capacity = other.Capacity;
+					DataSize = other.DataSize;
+					Count = other.Count;
+				} else {
+					free(data);
+					data = nullptr;
+					Count = 0;
+					Capacity = 0;
+					return *this;
+				}
 			}
-
-			Capacity = other.Capacity;
-			DataSize = other.DataSize;
-			Count = other.Count;
 
 			// Only copy the necessary. The rest is just garbage anyway.
 			memcpy(data, other.data, Count * DataSize);

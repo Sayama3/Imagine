@@ -211,6 +211,7 @@ namespace Imagine::Core {
 			return data[index];
 		}
 
+		[[nodiscard]] T &at(const UnsignedInteger index) {return get(index);}
 		[[nodiscard]] T &get(const UnsignedInteger index) {
 #ifdef MGN_DEBUG
 			MGN_ASSERT(data, "The buffer is not allocated yet.");
@@ -225,6 +226,7 @@ namespace Imagine::Core {
 			return data[index];
 		}
 
+		[[nodiscard]] const T &at(const UnsignedInteger index) const {return get(index);}
 		[[nodiscard]] const T &get(const UnsignedInteger index) const {
 #ifdef MGN_DEBUG
 			MGN_ASSERT(data, "The buffer is not allocated yet.");

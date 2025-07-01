@@ -89,13 +89,6 @@ namespace Imagine::Core {
 			elements = o.elements;
 			return *this;
 		}
-		SparseSet(SparseSet&&s) noexcept {swap(s);}
-		SparseSet& operator=(SparseSet&& s) noexcept { swap(s); return *this;}
-		void swap(SparseSet& s) noexcept {
-			sparse.swap(sparse);
-			dense.swap(dense);
-			elements.swap(elements);
-		}
 
 		virtual ~SparseSet() {
 			// if constexpr( CallDestructorT) {
@@ -392,18 +385,9 @@ namespace Imagine::Core {
 			return *this;
 		}
 
-		AutoIdSparseSet(AutoIdSparseSet&& aiss) noexcept {swap(aiss);}
-		AutoIdSparseSet& operator=(AutoIdSparseSet&& aiss) noexcept {swap(aiss); return *this;}
-
 		virtual ~AutoIdSparseSet() override {
 			FreeList.clear();
 			IDs = 0;
-		}
-
-		void swap(AutoIdSparseSet& aiss) noexcept {
-			SparseSet<T, UnsignedInteger, CallDestructorT>::swap(aiss);
-			FreeList.swap(aiss.FreeList);
-			std::swap(IDs, aiss.IDs);
 		}
 	private:
 		UnsignedInteger CreateID() {

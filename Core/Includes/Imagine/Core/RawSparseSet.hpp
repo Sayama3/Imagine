@@ -178,26 +178,45 @@ namespace Imagine::Core {
 			elements.clear();
 		}
 
-		RawSparseSet(const RawSparseSet &other) :
-			sparse(other.sparse), dense(other.dense), elements(other.elements) {}
+		RawSparseSet(const RawSparseSet &other) : sparse(other.sparse), dense(other.dense), elements(other.elements.get_data_size(), other.elements.capacity()) {
+			constructor = other.constructor;
+			destructor = other.destructor;
+			copy_constructor = other.copy_constructor;
+
+			if (copy_constructor) {
+				const auto dataSize = other.GetDataSize();
+				elements.redimension(other.elements.size());
+				for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+					copy_constructor(elements.get(i), dataSize, other.elements.get_const_view(i));
+				}
+			} else {
+				elements = other.elements;
+			}
+		}
 		RawSparseSet &operator=(const RawSparseSet &other) {
+			if (destructor)
+			{
+				const auto dataSize = GetDataSize();
+				for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+					destructor(elements.get(i), dataSize);
+				}
+			}
+
+			constructor = other.constructor;
+			destructor = other.destructor;
+			copy_constructor = other.copy_constructor;
+
 			sparse = other.sparse;
 			dense = other.dense;
 			elements = other.elements;
-			return *this;
-		}
 
-		RawSparseSet(RawSparseSet &&other) noexcept :
-			sparse(), dense(), elements() { swap(other); }
-		RawSparseSet &operator=(RawSparseSet &&other) noexcept {
-			swap(other);
+			if (copy_constructor) {
+				const auto dataSize = GetDataSize();
+				for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+					copy_constructor(elements.get(i), dataSize, other.elements.get_const_view(i));
+				}
+			}
 			return *this;
-		}
-
-		void swap(RawSparseSet &other) noexcept {
-			sparse.swap(other.sparse);
-			dense.swap(other.dense);
-			elements.swap(other.elements);
 		}
 
 	public:
@@ -508,6 +527,14 @@ namespace Imagine::Core {
 		virtual ~AutoIdRawSparseSet() override {
 			FreeList.clear();
 			IDs = 0;
+		}
+
+		AutoIdRawSparseSet(const AutoIdRawSparseSet& o) : RawSparseSet<UnsignedInteger>::RawSparseSet(o), FreeList(o.FreeList), IDs(o.IDs) {}
+		AutoIdRawSparseSet& operator=(const AutoIdRawSparseSet& o) {
+			RawSparseSet<UnsignedInteger>::operator=(o);
+			FreeList = o.FreeList;
+			IDs = o.IDs;
+			return *this;
 		}
 
 	private:

@@ -31,8 +31,8 @@ namespace Imagine::Core {
 		return s;
 	}
 
-	SceneManager::SceneRef SceneManager::LoadScene(Scene &&scene, float priority, bool isMainScene) {
-		SceneRef s = std::make_shared<Scene>(std::move(scene));
+	SceneManager::SceneRef SceneManager::LoadScene(const Scene &scene, float priority, bool isMainScene) {
+		SceneRef s = std::make_shared<Scene>(scene);
 		LoadScene(s, priority, isMainScene);
 		return s;
 	}

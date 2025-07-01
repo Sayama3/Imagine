@@ -151,7 +151,62 @@ TEST(CoreSparseSet, Vec4AutoSparseSet) {
 }
 
 
-TEST(CoreSparseSet, CounterSparseSet) {
+TEST(CoreSparseSet, CopySparseSet) {
+	Log::Init({std::nullopt, c_DefaultLogPattern, true});
+	using InstanceCounter = InstanceCount<int>;
+	using AutoSparseSet = SparseSet<InstanceCounter, uint64_t>;
+	using ScopeAutoSparseSet = ScopePtr<AutoSparseSet>;
+
+	{
+		AutoSparseSet rawSparseSet = AutoSparseSet();
+		ASSERT_EQ(rawSparseSet.Count(), 0);
+	}
+
+	ScopeAutoSparseSet sparseSet = ScopeAutoSparseSet::Create(32);
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
+
+	uint32_t creator{0};
+	const auto id1 = sparseSet->Create(creator++);
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
+
+	sparseSet->Create(creator++);
+
+	sparseSet->Create(creator++);
+
+	while (sparseSet->Count() < 32) {
+		sparseSet->Create(creator++);
+	}
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 32);
+
+	sparseSet->Create(creator++);
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
+
+	{
+		AutoSparseSet anotherSparseSet = *sparseSet;
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 66);
+		for (int i = 0; i < 10; ++i) {
+			anotherSparseSet.Remove(i);
+		}
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 56);
+	}
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
+
+	{
+		AutoSparseSet anotherSparseSet(*sparseSet);
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 66);
+		for (int i = 0; i < 10; ++i) {
+			anotherSparseSet.Remove(i);
+		}
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 56);
+	}
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
+
+	sparseSet.Release();
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
+	Log::Shutdown();
+}
+
+TEST(CoreSparseSet, CopyAutoIdSparseSet) {
 	Log::Init({std::nullopt, c_DefaultLogPattern, true});
 	using InstanceCounter = InstanceCount<int>;
 	using AutoSparseSet = AutoIdSparseSet<InstanceCounter, uint64_t>;
@@ -169,13 +224,8 @@ TEST(CoreSparseSet, CounterSparseSet) {
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
 
 	sparseSet->Create();
-	ASSERT_EQ(InstanceCounter::s_InstanceCount, 2);
-
-	sparseSet->Remove(id1);
-	ASSERT_EQ(InstanceCounter::s_InstanceCount, 1);
 
 	sparseSet->Create();
-	ASSERT_EQ(InstanceCounter::s_InstanceCount, 2);
 
 	while (sparseSet->Count() < 32) {
 		sparseSet->Create();
@@ -185,13 +235,25 @@ TEST(CoreSparseSet, CounterSparseSet) {
 	sparseSet->Create(64);
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
 
-	sparseSet->Clear();
-
-	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);
-	for (int i = 0; i < 10; ++i) {
-		sparseSet->Create();
+	{
+		AutoSparseSet anotherSparseSet = *sparseSet;
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 66);
+		for (int i = 0; i < 10; ++i) {
+			anotherSparseSet.Remove(i);
+		}
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 56);
 	}
-	ASSERT_EQ(InstanceCounter::s_InstanceCount, 10);
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
+
+	{
+		AutoSparseSet anotherSparseSet(*sparseSet);
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 66);
+		for (int i = 0; i < 10; ++i) {
+			anotherSparseSet.Remove(i);
+		}
+		ASSERT_EQ(InstanceCounter::s_InstanceCount, 56);
+	}
+	ASSERT_EQ(InstanceCounter::s_InstanceCount, 33);
 
 	sparseSet.Release();
 	ASSERT_EQ(InstanceCounter::s_InstanceCount, 0);

@@ -15,7 +15,7 @@ namespace Imagine::Core {
 		static SceneRef GetScene(UUID id);
 		static std::vector<SceneRef> GetLoadedScenes();
 		static SceneRef CreateScene(float priority = 1.0f, bool isMainScene = true);
-		static SceneRef LoadScene(Scene&& scene,float priority = 1.0f,  bool isMainScene = true);
+		static SceneRef LoadScene(const Scene& scene,float priority = 1.0f,  bool isMainScene = true);
 		static void LoadScene(SceneRef scene,float priority = 1.0f,  bool isMainScene = true);
 
 		static void UnloadScene(SceneRef scene);
