@@ -9,7 +9,12 @@ namespace Imagine::Core {
 
 	struct Mesh {
 		Mesh() = default;
-		virtual ~Mesh() {};
+		virtual ~Mesh() = default;
+
+		void swap(Mesh& o) noexcept {
+			std::swap(name, o.name);
+			std::swap(lods, o.lods);
+		}
 
 		struct LOD {
 			uint32_t index;

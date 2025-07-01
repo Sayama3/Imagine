@@ -89,8 +89,10 @@ namespace Imagine::SDL3 {
 
 		// TODO: Use `parameters.Resizable`.
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
-		SDL_SetEventFilter(SDL3Window::OnPixelSizeChanged, this);
 
+// #if false
+		SDL_SetEventFilter(SDL3Window::OnPixelSizeChanged, this);
+// #endif
 		//Initialze Inputs
 		SDL_MouseButtonFlags buttons = SDL_GetMouseState(&m_Mouse.x, &m_Mouse.y);
 		m_Mouse[Mouse::Button1] = buttons & SDL_BUTTON_LMASK ? Button::DOWN : Button::UP;

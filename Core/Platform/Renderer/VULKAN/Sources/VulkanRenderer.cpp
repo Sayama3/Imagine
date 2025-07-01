@@ -980,6 +980,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::Resize() {
+		vkDeviceWaitIdle(m_Device);
 		ResizeSwapChain();
 	}
 
@@ -1233,11 +1234,13 @@ namespace Imagine::Vulkan {
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
-		std::vector<std::shared_ptr<MeshAsset>> lineMeshes;
-		std::shared_ptr<MeshAsset> pointMesh;
+		std::vector<ManualDeleteMeshAsset> lineMeshes;
+		ManualDeleteMeshAsset pointMesh;
 		if (!ctx.OpaqueLines.empty()) {
 			for (const LineObject & line: ctx.OpaqueLines) {
-				lineMeshes.push_back(Initializer::LoadLines(this, {(LineObject*)&line, 1}));
+				lineMeshes.emplace_back(std::move(Initializer::LoadManualLines(this, {(LineObject*)&line, 1})));
+				PushCurrentFrameDeletion(lineMeshes.back().meshBuffers.indexBuffer.allocation, lineMeshes.back().meshBuffers.indexBuffer.buffer);
+				PushCurrentFrameDeletion(lineMeshes.back().meshBuffers.vertexBuffer.allocation, lineMeshes.back().meshBuffers.vertexBuffer.buffer);
 			}
 		}
 		// TODO: Implement a point renderer when it's ready. Like, by doing a Geometry shader or some things.
@@ -1314,8 +1317,7 @@ namespace Imagine::Vulkan {
 		}
 
 		for (uint64_t i = 0; i < lineMeshes.size(); ++i) {
-			MeshAsset *mesh = lineMeshes[i].get();
-			if (!mesh) continue;
+			ManualDeleteMeshAsset *mesh = &lineMeshes[i];
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime

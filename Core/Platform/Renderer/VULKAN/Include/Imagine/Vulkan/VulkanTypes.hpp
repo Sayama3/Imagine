@@ -58,6 +58,18 @@ namespace Imagine::Vulkan {
 		GPUMeshBuffers meshBuffers;
 	};
 
+	struct ManualDeleteMeshAsset final : public Core::Mesh {
+		ManualDeleteMeshAsset() = default;
+		virtual ~ManualDeleteMeshAsset() = default;
+		ManualDeleteMeshAsset(const ManualDeleteMeshAsset&) = delete;
+		ManualDeleteMeshAsset& operator=(const ManualDeleteMeshAsset&) = delete;
+		ManualDeleteMeshAsset(ManualDeleteMeshAsset&&) noexcept;
+		ManualDeleteMeshAsset& operator=(ManualDeleteMeshAsset&&) noexcept;
+		void swap(ManualDeleteMeshAsset& other) noexcept;
+
+		GPUMeshBuffers meshBuffers;
+	};
+
 	struct GPUSceneData {
 		glm::mat4 view;
 		glm::mat4 proj;

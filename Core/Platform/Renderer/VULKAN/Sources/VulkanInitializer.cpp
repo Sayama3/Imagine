@@ -169,6 +169,7 @@ namespace Imagine::Vulkan {
 				}
 			}
 		}
+
 		std::shared_ptr<MeshAsset> LoadLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
 			std::vector<uint32_t> indices;
 			std::vector<Vertex> vertices;
@@ -195,6 +196,35 @@ namespace Imagine::Vulkan {
 			mesh->meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
 
 			return mesh;
+		}
+
+		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
+			ManualDeleteMeshAsset mesh;
+
+			std::vector<uint32_t> indices;
+			std::vector<Vertex> vertices;
+
+
+			for (const Core::LineObject &line: lines) {
+				if (line.points.size() < 2) continue;
+				const uint32_t offset = vertices.size();
+				vertices.push_back(line.points.at(0));
+				for (uint32_t i = 1; i < line.points.size(); ++i) {
+					vertices.push_back(line.points.at(i));
+					indices.push_back(offset + (i - 1));
+					indices.push_back(offset + i);
+				}
+			}
+
+			Core::Mesh::LOD surface;
+			surface.index = 0;
+			surface.count = indices.size();
+			surface.material = renderer->GetDefaultLineMaterial();
+
+			mesh.lods.push_back(surface);
+			mesh.meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
+
+			return std::move(mesh);
 		}
 
 		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Vertex> points) {
