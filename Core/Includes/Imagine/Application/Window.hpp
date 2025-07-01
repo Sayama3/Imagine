@@ -14,7 +14,7 @@ namespace Imagine::Core {
 
 	class Window {
 	public:
-        using EventCallBackFn = std::function<void(Imagine::Core::Event&)>;
+        using EventCallBackFn = std::function<void(Imagine::Core::Event&, bool fromNormalEventQueue)>;
 	public:
 		static Window* Create(const std::string &windowName, WindowParameters parameters);
 		static Window* Initialize(const std::string &windowName, WindowParameters parameters);

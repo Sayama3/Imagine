@@ -266,11 +266,9 @@ namespace Imagine::Vulkan {
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
 
 		VkExtent2D maxDrawImage{deviceProperties.limits.maxImageDimension2D, deviceProperties.limits.maxImageDimension2D};
-		MGN_CORE_INFO("Max Draw Image: {} x {}", maxDrawImage.width, maxDrawImage.height);
 
 		const Size2 framebufferSize = Window::Get()->GetFramebufferSize();
 		CreateSwapChain(framebufferSize.width, framebufferSize.height);
-
 
 		// draw image size will match the window
 		// Max screen size currently usable is Samsung G3 {7680u, 2160u}
@@ -981,6 +979,10 @@ namespace Imagine::Vulkan {
 		InvViewProjectMatrixCached = glm::inverse(ViewProjectMatrixCached);
 	}
 
+	void VulkanRenderer::Resize() {
+		ResizeSwapChain();
+	}
+
 	bool VulkanRenderer::BeginDraw() {
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
@@ -994,6 +996,9 @@ namespace Imagine::Vulkan {
 			m_DrawExtent.width = std::ceil(std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale);
 			m_DrawExtent.height = std::ceil(std::min(m_SwapchainExtent.height, m_DrawImage.imageExtent.height) * m_RenderScale);
 		}
+
+		// MGN_CORE_LOG_DEBUG("Swapchain is {}x{}",m_SwapchainExtent.width, m_SwapchainExtent.height);
+		// MGN_CORE_LOG_DEBUG("Draw Size is {}x{}",m_DrawExtent.width, m_DrawExtent.height);
 
 		const bool canDraw = m_DrawExtent.width > 0 && m_DrawExtent.height > 0;
 		if (!canDraw) {

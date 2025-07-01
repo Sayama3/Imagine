@@ -32,9 +32,9 @@ namespace Imagine::SDL3 {
 		[[nodiscard]] bool ShouldClose() override;
 
 		[[nodiscard]] void *GetWindowPtr() override;
-	private:
-		static void framebufferResizeCallback(void *window, int width, int height);
 
+	private:
+		static bool OnPixelSizeChanged(void *userdata, SDL_Event *event);
 	private:
 		EventCallBackFn m_EventCallBack{};
 		struct SDL_Window *m_Window{nullptr};

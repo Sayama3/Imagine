@@ -102,6 +102,8 @@ set(CORE_SRC_FILES
 		Sources/Layers/LayerStack.cpp
 		Sources/Layers/ImGuiLayer.cpp
 		Includes/Imagine/Layers/ImGuiLayer.hpp
+		Sources/ThirdParty/Assimp.cpp
+		Includes/Imagine/ThirdParty/Assimp.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

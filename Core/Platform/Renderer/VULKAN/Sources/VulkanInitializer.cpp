@@ -3,9 +3,7 @@
 //
 
 
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h> // Post processing flags
-#include <assimp/scene.h> // Output data structure
+#include "Imagine/ThirdParty/Assimp.hpp"
 
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
@@ -23,12 +21,7 @@ namespace Imagine::Vulkan {
 			using namespace Imagine::Core;
 			Assimp::Importer importer;
 
-			const aiScene *scene = importer.ReadFile(filePath.string(),
-													 aiProcess_Triangulate |
-															 aiProcess_JoinIdenticalVertices |
-															 aiProcess_GenUVCoords |
-															 aiProcess_ConvertToLeftHanded |
-															 aiProcess_SortByPType);
+			const aiScene *scene = importer.ReadFile(filePath.string(), ThirdParty::Assimp::GetSmoothPostProcess());
 
 			// If the import failed, report it
 			if (nullptr == scene) {
@@ -182,13 +175,13 @@ namespace Imagine::Vulkan {
 
 			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
 
-			for (const Core::LineObject & line: lines) {
+			for (const Core::LineObject &line: lines) {
 				if (line.points.size() < 2) continue;
 				const uint32_t offset = vertices.size();
 				vertices.push_back(line.points.at(0));
 				for (uint32_t i = 1; i < line.points.size(); ++i) {
 					vertices.push_back(line.points.at(i));
-					indices.push_back(offset + (i-1));
+					indices.push_back(offset + (i - 1));
 					indices.push_back(offset + i);
 				}
 			}
@@ -207,33 +200,33 @@ namespace Imagine::Vulkan {
 		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Vertex> points) {
 			MGN_CORE_ASSERT(false, "The load points function is not implemented yet.");
 			return nullptr;
-/*
-			std::vector<uint32_t> indices;
-			indices.reserve(points.size());
+			/*
+						std::vector<uint32_t> indices;
+						indices.reserve(points.size());
 
-			std::vector<Vertex> vertices;
-			vertices.reserve(points.size());
+						std::vector<Vertex> vertices;
+						vertices.reserve(points.size());
 
-			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+						std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
 
-			for (const auto & point: points) {
-				vertices.push_back(point);
-				indices.push_back(indices.size());
-			}
+						for (const auto & point: points) {
+							vertices.push_back(point);
+							indices.push_back(indices.size());
+						}
 
-			Core::Mesh::LOD surface;
-			surface.index = 0;
-			surface.count = indices.size();
-			surface.material = renderer->GetDefaultPointMaterial();
+						Core::Mesh::LOD surface;
+						surface.index = 0;
+						surface.count = indices.size();
+						surface.material = renderer->GetDefaultPointMaterial();
 
-			mesh->lods.push_back(surface);
-			mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
+						mesh->lods.push_back(surface);
+						mesh->meshBuffers = renderer->UploadMesh(indices, vertices);
 
-			return mesh;
-*/
+						return mesh;
+			*/
 		}
 
-		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& cpuMesh) {
+		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh &cpuMesh) {
 
 			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
 
@@ -260,8 +253,9 @@ namespace Imagine::Vulkan {
 													 aiProcess_Triangulate |
 															 aiProcess_JoinIdenticalVertices |
 															 aiProcess_GenUVCoords |
-															 aiProcess_FlipUVs |
-															 // aiProcess_ConvertToLeftHanded |
+															 aiProcess_GenSmoothNormals |
+															 aiProcess_CalcTangentSpace |
+															 aiProcess_ConvertToLeftHanded |
 															 aiProcess_SortByPType);
 
 			// If the import failed, report it

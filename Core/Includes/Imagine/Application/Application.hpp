@@ -67,9 +67,11 @@ namespace Imagine::Core {
 
 	private:
 		bool OnWindowClose(WindowCloseEvent &e);
-		bool OnWindowResize(WindowResizeEvent &e);
+		bool OnWindowResize(WindowResizeEvent &e, bool shouldRedraw);
 	private:
-		void OnEvent(Event& e);
+		void OnEvent(Event& e, bool fromNormalEventQueue);
+	private:
+		void Draw();
 	private:
 		ApplicationParameters m_Parameters;
 

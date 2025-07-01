@@ -46,7 +46,22 @@ namespace Imagine::SDL3 {
 		return m_Window;
 	}
 
-	void SDL3Window::framebufferResizeCallback(void *window, int width, int height) {
+	bool SDL3Window::OnPixelSizeChanged(void *userdata, SDL_Event *e) {
+		SDL3Window *sdlWindow = static_cast<SDL3Window *>(userdata);
+		if (!sdlWindow->m_EventCallBack) return true;
+		switch (e->type) {
+			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:{
+#ifdef MGN_IMGUI
+				ImGui_ImplSDL3_ProcessEvent(e);
+#endif
+				WindowResizeEvent event{static_cast<uint32_t>(e->window.data1), static_cast<uint32_t>(e->window.data2)};
+				sdlWindow->m_EventCallBack(event, false);
+			} break;
+			default:
+				break;
+		}
+
+		return true;
 	}
 
 	SDL3Window::SDL3Window(const std::string &windowName, const WindowParameters parameters) :
@@ -65,6 +80,7 @@ namespace Imagine::SDL3 {
 
 		// TODO: Use `parameters.Resizable`.
 		m_Window = SDL_CreateWindow(windowName.c_str(), parameters.Width, parameters.Height, window_flags);
+		SDL_SetEventFilter(SDL3Window::OnPixelSizeChanged, this);
 	}
 
 	SDL3Window::~SDL3Window() {
@@ -90,55 +106,76 @@ namespace Imagine::SDL3 {
 				continue;
 			}
 
-			if (e.type == SDL_EVENT_QUIT) {
-				WindowCloseEvent event{};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_DROP_FILE) {
-				WindowDropFileEvent event{1, &e.drop.data};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_WINDOW_RESIZED) {
-				WindowResizeEvent event{static_cast<uint32_t>(e.window.data1), static_cast<uint32_t>(e.window.data2)};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_WINDOW_MINIMIZED) {
-				m_Minimized = true;
-				WindowMinifyEvent event{true};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_WINDOW_RESTORED) {
-				m_Minimized = false;
-				WindowMinifyEvent event{false};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-				MouseButtonPressedEvent event{GetMouseButton(e.button.button)};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-				MouseButtonReleasedEvent event{GetMouseButton(e.button.button)};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_MOUSE_MOTION) {
-				MouseMovedEvent event{e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-				MouseScrolledEvent event{e.wheel.x, e.wheel.y};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_KEY_DOWN) {
-				KeyPressedEvent event{GetKeyCode(e.key.scancode), e.key.repeat ? 1 : 0};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_KEY_UP) {
-				KeyReleasedEvent event{GetKeyCode(e.key.scancode)};
-				m_EventCallBack(event);
-			}
-			else if (e.type == SDL_EVENT_TEXT_INPUT) {
-				TextTypedEvent event{e.text.text};
-				m_EventCallBack(event);
+			switch (e.type) {
+				case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+				case SDL_EVENT_QUIT: {
+					WindowCloseEvent event{};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_DROP_FILE: {
+					WindowDropFileEvent event{1, &e.drop.data};
+					m_EventCallBack(event, true);
+				} break;
+				// case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:
+				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+				case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+				// case SDL_EVENT_WINDOW_RESIZED:
+				{
+					WindowResizeEvent event{static_cast<uint32_t>(e.window.data1), static_cast<uint32_t>(e.window.data2)};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_WINDOW_ENTER_FULLSCREEN: {
+					// TODO: Handle Fullscreen mode.
+				} break;
+				case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN: {
+					// TODO: Handle Fullscreen mode.
+				} break;
+				case SDL_EVENT_WINDOW_MINIMIZED: {
+					m_Minimized = true;
+					WindowMinifyEvent event{true};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_WINDOW_RESTORED: {
+					m_Minimized = false;
+					WindowMinifyEvent event{false};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+					MouseButtonPressedEvent event{GetMouseButton(e.button.button)};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_MOUSE_BUTTON_UP: {
+					MouseButtonReleasedEvent event{GetMouseButton(e.button.button)};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_MOUSE_MOTION: {
+					MouseMovedEvent event{e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_MOUSE_WHEEL: {
+					MouseScrolledEvent event{e.wheel.x, e.wheel.y};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_KEY_DOWN: {
+					const Key key = GetKeyCode(e.key.scancode);
+					if (key == Key::Unknown) continue;
+					KeyPressedEvent event{key, e.key.repeat ? 1 : 0};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_KEY_UP: {
+					const Key key = GetKeyCode(e.key.scancode);
+					if (key == Key::Unknown) continue;
+					KeyReleasedEvent event{key};
+					m_EventCallBack(event, true);
+				} break;
+				case SDL_EVENT_TEXT_INPUT: {
+					TextTypedEvent event{e.text.text};
+					m_EventCallBack(event, true);
+				} break;
+
+				default: {
+					break;
+				}
 			}
 		}
 	}

@@ -115,6 +115,8 @@ namespace Imagine::Vulkan {
 		void UpdateCache();
 
 	public:
+		virtual void Resize() override;
+
 		virtual bool BeginDraw() override;
 		virtual void EndDraw() override;
 		virtual void Present() override;

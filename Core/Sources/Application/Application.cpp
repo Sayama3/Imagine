@@ -60,6 +60,7 @@ namespace Imagine::Core {
 
 	Application::Application(const ApplicationParameters &parameters) :
 		m_Parameters(parameters) {
+
 		m_ShouldStop = false;
 		m_LastFrame = m_Start = std::chrono::high_resolution_clock::now();
 		m_DeltaTime = 0.01666666f;
@@ -80,8 +81,6 @@ namespace Imagine::Core {
 		MgnImGui::EnableDocking();
 #endif
 
-		if (parameters.Renderer) {
-		}
 	}
 
 	Application::~Application() {
@@ -133,7 +132,6 @@ namespace Imagine::Core {
 				canDraw = !m_Window->IsMinimized();
 			}
 
-
 			{
 				AppTickEvent event{m_DeltaTime};
 				for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
@@ -158,78 +156,7 @@ namespace Imagine::Core {
 			Camera::s_MainCamera->Update(m_DeltaTime);
 
 			if (canDraw) {
-#ifdef MGN_IMGUI
-				MgnImGui::NewRenderFrame();
-				MgnImGui::NewWindowFrame();
-				MgnImGui::NewFrame();
-
-				static bool open = true;
-				if (open) ImGui::ShowDemoWindow(&open);
-
-				if (m_Window) {
-					m_Window->SendImGuiCommands();
-				}
-
-				if (m_Renderer) {
-					m_Renderer->SendImGuiCommands();
-				}
-
-				ImGuiEvent event(m_DeltaTime);
-				for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
-					(*it)->OnEvent(event);
-					if (event.m_Handled) {
-						break;
-					}
-				}
-
-				{
-					SceneManager::GetMainScene()->SendImGuiCommands();
-				}
-
-				// TODO: Other imgui rendering functions
-
-				MgnImGui::Render();
-#endif
-			}
-
-			if (m_Renderer && canDraw) {
-				if (m_Renderer->BeginDraw()) {
-					m_Renderer->Draw();
-
-
-					// TODO: See if I wanna do it this way
-					AppRenderEvent event{m_DeltaTime};
-					for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
-						(*it)->OnEvent(event);
-						if (event.m_Handled) {
-							break;
-						}
-					}
-
-					auto loadedScene = SceneManager::GetLoadedScenes();
-
-					DrawContext ctx{};
-					for (const std::shared_ptr<Scene> &scene: loadedScene) {
-						scene->CacheTransforms();
-						ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
-						scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
-							const Mat4 worldMat = scene->GetWorldTransform(id);
-							MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
-							ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.mesh);
-						});
-
-						m_Renderer->Draw(ctx);
-						ctx.Clear();
-					}
-
-					m_Renderer->EndDraw();
-
-#ifdef MGN_IMGUI
-					MgnImGui::PostRender();
-#endif
-
-					m_Renderer->Present();
-				}
+				Draw();
 			}
 
 			std::chrono::high_resolution_clock::time_point newFrame = std::chrono::high_resolution_clock::now();
@@ -248,17 +175,86 @@ namespace Imagine::Core {
 		return std::chrono::duration<double, std::chrono::seconds::period>(newFrame - m_Start).count();
 	}
 
-	void Application::OnEvent(Event &e) {
+	void Application::OnEvent(Event &e, bool fromNormalEventQueue) {
 		EventDispatcher dispatcher(e);
 
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+		dispatcher.Dispatch<WindowResizeEvent>([this, fromNormalEventQueue](WindowResizeEvent& event){return this->OnWindowResize(event, !fromNormalEventQueue);});
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
 			(*it)->OnEvent(e);
 			if (e.m_Handled) {
 				break;
 			}
+		}
+	}
+	void Application::Draw() {
+#ifdef MGN_IMGUI
+		MgnImGui::NewRenderFrame();
+		MgnImGui::NewWindowFrame();
+		MgnImGui::NewFrame();
+
+		ImGuiEvent event(m_DeltaTime);
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+			(*it)->OnEvent(event);
+			if (event.m_Handled) {
+				break;
+			}
+		}
+
+		if (m_Window) {
+			m_Window->SendImGuiCommands();
+		}
+
+		if (m_Renderer) {
+			m_Renderer->SendImGuiCommands();
+		}
+
+		{
+			SceneManager::GetMainScene()->SendImGuiCommands();
+		}
+
+		// TODO: Other imgui rendering functions
+
+		MgnImGui::Render();
+#endif
+
+		if (m_Renderer->BeginDraw()) {
+			m_Renderer->Draw();
+
+
+			// TODO: See if I wanna do it this way
+			AppRenderEvent event{m_DeltaTime};
+			for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+				(*it)->OnEvent(event);
+				if (event.m_Handled) {
+					break;
+				}
+			}
+
+			auto loadedScene = SceneManager::GetLoadedScenes();
+
+			DrawContext ctx{};
+			for (const std::shared_ptr<Scene> &scene: loadedScene) {
+				scene->CacheTransforms();
+				ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
+				scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
+					const Mat4 worldMat = scene->GetWorldTransform(id);
+					MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
+					ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.mesh);
+				});
+
+				m_Renderer->Draw(ctx);
+				ctx.Clear();
+			}
+
+			m_Renderer->EndDraw();
+
+#ifdef MGN_IMGUI
+			MgnImGui::PostRender();
+#endif
+
+			m_Renderer->Present();
 		}
 	}
 
@@ -268,12 +264,16 @@ namespace Imagine::Core {
 		return false;
 	}
 
-	bool Application::OnWindowResize(WindowResizeEvent &e) {
+	bool Application::OnWindowResize(WindowResizeEvent &e, bool shouldRedraw) {
 		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
 			return false;
 		}
+		m_Renderer->Resize();
 
-		// m_Renderer->Resize(e.GetWidth(), e.GetHeight());
+		if (shouldRedraw) {
+			Draw();
+		}
+
 		return false;
 	}
 } // namespace Imagine::Core
