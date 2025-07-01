@@ -42,7 +42,7 @@ namespace Imagine::Application {
 		LineObject m_Line{};
 
 
-		std::filesystem::path m_ModelPath;
+		std::filesystem::path m_ModelPath{"Assets/Models/Box.glb"};
 		bool m_MeshChanged = true;
 		Core::CPUMesh m_Mesh;
 		Math::MeshGraph3D* m_MeshGraph{};

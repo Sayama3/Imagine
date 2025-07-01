@@ -255,6 +255,9 @@ namespace Imagine::Core {
 		/**
 		 * This function DOESN'T call the destructor of the removed type. Call it BEFORE you call this function if you need to.
 		 */
+		void erase(const UnsignedInteger index) {
+			remove(index);
+		}
 		void remove(const UnsignedInteger index) {
 			if (index >= Count) return;
 			const UnsignedInteger element_to_move = Count - index;
@@ -262,6 +265,9 @@ namespace Imagine::Core {
 				memcpy(&data[i - 1], &data[i], sizeof(T));
 			}
 			--Count;
+		}
+		void erase(const const_iterator& it) {
+			remove(it);
 		}
 		void remove(const const_iterator& it) {
 			remove(it.index);

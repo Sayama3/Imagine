@@ -140,7 +140,7 @@ namespace Imagine::Application {
 		handled = dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
 			for (const std::filesystem::path &path: e) {
 				if (std::filesystem::exists(path)) {
-					if (this->ChangeModelAndPath(path)) return true;
+					Renderer::Get()->LoadExternalModelInScene(path, SceneManager::GetMainScene().get());
 				}
 			}
 			return false;
@@ -319,14 +319,14 @@ namespace Imagine::Application {
 		ImGui::SetNextWindowSize({200, 400}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Subdivisions");
 		{
-			static std::string s_ModelPath{"Assets/Models/Box.glb"};
 			static int s_Step = 1;
 			static bool s_Smooth = false;
 			static bool s_ResetMeshAfterSubdivision = true;
 			static bool s_RandomColor = true;
-			ImGui::InputText("Model Path", &s_ModelPath);
+			std::string modelPath = m_ModelPath.string();
+			if (ImGui::InputText("Model Path", &modelPath)) m_ModelPath = modelPath;
 			if (ImGui::Button("Reload")) {
-				ChangeModelAndPath(s_ModelPath);
+				ChangeModelAndPath(modelPath);
 			}
 
 			ImGui::InputInt("Step Count", &s_Step, 1, 10, 0);

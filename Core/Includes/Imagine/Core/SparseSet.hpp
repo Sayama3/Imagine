@@ -497,7 +497,7 @@ namespace Imagine::Core {
 		}
 
 	protected:
-		std::vector<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize};
+		HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize};
 		UnsignedInteger IDs{0};
 	};
 } // namespace Imagine::Core
