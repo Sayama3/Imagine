@@ -100,6 +100,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/MeshGraph3D.hpp
 		Includes/Imagine/Math/ChaikinCurves.hpp
 		Sources/Layers/LayerStack.cpp
+		Sources/Layers/ImGuiLayer.cpp
+		Includes/Imagine/Layers/ImGuiLayer.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES})

@@ -8,6 +8,7 @@
 #include "Imagine/ApplicationLayer.hpp"
 #include "Imagine/Core/Logger.hpp"
 #include "Imagine/Core/Macros.hpp"
+#include "Imagine/Layers/ImGuiLayer.hpp"
 
 int main(int argc, char **argv) {
 	using namespace Imagine;
@@ -46,6 +47,7 @@ int main(int argc, char **argv) {
 	Core::Application *application = Core::Application::Initialize(params);
 
 	application->PushLayer<Imagine::Application::ApplicationLayer>();
+	application->PushOverlay<Imagine::Core::ImGuiLayer>();
 
 	application->Run();
 
