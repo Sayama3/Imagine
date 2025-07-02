@@ -37,14 +37,21 @@ namespace Imagine::Vulkan {
 		// Our target for Uniform Buffers is a 256 bytes alignments
 		struct alignas(256) MaterialConstants {
 			glm::vec4 colorFactors;
-			glm::vec4 metal_rough_factors;
+			glm::vec4 metal_factor;
+			glm::vec4 rough_factor;
 		};
 
 		struct MaterialResources {
 			AllocatedImage colorImage;
 			VkSampler colorSampler;
-			AllocatedImage metalRoughImage;
-			VkSampler metalRoughSampler;
+			AllocatedImage metalImage;
+			VkSampler metalSampler;
+			AllocatedImage roughImage;
+			VkSampler roughSampler;
+			AllocatedImage normalImage;
+			VkSampler normalSampler;
+			AllocatedImage aoImage;
+			VkSampler aoSampler;
 			VkBuffer dataBuffer;
 			uint32_t dataBufferOffset;
 		};

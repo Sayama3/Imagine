@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Core/Size.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
@@ -30,7 +30,6 @@ namespace Imagine::Vulkan {
 		static Core::RendererAPI GetStaticAPI() { return Core::RendererAPI::Vulkan; }
 
 	public:
-
 		virtual Mat4 GetViewMatrix() const override;
 		virtual Mat4 GetProjectionMatrix() const override;
 		virtual Mat4 GetViewProjectMatrix() const override;
@@ -42,6 +41,7 @@ namespace Imagine::Vulkan {
 		VkDevice GetDevice();
 		VkPhysicalDevice GetPhysicalDevice();
 		VmaAllocator GetAllocator();
+
 	private:
 		void InitializeVulkan();
 		void InitializeSwapChain();
@@ -96,14 +96,15 @@ namespace Imagine::Vulkan {
 		void PushNextFrameDeletion(VmaAllocation allocation, VmaType data) {
 			GetNextFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
 		}
+
 	public:
 		VkDescriptorSetLayout GetGPUSceneDescriptorLayout();
 		VkFormat GetColorImageFormat() const;
 		VkFormat GetDepthImageFormat() const;
 		void CreateDefaultSamplers();
 
-		std::shared_ptr<VulkanMaterialInstance> GetDefaultMeshMaterial() {return m_DefaultMeshMaterial;}
-		std::shared_ptr<VulkanMaterialInstance> GetDefaultLineMaterial() {return m_DefaultLineMaterial;}
+		std::shared_ptr<VulkanMaterialInstance> GetDefaultMeshMaterial() { return m_DefaultMeshMaterial; }
+		std::shared_ptr<VulkanMaterialInstance> GetDefaultLineMaterial() { return m_DefaultLineMaterial; }
 		// std::shared_ptr<VulkanMaterialInstance> GetDefaultPointMaterial() {return m_DefaultPointMaterial;}
 
 	private:
@@ -120,13 +121,13 @@ namespace Imagine::Vulkan {
 		virtual bool BeginDraw() override;
 		virtual void EndDraw() override;
 		virtual void Present() override;
-		virtual void Draw(const Core::DrawContext & ctx) override;
+		virtual void Draw(const Core::DrawContext &ctx) override;
 
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
 
-		virtual void LoadExternalModelInScene(const std::filesystem::path& path, Core::Scene*, Core::EntityID parent = Core::EntityID::NullID) override;
-		virtual void LoadCPUMeshInScene(const Core::CPUMesh& path, Core::Scene*, Core::EntityID entity = Core::EntityID::NullID) override;
+		virtual void LoadExternalModelInScene(const std::filesystem::path &path, Core::Scene *, Core::EntityID parent = Core::EntityID::NullID) override;
+		virtual void LoadCPUMeshInScene(const Core::CPUMesh &path, Core::Scene *, Core::EntityID entity = Core::EntityID::NullID) override;
 
 		void DrawBackground(VkCommandBuffer cmd);
 		void DrawGeometry(VkCommandBuffer cmd);
@@ -134,7 +135,11 @@ namespace Imagine::Vulkan {
 		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function);
 		void InitializeImGui();
 
-		virtual Core::DrawContext& GetDrawContext() override;
+		virtual Core::DrawContext &GetDrawContext() override;
+
+	public:
+		GLTFMetallicRoughness &GetGLTFMaterial() { return m_MetalRoughMaterial; }
+		DescriptorAllocatorGrowable &GetDescriptorAllocatorGrowable() { return m_GlobalDescriptorAllocator; }
 
 	private:
 		void DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView);

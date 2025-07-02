@@ -17,59 +17,73 @@ namespace Imagine::Vulkan {
 	namespace Initializer {
 		constexpr bool c_OverrideColorVertex = true;
 
-		void LoadModelAsDynamic(VulkanRenderer *engine, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath) {
+		void LoadModelAsDynamic(VulkanRenderer *renderer, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath) {
 			using namespace Imagine::Core;
 			Assimp::Importer importer;
 
 			const aiScene *scene = importer.ReadFile(filePath.string(), ThirdParty::Assimp::GetSmoothPostProcess());
 
 			for (int i = 0; i < scene->mNumMaterials; ++i) {
-				aiMaterial* material = scene->mMaterials[i];// for some formats (like glTF) metallic and roughness may be the same file
-				aiString fileBaseColor, fileMetallic, fileRoughness;
+				MaterialPass materialPass = MaterialPass::MainColor;
+				GLTFMetallicRoughness::MaterialResources materialResources{};
+
+				aiMaterial *material = scene->mMaterials[i]; // for some formats (like glTF) metallic and roughness may be the same file
+				aiString fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
 				ai_real metallic, roughness, anisotropy;
 				aiColor3D color;
-				int useColorMap, useMetallicMap, useRoughnessMap;
 
-				material->Get(AI_MATKEY_USE_COLOR_MAP, useColorMap);
-				material->Get(AI_MATKEY_USE_METALLIC_MAP, useRoughnessMap);
-				material->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useMetallicMap);
+				bool useColorMap = material->GetTextureCount(aiTextureType_BASE_COLOR) > 0;
+				bool useNormalMap = material->GetTextureCount(aiTextureType_NORMALS) > 0;
+				bool useEmissiveMap = material->GetTextureCount(aiTextureType_EMISSIVE) > 0;
+				bool useMetalMap = material->GetTextureCount(aiTextureType_METALNESS) > 0;
+				bool useRoughMap = material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0;
+				bool useAo = material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION) > 0;
 
 				material->Get(AI_MATKEY_BASE_COLOR, color);
 				material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
 				material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
 				material->Get(AI_MATKEY_ANISOTROPY_FACTOR, anisotropy);
 
-				if (useColorMap) material->GetTexture(AI_MATKEY_BASE_COLOR_TEXTURE, &fileBaseColor);
-				if(useRoughnessMap) material->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &fileMetallic);
-				if(useMetallicMap) material->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &fileRoughness);
+				if (useColorMap) material->GetTexture(aiTextureType_BASE_COLOR, 0, &fileBaseColor);
+				if (useNormalMap) material->GetTexture(aiTextureType_NORMALS, 0, &fileNormal);
+				if (useEmissiveMap) material->GetTexture(aiTextureType_EMISSIVE, 0, &fileEmissive);
+				if (useMetalMap) material->GetTexture(aiTextureType_METALNESS, 0, &fileMetallic);
+				if (useRoughMap) material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &fileRoughness);
+				if (useAo) material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &fileAo);
 
 
-				//TODO: Load the texture and material following this part of the documentation.
+				/***/
+
+				GLTFMetallicRoughness &metallicRoughness = renderer->GetGLTFMaterial();
+				metallicRoughness.WriteMaterial(renderer->GetDevice(), materialPass, materialResources, renderer->GetDescriptorAllocatorGrowable());
+
+				// TODO: Load the texture and material following this part of the documentation.
+
 				/*
-				* Normally textures used by assets are stored in separate files, however, there are file formats
-				* embedding their textures directly into the model file. Such textures are loaded into an aiTexture structure.
-				* In previous versions, the path from the query for AI_MATKEY_TEXTURE(textureType, index) would be *<index>
-				* where <index> is the index of the texture in aiScene::mTextures. Now this call will return a file path for
-				* embedded textures in FBX files. To test if it is an embedded texture use aiScene::GetEmbeddedTexture.
-				* If the returned pointer is not null, it is embedded and can be loaded from the data structure.
-				* If it is null, search for a separate file. Other file types still use the old behavior.
-				*
-				* If you rely on the old behavior, you can use Assimp::Importer::SetPropertyBool with the key #AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING to force the old behavior.
-				*
-				* There are two cases:
-				* 1. The texture is NOT compressed. Its color data is directly stored in the aiTexture structure as an array of
-				* aiTexture::mWidth * aiTexture::mHeight aiTexel structures. Each aiTexel represents a pixel (or “texel”) of
-				* the texture image. The color data is stored in an unsigned RGBA8888 format, which can be easily used for
-				* both Direct3D and OpenGL (swizzling the order of the color components might be necessary). RGBA8888 has been
-				* chosen because it is well-known, easy to use , and natively supported by nearly all graphics APIs.
-				* 2. This applies if aiTexture::mHeight == 0 is fulfilled. Then, the texture is stored in a compressed format such
-				* as DDS or PNG. The term “compressed” does not mean that the texture data must actually be compressed, however,
-				* the texture was found in the model file as if it was stored in a separate file on the hard disk.
-				* Appropriate decoders (such as libjpeg, libpng, D3DX, DevIL) are required to load these textures.
-				* aiTexture::mWidth specifies the size of the texture data in bytes, aiTexture::pcData is a pointer to the raw image
-				* data and aiTexture::achFormatHint is either zeroed or contains the most common file extension of the embedded texture’s format.
-				* This value is only set if Assimp is able to determine the file format.
-				*/
+				 * Normally textures used by assets are stored in separate files, however, there are file formats
+				 * embedding their textures directly into the model file. Such textures are loaded into an aiTexture structure.
+				 * In previous versions, the path from the query for AI_MATKEY_TEXTURE(textureType, index) would be *<index>
+				 * where <index> is the index of the texture in aiScene::mTextures. Now this call will return a file path for
+				 * embedded textures in FBX files. To test if it is an embedded texture use aiScene::GetEmbeddedTexture.
+				 * If the returned pointer is not null, it is embedded and can be loaded from the data structure.
+				 * If it is null, search for a separate file. Other file types still use the old behavior.
+				 *
+				 * If you rely on the old behavior, you can use Assimp::Importer::SetPropertyBool with the key #AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING to force the old behavior.
+				 *
+				 * There are two cases:
+				 * 1. The texture is NOT compressed. Its color data is directly stored in the aiTexture structure as an array of
+				 * aiTexture::mWidth * aiTexture::mHeight aiTexel structures. Each aiTexel represents a pixel (or “texel”) of
+				 * the texture image. The color data is stored in an unsigned RGBA8888 format, which can be easily used for
+				 * both Direct3D and OpenGL (swizzling the order of the color components might be necessary). RGBA8888 has been
+				 * chosen because it is well-known, easy to use , and natively supported by nearly all graphics APIs.
+				 * 2. This applies if aiTexture::mHeight == 0 is fulfilled. Then, the texture is stored in a compressed format such
+				 * as DDS or PNG. The term “compressed” does not mean that the texture data must actually be compressed, however,
+				 * the texture was found in the model file as if it was stored in a separate file on the hard disk.
+				 * Appropriate decoders (such as libjpeg, libpng, D3DX, DevIL) are required to load these textures.
+				 * aiTexture::mWidth specifies the size of the texture data in bytes, aiTexture::pcData is a pointer to the raw image
+				 * data and aiTexture::achFormatHint is either zeroed or contains the most common file extension of the embedded texture’s format.
+				 * This value is only set if Assimp is able to determine the file format.
+				 */
 			}
 
 			// If the import failed, report it
@@ -141,11 +155,11 @@ namespace Imagine::Vulkan {
 					Mesh::LOD surface;
 					surface.index = 0;
 					surface.count = indices.size();
-					surface.material = engine->GetDefaultMeshMaterial();
+					surface.material = renderer->GetDefaultMeshMaterial();
 
 					mesh->lods.push_back(surface);
 
-					mesh->meshBuffers = engine->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
+					mesh->meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
 
 					meshes.emplace_back(std::move(mesh));
 				}

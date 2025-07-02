@@ -846,8 +846,14 @@ namespace Imagine::Vulkan {
 		// default the material textures
 		materialResources.colorImage = m_WhiteImage;
 		materialResources.colorSampler = m_DefaultSamplerLinear;
-		materialResources.metalRoughImage = m_WhiteImage;
-		materialResources.metalRoughSampler = m_DefaultSamplerLinear;
+		materialResources.metalImage = m_WhiteImage;
+		materialResources.metalSampler = m_DefaultSamplerLinear;
+		materialResources.roughImage = m_WhiteImage;
+		materialResources.roughSampler = m_DefaultSamplerLinear;
+		materialResources.normalImage = m_WhiteImage;
+		materialResources.normalSampler = m_DefaultSamplerLinear;
+		materialResources.aoImage = m_WhiteImage;
+		materialResources.aoSampler = m_DefaultSamplerLinear;
 
 		// set the uniform buffer for the material data
 		AllocatedBuffer materialConstants = CreateBuffer(sizeof(GLTFMetallicRoughness::MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -855,7 +861,8 @@ namespace Imagine::Vulkan {
 		// write the buffer
 		GLTFMetallicRoughness::MaterialConstants *sceneUniformData = (GLTFMetallicRoughness::MaterialConstants *) materialConstants.allocation->GetMappedData();
 		sceneUniformData->colorFactors = glm::vec4{1, 1, 1, 1};
-		sceneUniformData->metal_rough_factors = glm::vec4{1, 0.5, 0, 0};
+		sceneUniformData->metal_factor = glm::vec4{1, 0, 0, 0};
+		sceneUniformData->rough_factor = glm::vec4{0, 0.5, 0, 0};
 
 		m_MainDeletionQueue.push(m_Allocator, materialConstants.allocation, materialConstants.buffer);
 
