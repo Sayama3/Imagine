@@ -21,6 +21,7 @@ namespace Imagine::Core {
 			Vertices.swap(o.Vertices);
 			Indices.swap(o.Indices);
 		}
+
 		static CPUMesh LoadExternalModelAsMesh(const std::filesystem::path& p);
 
 		std::vector<Vertex> Vertices;

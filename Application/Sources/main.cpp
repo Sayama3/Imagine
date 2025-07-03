@@ -6,8 +6,7 @@
 
 #include "Imagine/Application/Application.hpp"
 #include "Imagine/ApplicationLayer.hpp"
-#include "Imagine/Core/Logger.hpp"
-#include "Imagine/Core/Macros.hpp"
+#include "Imagine/Core.hpp"
 #include "Imagine/Layers/ImGuiLayer.hpp"
 
 int main(int argc, char **argv) {
@@ -44,14 +43,24 @@ int main(int argc, char **argv) {
 	// 	std::nullopt,
 	// };
 
+	MGN_PROFILE_BEGIN_SESSION("startup", "VoxymoreProfile-Startup.json");
+	MGN_FRAME_START();
 	Core::Application *application = Core::Application::Initialize(params);
-
 	application->PushLayer<Imagine::Application::ApplicationLayer>();
 	application->PushOverlay<Imagine::Core::ImGuiLayer>();
+	MGN_FRAME_END();
+	MGN_PROFILE_END_SESSION();
 
+
+	MGN_PROFILE_BEGIN_SESSION("runtime", "VoxymoreProfile-Runtime.json");
 	application->Run();
+	MGN_PROFILE_END_SESSION();
 
+	MGN_PROFILE_BEGIN_SESSION("shutdown", "VoxymoreProfile-Shutdown.json");
+	MGN_FRAME_START();
 	Core::Application::Shutdown();
+	MGN_FRAME_END();
+	MGN_PROFILE_END_SESSION();
 	Imagine::Core::Log::Shutdown();
 
 	return 0;

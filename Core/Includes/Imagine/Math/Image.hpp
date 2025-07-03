@@ -6,6 +6,7 @@
 
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
+#include "Imagine/Core/Profiling.hpp"
 
 namespace Imagine::Core
 {
@@ -150,7 +151,7 @@ namespace Imagine::Core
 	template<typename PixelType>
 	inline Image<PixelType> Image<PixelType>::Splice(uint32_t offsetX, uint32_t offsetY, uint32_t newWidth, uint32_t newHeight) const
 	{
-		// MGN_PROFILE_FUNCTION();
+		MGN_PROFILE_FUNCTION();
 		Image result(newWidth, newHeight, channels);
 
 		for (uint32_t x = 0; x < newWidth; ++x) {

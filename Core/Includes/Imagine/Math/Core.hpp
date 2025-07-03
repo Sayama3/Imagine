@@ -4,22 +4,21 @@
 
 #pragma once
 
-
 #ifndef GLM_FORCE_RADIANS
-#define GLM_FORCE_RADIANS
+#define GLM_FORCE_RADIANS 1
 #endif // GLM_FORCE_RADIANS
 
 #ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
 #endif // GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL 1
 #endif // GLM_ENABLE_EXPERIMENTAL
 
 // TODO: Figure out a way for a Left Handed with ; +X = Right ; +Y = Up ; +Z = Forward ;
 #ifndef GLM_FORCE_LEFT_HANDED
-#define GLM_FORCE_LEFT_HANDED
+#define GLM_FORCE_LEFT_HANDED 1
 #endif // GLM_FORCE_LEFT_HANDED
 
 #include <glm/glm.hpp>
@@ -39,7 +38,7 @@
 
 #include "Imagine/Core/Size.hpp"
 #include "Imagine/Core/Macros.hpp"
-// #include "Imagine/Debug/Profiling.hpp"
+#include "Imagine/Core/Profiling.hpp"
 
 #ifdef MGN_DOUBLE
 
@@ -116,7 +115,7 @@ namespace Imagine {
 		}
 
 		inline static void TRS(Mat4 &trs, const Vec3 &position, const glm::quat &rotation, const Vec3 &scale = Vec3(1.0)) {
-			// MGN_PROFILE_FUNCTION();
+			MGN_PROFILE_FUNCTION();
 			trs = glm::translate(trs, position); // Translation Matrix
 			trs = trs * glm::toMat4(rotation); // Rotation Matrix
 			trs = glm::scale(trs, scale); // Scale Matrix
@@ -130,14 +129,14 @@ namespace Imagine {
 		 * @return A 4x4 matrix representation of the Transform matrix.
 		 */
 		inline static Mat4 TRS(const Vec3 &position, const glm::quat &rotation, const Vec3 &scale = Vec3(1.0)) {
-			// MGN_PROFILE_FUNCTION();
+			MGN_PROFILE_FUNCTION();
 			Mat4 trs(1.0f);
 			TRS(trs, position, rotation, scale);
 			return trs; // Translation * Rotation * Scale => TRS Matrix.
 		}
 
 		inline static bool DecomposeTransform(const Mat4 &transform, Vec3 &position, Vec3 &rotation, Vec3 &scale) {
-			// MGN_PROFILE_FUNCTION();
+			MGN_PROFILE_FUNCTION();
 			// from glm::decompose in matrix_decompose
 			using namespace glm;
 			using T = float;
@@ -205,7 +204,7 @@ namespace Imagine {
 		}
 
 		inline static bool DecomposeTransform(const Mat4 &transform, Vec3 &position, Quat &rotation, Vec3 &scale) {
-			// MGN_PROFILE_FUNCTION();
+			MGN_PROFILE_FUNCTION();
 			// from glm::decompose in matrix_decompose
 			using namespace glm;
 			using T = float;
@@ -274,19 +273,19 @@ namespace Imagine {
 
 		template<typename T>
 		inline static std::string to_string(const T &value) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			return glm::to_string(value);
 		}
 
 		template<typename T>
 		inline static std::string ToString(const T &value) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			return glm::to_string(value);
 		}
 
 		template<typename T>
 		inline constexpr static T Identity() {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			return glm::identity<T>();
 		}
 
@@ -392,13 +391,13 @@ namespace Imagine {
 		template<typename T>
 		inline static T Clamp01(T value) { return Clamp(value, T(0), T(1)); }
 
-		inline static Mat4 ToMat4(const Quat &q) { /* MGN_PROFILE_FUNCTION(); */ return glm::toMat4(q); }
-		inline static Mat3 ToMat3(const Quat &q) { /* MGN_PROFILE_FUNCTION(); */ return glm::toMat3(q); }
+		inline static Mat4 ToMat4(const Quat &q) { MGN_PROFILE_FUNCTION(); return glm::toMat4(q); }
+		inline static Mat3 ToMat3(const Quat &q) { MGN_PROFILE_FUNCTION(); return glm::toMat3(q); }
 
-		inline static Mat4 Translate(const Mat4 &mat, Vec3 translation) { /* MGN_PROFILE_FUNCTION(); */ return glm::translate(mat, translation); }
-		inline static Mat4 Scale(const Mat4 &mat, Vec3 scale) { /* MGN_PROFILE_FUNCTION(); */ return glm::scale(mat, scale); }
+		inline static Mat4 Translate(const Mat4 &mat, Vec3 translation) { MGN_PROFILE_FUNCTION(); return glm::translate(mat, translation); }
+		inline static Mat4 Scale(const Mat4 &mat, Vec3 scale) { MGN_PROFILE_FUNCTION(); return glm::scale(mat, scale); }
 
-		inline static Real Pow(Real value, Real power) { /* MGN_PROFILE_FUNCTION(); */ return glm::pow(value, power); }
+		inline static Real Pow(Real value, Real power) { MGN_PROFILE_FUNCTION(); return glm::pow(value, power); }
 
 		/**
 		 * Transforms a 3D point using a 4x4 transformation matrix.
@@ -416,7 +415,7 @@ namespace Imagine {
 		 */
 		template<typename T, glm::qualifier Q = glm::defaultp>
 		inline static glm::vec<3, T, Q> TransformPoint(const glm::mat<4, 4, T, Q> &mat, const glm::vec<3, T, Q> &point) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			auto vec = glm::vec<4, T, Q>(point, (T) 1);
 			vec = mat * vec;
 			vec /= vec.w;
@@ -439,7 +438,7 @@ namespace Imagine {
 		 */
 		template<typename T, glm::qualifier Q = glm::defaultp>
 		inline static glm::vec<3, T, Q> TransformDirection(const glm::mat<4, 4, T, Q> &mat, const glm::vec<3, T, Q> &point) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			return mat * glm::vec<4, T, Q>(point, (T) 0);
 		}
 
@@ -457,7 +456,7 @@ namespace Imagine {
 		 */
 		template<typename T>
 		inline static T Pow(const T &value, int64_t pow) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			T result = T(1);
 
 			bool isNegative = pow < 0;
@@ -475,7 +474,7 @@ namespace Imagine {
 		}
 
 		inline static Real Sqrt(Real value) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			return glm::sqrt(value);
 		}
 
@@ -510,7 +509,7 @@ namespace Imagine {
 		 */
 		template<glm::length_t L, typename T, glm::qualifier Q = glm::defaultp>
 		static T Dot(const glm::vec<L, T, Q> &vec1, const glm::vec<L, T, Q> &vec2) {
-			/* MGN_PROFILE_FUNCTION(); */
+			MGN_PROFILE_FUNCTION();
 			return glm::dot(vec1, vec2);
 		}
 
@@ -543,54 +542,54 @@ namespace Imagine {
 	}; // namespace Math
 
 	template<>
-	inline std::string Math::to_string(const bool &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const bool &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const float &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const float &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const double &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const long double &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const long double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint8_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const uint8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint16_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const uint16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint32_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const uint32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint64_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const uint64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int8_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const int8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int16_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const int16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int32_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const int32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int64_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::to_string(const int64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 
 	template<>
-	inline std::string Math::ToString(const bool &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const bool &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const float &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const float &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const double &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const long double &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const long double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const uint8_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const uint8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const uint16_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const uint16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const uint32_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const uint32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const uint64_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const uint64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const int8_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const int8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const int16_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const int16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const int32_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const int32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 	template<>
-	inline std::string Math::ToString(const int64_t &value) { /* MGN_PROFILE_FUNCTION(); */ return std::to_string(value); }
+	inline std::string Math::ToString(const int64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
 
 	template<>
 	inline float Math::Min(float value, float other) { return std::min(value, other); }
@@ -647,18 +646,18 @@ namespace Imagine::Literal {
 
 template<glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
 inline std::ostream &operator<<(std::ostream &os, const glm::mat<C, R, T, Q> &value) {
-	/* MGN_PROFILE_FUNCTION(); */
+	MGN_PROFILE_FUNCTION();
 	return os << glm::to_string(value);
 }
 
 template<typename T, glm::qualifier Q>
 inline std::ostream &operator<<(std::ostream &os, const glm::qua<T, Q> &value) {
-	/* MGN_PROFILE_FUNCTION(); */
+	MGN_PROFILE_FUNCTION();
 	return os << glm::to_string(value);
 }
 
 template<glm::length_t L, typename T, glm::qualifier Q>
 inline std::ostream &operator<<(std::ostream &os, const glm::vec<L, T, Q> &value) {
-	/* MGN_PROFILE_FUNCTION(); */
+	MGN_PROFILE_FUNCTION();
 	return os << glm::to_string(value);
 }

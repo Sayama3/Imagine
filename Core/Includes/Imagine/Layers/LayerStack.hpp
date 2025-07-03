@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Imagine/Core/Profiling.hpp"
 #include "Imagine/Core/TimeStep.hpp"
 #include "Layer.hpp"
 
@@ -31,7 +32,7 @@ namespace Imagine::Core {
 
 		template<typename T>
 		inline T *GetLayer() {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 					return static_cast<T *>(layer);
@@ -41,7 +42,7 @@ namespace Imagine::Core {
 
 		template<typename T>
 		inline const T *GetLayer() const {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T))
 					return static_cast<const T *>(layer);
@@ -51,7 +52,7 @@ namespace Imagine::Core {
 
 		template<typename T>
 		inline bool TryGetLayer(T *&ptr) {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T)) {
 					ptr = static_cast<T *>(layer);
@@ -63,7 +64,7 @@ namespace Imagine::Core {
 
 		template<typename T>
 		inline const bool TryGetLayer(const T *&ptr) const {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			for (Layer *layer: m_Layers) {
 				if (typeid(*layer) == typeid(T)) {
 					ptr = static_cast<const T *>(layer);
@@ -75,7 +76,7 @@ namespace Imagine::Core {
 
 		template<typename T>
 		inline size_t GetLayerIndex() const {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			for (size_t i = 0; i < m_Layers.size(); ++i) {
 				if (typeid(*(m_Layers[i])) == typeid(T)) {
 					return i;

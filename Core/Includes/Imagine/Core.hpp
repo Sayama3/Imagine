@@ -8,6 +8,7 @@
 #include "Imagine/Core/Logger.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Core/Profiling.hpp"
 
 #include "Imagine/Core/MemoryHelper.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
@@ -22,7 +23,6 @@
 #include "Imagine/Core/HeapArray.hpp"
 #include "Imagine/Core/SparseSet.hpp"
 
-#include "Imagine/Core/RTTI.hpp"
 #include "Imagine/Core/TimeStep.hpp"
 
 #include "Imagine/Events/Event.hpp"

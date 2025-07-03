@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Imagine/Core/Profiling.hpp"
 #include "ApplicationParameters.hpp"
 #include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Layers/LayerStack.hpp"
@@ -38,25 +39,25 @@ namespace Imagine::Core {
 
 		template<typename T>
 		inline T *FindLayer() {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			return m_LayerStack.GetLayer<T>();
 		}
 
 		template<typename T>
 		inline const T *FindLayer() const {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			return m_LayerStack.GetLayer<T>();
 		}
 
 		template<typename T>
 		inline bool TryGetLayer(T *&ptr) {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			return m_LayerStack.TryGetLayer(ptr);
 		}
 
 		template<typename T>
 		inline bool TryGetLayer(const T *&ptr) const {
-			/*MGN_PROFILE_FUNCTION();*/
+			MGN_PROFILE_FUNCTION();
 			return m_LayerStack.TryGetLayer(ptr);
 		}
 

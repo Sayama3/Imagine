@@ -117,6 +117,7 @@ set(CORE_SRC_FILES
 		Includes/Imagine/ThirdParty/Stb.hpp
 		Includes/Imagine/Math/Image.hpp
 		Sources/Math/Image.cpp
+		Includes/Imagine/Core/Profiling.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
@@ -178,7 +179,10 @@ target_precompile_headers(Core PUBLIC
 		<cmath>
 )
 
+target_compile_definitions(Core PUBLIC GLM_FORCE_RADIANS=1)
+target_compile_definitions(Core PUBLIC GLM_FORCE_DEPTH_ZERO_TO_ONE=1)
 target_compile_definitions(Core PUBLIC GLM_ENABLE_EXPERIMENTAL=1)
+target_compile_definitions(Core PUBLIC GLM_FORCE_LEFT_HANDED=1)
 
 target_include_directories(Core PUBLIC IncludeExternals)
 target_include_directories(Core PUBLIC Includes)

@@ -5,6 +5,7 @@
 #include "Imagine/Application/Application.hpp"
 #include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Core/Macros.hpp"
+#include "Imagine/Core/Profiling.hpp"
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/Renderable.hpp"
@@ -108,13 +109,13 @@ namespace Imagine::Core {
 	}
 
 	void Application::PushLayer(Layer *layer) {
-		/*MGN_PROFILE_FUNCTION();*/
+		MGN_PROFILE_FUNCTION();
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer *overlay) {
-		/*MGN_PROFILE_FUNCTION();*/
+		MGN_PROFILE_FUNCTION();
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
