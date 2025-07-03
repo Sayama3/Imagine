@@ -11,7 +11,7 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 
-#include "../../../../../../Includes/Imagine/Rendering/CPU/CPUMesh.hpp"
+#include "Imagine/Rendering/CPU/CPUMesh.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Scene/Entity.hpp"
 #include "Imagine/Scene/Scene.hpp"

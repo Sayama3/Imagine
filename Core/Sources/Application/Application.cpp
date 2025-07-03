@@ -3,12 +3,12 @@
 //
 
 #include "Imagine/Application/Application.hpp"
+#include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/Profiling.hpp"
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Rendering/Camera.hpp"
-#include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
@@ -242,7 +242,7 @@ namespace Imagine::Core {
 				scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
 					const Mat4 worldMat = scene->GetWorldTransform(id);
 					MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
-					ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.mesh);
+					ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.gpuMesh);
 				});
 
 				m_Renderer->Draw(ctx);

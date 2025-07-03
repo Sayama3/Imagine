@@ -6,6 +6,7 @@
 
 #include <vk_mem_alloc.h>
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/GPU/GPUMesh.hpp"
 #include "Imagine/Rendering/Mesh.hpp"
 #include "Imagine/Rendering/Vertex.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
@@ -49,16 +50,18 @@ namespace Imagine::Vulkan {
 		uint32_t count{0};
 	};
 
-	struct MeshAsset final : public Core::Mesh {
-		MeshAsset() = default;
+	struct MeshAsset final : public Core::Mesh, public Core::GPUMesh {
+		MeshAsset();
 		virtual ~MeshAsset();
 		MeshAsset(const MeshAsset&) = delete;
-		MeshAsset& operator=(const MeshAsset&) = delete;
+		MeshAsset &operator=(const MeshAsset &) = delete;
+
+		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 
 		GPUMeshBuffers meshBuffers;
 	};
 
-	struct ManualDeleteMeshAsset final : public Core::Mesh {
+	struct ManualDeleteMeshAsset final : public Core::Mesh, public Core::GPUMesh {
 		ManualDeleteMeshAsset() = default;
 		virtual ~ManualDeleteMeshAsset() = default;
 		ManualDeleteMeshAsset(const ManualDeleteMeshAsset&) = delete;
@@ -66,6 +69,8 @@ namespace Imagine::Vulkan {
 		ManualDeleteMeshAsset(ManualDeleteMeshAsset&&) noexcept;
 		ManualDeleteMeshAsset& operator=(ManualDeleteMeshAsset&&) noexcept;
 		void swap(ManualDeleteMeshAsset& other) noexcept;
+
+		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 
 		GPUMeshBuffers meshBuffers;
 	};

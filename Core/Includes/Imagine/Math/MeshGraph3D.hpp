@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../Rendering/CPU/CPUMesh.hpp"
+#include "Imagine/Rendering/CPU/CPUMesh.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Core/UUID.hpp"

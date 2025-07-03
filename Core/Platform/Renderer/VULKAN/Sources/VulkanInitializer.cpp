@@ -6,9 +6,9 @@
 #include "Imagine/ThirdParty/Assimp.hpp"
 #include "Imagine/ThirdParty/Stb.hpp"
 
-#include "Imagine/Core/Math.hpp"
+#include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Core/BufferView.hpp"
-#include "Imagine/Scene/Renderable.hpp"
+#include "Imagine/Core/Math.hpp"
 #include "Imagine/Scene/Scene.hpp"
 
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
@@ -281,14 +281,14 @@ namespace Imagine::Vulkan {
 					coreScene->GetEntity(entityId).LocalScale = scale;
 
 					if (node->mNumMeshes == 1) {
-						coreScene->AddComponent<Renderable>(entityId, std::static_pointer_cast<Mesh>(meshes[*node->mMeshes]));
+						coreScene->AddComponent<Renderable>(entityId)->gpuMesh =  std::static_pointer_cast<GPUMesh>(meshes[*node->mMeshes]);
 					}
 					else if (node->mNumMeshes > 1) {
 						for (int i = 0; i < node->mNumMeshes; ++i) {
 							std::shared_ptr<MeshAsset> mesh = meshes[node->mMeshes[i]];
 							EntityID meshChild = coreScene->CreateEntity(entityId);
 							coreScene->SetName(meshChild, mesh->name);
-							coreScene->AddComponent<Renderable>(meshChild, std::static_pointer_cast<Mesh>(mesh));
+							coreScene->AddComponent<Renderable>(meshChild)->gpuMesh = std::static_pointer_cast<GPUMesh>(mesh);
 						}
 					}
 

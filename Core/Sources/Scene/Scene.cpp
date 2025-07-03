@@ -3,8 +3,8 @@
 //
 
 #include "Imagine/Scene/Scene.hpp"
-#include "Imagine/Scene/Physicalisable.hpp"
-#include "Imagine/Scene/Renderable.hpp"
+#include "Imagine/Components/Physicalisable.hpp"
+#include "Imagine/Components/Renderable.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>

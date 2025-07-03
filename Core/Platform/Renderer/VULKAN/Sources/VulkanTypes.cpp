@@ -7,6 +7,7 @@
 
 using namespace Imagine::Core;
 namespace Imagine::Vulkan {
+	MeshAsset::MeshAsset() = default;
 	MeshAsset::~MeshAsset() {
 		VulkanRenderer *renderer = reinterpret_cast<VulkanRenderer *>(Renderer::Get());
 		renderer->PushNextFrameDeletion(meshBuffers.vertexBuffer.allocation, meshBuffers.vertexBuffer.buffer);

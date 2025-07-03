@@ -6,7 +6,7 @@
 #include <imgui_impl_sdl3.h>
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-#include "../Includes/Imagine/SDL3/SDL3Window.hpp"
+#include "Imagine/SDL3/SDL3Window.hpp"
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"

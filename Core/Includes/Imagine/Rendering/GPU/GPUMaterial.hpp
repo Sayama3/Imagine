@@ -7,10 +7,12 @@
 #include "Imagine/Core/SmartPointers.hpp"
 
 namespace Imagine::Core {
-	class GpuMaterial {
+	class GPUMaterial {
 	public:
-		virtual ~GpuMaterial() = default;
-
+		GPUMaterial() = default;
+		GPUMaterial(const GPUMaterial&) = delete;
+		GPUMaterial& operator=(const GPUMaterial&) = delete;
+		virtual ~GPUMaterial() = default;
 		virtual uint64_t GetID() = 0;
 	};
 }

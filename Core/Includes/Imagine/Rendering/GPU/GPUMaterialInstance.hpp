@@ -6,11 +6,12 @@
 
 namespace Imagine::Core {
 
-	class GpuMaterialInstance {
+	class GPUMaterialInstance {
 	public:
 
 	public:
-		virtual ~GpuMaterial() = default;
+		GPUMaterialInstance() = default;
+		virtual ~GPUMaterialInstance() = default;
 
 		virtual uint64_t GetID() = 0;
 	};

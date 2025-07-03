@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Imagine/Assets/AssetHandle.hpp"
 #include "Imagine/Rendering/Vertex.hpp"
 
 namespace Imagine::Core {
@@ -26,6 +27,7 @@ namespace Imagine::Core {
 		struct LOD {
 			uint32_t index;
 			uint32_t count;
+			AssetHandle materialInstance;
 		};
 
 	public:

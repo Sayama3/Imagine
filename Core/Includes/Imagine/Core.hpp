@@ -30,10 +30,10 @@
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Application/WindowParameters.hpp"
 
+#include "Components/Component.hpp"
+#include "Imagine/Scene/Entity.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
-#include "Imagine/Scene/Component.hpp"
-#include "Imagine/Scene/Entity.hpp"
 
 #include "Imagine/Project/Project.hpp"
 

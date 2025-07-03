@@ -35,10 +35,10 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/Math.hpp
 		Includes/Imagine/Core/Buffer.hpp
 		Sources/Core/Buffer.cpp
-		Sources/Scene/Renderable.cpp
-		Includes/Imagine/Scene/Renderable.hpp
-		Sources/Scene/Physicalisable.cpp
-		Includes/Imagine/Scene/Physicalisable.hpp
+		Sources/Components/Renderable.cpp
+		Includes/Imagine/Components/Renderable.hpp
+		Sources/Components/Physicalisable.cpp
+		Includes/Imagine/Components/Physicalisable.hpp
 		Sources/Core/BufferView.cpp
 		Includes/Imagine/Core/BufferView.hpp
 		Sources/Core/SparseSet.cpp
@@ -48,8 +48,8 @@ set(CORE_SRC_FILES
 		Sources/Core/HeapArray.cpp
 		Includes/Imagine/Core/HeapArray.hpp
 		Includes/Imagine/Core/MemoryHelper.hpp
-		Sources/Scene/Component.cpp
-		Includes/Imagine/Scene/Component.hpp
+		Sources/Components/Component.cpp
+		Includes/Imagine/Components/Component.hpp
 		Sources/Core/RawHeapArray.cpp
 		Includes/Imagine/Core/RawHeapArray.hpp
 		Sources/Core/RawSparseSet.cpp
@@ -147,6 +147,9 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/CPU/CPUShader.hpp
 		Includes/Imagine/Rendering/GPU/GPUMaterial.hpp
 		Includes/Imagine/Rendering/GPU/GPUMaterialInstance.hpp
+		Includes/Imagine/Rendering/GPU/GPUTexture2D.hpp
+		Includes/Imagine/Rendering/GPU/GPUTexture3D.hpp
+		Includes/Imagine/Rendering/GPU/GPUMesh.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

@@ -19,10 +19,10 @@
 
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
+#include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Rendering/Camera.hpp"
-#include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
@@ -204,10 +204,10 @@ namespace Imagine::Vulkan {
 
 		// TODO: See how it's done in Metal/DX12/... to see the best way to implement the surface creation.
 #if defined(MGN_WINDOW_SDL3)
-		SDL_Vulkan_CreateSurface(reinterpret_cast<struct SDL_Window *>(Core::Window::Get()->GetWindowPtr()), m_Instance,
+		SDL_Vulkan_CreateSurface(reinterpret_cast<struct SDL_Window *>(Window::Get()->GetWindowPtr()), m_Instance,
 								 nullptr, &m_Surface);
 #elif defined(MGN_WINDOW_GLFW)
-		glfwCreateWindowSurface(m_Instance, reinterpret_cast<struct GLFWwindow *>(Core::Window::Get()->GetWindowPtr()), nullptr, &m_Surface);
+		glfwCreateWindowSurface(m_Instance, reinterpret_cast<struct GLFWwindow *>(Window::Get()->GetWindowPtr()), nullptr, &m_Surface);
 #endif
 
 		// vulkan 1.3 features
@@ -975,7 +975,7 @@ namespace Imagine::Vulkan {
 		return m_Frames[(m_FrameIndex + 1) % m_Frames.size()];
 	}
 
-	const Core::RendererParameters &VulkanRenderer::GetRenderParams() const {
+	const RendererParameters &VulkanRenderer::GetRenderParams() const {
 		return m_AppParams.Renderer.value();
 	}
 
@@ -1205,15 +1205,35 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene *scene, EntityID parent) {
 		Initializer::LoadModelAsDynamic(this, scene, parent, path);
 	}
-	void VulkanRenderer::LoadCPUMeshInScene(const Core::CPUMesh &m, Core::Scene *scene, Core::EntityID entity) {
-		std::shared_ptr<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
+	void VulkanRenderer::LoadCPUMeshInScene(const CPUMesh &m, Scene *scene, EntityID entity) {
+		Ref<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
 		if (!entity.IsValid()) {
 			entity = scene->CreateEntity();
 		}
 
 		Renderable *render = scene->GetOrAddComponent<Renderable>(entity);
 		if (!render) return;
-		render->mesh = GPUMesh;
+		render->gpuMesh = GPUMesh;
+	}
+	Ref<CPUMesh> VulkanRenderer::LoadMesh(const CPUMesh &mesh) {
+		MGN_CORE_ERROR("Not Implemented.");
+		return nullptr;
+	}
+	Ref<GPUMaterial> VulkanRenderer::LoadMaterial(const CPUMaterial &material) {
+		MGN_CORE_ERROR("Not Implemented.");
+		return nullptr;
+	}
+	Ref<GPUMaterialInstance> VulkanRenderer::LoadMaterialInstance(const CPUMaterialInstance &instance) {
+		MGN_CORE_ERROR("Not Implemented.");
+		return nullptr;
+	}
+	Ref<GPUTexture2D> VulkanRenderer::LoadTexture2D(const CPUTexture2D &tex2d) {
+		MGN_CORE_ERROR("Not Implemented.");
+		return nullptr;
+	}
+	Ref<GPUTexture3D> VulkanRenderer::LoadTexture3D(const CPUTexture3D &tex3d) {
+		MGN_CORE_ERROR("Not Implemented.");
+		return nullptr;
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
@@ -1244,7 +1264,7 @@ namespace Imagine::Vulkan {
 	void VulkanRenderer::DrawGeometry(VkCommandBuffer cmd) {
 	}
 
-	void VulkanRenderer::Draw(const Core::DrawContext &ctx) {
+	void VulkanRenderer::Draw(const DrawContext &ctx) {
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
@@ -1312,7 +1332,7 @@ namespace Imagine::Vulkan {
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
-			const Mesh::LOD &lod = draw.mesh->lods.front();
+			const Mesh::LOD &lod = mesh->lods.front();
 
 			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
 
@@ -1475,7 +1495,7 @@ namespace Imagine::Vulkan {
 #endif
 	}
 
-	Core::DrawContext &VulkanRenderer::GetDrawContext() {
+	DrawContext &VulkanRenderer::GetDrawContext() {
 		return m_MainDrawContext;
 	}
 

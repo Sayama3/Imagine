@@ -2,7 +2,7 @@
 // Created by Iannis on 23/06/2025.
 //
 
-#include "../../../Includes/Imagine/Rendering/CPU/CPUMesh.hpp"
+#include "Imagine/Rendering/CPU/CPUMesh.hpp"
 
 #include "Imagine/Core/Math.hpp"
 

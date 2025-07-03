@@ -129,6 +129,12 @@ namespace Imagine::Vulkan {
 		virtual void LoadExternalModelInScene(const std::filesystem::path &path, Core::Scene *, Core::EntityID parent = Core::EntityID::NullID) override;
 		virtual void LoadCPUMeshInScene(const Core::CPUMesh &path, Core::Scene *, Core::EntityID entity = Core::EntityID::NullID) override;
 
+		virtual Core::Ref<Core::CPUMesh> LoadMesh(const Core::CPUMesh &mesh) override;
+		virtual Core::Ref<Core::GPUMaterial> LoadMaterial(const Core::CPUMaterial &material) override;
+		virtual Core::Ref<Core::GPUMaterialInstance> LoadMaterialInstance(const Core::CPUMaterialInstance &instance) override;
+		virtual Core::Ref<Core::GPUTexture2D> LoadTexture2D(const Core::CPUTexture2D &tex2d) override;
+		virtual Core::Ref<Core::GPUTexture3D> LoadTexture3D(const Core::CPUTexture3D &tex3d) override;
+
 		void DrawBackground(VkCommandBuffer cmd);
 		void DrawGeometry(VkCommandBuffer cmd);
 
