@@ -72,14 +72,16 @@
 
 #if MGN_USE_ASSERT
 #define MGN_CORE_ASSERT(condition, ...) \
-	if (!(condition)) {                 \
+	while (!(condition)) {				\
 		MGN_CORE_ERROR(__VA_ARGS__);    \
 		MGN_BREAK();                    \
+		break; 							\
 	}
-#define MGN_ASSERT(condition, ...) \
-	if (!(condition)) {            \
-		MGN_ERROR(__VA_ARGS__);    \
-		MGN_BREAK();               \
+#define MGN_ASSERT(condition, ...) 		\
+	while (!(condition)) {				\
+		MGN_ERROR(__VA_ARGS__);    		\
+		MGN_BREAK();               		\
+		break; 							\
 	}
 #else
 #define MGN_CORE_ASSERT(condition, ...)
@@ -87,21 +89,25 @@
 #endif
 
 #if MGN_DEBUG
-#define MGN_CORE_CHECK(condition, ...) \
-	if (!(condition)) {                \
-		MGN_CORE_WARNING(__VA_ARGS__); \
+#define MGN_CORE_CHECK(condition, ...)	\
+	while (!(condition)) {				\
+		MGN_CORE_WARNING(__VA_ARGS__);	\
+		break;							\
 	}
-#define MGN_CHECK(condition, ...) \
-	if (!(condition)) {           \
-		MGN_WARNING(__VA_ARGS__); \
+#define MGN_CHECK(condition, ...)	\
+	while (!(condition)) {			\
+		MGN_WARNING(__VA_ARGS__);	\
+		break;						\
 	}
-#define MGN_CORE_CHECK_ERROR(condition, ...) \
-	if (!(condition)) {                      \
-		MGN_CORE_ERROR(__VA_ARGS__);         \
+#define MGN_CORE_CHECK_ERROR(condition, ...)	\
+	while (!(condition)) {						\
+		MGN_CORE_ERROR(__VA_ARGS__);			\
+		break;									\
 	}
 #define MGN_CHECK_ERROR(condition, ...) \
-	if (!(condition)) {                 \
+	while (!(condition)) {				\
 		MGN_ERROR(__VA_ARGS__);         \
+		break; 							\
 	}
 #else
 #define MGN_CORE_CHECK(condition, ...)

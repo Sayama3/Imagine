@@ -17,6 +17,10 @@ namespace Imagine::Core {
 		m_Buffer(buffer ? reinterpret_cast<uint8_t *>(buffer) + offset : nullptr), m_Size(size) {
 	}
 
+	BufferView::BufferView(void *buffer, const uint64_t size) :
+		m_Buffer(buffer), m_Size(size) {
+	}
+
 	BufferView::~BufferView() {
 	}
 

@@ -27,6 +27,8 @@ namespace Imagine::Core
 		void Allocate(uint32_t w, uint32_t h, uint32_t c);
 		void Release();
 
+		void Zeroes();
+
 		BufferView operator()(uint32_t x, uint32_t y);
 		ConstBufferView operator()(uint32_t x, uint32_t y) const;
 
@@ -39,6 +41,11 @@ namespace Imagine::Core
 		uint32_t width = 0, height = 0, channels = 0;
 	};
 
+
+	template<typename PixelType>
+	inline void Image<PixelType>::Zeroes() {
+		source.Zeroes();
+	}
 
 	template<typename PixelType>
 	inline void Image<PixelType>::Release() {
@@ -83,7 +90,16 @@ namespace Imagine::Core
 	inline void Image<PixelType>::Reset(PixelType* s, const uint32_t w, const uint32_t h, const uint32_t c)
 	{
 		source.Release();
-		source = Buffer{s, w * h * c};
+		source = Buffer{s, w * h * c * PixelSize};
+		width = w;
+		height = h;
+		channels = c;
+	}
+
+	template<typename PixelType>
+	inline void Image<PixelType>::Reset(const uint32_t w, const uint32_t h, const uint32_t c)
+	{
+		source.Reallocate(w * h * c * PixelSize);
 		width = w;
 		height = h;
 		channels = c;

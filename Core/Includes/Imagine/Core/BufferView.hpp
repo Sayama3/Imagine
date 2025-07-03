@@ -22,7 +22,7 @@ namespace Imagine::Core {
 			return BufferView{buffer->Get(), offset, size};
 		}
 		template<typename T>
-		inline static BufferView Make(std::vector<T>& vector) {
+		inline static BufferView Make(std::vector<T> &vector) {
 			if (vector.empty()) return {};
 			return {vector.data(), vector.size() * sizeof(T)};
 		}
@@ -31,6 +31,7 @@ namespace Imagine::Core {
 		BufferView();
 		BufferView(Buffer &buffer, uint64_t offset, uint64_t size);
 		BufferView(void *buffer, uint64_t offset, uint64_t size);
+		BufferView(void *buffer, uint64_t size);
 		~BufferView();
 		BufferView(const BufferView &);
 		BufferView &operator=(const BufferView &);
@@ -47,11 +48,27 @@ namespace Imagine::Core {
 
 		uint64_t Size() const;
 
+		void Set(const Buffer &buffer) {
+			MGN_CORE_ASSERT(buffer.Size() == m_Size && Get(), "The type or the offset is not valid.");
+			memcpy(m_Buffer, buffer.Get(), m_Size);
+		}
+
+		void Set(const void *buffer) {
+			MGN_CORE_ASSERT(Get(), "The type or the offset is not valid.");
+			memcpy(m_Buffer, buffer, m_Size);
+		}
+
+		template<typename T>
+		void Set(const T &data) {
+			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			memcpy(m_Buffer, &data, sizeof(T));
+		}
+
 		template<typename T>
 		T *Get() {
 			// static_assert(sizeof(T) == m_Size);
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<T *>(Get());
 		}
@@ -59,7 +76,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T *Get() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<T *>(Get());
 		}
@@ -79,6 +96,22 @@ namespace Imagine::Core {
 			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
 #endif
 			return *reinterpret_cast<T *>(Get());
+		}
+
+
+		template<typename T>
+		T &At(const uint64_t index) {
+#ifdef MGN_DEBUG
+			MGN_CORE_ASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
+#endif
+			return *(reinterpret_cast<T *>(Get()) + index);
+		}
+		template<typename T>
+		const T &At(const uint64_t index) const {
+#ifdef MGN_DEBUG
+			MGN_CORE_ASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
+#endif
+			return *(reinterpret_cast<T *>(Get()) + index);
 		}
 
 	private:
@@ -102,7 +135,7 @@ namespace Imagine::Core {
 		}
 
 		template<typename T>
-		inline static ConstBufferView Make(const std::vector<T>& vector) {
+		inline static ConstBufferView Make(const std::vector<T> &vector) {
 			if (vector.empty()) return {};
 			return {vector.data(), vector.size() * sizeof(T)};
 		}
@@ -124,7 +157,7 @@ namespace Imagine::Core {
 		const void *Get() const;
 
 		uint64_t Size() const;
-		template<typename  T>
+		template<typename T>
 
 		uint64_t Count() const {
 			return Size() / sizeof(T);
@@ -136,6 +169,14 @@ namespace Imagine::Core {
 			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<const T *>(Get());
+		}
+
+		template<typename T>
+		const T &At(const uint64_t index) const {
+#ifdef MGN_DEBUG
+			MGN_CORE_ASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
+#endif
+			return *(reinterpret_cast<T *>(Get()) + index);
 		}
 
 		template<typename T>
