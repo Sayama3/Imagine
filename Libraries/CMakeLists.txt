@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
+# Use sub-modules instead of FetchContent because I can work offline this way.
+
 #include(FetchContent)
 
 set(GLM_ENABLE_CXX_20 ON)

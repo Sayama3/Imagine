@@ -542,54 +542,29 @@ namespace Imagine {
 	}; // namespace Math
 
 	template<>
-	inline std::string Math::to_string(const bool &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const bool &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const float &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const float &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const double &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const long double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const long double &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const uint8_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const uint16_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const uint32_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const uint64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const uint64_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const int8_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const int16_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const int32_t &value) { return std::to_string(value); }
 	template<>
-	inline std::string Math::to_string(const int64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-
-	template<>
-	inline std::string Math::ToString(const bool &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const float &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const long double &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const uint8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const uint16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const uint32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const uint64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const int8_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const int16_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const int32_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
-	template<>
-	inline std::string Math::ToString(const int64_t &value) { MGN_PROFILE_FUNCTION(); return std::to_string(value); }
+	inline std::string Math::ToString(const int64_t &value) { return std::to_string(value); }
 
 	template<>
 	inline float Math::Min(float value, float other) { return std::min(value, other); }
@@ -661,3 +636,30 @@ inline std::ostream &operator<<(std::ostream &os, const glm::vec<L, T, Q> &value
 	MGN_PROFILE_FUNCTION();
 	return os << glm::to_string(value);
 }
+
+template<glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
+struct fmt::formatter<glm::mat<C, R, T, Q>> : fmt::formatter<std::string>
+{
+	auto format(const glm::mat<C, R, T, Q> &value, format_context &ctx) const -> decltype(ctx.out())
+	{
+		return format_to(ctx.out(), "{}", glm::to_string(value));
+	}
+};
+
+template<typename T, glm::qualifier Q>
+struct fmt::formatter<glm::qua<T, Q>> : fmt::formatter<std::string>
+{
+	auto format(const glm::qua<T, Q> &value, format_context &ctx) const -> decltype(ctx.out())
+	{
+		return format_to(ctx.out(), "{}", glm::to_string(value));
+	}
+};
+
+template<glm::length_t L, typename T, glm::qualifier Q>
+struct fmt::formatter<glm::vec<L, T, Q>> : fmt::formatter<std::string>
+{
+	auto format(const glm::vec<L, T, Q> &value, format_context &ctx) const -> decltype(ctx.out())
+	{
+		return format_to(ctx.out(), "{}", glm::to_string(value));
+	}
+};

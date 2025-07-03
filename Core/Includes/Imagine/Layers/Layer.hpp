@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "Imagine/Core/TimeStep.hpp"
 #include "Imagine/Events/Event.hpp"
-#include "Imagine/Rendering/DrawContext.hpp"
 
 // We shouldn't search layer by name!!
 

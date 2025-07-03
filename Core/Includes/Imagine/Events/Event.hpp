@@ -77,7 +77,18 @@ namespace Imagine::Core {
 		}
 	};
 
-	inline std::ostream &operator<<(std::ostream &os, const Event &e) {
-		return os << e.string();
-	}
 } // namespace Imagine::Core
+
+
+inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::Event &e) {
+	return os << e.string();
+}
+
+template<>
+struct fmt::formatter<Imagine::Core::Event> : fmt::formatter<std::string>
+{
+	auto format(const Imagine::Core::Event& value, format_context &ctx) const -> decltype(ctx.out())
+	{
+		return format_to(ctx.out(), "{}", value.string());
+	}
+};

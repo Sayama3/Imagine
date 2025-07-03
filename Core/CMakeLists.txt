@@ -118,6 +118,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/Image.hpp
 		Sources/Math/Image.cpp
 		Includes/Imagine/Core/Profiling.hpp
+		Includes/Imagine/Core/InternalCore.hpp
+		Includes/Imagine/Events/CoreEvents.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
