@@ -269,9 +269,10 @@ namespace Imagine::Core {
 		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
 			return false;
 		}
-		m_Renderer->Resize();
 
-		if (shouldRedraw) {
+		const bool canRedraw = m_Renderer->Resize();
+
+		if (canRedraw && shouldRedraw) {
 			Draw();
 		}
 

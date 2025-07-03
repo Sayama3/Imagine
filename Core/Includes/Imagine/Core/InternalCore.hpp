@@ -36,6 +36,10 @@
 #include "Imagine/Math/Types.hpp"
 #include "Imagine/Math/Basics.hpp"
 
+#include "Imagine/Assets/AssetType.hpp"
+#include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Assets/Asset.hpp"
+
 #include "Imagine/Events/Event.hpp"
 #include "Imagine/Layers/Layer.hpp"
 #include "Imagine/Layers/LayerStack.hpp"

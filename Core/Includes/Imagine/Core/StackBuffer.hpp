@@ -27,7 +27,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T *get() const { return reinterpret_cast<const T *>(m_Buffer); }
 
-		set(const void *data, const UnsignedInteger size) {
+		void set(const void *data, const UnsignedInteger size) {
 			memcpy(m_Buffer, data, std::min(size, ByteCapacity));
 		}
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Imagine/Core.hpp"
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Layers/Layer.hpp"
 #include "Imagine/Math/ChaikinCurves.hpp"

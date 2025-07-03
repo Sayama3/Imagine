@@ -43,7 +43,7 @@ namespace Imagine::Core {
 		virtual void Present() = 0;
 		virtual void Draw() = 0;
 		virtual void Draw(const DrawContext& ctx) = 0;
-		virtual void Resize() = 0;
+		virtual bool Resize() = 0;
 
 		virtual DrawContext& GetDrawContext() = 0;
 

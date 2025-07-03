@@ -43,20 +43,23 @@ int main(int argc, char **argv) {
 	// 	std::nullopt,
 	// };
 
-	MGN_PROFILE_BEGIN_SESSION("startup", "VoxymoreProfile-Startup.json");
+	MGN_PROFILE_BEGIN_SESSION("startup", "ImagineProfile-Startup.json");
 	MGN_FRAME_START();
+
 	Core::Application *application = Core::Application::Initialize(params);
 	application->PushLayer<Imagine::Application::ApplicationLayer>();
 	application->PushOverlay<Imagine::Core::ImGuiLayer>();
+	Project::New();
+
 	MGN_FRAME_END();
 	MGN_PROFILE_END_SESSION();
 
 
-	MGN_PROFILE_BEGIN_SESSION("runtime", "VoxymoreProfile-Runtime.json");
+	MGN_PROFILE_BEGIN_SESSION("runtime", "ImagineProfile-Runtime.json");
 	application->Run();
 	MGN_PROFILE_END_SESSION();
 
-	MGN_PROFILE_BEGIN_SESSION("shutdown", "VoxymoreProfile-Shutdown.json");
+	MGN_PROFILE_BEGIN_SESSION("shutdown", "ImagineProfile-Shutdown.json");
 	MGN_FRAME_START();
 	Core::Application::Shutdown();
 	MGN_FRAME_END();

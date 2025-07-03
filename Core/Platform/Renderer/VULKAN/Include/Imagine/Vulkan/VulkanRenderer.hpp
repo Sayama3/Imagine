@@ -116,7 +116,7 @@ namespace Imagine::Vulkan {
 		void UpdateCache();
 
 	public:
-		virtual void Resize() override;
+		virtual bool Resize() override;
 
 		virtual bool BeginDraw() override;
 		virtual void EndDraw() override;
@@ -149,7 +149,7 @@ namespace Imagine::Vulkan {
 	private:
 		std::vector<ComputeEffect> m_BackgroundEffects;
 		int m_CurrentBackgroundEffect{0};
-
+		bool m_IsDrawing{false};
 	private:
 		VkInstance m_Instance{nullptr}; // Vulkan library handle
 		VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr}; // Vulkan debug output handle

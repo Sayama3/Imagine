@@ -20,7 +20,7 @@ namespace Imagine::Core {
 
 	Scene Scene::Duplicate() const {
 		Scene scene{*this};
-		scene.ID = UUID{};
+		scene.Handle = AssetHandle{};
 		return scene;
 	}
 
@@ -387,7 +387,7 @@ namespace Imagine::Core {
 	void Scene::SendImGuiCommands() {
 #ifdef MGN_IMGUI
 		{
-			const std::string HierarchyName = "Hierarchy##" + ID.string();
+			const std::string HierarchyName = "Hierarchy##" + Handle.string();
 			ImGui::Begin(HierarchyName.c_str());
 			{
 				static std::string newName = "New Entity";
@@ -419,7 +419,7 @@ namespace Imagine::Core {
 			ImGui::End();
 		}
 		{
-			const std::string PropertiesName = "Properties##" + ID.string();
+			const std::string PropertiesName = "Properties##" + Handle.string();
 			ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
 			ImGui::Begin(PropertiesName.c_str());
 			{

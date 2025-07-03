@@ -46,7 +46,7 @@ using namespace Imagine::Core;
 using namespace Imagine::Literal;
 
 namespace Imagine::Vulkan {
-	constexpr bool c_BreakOnError = false;
+	constexpr bool c_BreakOnError = true;
 
 	static inline VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
 		const char *mt = vkb::to_string_message_type(messageType);
@@ -986,12 +986,18 @@ namespace Imagine::Vulkan {
 		InvViewProjectMatrixCached = glm::inverse(ViewProjectMatrixCached);
 	}
 
-	void VulkanRenderer::Resize() {
+	bool VulkanRenderer::Resize() {
+		if(m_IsDrawing) {
+			m_ResizeRequested = true;
+			return false;
+		}
 		vkDeviceWaitIdle(m_Device);
 		ResizeSwapChain();
+		return m_IsDrawing;
 	}
 
 	bool VulkanRenderer::BeginDraw() {
+		m_IsDrawing = true;
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
 		// TODO: Preserve aspect ratio
@@ -1115,6 +1121,7 @@ namespace Imagine::Vulkan {
 			MGN_CORE_ASSERT(result == VK_SUCCESS, "Failing to acquire the Swap Chain Image.");
 		}
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
+		m_IsDrawing = false;
 	}
 
 	void VulkanRenderer::Draw() {

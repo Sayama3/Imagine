@@ -118,6 +118,18 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/Image.hpp
 		Sources/Math/Image.cpp
 		Includes/Imagine/Core/Profiling.hpp
+		Includes/Imagine/Project/Project.hpp
+		Includes/Imagine/Project/ProjectSerializer.hpp
+		Sources/Project/Project.cpp
+		Sources/Project/ProjectSerializer.cpp
+		Includes/Imagine/Assets/AssetMetadata.hpp
+		Includes/Imagine/Assets/AssetHandle.hpp
+		Includes/Imagine/Assets/AssetType.hpp
+		Sources/Assets/AssetType.cpp
+		Sources/Assets/AssetHandle.cpp
+		Includes/Imagine/Assets/AssetManagerBase.hpp
+		Sources/Assets/Asset.cpp
+		Includes/Imagine/Assets/Asset.hpp
 		Includes/Imagine/Core/InternalCore.hpp
 		Includes/Imagine/Events/CoreEvents.hpp
 )

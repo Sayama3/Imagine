@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Entity.hpp"
+#include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/RawSparseSet.hpp"
@@ -14,7 +15,9 @@
 namespace Imagine::Core {
 
 
-	class Scene {
+	class Scene : public Asset {
+	public:
+		MGN_IMPLEMENT_ASSET(AssetType::Scene);
 	public:
 		static constexpr uint64_t c_EntityPrepareCount = 1024;
 		using Ref = std::shared_ptr<Scene>;
@@ -298,10 +301,7 @@ namespace Imagine::Core {
 		}
 
 	public:
-		UUID GetID() const { return ID; }
-
-	private:
-		UUID ID{};
+		UUID GetID() const { return Handle.GetID(); }
 
 	private:
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
