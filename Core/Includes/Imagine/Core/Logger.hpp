@@ -65,3 +65,14 @@ namespace Imagine::Core {
 		inline static MessageBuffer s_LastLogs{};
 	};
 } // namespace Imagine::Core
+
+
+template<>
+struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string>
+{
+	auto format(const std::filesystem::path& value, format_context &ctx) const -> decltype(ctx.out())
+	{
+		return format_to(ctx.out(), "{}", value.string());
+	}
+};
+
