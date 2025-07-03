@@ -97,15 +97,6 @@ namespace Imagine::Core
 	}
 
 	template<typename PixelType>
-	inline void Image<PixelType>::Reset(const uint32_t w, const uint32_t h, const uint32_t c)
-	{
-		source.Reallocate(w * h * c * PixelSize);
-		width = w;
-		height = h;
-		channels = c;
-	}
-
-	template<typename PixelType>
 	inline Image<PixelType> & Image<PixelType>::operator=(Image&& other) noexcept 	{
 		// Release previous image
 		source.Release();
