@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
 
+set(EXTERNAL_CORE_SRC_FILES
+		IncludeExternals/stb_image.h
+		IncludeExternals/stb_image_resize2.h
+		IncludeExternals/stb_image_write.h
+		IncludeExternals/stb_perlin.h
+		IncludeExternals/stb_sprintf.h
+		IncludeExternals/stb_truetype.h
+)
+
 set(CORE_SRC_FILES
 		Includes/Imagine/Core.hpp
 		Sources/Core.cpp
@@ -104,9 +113,13 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Layers/ImGuiLayer.hpp
 		Sources/ThirdParty/Assimp.cpp
 		Includes/Imagine/ThirdParty/Assimp.hpp
+		Sources/ThirdParty/Stb.cpp
+		Includes/Imagine/ThirdParty/Stb.hpp
+		Includes/Imagine/Math/Image.hpp
+		Sources/Math/Image.cpp
 )
 
-add_library(Core STATIC ${CORE_SRC_FILES})
+add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
 
 target_precompile_headers(Core PUBLIC
 		# Multithreading headers
@@ -167,7 +180,7 @@ target_precompile_headers(Core PUBLIC
 
 target_compile_definitions(Core PUBLIC GLM_ENABLE_EXPERIMENTAL=1)
 
-target_include_directories(Core PUBLIC IncludesExternals)
+target_include_directories(Core PUBLIC IncludeExternals)
 target_include_directories(Core PUBLIC Includes)
 target_include_directories(Core PRIVATE Sources)
 

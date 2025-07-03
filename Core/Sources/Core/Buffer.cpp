@@ -21,9 +21,9 @@ namespace Imagine::Core {
 		Release();
 	}
 
-	Buffer::Buffer(Buffer &&other) noexcept :
-		m_Data(nullptr), m_Size(0) {
-		swap(other);
+	Buffer::Buffer(Buffer &&other) noexcept : m_Data(other.m_Data), m_Size(other.m_Size) {
+		other.m_Data = nullptr;
+		other.m_Size = 0;
 	}
 
 	Buffer &Buffer::operator=(Buffer &&other) noexcept {
