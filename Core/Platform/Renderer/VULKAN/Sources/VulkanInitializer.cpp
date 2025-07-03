@@ -4,13 +4,16 @@
 
 
 #include "Imagine/ThirdParty/Assimp.hpp"
+#include "Imagine/ThirdParty/Stb.hpp"
 
 #include "Imagine/Core/Math.hpp"
-#include "Imagine/Vulkan/VulkanInitializer.hpp"
-
+#include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Scene/Renderable.hpp"
 #include "Imagine/Scene/Scene.hpp"
+
+#include "Imagine/Vulkan/VulkanInitializer.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
+#include "Imagine/Vulkan/VulkanImage.hpp"
 
 
 namespace Imagine::Vulkan {
@@ -23,68 +26,133 @@ namespace Imagine::Vulkan {
 
 			const aiScene *scene = importer.ReadFile(filePath.string(), ThirdParty::Assimp::GetSmoothPostProcess());
 
-			for (int i = 0; i < scene->mNumMaterials; ++i) {
-				MaterialPass materialPass = MaterialPass::MainColor;
-				GLTFMetallicRoughness::MaterialResources materialResources{};
 
-				aiMaterial *material = scene->mMaterials[i]; // for some formats (like glTF) metallic and roughness may be the same file
-				aiString fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
-				ai_real metallic, roughness, anisotropy;
-				aiColor3D color;
-
-				bool useColorMap = material->GetTextureCount(aiTextureType_BASE_COLOR) > 0;
-				bool useNormalMap = material->GetTextureCount(aiTextureType_NORMALS) > 0;
-				bool useEmissiveMap = material->GetTextureCount(aiTextureType_EMISSIVE) > 0;
-				bool useMetalMap = material->GetTextureCount(aiTextureType_METALNESS) > 0;
-				bool useRoughMap = material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0;
-				bool useAo = material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION) > 0;
-
-				material->Get(AI_MATKEY_BASE_COLOR, color);
-				material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
-				material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
-				material->Get(AI_MATKEY_ANISOTROPY_FACTOR, anisotropy);
-
-				if (useColorMap) material->GetTexture(aiTextureType_BASE_COLOR, 0, &fileBaseColor);
-				if (useNormalMap) material->GetTexture(aiTextureType_NORMALS, 0, &fileNormal);
-				if (useEmissiveMap) material->GetTexture(aiTextureType_EMISSIVE, 0, &fileEmissive);
-				if (useMetalMap) material->GetTexture(aiTextureType_METALNESS, 0, &fileMetallic);
-				if (useRoughMap) material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &fileRoughness);
-				if (useAo) material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &fileAo);
-
-
-				/***/
-
-				GLTFMetallicRoughness &metallicRoughness = renderer->GetGLTFMaterial();
-				metallicRoughness.WriteMaterial(renderer->GetDevice(), materialPass, materialResources, renderer->GetDescriptorAllocatorGrowable());
-
-				// TODO: Load the texture and material following this part of the documentation.
-
-				/*
-				 * Normally textures used by assets are stored in separate files, however, there are file formats
-				 * embedding their textures directly into the model file. Such textures are loaded into an aiTexture structure.
-				 * In previous versions, the path from the query for AI_MATKEY_TEXTURE(textureType, index) would be *<index>
-				 * where <index> is the index of the texture in aiScene::mTextures. Now this call will return a file path for
-				 * embedded textures in FBX files. To test if it is an embedded texture use aiScene::GetEmbeddedTexture.
-				 * If the returned pointer is not null, it is embedded and can be loaded from the data structure.
-				 * If it is null, search for a separate file. Other file types still use the old behavior.
-				 *
-				 * If you rely on the old behavior, you can use Assimp::Importer::SetPropertyBool with the key #AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING to force the old behavior.
-				 *
-				 * There are two cases:
-				 * 1. The texture is NOT compressed. Its color data is directly stored in the aiTexture structure as an array of
-				 * aiTexture::mWidth * aiTexture::mHeight aiTexel structures. Each aiTexel represents a pixel (or “texel”) of
-				 * the texture image. The color data is stored in an unsigned RGBA8888 format, which can be easily used for
-				 * both Direct3D and OpenGL (swizzling the order of the color components might be necessary). RGBA8888 has been
-				 * chosen because it is well-known, easy to use , and natively supported by nearly all graphics APIs.
-				 * 2. This applies if aiTexture::mHeight == 0 is fulfilled. Then, the texture is stored in a compressed format such
-				 * as DDS or PNG. The term “compressed” does not mean that the texture data must actually be compressed, however,
-				 * the texture was found in the model file as if it was stored in a separate file on the hard disk.
-				 * Appropriate decoders (such as libjpeg, libpng, D3DX, DevIL) are required to load these textures.
-				 * aiTexture::mWidth specifies the size of the texture data in bytes, aiTexture::pcData is a pointer to the raw image
-				 * data and aiTexture::achFormatHint is either zeroed or contains the most common file extension of the embedded texture’s format.
-				 * This value is only set if Assimp is able to determine the file format.
-				 */
-			}
+			// std::vector<AllocatedImage> images;
+			// std::vector<AutoDeleter::Shared> deleters;
+			// images.resize(scene->mNumTextures);
+			// deleters.resize(scene->mNumTextures);
+			//
+			// for (uint32_t i = 0; i < scene->mNumTextures; ++i) {
+			// 	aiTexture* pTexture = scene->mTextures[i];
+			// 	if (pTexture->pcData == nullptr) {
+			// 		images[i] = renderer->GetWhiteImage();
+			// 	}
+			// 	Core::Image<> image;
+			// 	if (pTexture->mHeight == 0) {
+			// 		image = std::move(ThirdParty::Stb::Image::LoadFromMemory(ConstBufferView{pTexture->pcData, pTexture->mWidth}, 4));
+			// 	}
+			// 	else {
+			// 		image.Allocate(pTexture->mWidth, (uint32_t)pTexture->mHeight, 4u);
+			// 		uint8_t a{255};
+			// 		uint8_t r{255};
+			// 		uint8_t g{255};
+			// 		uint8_t b{255};
+			// 		if (pTexture->achFormatHint[0] == 0) {
+			// 			a = 0u;
+			// 			r = 1u;
+			// 			g = 2u;
+			// 			b = 3u;
+			// 		} else {
+			// 			for (uint32_t i = 0; i < 4; ++i) {
+			// 				switch (pTexture->achFormatHint[i]) {
+			// 					case 'r': r = pTexture->achFormatHint[4+i] == '8' ? i : 255; break;
+			// 					case 'g': g = pTexture->achFormatHint[4+i] == '8' ? i : 255; break;
+			// 					case 'b': b = pTexture->achFormatHint[4+i] == '8' ? i : 255; break;
+			// 					case 'a': a = pTexture->achFormatHint[4+i] == '8' ? i : 255; break;
+			// 					default: break;
+			// 				}
+			// 			}
+			// 		}
+			//
+			// 		for (uint32_t x = 0; x < pTexture->mWidth; ++x) {
+			// 			for (uint32_t y = 0; y < pTexture->mHeight; ++y) {
+			// 				uint8_t* aiPixel = (uint8_t*)&pTexture->pcData[x * pTexture->mHeight + y];
+			// 				BufferView pixel = image(x,y);
+			// 				pixel.At<uint8_t>(0u) = r != 255 ? aiPixel[r]: 0;
+			// 				pixel.At<uint8_t>(1u) = g != 255 ? aiPixel[g]: 0;
+			// 				pixel.At<uint8_t>(2u) = b != 255 ? aiPixel[b]: 0;
+			// 				pixel.At<uint8_t>(3u) = a != 255 ? aiPixel[a]: 255;
+			// 			}
+			// 		}
+			// 	}
+			//
+			//
+			// 	MGN_CORE_ASSERT(image.channels == 4, "[Vulkan] image.channels == 4");
+			//
+			// 	images[i] = renderer->CreateImage(image.source.Get(), {image.width, image.height, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, true);
+			// 	deleters[i] = AutoDeleter::MakeShared();
+			// 	deleters[i]->push(renderer->GetAllocator(), images[i].allocation, images[i].image);
+			// 	deleters[i]->push(images[i].imageView);
+			// }
+			//
+			// for (int i = 0; i < scene->mNumMaterials; ++i) {
+			// 	MaterialPass materialPass = MaterialPass::MainColor;
+			// 	GLTFMetallicRoughness::MaterialResources materialResources{};
+			//
+			// 	aiMaterial *material = scene->mMaterials[i]; // for some formats (like glTF) metallic and roughness may be the same file
+			//
+			// 	std::array<aiTextureType, 6> texTypes{aiTextureType_BASE_COLOR, aiTextureType_NORMALS, aiTextureType_EMISSIVE, aiTextureType_METALNESS, aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_AMBIENT_OCCLUSION};
+			// 	std::array<aiString, 6> imageFiles{};// fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
+			// 	std::array<bool, 6> hasImage{};// fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
+			// 	ai_real metallic, roughness, anisotropy;
+			// 	aiColor3D color;
+			//
+			// 	bool useColorMap = material->GetTextureCount(aiTextureType_BASE_COLOR) > 0;
+			// 	bool useNormalMap = material->GetTextureCount(aiTextureType_NORMALS) > 0;
+			// 	bool useEmissiveMap = material->GetTextureCount(aiTextureType_EMISSIVE) > 0;
+			// 	bool useMetalMap = material->GetTextureCount(aiTextureType_METALNESS) > 0;
+			// 	bool useRoughMap = material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0;
+			// 	bool useAo = material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION) > 0;
+			//
+			// 	for (uint64_t texId = 0; texId < texTypes.size(); ++texId) {
+			// 		hasImage[texId] = material->GetTextureCount(texTypes[texId]) > 0;
+			// 		if (hasImage[texId]) {
+			// 			material->GetTexture(texTypes[texId], 0, &imageFiles[texId]);
+			// 			std::pair<const aiTexture *, int> result = scene->GetEmbeddedTextureAndIndex(imageFiles[texId].C_Str());
+			// 			if (result.first) {
+			//
+			// 			}
+			// 		}
+			// 	}
+			//
+			// 	material->Get(AI_MATKEY_BASE_COLOR, color);
+			// 	material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+			// 	material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+			// 	material->Get(AI_MATKEY_ANISOTROPY_FACTOR, anisotropy);
+			//
+			// 	/***/
+			//
+			// 	GLTFMetallicRoughness &metallicRoughness = renderer->GetGLTFMaterial();
+			// 	metallicRoughness.WriteMaterial(renderer->GetDevice(), materialPass, materialResources, renderer->GetDescriptorAllocatorGrowable());
+			//
+			// 	// TODO: Load the texture and material following this part of the documentation.
+			//
+			// 	/*
+			// 	 * Normally textures used by assets are stored in separate files, however, there are file formats
+			// 	 * embedding their textures directly into the model file. Such textures are loaded into an aiTexture structure.
+			// 	 * In previous versions, the path from the query for AI_MATKEY_TEXTURE(textureType, index) would be *<index>
+			// 	 * where <index> is the index of the texture in aiScene::mTextures. Now this call will return a file path for
+			// 	 * embedded textures in FBX files. To test if it is an embedded texture use aiScene::GetEmbeddedTexture.
+			// 	 * If the returned pointer is not null, it is embedded and can be loaded from the data structure.
+			// 	 * If it is null, search for a separate file. Other file types still use the old behavior.
+			// 	 *
+			// 	 * If you rely on the old behavior, you can use Assimp::Importer::SetPropertyBool with the key #AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING to force the old behavior.
+			// 	 *
+			// 	 * There are two cases:
+			// 	 * 1. The texture is NOT compressed. Its color data is directly stored in the aiTexture structure as an array of
+			// 	 * aiTexture::mWidth * aiTexture::mHeight aiTexel structures. Each aiTexel represents a pixel (or “texel”) of
+			// 	 * the texture image. The color data is stored in an unsigned RGBA8888 format, which can be easily used for
+			// 	 * both Direct3D and OpenGL (swizzling the order of the color components might be necessary). RGBA8888 has been
+			// 	 * chosen because it is well-known, easy to use , and natively supported by nearly all graphics APIs.
+			// 	 * 2. This applies if aiTexture::mHeight == 0 is fulfilled. Then, the texture is stored in a compressed format such
+			// 	 * as DDS or PNG. The term “compressed” does not mean that the texture data must actually be compressed, however,
+			// 	 * the texture was found in the model file as if it was stored in a separate file on the hard disk.
+			// 	 * Appropriate decoders (such as libjpeg, libpng, D3DX, DevIL) are required to load these textures.
+			// 	 * aiTexture::mWidth specifies the size of the texture data in bytes, aiTexture::pcData is a pointer to the raw image
+			// 	 * data and aiTexture::achFormatHint is either zeroed or contains the most common file extension of the embedded texture’s format.
+			// 	 * This value is only set if Assimp is able to determine the file format.
+			// 	 */
+			// }
 
 			// If the import failed, report it
 			if (nullptr == scene) {

@@ -3,8 +3,21 @@
 //
 
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Vulkan/VulkanRenderer.hpp"
 
 namespace Imagine::Vulkan {
+
+	Deleter::Deleter(Deleter &&o) noexcept {
+		std::swap(m_ToDelete, o.m_ToDelete);
+	}
+	Deleter &Deleter::operator=(Deleter &&o) noexcept {
+		std::swap(m_ToDelete, o.m_ToDelete);
+		return *this;
+	}
+	void Deleter::swap(Deleter &o) noexcept {
+		std::swap(m_ToDelete, o.m_ToDelete);
+	}
 
 	void Deleter::flush(VkDevice device) {
 		MGN_CORE_ASSERT(device, "Vulkan Device is not set in the Vulkan Deleter.");
@@ -23,14 +36,14 @@ namespace Imagine::Vulkan {
 			else if (VkCommandPool *vkCommandPool = std::get_if<VkCommandPool>(&type)) {
 				vkDestroyCommandPool(device, *vkCommandPool, nullptr);
 			}
-			else if (VkImageView *vmaImageView = std::get_if<VkImageView>(&type)) {
-				vkDestroyImageView(device, *vmaImageView, nullptr);
+			else if (VkImageView *vkImageView = std::get_if<VkImageView>(&type)) {
+				vkDestroyImageView(device, *vkImageView, nullptr);
 			}
 			else if (VmaImage *vmaImage = std::get_if<VmaImage>(&type)) {
 				vmaDestroyImage(vmaImage->allocator, vmaImage->data, vmaImage->allocation);
 			}
-			else if (VmaBuffer *vmaImage = std::get_if<VmaBuffer>(&type)) {
-				vmaDestroyBuffer(vmaImage->allocator, vmaImage->data, vmaImage->allocation);
+			else if (VmaBuffer *vmaBuffer = std::get_if<VmaBuffer>(&type)) {
+				vmaDestroyBuffer(vmaBuffer->allocator, vmaBuffer->data, vmaBuffer->allocation);
 			}
 			else if (VkDescriptorSetLayout *descriptorSetLayout = std::get_if<VkDescriptorSetLayout>(&type)) {
 				vkDestroyDescriptorSetLayout(device, *descriptorSetLayout, nullptr);
@@ -59,6 +72,12 @@ namespace Imagine::Vulkan {
 			else if (VulkanImGuiImage *imguiImage = std::get_if<VulkanImGuiImage>(&type)) {
 				VulkanImGuiImage::Remove(*imguiImage);
 			}
+			else if (DeleterPtr *sub_deleter = std::get_if<DeleterPtr>(&type)) {
+				(*sub_deleter)->flush(device);
+			}
+			else if (SharedDeleter *shared_deleter = std::get_if<SharedDeleter>(&type)) {
+				(*shared_deleter)->flush(device);
+			}
 			else if (ShutdownFunction *shutdown = std::get_if<ShutdownFunction>(&type)) {
 				(*shutdown)();
 			}
@@ -68,5 +87,32 @@ namespace Imagine::Vulkan {
 		}
 
 		m_ToDelete.clear();
+	}
+
+	AutoDeleter::Shared AutoDeleter::MakeShared() {
+		return std::make_shared<AutoDeleter>();
+	}
+	AutoDeleter::AutoDeleter() = default;
+
+	AutoDeleter::~AutoDeleter() {
+		using namespace Core;
+		Renderer* renderer = Core::Renderer::Get();
+		MGN_CORE_ASSERT(renderer, "We need a renderer to autodelete");
+		VulkanRenderer* vkRenderer = dynamic_cast<VulkanRenderer*>(renderer);
+		MGN_CORE_ASSERT(vkRenderer, "We need a vulkan renderer to autodelete the vulkan auto deleter.");
+		m_Deleter.flush(vkRenderer->GetDevice());
+	}
+	AutoDeleter::AutoDeleter(AutoDeleter &&o) noexcept {
+		swap(o);
+	}
+	AutoDeleter &AutoDeleter::operator=(AutoDeleter &&o) noexcept {
+		swap(o);
+		return *this;
+	}
+	void AutoDeleter::swap(AutoDeleter &o) noexcept {
+		m_Deleter.swap(o.m_Deleter);
+	}
+	void AutoDeleter::push(Deleter::VkType data) {
+		m_Deleter.push(std::move(data));
 	}
 } // namespace Imagine::Vulkan

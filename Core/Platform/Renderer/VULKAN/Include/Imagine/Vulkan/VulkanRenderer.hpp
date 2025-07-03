@@ -140,7 +140,9 @@ namespace Imagine::Vulkan {
 	public:
 		GLTFMetallicRoughness &GetGLTFMaterial() { return m_MetalRoughMaterial; }
 		DescriptorAllocatorGrowable &GetDescriptorAllocatorGrowable() { return m_GlobalDescriptorAllocator; }
-
+		inline AllocatedImage GetWhiteImage() {return m_WhiteImage;}
+		inline AllocatedImage GetBlackImage() {return m_BlackImage;}
+		inline AllocatedImage GetGreyImage() {return m_GreyImage;}
 	private:
 		void DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView);
 

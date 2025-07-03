@@ -34,10 +34,13 @@ namespace Imagine::Vulkan {
 		matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 
-		DescriptorLayoutBuilder layoutBuilder;
+		DescriptorLayoutBuilder layoutBuilder; // The main textures for a PBR rendering.
 		layoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // Material Uniform Buffer
 		layoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // Color image
-		layoutBuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // MetalRoughness image
+		layoutBuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // Metal image
+		//layoutBuilder.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // Roughness image
+		//layoutBuilder.AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // Normal image
+		//layoutBuilder.AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // AO image
 
 		materialLayout = layoutBuilder.Build(renderer->GetDevice(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -79,6 +82,7 @@ namespace Imagine::Vulkan {
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
 				break;
 			case Topology::Point:
+				MGN_CORE_ASSERT(false, "The point topology is not supported yet.");
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 				break;
 		}
@@ -121,6 +125,9 @@ namespace Imagine::Vulkan {
 		writer.WriteBuffer(0, resources.dataBuffer, sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		writer.WriteImage(1, resources.colorImage.imageView, resources.colorSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		writer.WriteImage(2, resources.metalImage.imageView, resources.metalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// writer.WriteImage(3, resources.roughImage.imageView, resources.roughSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// writer.WriteImage(4, resources.normalImage.imageView, resources.normalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// writer.WriteImage(5, resources.aoImage.imageView, resources.aoSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		//TODO: Write a lot of other things.
 		writer.UpdateSet(device, instance.materialSet);
 
