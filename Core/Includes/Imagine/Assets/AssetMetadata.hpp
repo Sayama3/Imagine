@@ -20,7 +20,7 @@ namespace Imagine::Core
 		AssetType Type = AssetType::None;
 
 		inline operator bool() const {
-			return Type != AssetType::None && Handle != NullAssetHandle;
+			return Type != AssetType::None && Handle != NULL_ASSET_HANDLE;
 		}
 		inline bool operator ==(const AssetMetadata& other ) const {
 			return Handle == other.Handle && Type == other.Type && FilePath == other.FilePath;

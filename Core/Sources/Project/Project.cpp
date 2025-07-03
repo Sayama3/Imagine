@@ -4,6 +4,9 @@
 
 #include "Imagine/Project/Project.hpp"
 
+#include "Imagine/Core/Profiling.hpp"
+#include "Imagine/Scene/Scene.hpp"
+
 namespace Imagine::Core {
 std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 	Ref<Project> Project::s_ActiveProject = nullptr;

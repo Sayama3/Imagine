@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "CPU/CPUMesh.hpp"
 #include "Imagine/Application/ApplicationParameters.hpp"
-#include "Imagine/Rendering/CPUMesh.hpp"
 #include "Imagine/Rendering/DrawContext.hpp"
 #include "Imagine/Rendering/RendererParameters.hpp"
 #include "Imagine/Scene/Entity.hpp"

@@ -2,15 +2,30 @@
 // Created by Iannis on 23/06/2025.
 //
 
-#include "Imagine/Rendering/CPUMesh.hpp"
+#include "../../../Includes/Imagine/Rendering/CPU/CPUMesh.hpp"
 
 #include "Imagine/Core/Math.hpp"
 
 #include "Imagine/ThirdParty/Assimp.hpp"
 
 namespace Imagine::Core {
+	CPUMesh::CPUMesh(std::vector<Vertex> &&vertices, std::vector<uint32_t> &&indices) :
+		Vertices(std::move(vertices)), Indices(std::move(indices)) {}
+	CPUMesh::CPUMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices) :
+		Vertices(vertices), Indices(indices) {}
+	CPUMesh::CPUMesh(CPUMesh &&o) noexcept { swap(o); }
+	CPUMesh &CPUMesh::operator=(CPUMesh &&o) noexcept {
+		swap(o);
+		return *this;
+	}
+	void CPUMesh::swap(CPUMesh &o) noexcept {
+		Vertices.swap(o.Vertices);
+		Indices.swap(o.Indices);
+	}
+
 	CPUMesh CPUMesh::LoadExternalModelAsMesh(const std::filesystem::path &p) {
 		CPUMesh finalMesh;
+		finalMesh.Name = p.stem().string();
 
 		using namespace Imagine::Core;
 		Assimp::Importer importer;
@@ -126,6 +141,7 @@ namespace Imagine::Core {
 			}
 		}
 
+		finalMesh.Lods.emplace_back(0, static_cast<uint32_t>(finalMesh.Indices.size()));
 		return finalMesh;
 	}
 } // namespace Imagine::Core

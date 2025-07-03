@@ -15,7 +15,7 @@
 namespace Imagine::Core {
 
 
-	class Scene : public Asset {
+	class Scene final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Scene);
 	public:

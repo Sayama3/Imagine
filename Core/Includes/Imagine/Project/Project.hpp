@@ -5,13 +5,12 @@
 #pragma once
 
 #include "Imagine/Assets/AssetManagerBase.hpp"
-#include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Assets/AssetHandle.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
-#include "Imagine/Scene/Scene.hpp"
-
 
 namespace Imagine::Core
 {
+	class Scene;
 	using void_func_ptr = std::function<void()>;
 
 	struct ProjectConfig {

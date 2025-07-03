@@ -67,7 +67,7 @@ namespace Imagine::Vulkan {
 										  .AddShader(Core::ShaderStage::Fragment, meshFragShader)
 										  // .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
 										  .SetPolygonMode(VK_POLYGON_MODE_FILL)
-										  .SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
+										  .SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE)
 										  .SetMultisamplingNone()
 										  .DisableBlending()
 										  .EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL)

@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include "../Rendering/CPU/CPUMesh.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Core/UUID.hpp"
-#include "Imagine/Rendering/CPUMesh.hpp"
 #include "Imagine/Rendering/Vertex.hpp"
 #include "Types.hpp"
 

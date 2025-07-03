@@ -71,8 +71,6 @@ set(CORE_SRC_FILES
 		Sources/Rendering/ImGui.cpp
 		Sources/Rendering/Material.cpp
 		Includes/Imagine/Rendering/Material.hpp
-		Sources/Rendering/PushConstant.cpp
-		Includes/Imagine/Rendering/PushConstant.hpp
 		Sources/Rendering/Shader.cpp
 		Includes/Imagine/Rendering/Shader.hpp
 		Includes/Imagine/Rendering/ShaderParameters.hpp
@@ -82,8 +80,6 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/RenderObject.hpp
 		Sources/Rendering/Mesh.cpp
 		Includes/Imagine/Rendering/Mesh.hpp
-		Sources/Rendering/Model.cpp
-		Includes/Imagine/Rendering/Model.hpp
 		Sources/Scene/SceneManager.cpp
 		Includes/Imagine/Scene/SceneManager.hpp
 		Sources/Core/Math.cpp
@@ -91,8 +87,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/KeyCodes.hpp
 		Sources/Core/Inputs.cpp
 		Includes/Imagine/Core/Inputs.hpp
-		Sources/Rendering/CPUMesh.cpp
-		Includes/Imagine/Rendering/CPUMesh.hpp
+		Sources/Rendering/CPU/CPUMesh.cpp
+		Includes/Imagine/Rendering/CPU/CPUMesh.hpp
 		Includes/Imagine/Rendering/Vertex.hpp
 		Sources/Rendering/Camera.cpp
 		Includes/Imagine/Rendering/Camera.hpp
@@ -130,8 +126,25 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Assets/AssetManagerBase.hpp
 		Sources/Assets/Asset.cpp
 		Includes/Imagine/Assets/Asset.hpp
+		Includes/Imagine/Assets/AssetField.decl.hpp
+		Includes/Imagine/Assets/AssetField.forward.hpp
+		Includes/Imagine/Assets/AssetField.hpp
+		Includes/Imagine/Assets/AssetField.impl.hpp
+		Includes/Imagine/Assets/AssetManager.hpp
 		Includes/Imagine/Core/InternalCore.hpp
 		Includes/Imagine/Events/CoreEvents.hpp
+		Sources/Rendering/CPU/CPUMaterial.cpp
+		Includes/Imagine/Rendering/CPU/CPUMaterial.hpp
+		Sources/Rendering/CPU/CPUMaterialInstance.cpp
+		Includes/Imagine/Rendering/CPU/CPUMaterialInstance.hpp
+		Sources/Rendering/MaterialComponents.cpp
+		Includes/Imagine/Rendering/MaterialComponents.hpp
+		Sources/Rendering/CPU/CPUTexture2D.cpp
+		Includes/Imagine/Rendering/CPU/CPUTexture2D.hpp
+		Sources/Rendering/CPU/CPUTexture3D.cpp
+		Includes/Imagine/Rendering/CPU/CPUTexture3D.hpp
+		Sources/Rendering/CPU/CPUShader.cpp
+		Includes/Imagine/Rendering/CPU/CPUShader.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

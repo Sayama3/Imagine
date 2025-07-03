@@ -37,5 +37,10 @@
 
 #include "Imagine/Project/Project.hpp"
 
+#include "Imagine/Assets/AssetField.hpp"
+#include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Assets/AssetMetadata.hpp"
+#include "Imagine/Assets/AssetManager.hpp"
+
 namespace Imagine::Core {
 } // namespace Imagine::Core
