@@ -7,4 +7,13 @@
 
 namespace Imagine::Core {
 
-}
+	ProjectSerializer::ProjectSerializer(Ref<Project>) {
+	}
+
+	bool ProjectSerializer::Serialize(const std::filesystem::path &filepath) {
+		return false;
+	}
+	bool ProjectSerializer::Deserialize(const std::filesystem::path &filepath) {
+		return false;
+	}
+} // namespace Imagine::Core

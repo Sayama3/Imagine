@@ -28,8 +28,6 @@ namespace Imagine::Core
 		std::optional<AssetHandle> defaultShaderId{std::nullopt};
 		std::optional<AssetHandle> deferredShaderId{std::nullopt};
 		std::optional<AssetHandle> gizmoShaderId{std::nullopt};
-
-		//TODO: Add script path once i've got scripting (i.e. C#/Lua/...).
 	};
 
 
