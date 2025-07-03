@@ -46,6 +46,8 @@ set(MESHOPT_WERROR OFF) # Treat warnings as errors
 set(MESHOPT_INSTALL OFF) # Install library
 add_subdirectory(meshoptimizer)
 
+add_subdirectory(bitsery)
+
 # ===== Window Libraries =====
 
 if(MGN_WINDOW_GLFW)
@@ -107,3 +109,4 @@ if(MGN_IMGUI)
 		target_link_libraries(imgui PUBLIC Vulkan::Vulkan)
 	endif()
 endif()
+

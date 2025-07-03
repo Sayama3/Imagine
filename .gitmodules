@@ -38,3 +38,6 @@
 [submodule "Libraries/volk"]
 	path = Libraries/volk
 	url = https://github.com/zeux/volk.git
+[submodule "Libraries/bitsery"]
+	path = Libraries/bitsery
+	url = https://github.com/fraillt/bitsery.git
