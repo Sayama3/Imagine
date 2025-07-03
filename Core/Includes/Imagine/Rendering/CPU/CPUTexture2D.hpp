@@ -11,8 +11,8 @@ namespace Imagine::Core {
 	class CPUTexture2D final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
-	private:
-		Image<uint8_t> m_Image;
+	public:
+		Image<uint8_t> image;
 	};
 
 } // namespace Imagine::Core

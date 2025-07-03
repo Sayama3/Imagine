@@ -145,6 +145,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/CPU/CPUTexture3D.hpp
 		Sources/Rendering/CPU/CPUShader.cpp
 		Includes/Imagine/Rendering/CPU/CPUShader.hpp
+		Includes/Imagine/Rendering/GPU/GPUMaterial.hpp
+		Includes/Imagine/Rendering/GPU/GPUMaterialInstance.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
