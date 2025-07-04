@@ -77,6 +77,9 @@ namespace Imagine::Core {
 		return buffer;
 	}
 
+	MaterialSet::MaterialSet(const std::initializer_list<MaterialBlock> &blocks) : Blocks(blocks) {
+	}
+
 	MaterialSet MaterialSet::GetSceneSet() {
 		return {MaterialBlock::GetSceneBlock()};
 	}

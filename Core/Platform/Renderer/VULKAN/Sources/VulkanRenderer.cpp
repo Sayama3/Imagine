@@ -19,8 +19,9 @@
 
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
-#include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Application/Window.hpp"
+#include "Imagine/Assets/AssetManager.hpp"
+#include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
@@ -99,7 +100,8 @@ namespace Imagine::Vulkan {
 		return VK_FALSE; // Applications must return false here (Except Validation, if return true, will skip calling to driver)
 	}
 
-	VulkanRenderer::VulkanRenderer(const ApplicationParameters &appParams) : Renderer(), m_AppParams(appParams) {
+	VulkanRenderer::VulkanRenderer(const ApplicationParameters &appParams) :
+		Renderer(), m_AppParams(appParams) {
 		MGN_PROFILE_FUNCTION();
 
 		InitializeVulkan();
@@ -275,8 +277,8 @@ namespace Imagine::Vulkan {
 		// draw image size will match the window
 		// Max screen size currently usable is Samsung G3 {7680u, 2160u}
 		VkExtent3D drawImageExtent = {
-				std::min(maxDrawImage.width,std::max(7680u, framebufferSize.width)),
-				std::min(maxDrawImage.height,std::max(2160u, framebufferSize.height)),
+				std::min(maxDrawImage.width, std::max(7680u, framebufferSize.width)),
+				std::min(maxDrawImage.height, std::max(2160u, framebufferSize.height)),
 				1};
 
 		// hardcoding the draw format to 16-bit float
@@ -992,7 +994,7 @@ namespace Imagine::Vulkan {
 	}
 
 	bool VulkanRenderer::Resize() {
-		if(m_IsDrawing) {
+		if (m_IsDrawing) {
 			m_ResizeRequested = true;
 			return false;
 		}
@@ -1169,7 +1171,7 @@ namespace Imagine::Vulkan {
 #ifdef MGN_IMGUI
 		MGN_PROFILE_FUNCTION();
 
-		ImGui::SetNextWindowSize({400,600}, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({400, 600}, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Background")) {
 
 			ComputeEffect &selected = m_BackgroundEffects[m_CurrentBackgroundEffect];
@@ -1201,7 +1203,7 @@ namespace Imagine::Vulkan {
 		ImGui::End();
 
 
-		ImGui::SetNextWindowSize({400,400}, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({400, 400}, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Rendering")) {
 			const ImVec2 pos = ImGui::GetCursorScreenPos();
 			const ImVec2 size = ImGui::GetContentRegionAvail();
@@ -1211,7 +1213,7 @@ namespace Imagine::Vulkan {
 			if (m_ViewportFocused != viewportFocused) {
 				MgnImGui::SetEventsBlocked(!viewportFocused);
 				m_ViewportFocused = viewportFocused;
-				//TODO: Launch event for viewport focus changed.
+				// TODO: Launch event for viewport focus changed.
 			}
 
 			m_ImGuiViewport = {pos.x, pos.y, pos.x + size.x, pos.y + size.y};
@@ -1246,9 +1248,174 @@ namespace Imagine::Vulkan {
 	}
 	Ref<GPUMaterial> VulkanRenderer::LoadMaterial(const CPUMaterial &material) {
 		MGN_PROFILE_FUNCTION();
-		MGN_CORE_ERROR("Not Implemented.");
-		return nullptr;
+
+		Ref<VulkanMaterial> gpuMaterial = CreateRef<VulkanMaterial>();
+
+		std::array<VkShaderModule, 5> shaderModules{nullptr};
+
+		for (uint32_t i = 0; i < material.shaders.size(); ++i) {
+			Ref<CPUShader> shader = AssetManager::GetAssetAs<CPUShader>(material.shaders[i]);
+			if (!shader) continue;
+			if (!CHECK_SHADER_STAGE_BIT(shader->stage, BIT(i))) {
+				MGN_CORE_ERROR("Shader {} stage {} is not {}", shader->GetName(), shader->stage, (ShaderStage) BIT(i));
+				continue;
+			}
+			if (!Utils::LoadShaderModule(shader->GetShaderContent(), m_Device, &shaderModules[i])) {
+				MGN_CORE_ERROR("[Vulkan] Error when building the shader module {}.", shader->GetName());
+			}
+		}
+
+		// Create layouts
+		{
+			std::vector<std::pair<DescriptorLayoutBuilder, VkShaderStageFlagBits>> layoutBuilders;
+			layoutBuilders.resize(material.layout.Sets.size());
+			for (uint32_t i = 0; i < material.layout.Sets.size(); ++i) {
+				auto &[layoutBuilder, stages] = layoutBuilders[i];
+				uint32_t binding{0};
+				auto &set = material.layout.Sets[i];
+				stages = Utils::GetShaderStageFlagsBits(set.Stages);
+
+				for (uint32_t i = 0; i < set.Blocks.size(); ++i) {
+					auto &block = set.Blocks[i];
+					bool bufferToAdd = false;
+					for (uint32_t i = 0; i < block.fields.size(); ++i) {
+						auto &field = block.fields[i];
+						if (IsBufferType(field.type)) {
+							bufferToAdd = true;
+						}
+						else {
+							if (bufferToAdd) {
+								switch (block.bufferType) {
+									case MaterialBlock::SSBO:
+										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+										break;
+									case MaterialBlock::Uniform:
+										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+										break;
+								}
+								bufferToAdd = false;
+							}
+							switch (field.type) {
+								case MaterialType::VirtualTexture3D:
+								case MaterialType::VirtualTexture2D:
+									layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+									break;
+								case MaterialType::Cubemap:
+								case MaterialType::Texture2D:
+								case MaterialType::Texture3D:
+									layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+									break;
+								default:
+									MGN_CORE_ASSERT(false, "The type {} should already have been handled.", field.type);
+									break;
+							}
+						}
+					}
+					if (bufferToAdd) {
+						switch (block.bufferType) {
+							case MaterialBlock::SSBO:
+								layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+								break;
+							case MaterialBlock::Uniform:
+								layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+								break;
+						}
+						bufferToAdd = false;
+					}
+				}
+			}
+
+			gpuMaterial->materialLayouts.resize(layoutBuilders.size());
+			for (uint32_t i = 0; i < layoutBuilders.size(); ++i) {
+				gpuMaterial->materialLayouts[i] = layoutBuilders[i].first.Build(m_Device, layoutBuilders[i].second);
+			}
+		}
+
+
+		{
+			VkPushConstantRange pcr{};
+			for (uint32_t i = 0; i < material.layout.PushConstants.size(); ++i) {
+				const auto &pc = material.layout.PushConstants[i];
+				pcr.stageFlags = Utils::GetShaderStageFlagsBits(pc.Stages);
+				pcr.offset = pc.offset;
+				pcr.size = 0u;
+				for (uint32_t i = 0; i < pc.Block.fields.size(); ++i) {
+					auto &field = pc.Block.fields[i];
+					if (!IsBufferType(field.type)) continue;
+					pcr.size += field.GetSize() * field.count;
+				}
+				gpuMaterial->pushConstants.push_back(pcr);
+			}
+		}
+
+
+		VkPipelineLayoutCreateInfo materialLayoutInfo = Initializer::PipelineLayoutCreateInfo();
+		if (!gpuMaterial->materialLayouts.empty()) {
+			materialLayoutInfo.setLayoutCount = gpuMaterial->materialLayouts.size();
+			materialLayoutInfo.pSetLayouts = gpuMaterial->materialLayouts.data();
+		}
+
+		if (!gpuMaterial->pushConstants.empty()) {
+			materialLayoutInfo.pushConstantRangeCount = gpuMaterial->pushConstants.size();
+			materialLayoutInfo.pPushConstantRanges = gpuMaterial->pushConstants.data();
+		}
+
+
+		VK_CHECK(vkCreatePipelineLayout(m_Device, &materialLayoutInfo, nullptr, &gpuMaterial->pipeline.layout));
+
+		PipelineBuilder builder{gpuMaterial->pipeline.layout};
+		builder
+				.DisableBlending()
+				.SetPolygonMode(VK_POLYGON_MODE_FILL)
+				.SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE)
+				.EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
+				.SetMultisamplingNone()
+				// Render Format
+				.SetColorAttachmentFormat(GetColorImageFormat())
+				.SetDepthFormat(GetDepthImageFormat());
+
+		for (int i = 0; i < shaderModules.size(); ++i) {
+			if (!shaderModules[i]) continue;
+			builder.AddShader(static_cast<Core::ShaderStage>(BIT(i)), shaderModules[i]);
+		}
+
+		switch (material.pass) {
+			case MaterialPass::Other:
+			case MaterialPass::MainColor:
+				builder.DisableBlending();
+				builder.EnableDepthTest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
+				break;
+			case MaterialPass::Transparent:
+				builder.EnableBlendingAdditive();
+				builder.EnableDepthTest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
+				break;
+		}
+
+		switch (material.topology) {
+			case Topology::Triangle:
+				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+				switch (material.mode) {
+					case MaterialFilling::Fill:
+						builder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+						break;
+					case MaterialFilling::Wire:
+						builder.SetPolygonMode(VK_POLYGON_MODE_LINE);
+						break;
+				}
+				break;
+			case Topology::Line:
+				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+				break;
+			case Topology::Point:
+				MGN_CORE_ASSERT(false, "The point topology is not supported yet.");
+				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+				break;
+		}
+
+		gpuMaterial->pipeline.pipeline = builder.BuildPipeline(m_Device);
+		return gpuMaterial;
 	}
+
 	Ref<GPUMaterialInstance> VulkanRenderer::LoadMaterialInstance(const CPUMaterialInstance &instance) {
 		MGN_PROFILE_FUNCTION();
 		MGN_CORE_ERROR("Not Implemented.");
@@ -1258,7 +1425,7 @@ namespace Imagine::Vulkan {
 		MGN_PROFILE_FUNCTION();
 		Ref<VulkanTexture2D> vkTex2d = CreateRef<VulkanTexture2D>();
 
-		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width,tex2d.image.height, 1}, Utils::GetImageVkFormat(tex2d.image), VK_IMAGE_USAGE_SAMPLED_BIT, true);
+		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width, tex2d.image.height, 1}, Utils::GetImageVkFormat(tex2d.image), VK_IMAGE_USAGE_SAMPLED_BIT, true);
 
 		return vkTex2d;
 	}
@@ -1266,7 +1433,7 @@ namespace Imagine::Vulkan {
 		MGN_PROFILE_FUNCTION();
 		Ref<VulkanTexture3D> vkTex3d = CreateRef<VulkanTexture3D>();
 
-		vkTex3d->image = CreateImage(tex3d.Buffer.Get(), {tex3d.width,tex3d.height, tex3d.depth}, Utils::GetImageVkFormat(tex3d.pixelType, tex3d.channels), VK_IMAGE_USAGE_SAMPLED_BIT, false);
+		vkTex3d->image = CreateImage(tex3d.Buffer.Get(), {tex3d.width, tex3d.height, tex3d.depth}, Utils::GetImageVkFormat(tex3d.pixelType, tex3d.channels), VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
 		return vkTex3d;
 	}
@@ -1306,8 +1473,8 @@ namespace Imagine::Vulkan {
 		std::vector<ManualDeleteMeshAsset> lineMeshes;
 		ManualDeleteMeshAsset pointMesh;
 		if (!ctx.OpaqueLines.empty()) {
-			for (const LineObject & line: ctx.OpaqueLines) {
-				lineMeshes.emplace_back(std::move(Initializer::LoadManualLines(this, {(LineObject*)&line, 1})));
+			for (const LineObject &line: ctx.OpaqueLines) {
+				lineMeshes.emplace_back(std::move(Initializer::LoadManualLines(this, {(LineObject *) &line, 1})));
 				PushCurrentFrameDeletion(lineMeshes.back().meshBuffers.indexBuffer.allocation, lineMeshes.back().meshBuffers.indexBuffer.buffer);
 				PushCurrentFrameDeletion(lineMeshes.back().meshBuffers.vertexBuffer.allocation, lineMeshes.back().meshBuffers.vertexBuffer.buffer);
 			}

@@ -72,6 +72,8 @@ namespace Imagine::Vulkan {
 
 	public:
 		GPUMeshBuffers UploadMesh(Core::ConstBufferView indices, Core::ConstBufferView vertices);
+
+	public:
 		void PushDeletion(Deleter::VkType data) {
 			m_MainDeletionQueue.push(std::move(data));
 		}

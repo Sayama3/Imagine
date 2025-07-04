@@ -22,6 +22,7 @@ namespace Imagine::Core {
 		std::array<AssetHandle, 5> shaders;
 		MaterialPass pass = MaterialPass::MainColor;
 		Topology topology = Topology::Triangle;
+		MaterialFilling mode = MaterialFilling::Fill;
 		Ref<GPUMaterial> gpu{nullptr};
 	};
 

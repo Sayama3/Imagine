@@ -6,6 +6,7 @@
 
 #include <vulkan/vulkan.h>
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/GPU/GPUMaterial.hpp"
 #include "Imagine/Rendering/GPU/GPUMaterialInstance.hpp"
 #include "Imagine/Rendering/MaterialComponents.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
@@ -30,6 +31,13 @@ namespace Imagine::Vulkan {
 		VulkanMaterialPipeline *pipeline;
 		VkDescriptorSet materialSet;
 		Core::MaterialPass passType;
+	};
+
+	struct VulkanMaterial : public Core::GPUMaterial {
+		virtual uint64_t GetID() override;
+		VulkanMaterialPipeline pipeline;
+		std::vector<VkDescriptorSetLayout> materialLayouts;
+		std::vector<VkPushConstantRange> pushConstants;
 	};
 
 	struct GLTFMetallicRoughness {

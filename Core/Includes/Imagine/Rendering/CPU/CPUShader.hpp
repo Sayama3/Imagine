@@ -15,6 +15,7 @@ namespace Imagine::Core {
 		MGN_IMPLEMENT_ASSET(AssetType::ShaderSource);
 	public:
 		virtual Buffer GetShaderContent() = 0;
+		virtual std::string GetName() = 0;
 	public:
 		ShaderStage stage;
 	};
@@ -22,15 +23,16 @@ namespace Imagine::Core {
 	class CPUFileShader final : public CPUShader {
 	public:
 		virtual Buffer GetShaderContent() override;
-	public:
+		virtual std::string GetName() override;
 		Path path;
 	};
 
 	class CPUMemoryShader final : public CPUShader {
 	public:
 		virtual Buffer GetShaderContent() override;
-	public:
+		virtual std::string GetName() override;
 		Buffer shader;
+		std::string name;
 	};
 
 } // namespace Imagine::Core
