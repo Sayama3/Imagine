@@ -24,6 +24,7 @@
 #include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Rendering/Camera.hpp"
+#include "Imagine/Rendering/VirtualTextures.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
@@ -454,11 +455,11 @@ namespace Imagine::Vulkan {
 
 		m_MetalRoughMaterial.topology = Topology::Triangle;
 		m_MetalRoughMaterial.BuildPipeline(this);
-		m_MainDeletionQueue.push(m_MetalRoughMaterial);
+		m_MainDeletionQueue.push([this](){m_MetalRoughMaterial.ClearResources(m_Device);});
 
 		m_LineMetalRoughMaterial.topology = Topology::Line;
 		m_LineMetalRoughMaterial.BuildPipeline(this);
-		m_MainDeletionQueue.push(m_LineMetalRoughMaterial);
+		m_MainDeletionQueue.push([this](){m_LineMetalRoughMaterial.ClearResources(m_Device);});
 
 		// m_PointMetalRoughMaterial.topology = Topology::Point;
 		// m_PointMetalRoughMaterial.BuildPipeline(this);
@@ -1269,65 +1270,64 @@ namespace Imagine::Vulkan {
 		{
 			std::vector<std::pair<DescriptorLayoutBuilder, VkShaderStageFlagBits>> layoutBuilders;
 			layoutBuilders.resize(material.layout.Sets.size());
-			for (uint32_t i = 0; i < material.layout.Sets.size(); ++i) {
-				auto &[layoutBuilder, stages] = layoutBuilders[i];
+			gpuMaterial->materialLayouts.resize(layoutBuilders.size());
+			gpuMaterial->materialLayoutsDescriptions.resize(layoutBuilders.size());
+
+			for (uint32_t setIndex = 0; setIndex < material.layout.Sets.size(); ++setIndex) {
+				auto &[layoutBuilder, stages] = layoutBuilders[setIndex];
 				uint32_t binding{0};
-				auto &set = material.layout.Sets[i];
+				const auto &set = material.layout.Sets[setIndex];
 				stages = Utils::GetShaderStageFlagsBits(set.Stages);
 
-				for (uint32_t i = 0; i < set.Blocks.size(); ++i) {
-					auto &block = set.Blocks[i];
-					bool bufferToAdd = false;
-					for (uint32_t i = 0; i < block.fields.size(); ++i) {
-						auto &field = block.fields[i];
-						if (IsBufferType(field.type)) {
-							bufferToAdd = true;
-						}
-						else {
-							if (bufferToAdd) {
-								switch (block.bufferType) {
-									case MaterialBlock::SSBO:
-										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				for (uint32_t blockIndex = 0; blockIndex < set.Blocks.size(); ++blockIndex) {
+					const auto &block = set.Blocks[blockIndex];
+					VkDescriptorType bufferType;
+					switch (block.bufferType) {
+						case MaterialBlock::SSBO:
+							bufferType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+							break;
+						case MaterialBlock::Uniform:
+							bufferType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+							break;
+					}
+
+					if (block.IsABuffer()) {
+						gpuMaterial->materialLayoutsDescriptions[setIndex].bindings.push_back(block);
+						layoutBuilder.AddBinding(binding++, bufferType);
+					}
+					else {
+						for (uint32_t fieldIndex = 0; fieldIndex < block.fields.size(); ++fieldIndex) {
+							const auto &field = block.fields[fieldIndex];
+							gpuMaterial->materialLayoutsDescriptions[setIndex].bindings.push_back({field});
+
+							auto &bindingBlock = gpuMaterial->materialLayoutsDescriptions[setIndex].bindings.back();
+							bindingBlock.bufferType = block.bufferType;
+							bindingBlock.read = block.read;
+							bindingBlock.write = block.write;
+
+							if (Helper::IsBufferType(field.type)) {
+								layoutBuilder.AddBinding(binding++, bufferType);
+							}
+							else {
+								switch (field.type) {
+									case MaterialType::VirtualTexture3D:
+									case MaterialType::VirtualTexture2D:
+										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 										break;
-									case MaterialBlock::Uniform:
-										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+									case MaterialType::Cubemap:
+									case MaterialType::Texture2D:
+									case MaterialType::Texture3D:
+										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+										break;
+									default:
+										MGN_CORE_ASSERT(false, "The type {} should already have been handled.", field.type);
 										break;
 								}
-								bufferToAdd = false;
-							}
-							switch (field.type) {
-								case MaterialType::VirtualTexture3D:
-								case MaterialType::VirtualTexture2D:
-									layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-									break;
-								case MaterialType::Cubemap:
-								case MaterialType::Texture2D:
-								case MaterialType::Texture3D:
-									layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-									break;
-								default:
-									MGN_CORE_ASSERT(false, "The type {} should already have been handled.", field.type);
-									break;
 							}
 						}
-					}
-					if (bufferToAdd) {
-						switch (block.bufferType) {
-							case MaterialBlock::SSBO:
-								layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-								break;
-							case MaterialBlock::Uniform:
-								layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-								break;
-						}
-						bufferToAdd = false;
 					}
 				}
-			}
-
-			gpuMaterial->materialLayouts.resize(layoutBuilders.size());
-			for (uint32_t i = 0; i < layoutBuilders.size(); ++i) {
-				gpuMaterial->materialLayouts[i] = layoutBuilders[i].first.Build(m_Device, layoutBuilders[i].second);
+				gpuMaterial->materialLayouts[setIndex] = layoutBuilders[setIndex].first.Build(m_Device, layoutBuilders[setIndex].second);
 			}
 		}
 
@@ -1335,14 +1335,16 @@ namespace Imagine::Vulkan {
 		{
 			VkPushConstantRange pcr{};
 			for (uint32_t i = 0; i < material.layout.PushConstants.size(); ++i) {
+				gpuMaterial->pushConstantsDescription.emplace_back();
 				const auto &pc = material.layout.PushConstants[i];
 				pcr.stageFlags = Utils::GetShaderStageFlagsBits(pc.Stages);
 				pcr.offset = pc.offset;
 				pcr.size = 0u;
 				for (uint32_t i = 0; i < pc.Block.fields.size(); ++i) {
 					auto &field = pc.Block.fields[i];
-					if (!IsBufferType(field.type)) continue;
-					pcr.size += field.GetSize() * field.count;
+					if (!Helper::IsBufferType(field.type)) continue;
+					gpuMaterial->pushConstantsDescription.back().fields.push_back(field);
+					pcr.size += field.GetSize();
 				}
 				gpuMaterial->pushConstants.push_back(pcr);
 			}
@@ -1418,22 +1420,170 @@ namespace Imagine::Vulkan {
 
 	Ref<GPUMaterialInstance> VulkanRenderer::LoadMaterialInstance(const CPUMaterialInstance &instance) {
 		MGN_PROFILE_FUNCTION();
-		MGN_CORE_ERROR("Not Implemented.");
-		return nullptr;
+		Ref<CPUMaterial> material = AssetManager::GetAssetAs<CPUMaterial>(instance.Material);
+
+		if (!material) {
+			MGN_CORE_ERROR("The CPU Material {} doesn't exist. Cannot create a material instance without one.", instance.Material);
+			return nullptr;
+		}
+
+		if (!material->gpu) {
+			MGN_CORE_ERROR("The GPU Material of the CPU Material {} hasn't been created. Cannot create a material instance without one.", instance.Material);
+			return nullptr;
+		}
+		Ref<VulkanMaterial> vkMaterial = CastPtr<VulkanMaterial>(material->gpu);
+		Ref<VulkanMaterialInstance> vkInstance = CreateRef<VulkanMaterialInstance>();
+		vkInstance->material = vkMaterial;
+		vkInstance->deleter = CreateRef<Deleter>();
+
+		vkInstance->passType = material->pass;
+		DescriptorWriter writer;
+
+		// Set material set data.
+		vkInstance->materialSets.reserve(vkMaterial->materialLayoutsDescriptions.size());
+		vkInstance->materialSetVulkanData.reserve(vkMaterial->materialLayoutsDescriptions.size());
+		for (uint32_t setIndex = 0; setIndex < vkMaterial->materialLayoutsDescriptions.size(); ++setIndex) {
+			vkInstance->materialSets.push_back(m_GlobalDescriptorAllocator.Allocate(m_Device, vkMaterial->materialLayouts[setIndex]));
+			vkInstance->materialSetVulkanData.emplace_back();
+			vkInstance->materialSetVulkanData.back().reserve(vkMaterial->materialLayoutsDescriptions[setIndex].bindings.size());
+			writer.Clear();
+			for (uint32_t bindingIndex = 0; bindingIndex < vkMaterial->materialLayoutsDescriptions[setIndex].bindings.size(); ++bindingIndex) {
+				const auto &binding = vkMaterial->materialLayoutsDescriptions[setIndex].bindings[bindingIndex];
+
+				if (binding.IsABuffer()) {
+					VkBufferUsageFlagBits usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+					VkDescriptorType type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+					switch (binding.bufferType) {
+						case MaterialBlock::SSBO:
+							usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+							type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+							break;
+						case MaterialBlock::Uniform:
+							usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+							type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+							break;
+					}
+
+					Buffer buffer = binding.GetCompactBuffer();
+					AllocatedBuffer vkBuffer = CreateBuffer(buffer.Size(), usage, VMA_MEMORY_USAGE_CPU_TO_GPU);
+					vkInstance->materialSetVulkanData.back().push_back(vkBuffer);
+					vkInstance->deleter->push(m_Allocator, vkBuffer.allocation, vkBuffer.buffer);
+					uint32_t offset{0};
+					for (uint32_t fieldIndex = 0; fieldIndex < binding.fields.size(); ++fieldIndex) {
+						const auto &field = binding.fields[fieldIndex];
+						const CPUMaterialInstance::SetFieldPosition pos{setIndex, bindingIndex, fieldIndex};
+						if (instance.SetEditions.contains(pos)) {
+							const auto &buff = instance.SetEditions.at(pos);
+							memcpy(buffer.Get<uint8_t>() + offset, buff.data(), field.GetSize());
+						}
+						offset += field.GetSize();
+					}
+
+					memcpy(vkBuffer.allocation->GetMappedData(), buffer.Get(), buffer.Size());
+					writer.WriteBuffer(static_cast<int>(bindingIndex), vkBuffer.buffer, buffer.Size(), 0, type);
+				}
+				else {
+					vkInstance->materialSetVulkanData.back().emplace_back(std::monostate{});
+					MGN_CORE_ASSERT(binding.fields.size() == 1, "[Vulkan] Nah, if it ain't a buffer it's alone.");
+					auto &field = binding.fields.back();
+					AssetHandle asset{NULL_ASSET_HANDLE};
+					bool isVirtual{false};
+					const CPUMaterialInstance::SetFieldPosition pos{setIndex, bindingIndex, 0};
+
+					if (instance.SetEditions.contains(pos)) {
+						asset = *(AssetHandle *) instance.SetEditions.at(pos).data();
+					}
+					else {
+						switch (field.type) {
+							case MaterialType::VirtualTexture2D:
+							case MaterialType::VirtualTexture3D:
+								asset = field.GetView().As<AssetHandle>();
+								isVirtual = true;
+								break;
+							case MaterialType::Texture2D:
+							case MaterialType::Texture3D:
+							case MaterialType::Cubemap:
+								asset = field.GetView().As<AssetHandle>();
+								isVirtual = false;
+								break;
+							default:
+								break;
+						}
+					}
+
+					VkImageView view = m_ErrorCheckerboardImage.imageView;
+					VkSampler sampler = m_DefaultSamplerNearest;
+					Ref<Asset> texture = AssetManager::GetAsset(asset);
+					switch (texture->GetType()) {
+						case AssetType::Texture2D: {
+							if (field.type != MaterialType::VirtualTexture2D && field.type != MaterialType::Texture2D) break;
+							if(isVirtual) {
+								auto gpuTex = CastPtr<VirtualTexture2D>(texture);
+								if(!gpuTex || !gpuTex->gpu) break;
+								auto vkTex = CastPtr<VulkanTexture2D>(gpuTex->gpu);
+								view = vkTex->image.imageView;
+								sampler = vkTex->sampler;
+							} else {
+								auto cpuTex = CastPtr<CPUTexture2D>(texture);
+								if(!cpuTex || !cpuTex->gpu) break;
+								auto vkTex = CastPtr<VulkanTexture2D>(cpuTex->gpu);
+								view = vkTex->image.imageView;
+								sampler = vkTex->sampler;
+							}
+						} break;
+						case AssetType::Texture3D: {
+							if (field.type != MaterialType::VirtualTexture3D && field.type != MaterialType::Texture3D) break;
+							if(isVirtual) {
+								auto gpuTex = CastPtr<VirtualTexture3D>(texture);
+								if(!gpuTex || !gpuTex->gpu) break;
+								auto vkTex = CastPtr<VulkanTexture3D>(gpuTex->gpu);
+								view = vkTex->image.imageView;
+								sampler = vkTex->sampler;
+							} else {
+								auto cpuTex = CastPtr<CPUTexture3D>(texture);
+								if(!cpuTex || !cpuTex->gpu) break;
+								auto vkTex = CastPtr<VulkanTexture3D>(cpuTex->gpu);
+								view = vkTex->image.imageView;
+								sampler = vkTex->sampler;
+							}
+						} break;
+						case AssetType::CubeMap:
+							//TODO: Implement the cubemap.
+							break;
+						default:
+							break;
+					}
+
+					if (isVirtual) {
+						writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+					} else {
+						writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					}
+				}
+			}
+
+			writer.UpdateSet(m_Device, vkInstance->materialSets.back());
+		}
+
+		return vkInstance;
 	}
+
 	Ref<GPUTexture2D> VulkanRenderer::LoadTexture2D(const CPUTexture2D &tex2d) {
 		MGN_PROFILE_FUNCTION();
 		Ref<VulkanTexture2D> vkTex2d = CreateRef<VulkanTexture2D>();
 
 		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width, tex2d.image.height, 1}, Utils::GetImageVkFormat(tex2d.image), VK_IMAGE_USAGE_SAMPLED_BIT, true);
+		vkTex2d->sampler = m_DefaultSamplerLinear;
 
 		return vkTex2d;
 	}
+
 	Ref<GPUTexture3D> VulkanRenderer::LoadTexture3D(const CPUTexture3D &tex3d) {
 		MGN_PROFILE_FUNCTION();
 		Ref<VulkanTexture3D> vkTex3d = CreateRef<VulkanTexture3D>();
 
 		vkTex3d->image = CreateImage(tex3d.Buffer.Get(), {tex3d.width, tex3d.height, tex3d.depth}, Utils::GetImageVkFormat(tex3d.pixelType, tex3d.channels), VK_IMAGE_USAGE_SAMPLED_BIT, false);
+		vkTex3d->sampler = m_DefaultSamplerLinear;
 
 		return vkTex3d;
 	}
@@ -1538,19 +1688,21 @@ namespace Imagine::Vulkan {
 
 			// TODO: Get the real material from the LOD.
 			const VulkanMaterialInstance *material = GetDefaultMeshMaterial().get();
+			if (auto vkMat = material->material.lock()) {
 
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
+				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
 
-			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-			GPUDrawPushConstants pushConstants;
-			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-			pushConstants.worldMatrix = draw.transform;
-			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+				GPUDrawPushConstants pushConstants;
+				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+				pushConstants.worldMatrix = draw.transform;
+				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
-			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+			}
 		}
 
 		for (uint64_t i = 0; i < lineMeshes.size(); ++i) {
@@ -1563,18 +1715,20 @@ namespace Imagine::Vulkan {
 			// TODO: Get the real material from the LOD.
 			const VulkanMaterialInstance *material = GetDefaultLineMaterial().get();
 
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 1, 1, &material->materialSet, 0, nullptr);
+			if (auto vkMat = material->material.lock()) {
+				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
 
-			vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-			GPUDrawPushConstants pushConstants;
-			pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-			pushConstants.worldMatrix = Math::Identity<glm::mat4>();
-			vkCmdPushConstants(cmd, material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+				GPUDrawPushConstants pushConstants;
+				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+				pushConstants.worldMatrix = Math::Identity<glm::mat4>();
+				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
-			vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+			}
 		}
 
 		// if (pointMesh) {

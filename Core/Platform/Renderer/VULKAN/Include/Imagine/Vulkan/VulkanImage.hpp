@@ -29,6 +29,7 @@ namespace Imagine::Vulkan {
 		virtual uint64_t GetID() override;
 
 		AllocatedImage image;
+		VkSampler sampler;
 	};
 
 	struct VulkanTexture3D final : public Core::GPUTexture3D {
@@ -40,6 +41,7 @@ namespace Imagine::Vulkan {
 		virtual uint64_t GetID() override;
 
 		AllocatedImage image;
+		VkSampler sampler;
 	};
 
 	struct VulkanImGuiImage : public Core::ImGuiImage {

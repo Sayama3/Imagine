@@ -6,10 +6,9 @@
 
 #include <vk_mem_alloc.h>
 #include "Imagine/Core/Macros.hpp"
-#include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
-#include "Imagine/Vulkan/VulkanMaterial.hpp"
+
 
 namespace Imagine::Vulkan {
 	class Deleter;
@@ -25,10 +24,10 @@ namespace Imagine::Vulkan {
 			VmaType data;
 		};
 	public:
-		using ShutdownFunction = void (*)();
+		using ShutdownFunction = std::function<void(void)>;
 		using VmaImage = VmaObject<VkImage>;
 		using VmaBuffer = VmaObject<VkBuffer>;
-		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool, DescriptorAllocatorGrowable, VkSampler, GLTFMetallicRoughness, VulkanImGuiImage, DeleterPtr, SharedDeleter>;
+		using VkType = std::variant<VmaAllocator, VkFence, VkSemaphore, VkCommandPool, VmaImage, VmaBuffer, VkImageView, VkDescriptorSetLayout, DescriptorAllocator, VkPipeline, VkPipelineLayout, ShutdownFunction, VkDescriptorPool, DescriptorAllocatorGrowable, VkSampler, DeleterPtr, SharedDeleter>;
 	public:
 		Deleter() = default;
 		~Deleter() = default;

@@ -11,7 +11,9 @@
 #include "Imagine/Rendering/MaterialComponents.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
+#include "Imagine/Vulkan/VulkanDeleter.hpp"
 #include "Imagine/Vulkan/VulkanImage.hpp"
+#include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
 
@@ -22,28 +24,46 @@ namespace Imagine::Vulkan {
 		VkPipelineLayout layout;
 	};
 
-	struct VulkanMaterialInstance : public Core::GPUMaterialInstance {
-		VulkanMaterialInstance() = default;
-		virtual ~VulkanMaterialInstance() = default;
-
-		virtual uint64_t GetID() override;
-
-		VulkanMaterialPipeline *pipeline;
-		VkDescriptorSet materialSet;
-		Core::MaterialPass passType;
+	struct VulkanSetLayout {
+		std::vector<Core::MaterialBlock> bindings;
 	};
 
 	struct VulkanMaterial : public Core::GPUMaterial {
 		virtual uint64_t GetID() override;
 		VulkanMaterialPipeline pipeline;
+		std::vector<VulkanSetLayout> materialLayoutsDescriptions;
 		std::vector<VkDescriptorSetLayout> materialLayouts;
+
+		std::vector<Core::MaterialBlock> pushConstantsDescription;
 		std::vector<VkPushConstantRange> pushConstants;
 	};
 
+	struct VulkanMaterialInstance : public Core::GPUMaterialInstance {
+	private:
+		static inline uint64_t s_id;
+		uint64_t id;
+	public:
+		using VulkanBinding = std::variant<std::monostate, AllocatedImage, AllocatedBuffer>;
+		using VulkanBindingContainer = std::vector<VulkanBinding>;
+	public:
+		VulkanMaterialInstance();
+		virtual ~VulkanMaterialInstance();
+
+		virtual uint64_t GetID() override;
+
+		Core::Weak<VulkanMaterial> material;
+		std::vector<VulkanBindingContainer> materialSetVulkanData;
+		std::vector<VkDescriptorSet> materialSets;
+		Core::MaterialPass passType;
+		Core::Ref<Deleter> deleter;
+	};
+
 	struct GLTFMetallicRoughness {
-		VulkanMaterialPipeline opaquePipeline;
-		VulkanMaterialPipeline transparentPipeline;
-		VkDescriptorSetLayout materialLayout;
+		Core::Ref<VulkanMaterial> opaque;
+		Core::Ref<VulkanMaterial> transparent;
+		// VulkanMaterialPipeline opaquePipeline;
+		// VulkanMaterialPipeline transparentPipeline;
+		// VkDescriptorSetLayout materialLayout;
 		Core::Topology topology = Core::Topology::Triangle;
 
 		// Our target for Uniform Buffers is a 256 bytes alignments

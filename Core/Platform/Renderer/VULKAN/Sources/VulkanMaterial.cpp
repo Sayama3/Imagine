@@ -13,14 +13,29 @@ using namespace Imagine::Core;
 using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
-	uint64_t VulkanMaterialInstance::GetID() {
-		return reinterpret_cast<uint64_t>(this->materialSet);
+	VulkanMaterialInstance::VulkanMaterialInstance() :
+		passType(MaterialPass::MainColor) {
+		id = ++s_id;
 	}
+	VulkanMaterialInstance::~VulkanMaterialInstance() {
+		if (deleter) {
+			static_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(deleter);
+			deleter.reset();
+		}
+	}
+
+	uint64_t VulkanMaterialInstance::GetID() {
+		return id;
+	}
+
 	uint64_t VulkanMaterial::GetID() {
 		return reinterpret_cast<uint64_t>(pipeline.pipeline);
 	}
 	void GLTFMetallicRoughness::BuildPipeline(VulkanRenderer* renderer) {
 		MGN_CORE_ASSERT(renderer, "The current renderer is not a Vulkan renderer.");
+
+		opaque = CreateRef<VulkanMaterial>();
+		transparent = CreateRef<VulkanMaterial>();
 
 		// TODO: move the shader paths to parameters or change the way we obtains the shader.
 		//  Taking into account the fact that later the shader will come from data blob.
@@ -50,7 +65,10 @@ namespace Imagine::Vulkan {
 		//layoutBuilder.AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // Normal image
 		//layoutBuilder.AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // AO image
 
-		materialLayout = layoutBuilder.Build(renderer->GetDevice(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		auto materialLayout = layoutBuilder.Build(renderer->GetDevice(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+		opaque->materialLayouts.push_back(materialLayout);
+		transparent->materialLayouts.push_back(materialLayout);
 
 		VkDescriptorSetLayout layouts[] = {renderer->GetGPUSceneDescriptorLayout(), materialLayout};
 
@@ -65,8 +83,8 @@ namespace Imagine::Vulkan {
 		VK_CHECK(vkCreatePipelineLayout(renderer->GetDevice(), &meshLayoutInfo, nullptr, &newLayout));
 
 		// TODO: Change the layout with dedicated layout for each.
-		opaquePipeline.layout = newLayout;
-		transparentPipeline.layout = newLayout;
+		opaque->pipeline.layout = newLayout;
+		transparent->pipeline.layout = newLayout;
 
 		PipelineBuilder builder = PipelineBuilder()
 										  .SetPipelineLayout(newLayout)
@@ -94,25 +112,30 @@ namespace Imagine::Vulkan {
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 				break;
 		}
-		opaquePipeline.pipeline = builder.BuildPipeline(renderer->GetDevice());
+		opaque->pipeline.pipeline = builder.BuildPipeline(renderer->GetDevice());
 
 		builder.EnableBlendingAdditive();
 		builder.EnableDepthTest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-		transparentPipeline.pipeline = builder.BuildPipeline(renderer->GetDevice());
+		transparent->pipeline.pipeline = builder.BuildPipeline(renderer->GetDevice());
 
 		vkDestroyShaderModule(renderer->GetDevice(), meshFragShader, nullptr);
 		vkDestroyShaderModule(renderer->GetDevice(), meshVertexShader, nullptr);
 	}
 
 	void GLTFMetallicRoughness::ClearResources(VkDevice device) {
-		vkDestroyPipeline(device,opaquePipeline.pipeline,nullptr);
-		if (opaquePipeline.pipeline != transparentPipeline.pipeline) vkDestroyPipeline(device,transparentPipeline.pipeline,nullptr);
+		vkDestroyPipeline(device,opaque->pipeline.pipeline,nullptr);
+		if (opaque->pipeline.pipeline != transparent->pipeline.pipeline) vkDestroyPipeline(device,transparent->pipeline.pipeline,nullptr);
 
-		vkDestroyPipelineLayout(device,opaquePipeline.layout,nullptr);
-		if (opaquePipeline.layout != transparentPipeline.layout) vkDestroyPipelineLayout(device,transparentPipeline.layout,nullptr);
+		vkDestroyPipelineLayout(device,opaque->pipeline.layout,nullptr);
+		if (opaque->pipeline.layout != transparent->pipeline.layout) vkDestroyPipelineLayout(device,transparent->pipeline.layout,nullptr);
 
-		vkDestroyDescriptorSetLayout(device, materialLayout, nullptr);
+		for (auto& layout : opaque->materialLayouts) {
+			vkDestroyDescriptorSetLayout(device, layout, nullptr);
+		}
+
+		opaque.reset();
+		transparent.reset();
 	}
 
 	VulkanMaterialInstance GLTFMetallicRoughness::WriteMaterial(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable & descriptorAllocator) {
@@ -121,24 +144,27 @@ namespace Imagine::Vulkan {
 		instance.passType = pass;
 
 		if (pass == MaterialPass::Transparent) {
-			instance.pipeline = &transparentPipeline;
+			instance.material = transparent;
 		}
 		else {
-			instance.pipeline = &opaquePipeline;
+			instance.material = opaque;
 		}
 
-		instance.materialSet = descriptorAllocator.Allocate(device, materialLayout);
+		{
+			auto mat = instance.material.lock();
 
-		writer.Clear();
-		writer.WriteBuffer(0, resources.dataBuffer, sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		writer.WriteImage(1, resources.colorImage.imageView, resources.colorSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		writer.WriteImage(2, resources.metalImage.imageView, resources.metalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		// writer.WriteImage(3, resources.roughImage.imageView, resources.roughSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		// writer.WriteImage(4, resources.normalImage.imageView, resources.normalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		// writer.WriteImage(5, resources.aoImage.imageView, resources.aoSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		//TODO: Write a lot of other things.
-		writer.UpdateSet(device, instance.materialSet);
+			instance.materialSets.push_back(descriptorAllocator.Allocate(device, mat->materialLayouts.front()));
 
+			writer.Clear();
+			writer.WriteBuffer(0, resources.dataBuffer, sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+			writer.WriteImage(1, resources.colorImage.imageView, resources.colorSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			writer.WriteImage(2, resources.metalImage.imageView, resources.metalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			// writer.WriteImage(3, resources.roughImage.imageView, resources.roughSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			// writer.WriteImage(4, resources.normalImage.imageView, resources.normalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			// writer.WriteImage(5, resources.aoImage.imageView, resources.aoSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+			//TODO: Write a lot of other things.
+			writer.UpdateSet(device, instance.materialSets.front());
+		}
 		return instance;
 	}
 

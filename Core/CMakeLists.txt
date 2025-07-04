@@ -143,6 +143,7 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/GPU/GPUTexture2D.hpp
 		Includes/Imagine/Rendering/GPU/GPUTexture3D.hpp
 		Includes/Imagine/Rendering/GPU/GPUMesh.hpp
+		Includes/Imagine/Rendering/VirtualTextures.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

@@ -21,6 +21,30 @@ namespace Imagine::Core {
 		fields.push_back({std::move(name), type});
 	}
 
+	std::vector<MaterialBlock> MaterialBlock::SplitBlock() const {
+		std::vector<MaterialBlock> blocks{MaterialBlock{}};
+		for (uint32_t i = 0; i < fields.size(); ++i) {
+			if (Helper::IsBufferType(fields[i].type)) {
+				blocks.back().fields.push_back(fields[i]);
+			} else {
+				if (!blocks.empty()) blocks.emplace_back();
+				blocks.back().fields.push_back({fields[i]});
+				blocks.emplace_back();
+			}
+		}
+		return blocks;
+	}
+
+	bool MaterialBlock::IsABuffer() const {
+		for (const MaterialField &field: fields) {
+			if (!Helper::IsBufferType(field.type)) return false;
+		}
+		return true;
+	}
+	void MaterialBlock::Add(const MaterialBlock &block) {
+		fields.insert(fields.end(), block.fields.begin(), block.fields.end());
+	}
+
 	MaterialBlock::MaterialBlock(const MaterialField &field) :
 		fields(1, field) {
 	}
@@ -92,5 +116,17 @@ namespace Imagine::Core {
 				{"Normal Texture", MaterialType::Texture2D},
 				{"Ambien Occlusion Texture", MaterialType::Texture2D},
 		};
+	}
+
+	uint32_t MaterialSet::CountBindinds() const {
+		uint32_t count{0};
+		for (const MaterialBlock & block: Blocks) {
+			if (block.IsABuffer()) {
+				count += 1;
+			} else {
+				count += static_cast<uint32_t>(block.fields.size());
+			}
+		}
+		return count;
 	}
 } // namespace Imagine::Core

@@ -4,6 +4,8 @@
 
 #include "Imagine/Vulkan/VulkanDeleter.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Vulkan/VulkanMaterial.hpp"
+#include "Imagine/Vulkan/VulkanImage.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
 using namespace Imagine::Core;
@@ -67,12 +69,6 @@ namespace Imagine::Vulkan {
 			}
 			else if (DescriptorAllocatorGrowable *descriptorAllocatorGrowable = std::get_if<DescriptorAllocatorGrowable>(&type)) {
 				descriptorAllocatorGrowable->DestroyPools(device);
-			}
-			else if (GLTFMetallicRoughness *material = std::get_if<GLTFMetallicRoughness>(&type)) {
-				material->ClearResources(device);
-			}
-			else if (VulkanImGuiImage *imguiImage = std::get_if<VulkanImGuiImage>(&type)) {
-				VulkanImGuiImage::Remove(*imguiImage);
 			}
 			else if (DeleterPtr *sub_deleter = std::get_if<DeleterPtr>(&type)) {
 				(*sub_deleter)->flush(device);

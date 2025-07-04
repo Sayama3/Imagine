@@ -66,33 +66,35 @@ namespace Imagine::Core {
 		ExternalBuffer,
 	};
 
-	static inline constexpr bool IsBufferType(const MaterialType type) {
-		switch (type) {
-			case MaterialType::Float1:
-			case MaterialType::Float2:
-			case MaterialType::Float3:
-			case MaterialType::Float4:
-			case MaterialType::Color3:
-			case MaterialType::Color4:
-			case MaterialType::Int1:
-			case MaterialType::Int2:
-			case MaterialType::Int3:
-			case MaterialType::Int4:
-			case MaterialType::FMat2:
-			case MaterialType::FMat3:
-			case MaterialType::FMat4:
-			case MaterialType::IMat2:
-			case MaterialType::IMat3:
-			case MaterialType::IMat4:
-			case MaterialType::Vertex:
-			case MaterialType::ExternalBuffer:
-				return true;
-			default:
-				return false;
-		}
-	}
 
 	namespace Helper {
+
+		static inline constexpr bool IsBufferType(const MaterialType type) {
+			switch (type) {
+				case MaterialType::Float1:
+				case MaterialType::Float2:
+				case MaterialType::Float3:
+				case MaterialType::Float4:
+				case MaterialType::Color3:
+				case MaterialType::Color4:
+				case MaterialType::Int1:
+				case MaterialType::Int2:
+				case MaterialType::Int3:
+				case MaterialType::Int4:
+				case MaterialType::FMat2:
+				case MaterialType::FMat3:
+				case MaterialType::FMat4:
+				case MaterialType::IMat2:
+				case MaterialType::IMat3:
+				case MaterialType::IMat4:
+				case MaterialType::Vertex:
+				case MaterialType::ExternalBuffer:
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		[[nodiscard]] static constexpr std::string MaterialTypeString(const MaterialType type) {
 			switch (type) {
 				case MaterialType::None: return "None";
@@ -159,9 +161,9 @@ namespace Imagine::Core {
 				case MaterialType::IMat4:
 					return sizeof(int32_t) * 4u * 4u;
 				case MaterialType::VirtualTexture2D:
-					return sizeof(uint64_t); // Assuming to be some sort of GPU Handle.
+					return sizeof(AssetHandle); // Assuming to be some sort of GPU Handle.
 				case MaterialType::VirtualTexture3D:
-					return sizeof(uint64_t); // Assuming to be some sort of GPU Handle.
+					return sizeof(AssetHandle); // Assuming to be some sort of GPU Handle.
 				case MaterialType::Texture2D:
 					return sizeof(AssetHandle);
 				case MaterialType::Texture3D:
@@ -199,7 +201,6 @@ namespace Imagine::Core {
 		std::string name{};
 		// Preallocated data for all subsequent types.
 		std::array<uint8_t, DataSize> data{0};
-		uint32_t count{1};
 		MaterialType type{MaterialType::None};
 	};
 
@@ -275,12 +276,12 @@ namespace Imagine::Core {
 		MGN_CHECK_MAT_SIZE(glm::i32mat4x4, MaterialType::IMat4);
 		MGN_IMPLEMENT_MAT_TYPE(MaterialType::IMat4);
 	};
-	struct MaterialFieldVirtualTexture2D : public TMaterialField<uint64_t> {
-		MGN_CHECK_MAT_SIZE(uint64_t, MaterialType::VirtualTexture2D);
+	struct MaterialFieldVirtualTexture2D : public TMaterialField<AssetHandle> {
+		MGN_CHECK_MAT_SIZE(AssetHandle, MaterialType::VirtualTexture2D);
 		MGN_IMPLEMENT_MAT_TYPE(MaterialType::VirtualTexture2D);
 	};
-	struct MaterialFieldVirtualTexture3D : public TMaterialField<uint64_t> {
-		MGN_CHECK_MAT_SIZE(uint64_t, MaterialType::VirtualTexture3D);
+	struct MaterialFieldVirtualTexture3D : public TMaterialField<AssetHandle> {
+		MGN_CHECK_MAT_SIZE(AssetHandle, MaterialType::VirtualTexture3D);
 		MGN_IMPLEMENT_MAT_TYPE(MaterialType::VirtualTexture3D);
 	};
 	struct MaterialFieldTexture2D : public TMaterialField<AssetHandle> {
@@ -329,7 +330,10 @@ namespace Imagine::Core {
 
 	public:
 		void Push(std::string name, MaterialType type);
-
+		/// This function will separate the buffer from the non-buffer types and return a material block per optimal binding.
+		std::vector<MaterialBlock> SplitBlock() const;
+		bool IsABuffer() const;
+		void Add(const MaterialBlock& block);
 	public:
 		[[nodiscard]] uint64_t GetSize() const;
 		[[nodiscard]] Buffer GetCompactBuffer() const;
@@ -349,7 +353,8 @@ namespace Imagine::Core {
 
 		static MaterialSet GetSceneSet();
 		static MaterialSet GetPBRSet();
-
+	public:
+		uint32_t CountBindinds() const;
 	public:
 		std::vector<MaterialBlock> Blocks;
 		ShaderStage Stages{ShaderStage::All};
@@ -425,7 +430,6 @@ template<typename S>
 void serialize(S &s, Imagine::Core::MaterialField &mf) {
 	s.text1b(mf.name.c_str(), 32);
 	s.container1b(mf.data);
-	s.value4b(mf.count);
 	s.serialize(mf.type);
 }
 
