@@ -1041,7 +1041,7 @@ namespace Imagine::Vulkan {
 		}
 
 		{
-			MGN_PROFILE_SCOPE("Aquire Next Image");
+			MGN_PROFILE_SCOPE("Acquire Next Image");
 			// request image from the swapchain
 			VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &GetCurrentFrame().m_SwapchainImageIndex);
 
