@@ -19,8 +19,10 @@ namespace Imagine::Core {
 		return *this;
 	}
 	void CPUMesh::swap(CPUMesh &o) noexcept {
+		Name.swap(o.Name);
 		Vertices.swap(o.Vertices);
 		Indices.swap(o.Indices);
+		Lods.swap(o.Lods);
 	}
 
 	CPUMesh CPUMesh::LoadExternalModelAsMesh(const std::filesystem::path &p) {

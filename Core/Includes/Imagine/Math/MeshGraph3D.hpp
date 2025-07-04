@@ -8,7 +8,7 @@
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Core/UUID.hpp"
-#include "Imagine/Rendering/Vertex.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 #include "Types.hpp"
 
 #include <algorithm>
@@ -514,9 +514,9 @@ namespace Imagine::Math {
 
 		{
 			std::unordered_map<vec, VertexID> m_IDs;
-			m_IDMap.resize(vertices.Count<Imagine::Vertex>());
-			const Imagine::Vertex *array = vertices.Get<Imagine::Vertex>();
-			for (uint64_t i = 0; i < vertices.Count<Imagine::Vertex>(); ++i) {
+			m_IDMap.resize(vertices.Count<Imagine::Core::Vertex>());
+			const Imagine::Core::Vertex *array = vertices.Get<Imagine::Core::Vertex>();
+			for (uint64_t i = 0; i < vertices.Count<Imagine::Core::Vertex>(); ++i) {
 				const vec position = array[i].position;
 				if (m_IDs.contains(position)) {
 					const auto id = m_IDs.at(position);
@@ -1102,7 +1102,7 @@ namespace Imagine::Math {
 				Math::NormalizeInPlace(normal);
 			}
 
-			Imagine::Vertex vertex;
+			Imagine::Core::Vertex vertex;
 			vertex.position = vert.position;
 			vertex.normal = normal;
 			vertexMap[vertIt.GetID()] = static_cast<uint32_t>(mesh.Vertices.size());
@@ -1122,6 +1122,7 @@ namespace Imagine::Math {
 			}
 		}
 
+		mesh.Lods.emplace_back(0, mesh.Indices.size());
 		return mesh;
 	}
 
@@ -1140,13 +1141,13 @@ namespace Imagine::Math {
 				const VertexID newLastId = it->second.vertices[i];
 
 				const Vertex& first = m_Vertices.at(firstId);
-				Imagine::Vertex vFirst{first.position};
+				Imagine::Core::Vertex vFirst{first.position};
 
 				const Vertex& last = m_Vertices.at(lastId);
-				Imagine::Vertex vLast{last.position};
+				Imagine::Core::Vertex vLast{last.position};
 
 				const Vertex& newLast = m_Vertices.at(newLastId);
-				Imagine::Vertex vNewLast{newLast.position};
+				Imagine::Core::Vertex vNewLast{newLast.position};
 
 				glm::vec<4,T,Q> color{1,1,1,1};
 
@@ -1180,6 +1181,7 @@ namespace Imagine::Math {
 			}
 		}
 
+		mesh.Lods.emplace_back(0, mesh.Indices.size());
 		return mesh;
 	}
 

@@ -5,9 +5,7 @@
 #pragma once
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
-#include "Imagine/Rendering/Material.hpp"
-#include "Imagine/Rendering/Mesh.hpp"
-#include "Imagine/Rendering/Vertex.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 
 namespace Imagine::Core {
 

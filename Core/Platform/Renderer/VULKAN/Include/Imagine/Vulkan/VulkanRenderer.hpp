@@ -16,6 +16,12 @@
 #include "Imagine/Vulkan/VulkanMaterial.hpp"
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 
+#ifdef MGN_PROFILE_FUNCTION
+#include <tracy/TracyVulkan.hpp>
+#else
+using TracyVkCtx = void*;
+#endif
+
 namespace Imagine::Vulkan {
 	class VulkanRenderer final : public Core::Renderer {
 	public:
@@ -80,18 +86,35 @@ namespace Imagine::Vulkan {
 		void PushDeletion(VmaAllocation allocation, VmaType data) {
 			m_MainDeletionQueue.push(m_Allocator, allocation, data);
 		}
+
+		void PushFrameDeletion(Deleter::VkType data) {
+			if (m_IsDrawing) {
+				PushCurrentFrameDeletion(data);
+			} else {
+				PushNextFrameDeletion(data);
+			}
+		}
+		template<typename VmaType>
+		void PushFrameDeletion(VmaAllocation allocation, VmaType data) {
+			if (m_IsDrawing) {
+				GetCurrentFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
+			} else {
+				GetNextFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
+			}
+		}
+
+
 		void PushCurrentFrameDeletion(Deleter::VkType data) {
 			GetCurrentFrame().m_DeletionQueue.push(std::move(data));
 		}
-
 		template<typename VmaType>
 		void PushCurrentFrameDeletion(VmaAllocation allocation, VmaType data) {
 			GetCurrentFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
 		}
+
 		void PushNextFrameDeletion(Deleter::VkType data) {
 			GetNextFrame().m_DeletionQueue.push(std::move(data));
 		}
-
 		template<typename VmaType>
 		void PushNextFrameDeletion(VmaAllocation allocation, VmaType data) {
 			GetNextFrame().m_DeletionQueue.push(m_Allocator, allocation, data);
@@ -129,14 +152,13 @@ namespace Imagine::Vulkan {
 		virtual void LoadExternalModelInScene(const std::filesystem::path &path, Core::Scene *, Core::EntityID parent = Core::EntityID::NullID) override;
 		virtual void LoadCPUMeshInScene(const Core::CPUMesh &path, Core::Scene *, Core::EntityID entity = Core::EntityID::NullID) override;
 
-		virtual Core::Ref<Core::CPUMesh> LoadMesh(const Core::CPUMesh &mesh) override;
+		virtual Core::Ref<Core::GPUMesh> LoadMesh(const Core::CPUMesh &mesh) override;
 		virtual Core::Ref<Core::GPUMaterial> LoadMaterial(const Core::CPUMaterial &material) override;
 		virtual Core::Ref<Core::GPUMaterialInstance> LoadMaterialInstance(const Core::CPUMaterialInstance &instance) override;
 		virtual Core::Ref<Core::GPUTexture2D> LoadTexture2D(const Core::CPUTexture2D &tex2d) override;
 		virtual Core::Ref<Core::GPUTexture3D> LoadTexture3D(const Core::CPUTexture3D &tex3d) override;
 
 		void DrawBackground(VkCommandBuffer cmd);
-		void DrawGeometry(VkCommandBuffer cmd);
 
 		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function);
 		void InitializeImGui();

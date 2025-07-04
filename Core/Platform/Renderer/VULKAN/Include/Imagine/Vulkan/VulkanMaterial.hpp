@@ -6,8 +6,9 @@
 
 #include <vulkan/vulkan.h>
 #include "Imagine/Core/Math.hpp"
-#include "Imagine/Rendering/Material.hpp"
-#include "Imagine/Rendering/RenderTypes.hpp"
+#include "Imagine/Rendering/GPU/GPUMaterialInstance.hpp"
+#include "Imagine/Rendering/MaterialComponents.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/VulkanImage.hpp"
 
@@ -20,12 +21,15 @@ namespace Imagine::Vulkan {
 		VkPipelineLayout layout;
 	};
 
-	struct VulkanMaterialInstance : public Core::MaterialInstance {
+	struct VulkanMaterialInstance : public Core::GPUMaterialInstance {
 		VulkanMaterialInstance() = default;
 		virtual ~VulkanMaterialInstance() = default;
 
+		virtual uint64_t GetID() override;
+
 		VulkanMaterialPipeline *pipeline;
 		VkDescriptorSet materialSet;
+		Core::MaterialPass passType;
 	};
 
 	struct GLTFMetallicRoughness {

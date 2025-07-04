@@ -73,6 +73,8 @@ namespace Imagine::Core {
 		void OnEvent(Event& e, bool fromNormalEventQueue);
 	private:
 		void Draw();
+		void DrawImGui();
+		void DrawScenes();
 	private:
 		ApplicationParameters m_Parameters;
 

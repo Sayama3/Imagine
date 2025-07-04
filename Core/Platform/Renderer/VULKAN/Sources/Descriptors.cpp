@@ -5,6 +5,8 @@
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/VulkanMacros.hpp"
 
+using namespace Imagine::Core;
+
 namespace Imagine::Vulkan {
 	// =================================================================================
 	// ============================== DescriptorAllocator ==============================

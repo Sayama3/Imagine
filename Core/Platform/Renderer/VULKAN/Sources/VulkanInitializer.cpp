@@ -15,6 +15,7 @@
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 #include "Imagine/Vulkan/VulkanImage.hpp"
 
+using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
 	namespace Initializer {
@@ -173,7 +174,7 @@ namespace Imagine::Vulkan {
 				// use the same vectors for all meshes so that the memory doesnt reallocate as
 				// often
 				std::vector<uint32_t> indices;
-				std::vector<Vertex> vertices;
+				std::vector<Core::Vertex> vertices;
 
 				for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 					const aiMesh *aiMesh = scene->mMeshes[i];
@@ -220,10 +221,11 @@ namespace Imagine::Vulkan {
 						indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 					}
 
-					Mesh::LOD surface;
+					LOD surface;
 					surface.index = 0;
 					surface.count = indices.size();
-					surface.material = renderer->GetDefaultMeshMaterial();
+					// TODO: Fetch the CPUMaterial and either creater and fetch back the GPUMaterial from it.
+					// surface.materialInstance = renderer->GetDefaultLineMaterial();
 
 					mesh->lods.push_back(surface);
 
@@ -303,7 +305,7 @@ namespace Imagine::Vulkan {
 
 		std::shared_ptr<MeshAsset> LoadLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
 			std::vector<uint32_t> indices;
-			std::vector<Vertex> vertices;
+			std::vector<Core::Vertex> vertices;
 
 			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
 
@@ -318,10 +320,11 @@ namespace Imagine::Vulkan {
 				}
 			}
 
-			Core::Mesh::LOD surface;
+			Core::LOD surface;
 			surface.index = 0;
 			surface.count = indices.size();
-			surface.material = renderer->GetDefaultLineMaterial();
+			// TODO: Fetch the CPUMaterial and either creater and fetch back the GPUMaterial from it.
+			// surface.materialInstance = renderer->GetDefaultLineMaterial();
 
 			mesh->lods.push_back(surface);
 			mesh->meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
@@ -333,7 +336,7 @@ namespace Imagine::Vulkan {
 			ManualDeleteMeshAsset mesh;
 
 			std::vector<uint32_t> indices;
-			std::vector<Vertex> vertices;
+			std::vector<Core::Vertex> vertices;
 
 
 			for (const Core::LineObject &line: lines) {
@@ -347,10 +350,11 @@ namespace Imagine::Vulkan {
 				}
 			}
 
-			Core::Mesh::LOD surface;
+			Core::LOD surface;
 			surface.index = 0;
 			surface.count = indices.size();
-			surface.material = renderer->GetDefaultLineMaterial();
+			// TODO: Fetch the CPUMaterial and either creater and fetch back the GPUMaterial from it.
+			// surface.materialInstance = renderer->GetDefaultLineMaterial();
 
 			mesh.lods.push_back(surface);
 			mesh.meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
@@ -358,14 +362,14 @@ namespace Imagine::Vulkan {
 			return std::move(mesh);
 		}
 
-		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Vertex> points) {
+		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Core::Vertex> points) {
 			MGN_CORE_ASSERT(false, "The load points function is not implemented yet.");
 			return nullptr;
 			/*
 						std::vector<uint32_t> indices;
 						indices.reserve(points.size());
 
-						std::vector<Vertex> vertices;
+						std::vector<Core::Vertex> vertices;
 						vertices.reserve(points.size());
 
 						std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
@@ -375,7 +379,7 @@ namespace Imagine::Vulkan {
 							indices.push_back(indices.size());
 						}
 
-						Core::Mesh::LOD surface;
+						Core::LOD surface;
 						surface.index = 0;
 						surface.count = indices.size();
 						surface.material = renderer->GetDefaultPointMaterial();
@@ -391,10 +395,7 @@ namespace Imagine::Vulkan {
 
 			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
 
-			Core::Mesh::LOD surface;
-			surface.index = 0;
-			surface.count = cpuMesh.Indices.size();
-			surface.material = engine->GetDefaultMeshMaterial();
+			Core::LOD surface = cpuMesh.Lods.front();
 
 			mesh->lods.push_back(surface);
 
@@ -434,7 +435,7 @@ namespace Imagine::Vulkan {
 			// use the same vectors for all meshes so that the memory doesnt reallocate as
 			// often
 			std::vector<uint32_t> indices;
-			std::vector<Vertex> vertices;
+			std::vector<Core::Vertex> vertices;
 
 			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 				const aiMesh *aiMesh = scene->mMeshes[i];
@@ -481,7 +482,7 @@ namespace Imagine::Vulkan {
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}
 
-				Core::Mesh::LOD surface;
+				Core::LOD surface;
 				surface.index = 0;
 				surface.count = indices.size();
 

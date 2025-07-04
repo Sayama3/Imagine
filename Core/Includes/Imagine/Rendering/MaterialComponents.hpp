@@ -8,8 +8,8 @@
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Math/Core.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
-#include "Imagine/Rendering/Vertex.hpp"
 
 #define MGN_CHECK_MAT_SIZE(TYPE, MAT_TYPE) static_assert(sizeof(TYPE) == Helper::MaterialTypeSize(MAT_TYPE));
 #define MGN_IMPLEMENT_MAT_TYPE(TYPE)                                                    \
@@ -17,6 +17,12 @@
 	[[nodiscard]] inline bool IsProperType() const { return GetStaticType() == MaterialField::type; }
 
 namespace Imagine::Core {
+
+	enum class MaterialPass : uint8_t {
+		MainColor,
+		Transparent,
+		Other
+	};
 
 	enum class MaterialType : uint16_t {
 		None = 0,
@@ -262,7 +268,6 @@ namespace Imagine::Core {
 
 	class MaterialSet {
 	public:
-
 		MaterialSet() = default;
 		~MaterialSet() = default;
 		MaterialSet(const std::initializer_list<MaterialBlock> &fields);
@@ -301,11 +306,11 @@ namespace Imagine::Core {
 } // namespace Imagine::Core
 
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialType& mt) {
+void serialize(S &s, Imagine::Core::MaterialType &mt) {
 	s.value2b(mt);
 }
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialField& mf) {
+void serialize(S &s, Imagine::Core::MaterialField &mf) {
 	s.text1b(mf.name.c_str(), 32);
 	s.container1b(mf.data);
 	s.value4b(mf.count);
@@ -313,7 +318,7 @@ void serialize(S& s, Imagine::Core::MaterialField& mf) {
 }
 
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialBlock& v) {
+void serialize(S &s, Imagine::Core::MaterialBlock &v) {
 	s.container(v.fields, 100, serialize);
 	s.text1b(v.name.c_str(), 32);
 	s.value1b(v.read);
@@ -321,13 +326,13 @@ void serialize(S& s, Imagine::Core::MaterialBlock& v) {
 }
 
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialSet& v) {
+void serialize(S &s, Imagine::Core::MaterialSet &v) {
 	s.container(v.Blocks, 100, serialize);
 	s.value2b(v.Stages);
 }
 
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialBuffer& v) {
+void serialize(S &s, Imagine::Core::MaterialBuffer &v) {
 	s.object(v.Block);
 	s.value2b(v.Stages);
 	s.value1b(v.LastIsArray);
@@ -336,14 +341,14 @@ void serialize(S& s, Imagine::Core::MaterialBuffer& v) {
 }
 
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialPushConstant& v) {
+void serialize(S &s, Imagine::Core::MaterialPushConstant &v) {
 	s.object(v.Block);
 	s.value2b(v.Stages);
 	s.value1b(v.LastIsArray);
 }
 
 template<typename S>
-void serialize(S& s, Imagine::Core::MaterialLayout& v) {
+void serialize(S &s, Imagine::Core::MaterialLayout &v) {
 	s.container(v.Sets, 100, serialize);
 	s.container(v.Buffers, 100, serialize);
 	s.object(v.PushConstant);

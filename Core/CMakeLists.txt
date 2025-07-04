@@ -69,17 +69,11 @@ set(CORE_SRC_FILES
 		Sources/Application/ApplicationParameters.cpp
 		Includes/Imagine/Rendering/MgnImGui.hpp
 		Sources/Rendering/ImGui.cpp
-		Sources/Rendering/Material.cpp
-		Includes/Imagine/Rendering/Material.hpp
-		Sources/Rendering/Shader.cpp
-		Includes/Imagine/Rendering/Shader.hpp
 		Includes/Imagine/Rendering/ShaderParameters.hpp
 		Includes/Imagine/Rendering/DrawContext.hpp
 		Includes/Imagine/Scene/Relationship.hpp
 		Sources/Rendering/RenderObject.cpp
 		Includes/Imagine/Rendering/RenderObject.hpp
-		Sources/Rendering/Mesh.cpp
-		Includes/Imagine/Rendering/Mesh.hpp
 		Sources/Scene/SceneManager.cpp
 		Includes/Imagine/Scene/SceneManager.hpp
 		Sources/Core/Math.cpp
@@ -89,7 +83,6 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Core/Inputs.hpp
 		Sources/Rendering/CPU/CPUMesh.cpp
 		Includes/Imagine/Rendering/CPU/CPUMesh.hpp
-		Includes/Imagine/Rendering/Vertex.hpp
 		Sources/Rendering/Camera.cpp
 		Includes/Imagine/Rendering/Camera.hpp
 		Includes/Imagine/Math/Core.hpp
@@ -101,7 +94,7 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/Triangulation.hpp
 		Includes/Imagine/Math/Basics.hpp
 		Includes/Imagine/Math/Mesh.hpp
-		Includes/Imagine/Rendering/RenderTypes.hpp
+		Includes/Imagine/Rendering/MeshParameters.hpp
 		Includes/Imagine/Math/MeshGraph3D.hpp
 		Includes/Imagine/Math/ChaikinCurves.hpp
 		Sources/Layers/LayerStack.cpp

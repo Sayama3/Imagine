@@ -10,7 +10,12 @@
 
 using namespace Imagine::Core;
 
+using namespace Imagine::Core;
+
 namespace Imagine::Vulkan {
+	uint64_t VulkanMaterialInstance::GetID() {
+		return reinterpret_cast<uint64_t>(this->materialSet);
+	}
 	void GLTFMetallicRoughness::BuildPipeline(VulkanRenderer* renderer) {
 		MGN_CORE_ASSERT(renderer, "The current renderer is not a Vulkan renderer.");
 

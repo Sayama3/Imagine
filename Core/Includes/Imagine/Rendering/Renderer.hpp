@@ -75,7 +75,7 @@ namespace Imagine::Core {
 
 		virtual void LoadCPUMeshInScene(const CPUMesh& path, Scene*, EntityID entity = EntityID::NullID) = 0;
 
-		virtual Ref<CPUMesh> LoadMesh(const CPUMesh& mesh) = 0;
+		virtual Ref<GPUMesh> LoadMesh(const CPUMesh& mesh) = 0;
 		virtual Ref<GPUMaterial> LoadMaterial(const CPUMaterial& material) = 0;
 		virtual Ref<GPUMaterialInstance> LoadMaterialInstance(const CPUMaterialInstance& instance) = 0;
 		virtual Ref<GPUTexture2D> LoadTexture2D(const CPUTexture2D& tex2d) = 0;

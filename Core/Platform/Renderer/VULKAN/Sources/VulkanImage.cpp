@@ -6,6 +6,8 @@
 #include "Imagine/Vulkan/VulkanImage.hpp"
 #include <imgui_impl_vulkan.h>
 
+using namespace Imagine::Core;
+
 namespace Imagine::Vulkan {
 	VulkanImGuiImage VulkanImGuiImage::Add(VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout, const uint32_t width, const uint32_t height) {
 		VulkanImGuiImage img;

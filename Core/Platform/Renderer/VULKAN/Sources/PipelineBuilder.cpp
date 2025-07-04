@@ -7,6 +7,8 @@
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
+using namespace Imagine::Core;
+
 namespace Imagine::Vulkan {
 	PipelineBuilder::PipelineBuilder() {
 		Clear();

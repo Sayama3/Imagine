@@ -6,15 +6,10 @@
 
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Rendering/MaterialComponents.hpp"
-#include "Imagine/Rendering/RenderTypes.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
 
 namespace Imagine::Core {
-
-	enum class RenderType : uint8_t {
-		Opaque,
-		Transparent,
-	};
 
 	class CPUMaterial final : public Asset {
 	public:
@@ -22,7 +17,7 @@ namespace Imagine::Core {
 	public:
 		MaterialLayout layout;
 		std::array<AssetHandle, 5> shaders;
-		RenderType renderType = RenderType::Opaque;
+		MaterialPass pass = MaterialPass::MainColor;
 		Topology topology = Topology::Triangle;
 	};
 

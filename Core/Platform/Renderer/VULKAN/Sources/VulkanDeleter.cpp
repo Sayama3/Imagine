@@ -6,6 +6,8 @@
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
+using namespace Imagine::Core;
+
 namespace Imagine::Vulkan {
 
 	Deleter::Deleter(Deleter &&o) noexcept {

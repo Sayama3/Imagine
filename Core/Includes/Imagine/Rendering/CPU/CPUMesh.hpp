@@ -3,17 +3,20 @@
 //
 
 #pragma once
+#include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
-#include "Imagine/Rendering/Vertex.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 
 namespace Imagine::Core {
 
-	struct CPUMesh {
+	struct CPUMesh final : public Asset {
+		MGN_IMPLEMENT_ASSET(AssetType::Mesh);
+
 	public:
 		CPUMesh() = default;
 		CPUMesh(std::vector<Vertex> &&vertices, std::vector<uint32_t> &&indices);
 		CPUMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices);
-		~CPUMesh() = default;
+		virtual ~CPUMesh() override = default;
 		CPUMesh(const CPUMesh &) = default;
 		CPUMesh &operator=(const CPUMesh &) = default;
 		CPUMesh(CPUMesh &&o) noexcept;
@@ -22,13 +25,6 @@ namespace Imagine::Core {
 
 	public:
 		static CPUMesh LoadExternalModelAsMesh(const std::filesystem::path &p);
-
-	public:
-		struct LOD {
-			uint32_t index;
-			uint32_t count;
-			AssetHandle materialInstance;
-		};
 
 	public:
 		std::string Name;

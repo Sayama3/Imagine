@@ -5,7 +5,8 @@
 #pragma once
 
 #include "CPUMaterial.hpp"
-#include "Imagine/Assets/AssetField.hpp"
+#include "Imagine/Assets/Asset.hpp"
+#include "Imagine/Assets/AssetHandle.hpp"
 
 namespace Imagine::Core {
 
@@ -38,7 +39,7 @@ namespace Imagine::Core {
 		std::map<SetFieldPosition, Buffer> SetEditions;
 		std::map<BufferFieldPosition, Buffer> BufferEditions;
 		std::map<PushConstantFieldPosition, Buffer> PushConstantEditions;
-		AssetField<CPUMaterial> Material;
+		AssetHandle Material;
 	};
 
 } // namespace Imagine::Core

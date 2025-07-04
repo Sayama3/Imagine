@@ -7,6 +7,7 @@
     <mapping directory="$PROJECT_DIR$/Libraries/SDL" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/VulkanMemoryAllocator" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/assimp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/bitsery" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/glfw" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/imgui" vcs="Git" />

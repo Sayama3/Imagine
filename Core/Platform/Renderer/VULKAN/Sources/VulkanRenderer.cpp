@@ -99,8 +99,9 @@ namespace Imagine::Vulkan {
 		return VK_FALSE; // Applications must return false here (Except Validation, if return true, will skip calling to driver)
 	}
 
-	VulkanRenderer::VulkanRenderer(const ApplicationParameters &appParams) :
-		Renderer(), m_AppParams(appParams) {
+	VulkanRenderer::VulkanRenderer(const ApplicationParameters &appParams) : Renderer(), m_AppParams(appParams) {
+		MGN_PROFILE_FUNCTION();
+
 		InitializeVulkan();
 		InitializeSwapChain();
 		m_DrawExtent.width = std::ceil(std::min(m_SwapchainExtent.width, m_DrawImage.imageExtent.width) * m_RenderScale);
@@ -176,6 +177,7 @@ namespace Imagine::Vulkan {
 	VkPhysicalDevice VulkanRenderer::GetPhysicalDevice() {
 		return m_PhysicalDevice;
 	}
+
 	VmaAllocator VulkanRenderer::GetAllocator() {
 		return m_Allocator;
 	}
@@ -618,6 +620,7 @@ namespace Imagine::Vulkan {
 		vkDestroyShaderModule(m_Device, triangleFragmentShader, nullptr);
 		vkDestroyShaderModule(m_Device, triangleVertexShader, nullptr);
 	}
+
 	void VulkanRenderer::InitMeshPipeline() {
 		VkShaderModule triangleVertexShader{nullptr};
 		if (!Utils::LoadShaderModule("Assets/colored_triangle_mesh.vert.spv", m_Device, &triangleVertexShader)) {
@@ -710,6 +713,7 @@ namespace Imagine::Vulkan {
 		m_SwapchainImages.clear();
 		m_SwapchainImageViews.clear();
 	}
+
 	void VulkanRenderer::ResizeSwapChain() {
 		vkDeviceWaitIdle(m_Device);
 
@@ -980,6 +984,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::UpdateCache() {
+		MGN_PROFILE_FUNCTION();
 		ViewMatrixCached = GetViewMatrix();
 		ProjectionMatrixCached = GetProjectionMatrix();
 		ViewProjectMatrixCached = ProjectionMatrixCached * ViewMatrixCached;
@@ -997,6 +1002,8 @@ namespace Imagine::Vulkan {
 	}
 
 	bool VulkanRenderer::BeginDraw() {
+		MGN_PROFILE_FUNCTION();
+
 		m_IsDrawing = true;
 		m_MainDrawContext.OpaqueSurfaces.clear();
 
@@ -1019,34 +1026,48 @@ namespace Imagine::Vulkan {
 			return false;
 		}
 
-		// wait until the gpu has finished rendering the last frame. Timeout of 1
-		// second
-		VK_CHECK(vkWaitForFences(m_Device, 1, &GetCurrentFrame().m_RenderFence, true, 1000000000));
-		VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
-
-		GetCurrentFrame().m_DeletionQueue.flush(m_Device);
-		GetCurrentFrame().m_FrameDescriptors.ClearPools(m_Device);
-
-		// request image from the swapchain
-		VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &GetCurrentFrame().m_SwapchainImageIndex);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			m_ResizeRequested = true;
-		}
-		else {
-			MGN_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
+		{
+			MGN_PROFILE_SCOPE("Wait and Reset Fences");
+			// wait until the gpu has finished rendering the last frame. Timeout of 1
+			// second
+			VK_CHECK(vkWaitForFences(m_Device, 1, &GetCurrentFrame().m_RenderFence, true, 1000000000));
+			VK_CHECK(vkResetFences(m_Device, 1, &GetCurrentFrame().m_RenderFence));
 		}
 
-		VkCommandBuffer cmd{nullptr};
-		cmd = GetCurrentFrame().m_MainCommandBuffer;
-		VK_CHECK(vkResetCommandBuffer(cmd, 0));
+		{
+			MGN_PROFILE_SCOPE("Flush Queue and clear pools");
+			GetCurrentFrame().m_DeletionQueue.flush(m_Device);
+			GetCurrentFrame().m_FrameDescriptors.ClearPools(m_Device);
+		}
 
-		const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-		VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+		{
+			MGN_PROFILE_SCOPE("Aquire Next Image");
+			// request image from the swapchain
+			VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, 1000000000, GetCurrentFrame().m_SwapchainSemaphore, nullptr, &GetCurrentFrame().m_SwapchainImageIndex);
+
+			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+				m_ResizeRequested = true;
+			}
+			else {
+				MGN_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
+			}
+		}
+
+		{
+			MGN_PROFILE_SCOPE("Initialize Command Buffer");
+
+			VkCommandBuffer cmd{nullptr};
+			cmd = GetCurrentFrame().m_MainCommandBuffer;
+			VK_CHECK(vkResetCommandBuffer(cmd, 0));
+
+			const auto beginInfo = Initializer::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+			VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+		}
 
 		UpdateCache();
 
 		{
+			MGN_PROFILE_SCOPE("Setup Scene Data");
 			m_SceneData.view = ViewMatrixCached;
 			m_SceneData.proj = ProjectionMatrixCached;
 			m_SceneData.viewproj = ViewProjectMatrixCached;
@@ -1060,10 +1081,11 @@ namespace Imagine::Vulkan {
 		return true;
 	}
 	void VulkanRenderer::EndDraw() {
+		MGN_PROFILE_FUNCTION();
+
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
-		// vkCmdEndRendering(cmd);
 
 		// Ending the drawing commands and copying the data into the swapchain image.
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
@@ -1098,6 +1120,7 @@ namespace Imagine::Vulkan {
 		m_MainDrawContext.OpaqueSurfaces.clear();
 	}
 	void VulkanRenderer::Present() {
+		MGN_PROFILE_FUNCTION();
 		// prepare present
 		//  this will put the image we just rendered to into the visible window.
 		//  we want to wait on the _renderSemaphore for that,
@@ -1125,6 +1148,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::Draw() {
+		MGN_PROFILE_FUNCTION();
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
@@ -1139,12 +1163,11 @@ namespace Imagine::Vulkan {
 
 		Utils::TransitionImage(cmd, m_DrawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		Utils::TransitionImage(cmd, m_DepthImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-
-		DrawGeometry(cmd);
 	}
 
 	void VulkanRenderer::SendImGuiCommands() {
 #ifdef MGN_IMGUI
+		MGN_PROFILE_FUNCTION();
 
 		ImGui::SetNextWindowSize({400,600}, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Background")) {
@@ -1215,28 +1238,36 @@ namespace Imagine::Vulkan {
 		if (!render) return;
 		render->gpuMesh = GPUMesh;
 	}
-	Ref<CPUMesh> VulkanRenderer::LoadMesh(const CPUMesh &mesh) {
-		MGN_CORE_ERROR("Not Implemented.");
-		return nullptr;
+
+	Ref<GPUMesh> VulkanRenderer::LoadMesh(const CPUMesh &mesh) {
+		MGN_PROFILE_FUNCTION();
+		Ref<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, mesh).value();
+		return GPUMesh;
 	}
 	Ref<GPUMaterial> VulkanRenderer::LoadMaterial(const CPUMaterial &material) {
+		MGN_PROFILE_FUNCTION();
 		MGN_CORE_ERROR("Not Implemented.");
 		return nullptr;
 	}
 	Ref<GPUMaterialInstance> VulkanRenderer::LoadMaterialInstance(const CPUMaterialInstance &instance) {
+		MGN_PROFILE_FUNCTION();
 		MGN_CORE_ERROR("Not Implemented.");
 		return nullptr;
 	}
 	Ref<GPUTexture2D> VulkanRenderer::LoadTexture2D(const CPUTexture2D &tex2d) {
+		MGN_PROFILE_FUNCTION();
 		MGN_CORE_ERROR("Not Implemented.");
 		return nullptr;
 	}
 	Ref<GPUTexture3D> VulkanRenderer::LoadTexture3D(const CPUTexture3D &tex3d) {
+		MGN_PROFILE_FUNCTION();
 		MGN_CORE_ERROR("Not Implemented.");
 		return nullptr;
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
+		MGN_PROFILE_FUNCTION();
+
 		//    	// make a clear-color from Time.
 		//    	VkClearColorValue clearValue;
 		//    	float flash = std::abs(std::sin(static_cast<float>(Application::Get()->Time())));
@@ -1261,10 +1292,8 @@ namespace Imagine::Vulkan {
 		vkCmdDispatch(cmd, std::ceil(m_DrawExtent.width / 16.0), std::ceil(m_DrawExtent.height / 16.0), 1);
 	}
 
-	void VulkanRenderer::DrawGeometry(VkCommandBuffer cmd) {
-	}
-
 	void VulkanRenderer::Draw(const DrawContext &ctx) {
+		MGN_PROFILE_FUNCTION();
 		VkCommandBuffer cmd{nullptr};
 		cmd = GetCurrentFrame().m_MainCommandBuffer;
 
@@ -1332,9 +1361,10 @@ namespace Imagine::Vulkan {
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
-			const Mesh::LOD &lod = mesh->lods.front();
+			const LOD &lod = mesh->lods.front();
 
-			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
+			// TODO: Get the real material from the LOD.
+			const VulkanMaterialInstance *material = GetDefaultMeshMaterial().get();
 
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
@@ -1355,10 +1385,10 @@ namespace Imagine::Vulkan {
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
-			const Mesh::LOD &lod = mesh->lods.front();
+			const LOD &lod = mesh->lods.front();
 
-			const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
-			// vkCmdSetLineWidth(cmd, ctx.OpaqueLines[i].width);
+			// TODO: Get the real material from the LOD.
+			const VulkanMaterialInstance *material = GetDefaultLineMaterial().get();
 
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->pipeline);
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->pipeline->layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
@@ -1380,7 +1410,7 @@ namespace Imagine::Vulkan {
 		//
 		// 	MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 		// 	// TODO: Do some smart LOD selection instead of the best one everytime
-		// 	const Mesh::LOD &lod = mesh->lods.front();
+		// 	const LOD &lod = mesh->lods.front();
 		//
 		// 	const VulkanMaterialInstance *material = dynamic_cast<const VulkanMaterialInstance *>(lod.material.get());
 		//
@@ -1402,6 +1432,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function) {
+		MGN_PROFILE_FUNCTION();
 
 		VK_CHECK(vkResetFences(m_Device, 1, &m_ImmFence));
 		VK_CHECK(vkResetCommandBuffer(m_ImmCommandBuffer, 0));
@@ -1500,6 +1531,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::DrawImGui(VkCommandBuffer cmd, VkImageView targetImageView) {
+		MGN_PROFILE_FUNCTION();
 #ifdef MGN_IMGUI
 		VkRenderingAttachmentInfo colorAttachment = Initializer::RenderingAttachmentInfo(targetImageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		VkRenderingInfo renderInfo = Initializer::RenderingInfo(m_SwapchainExtent, &colorAttachment, nullptr);

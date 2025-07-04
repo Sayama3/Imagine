@@ -6,9 +6,9 @@
 
 #include <vk_mem_alloc.h>
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/CPU/CPUMesh.hpp"
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
-#include "Imagine/Rendering/Mesh.hpp"
-#include "Imagine/Rendering/Vertex.hpp"
+#include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {
@@ -50,7 +50,7 @@ namespace Imagine::Vulkan {
 		uint32_t count{0};
 	};
 
-	struct MeshAsset final : public Core::Mesh, public Core::GPUMesh {
+	struct MeshAsset final : public Core::GPUMesh {
 		MeshAsset();
 		virtual ~MeshAsset();
 		MeshAsset(const MeshAsset&) = delete;
@@ -58,10 +58,12 @@ namespace Imagine::Vulkan {
 
 		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 
+		std::string name;
+		std::vector<Core::LOD> lods{};
 		GPUMeshBuffers meshBuffers;
 	};
 
-	struct ManualDeleteMeshAsset final : public Core::Mesh, public Core::GPUMesh {
+	struct ManualDeleteMeshAsset final : public Core::GPUMesh {
 		ManualDeleteMeshAsset() = default;
 		virtual ~ManualDeleteMeshAsset() = default;
 		ManualDeleteMeshAsset(const ManualDeleteMeshAsset&) = delete;
@@ -72,6 +74,8 @@ namespace Imagine::Vulkan {
 
 		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 
+		std::string name;
+		std::vector<Core::LOD> lods{};
 		GPUMeshBuffers meshBuffers;
 	};
 

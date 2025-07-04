@@ -240,7 +240,7 @@ namespace Imagine::Vulkan {
 
 		std::shared_ptr<MeshAsset> LoadLines(VulkanRenderer* renderer, std::span<Core::LineObject> lines);
 		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines);
-		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer* renderer, std::span<Vertex> points);
+		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer* renderer, std::span<Core::Vertex> points);
 
 	} // namespace Initializer
 } // namespace Imagine::Vulkan
