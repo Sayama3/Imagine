@@ -4,16 +4,20 @@
 
 #pragma once
 
+#include "Imagine/Core/InternalCore.hpp"
 #include "Imagine/Assets/Asset.hpp"
-#include "Imagine/Core/Buffer.hpp"
+#include "Imagine/Math/Image.hpp"
+#include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 
 namespace Imagine::Core {
 
 	class CPUTexture3D final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
-	private:
-		Buffer m_Buffer;
-		uint32_t m_width, m_height, m_depth, m_channels, m_pixelSize;
+	public:
+		Ref<GPUTexture3D> gpu{nullptr};
+		Buffer Buffer;
+		uint32_t width, height, depth, channels;
+		ImagePixelType pixelType;
 	};
 }

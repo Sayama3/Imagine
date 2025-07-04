@@ -16,12 +16,6 @@
 #include "Imagine/Vulkan/VulkanMaterial.hpp"
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 
-#ifdef MGN_PROFILE_FUNCTION
-#include <tracy/TracyVulkan.hpp>
-#else
-using TracyVkCtx = void*;
-#endif
-
 namespace Imagine::Vulkan {
 	class VulkanRenderer final : public Core::Renderer {
 	public:
@@ -89,9 +83,9 @@ namespace Imagine::Vulkan {
 
 		void PushFrameDeletion(Deleter::VkType data) {
 			if (m_IsDrawing) {
-				PushCurrentFrameDeletion(data);
+				PushCurrentFrameDeletion(std::move(data));
 			} else {
-				PushNextFrameDeletion(data);
+				PushNextFrameDeletion(std::move(data));
 			}
 		}
 		template<typename VmaType>

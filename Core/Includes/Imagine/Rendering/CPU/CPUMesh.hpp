@@ -5,6 +5,8 @@
 #pragma once
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Core/SmartPointers.hpp"
+#include "Imagine/Rendering/GPU/GPUMesh.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 
 namespace Imagine::Core {
@@ -31,6 +33,7 @@ namespace Imagine::Core {
 		std::vector<Vertex> Vertices;
 		std::vector<uint32_t> Indices;
 		std::vector<LOD> Lods;
+		Ref<GPUMesh> gpu{nullptr};
 	};
 
 } // namespace Imagine::Core

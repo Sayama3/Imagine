@@ -7,6 +7,7 @@
 #include "CPUMaterial.hpp"
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Rendering/GPU/GPUMaterialInstance.hpp"
 
 namespace Imagine::Core {
 
@@ -40,6 +41,7 @@ namespace Imagine::Core {
 		std::map<BufferFieldPosition, Buffer> BufferEditions;
 		std::map<PushConstantFieldPosition, Buffer> PushConstantEditions;
 		AssetHandle Material;
+		Ref<GPUMaterialInstance> gpu{nullptr};
 	};
 
 } // namespace Imagine::Core

@@ -1229,7 +1229,7 @@ namespace Imagine::Vulkan {
 		Initializer::LoadModelAsDynamic(this, scene, parent, path);
 	}
 	void VulkanRenderer::LoadCPUMeshInScene(const CPUMesh &m, Scene *scene, EntityID entity) {
-		Ref<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
+		Ref<AutoDeleteMeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
 		if (!entity.IsValid()) {
 			entity = scene->CreateEntity();
 		}
@@ -1241,7 +1241,7 @@ namespace Imagine::Vulkan {
 
 	Ref<GPUMesh> VulkanRenderer::LoadMesh(const CPUMesh &mesh) {
 		MGN_PROFILE_FUNCTION();
-		Ref<MeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, mesh).value();
+		Ref<AutoDeleteMeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, mesh).value();
 		return GPUMesh;
 	}
 	Ref<GPUMaterial> VulkanRenderer::LoadMaterial(const CPUMaterial &material) {
@@ -1256,13 +1256,19 @@ namespace Imagine::Vulkan {
 	}
 	Ref<GPUTexture2D> VulkanRenderer::LoadTexture2D(const CPUTexture2D &tex2d) {
 		MGN_PROFILE_FUNCTION();
-		MGN_CORE_ERROR("Not Implemented.");
-		return nullptr;
+		Ref<VulkanTexture2D> vkTex2d = CreateRef<VulkanTexture2D>();
+
+		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width,tex2d.image.height, 1}, Utils::GetImageVkFormat(tex2d.image), VK_IMAGE_USAGE_SAMPLED_BIT, true);
+
+		return vkTex2d;
 	}
 	Ref<GPUTexture3D> VulkanRenderer::LoadTexture3D(const CPUTexture3D &tex3d) {
 		MGN_PROFILE_FUNCTION();
-		MGN_CORE_ERROR("Not Implemented.");
-		return nullptr;
+		Ref<VulkanTexture3D> vkTex3d = CreateRef<VulkanTexture3D>();
+
+		vkTex3d->image = CreateImage(tex3d.Buffer.Get(), {tex3d.width,tex3d.height, tex3d.depth}, Utils::GetImageVkFormat(tex3d.pixelType, tex3d.channels), VK_IMAGE_USAGE_SAMPLED_BIT, false);
+
+		return vkTex3d;
 	}
 
 	void VulkanRenderer::DrawBackground(VkCommandBuffer cmd) {
@@ -1357,7 +1363,7 @@ namespace Imagine::Vulkan {
 
 		for (const RenderObject &draw: ctx.OpaqueSurfaces) {
 
-			MeshAsset *mesh = dynamic_cast<MeshAsset *>(draw.mesh.get());
+			AutoDeleteMeshAsset *mesh = dynamic_cast<AutoDeleteMeshAsset *>(draw.mesh.get());
 
 			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
@@ -1406,7 +1412,7 @@ namespace Imagine::Vulkan {
 
 		// if (pointMesh) {
 		//
-		// 	MeshAsset *mesh = pointMesh.get();
+		// 	AutoDeleteMeshAsset *mesh = pointMesh.get();
 		//
 		// 	MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 		// 	// TODO: Do some smart LOD selection instead of the best one everytime

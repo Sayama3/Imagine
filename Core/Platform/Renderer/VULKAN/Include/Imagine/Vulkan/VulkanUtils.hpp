@@ -134,5 +134,146 @@ namespace Imagine::Vulkan {
 			const Core::Buffer buffer = Core::FileSystem::readBinaryFile(filePath);
 			return LoadShaderModule(buffer, device, outShaderModule);
 		}
+
+		inline static VkFormat GetImageVkFormat(const Core::ImagePixelType pxType, const uint32_t channels) {
+			VkFormat fmt = VK_FORMAT_UNDEFINED;
+			switch (pxType) {
+				case Core::ImagePixelType::Uint8:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R8_UNORM;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R8G8_UNORM;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R8G8B8_UNORM;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R8G8B8A8_UNORM;
+							break;
+						default:
+							break;
+					}
+					break;
+				case Core::ImagePixelType::Uint16:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R16_UNORM;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R16G16_UNORM;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R16G16B16_UNORM;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R16G16B16A16_UNORM;
+							break;
+						default:
+							break;
+					}
+					break;
+				case Core::ImagePixelType::Uint32:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R32_UINT;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R32G32_UINT;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R32G32B32_UINT;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R32G32B32A32_UINT;
+							break;
+						default:
+							break;
+					}
+					break;
+				case Core::ImagePixelType::Int8:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R8_SNORM;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R8G8_SNORM;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R8G8B8_SNORM;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R8G8B8A8_SNORM;
+							break;
+						default:
+							break;
+					}
+					break;
+				case Core::ImagePixelType::Int16:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R16_SNORM;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R16G16_SNORM;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R16G16B16_SNORM;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R16G16B16A16_SNORM;
+							break;
+						default:
+							break;
+					}
+					break;
+				case Core::ImagePixelType::Int32:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R32_SINT;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R32G32_SINT;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R32G32B32_SINT;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R32G32B32A32_SINT;
+							break;
+						default:
+							break;
+					}
+					break;
+				case Core::ImagePixelType::F32:
+					switch (channels) {
+						case 1:
+							fmt = VK_FORMAT_R32_SFLOAT;
+							break;
+						case 2:
+							fmt = VK_FORMAT_R32G32_SFLOAT;
+							break;
+						case 3:
+							fmt = VK_FORMAT_R32G32B32_SFLOAT;
+							break;
+						case 4:
+							fmt = VK_FORMAT_R32G32B32A32_SFLOAT;
+							break;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
+			}
+			MGN_CORE_ASSERT(fmt != VK_FORMAT_UNDEFINED, "The pixel format {} with {} channels is not implemented.", pxType, channels);
+			return fmt;
+		}
+
+		template<typename PixelType>
+		inline static VkFormat GetImageVkFormat(const Core::Image<PixelType> &image) {
+			return GetImageVkFormat(Core::Image<PixelType>::GetPixelType(), image.channels);
+		}
 	} // namespace Utils
 } // namespace Imagine::Vulkan

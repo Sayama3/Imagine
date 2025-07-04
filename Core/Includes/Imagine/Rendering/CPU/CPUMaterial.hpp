@@ -5,9 +5,12 @@
 #pragma once
 
 #include "Imagine/Assets/Asset.hpp"
+#include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Rendering/MaterialComponents.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
+
+#include "Imagine/Rendering/GPU/GPUMaterial.hpp"
 
 namespace Imagine::Core {
 
@@ -19,6 +22,7 @@ namespace Imagine::Core {
 		std::array<AssetHandle, 5> shaders;
 		MaterialPass pass = MaterialPass::MainColor;
 		Topology topology = Topology::Triangle;
+		Ref<GPUMaterial> gpu{nullptr};
 	};
 
 } // namespace Imagine::Core

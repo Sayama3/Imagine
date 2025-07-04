@@ -1122,7 +1122,7 @@ namespace Imagine::Math {
 			}
 		}
 
-		mesh.Lods.emplace_back(0, mesh.Indices.size());
+		mesh.Lods.emplace_back(0u, static_cast<uint32_t>(mesh.Indices.size()));
 		return mesh;
 	}
 
@@ -1181,7 +1181,7 @@ namespace Imagine::Math {
 			}
 		}
 
-		mesh.Lods.emplace_back(0, mesh.Indices.size());
+		mesh.Lods.emplace_back(0, static_cast<uint32_t>(mesh.Indices.size()));
 		return mesh;
 	}
 

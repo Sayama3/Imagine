@@ -50,11 +50,11 @@ namespace Imagine::Vulkan {
 		uint32_t count{0};
 	};
 
-	struct MeshAsset final : public Core::GPUMesh {
-		MeshAsset();
-		virtual ~MeshAsset();
-		MeshAsset(const MeshAsset&) = delete;
-		MeshAsset &operator=(const MeshAsset &) = delete;
+	struct AutoDeleteMeshAsset final : public Core::GPUMesh {
+		AutoDeleteMeshAsset();
+		virtual ~AutoDeleteMeshAsset();
+		AutoDeleteMeshAsset(const AutoDeleteMeshAsset&) = delete;
+		AutoDeleteMeshAsset &operator=(const AutoDeleteMeshAsset &) = delete;
 
 		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 

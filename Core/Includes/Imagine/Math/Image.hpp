@@ -7,9 +7,62 @@
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/Profiling.hpp"
+#include <spdlog/spdlog.h>
 
 namespace Imagine::Core
 {
+	enum class ImagePixelType : uint8_t {
+		None = 0,
+
+		Uint8,
+		Uint16,
+		Uint32,
+
+		Int8,
+		Int16,
+		Int32,
+
+		F32,
+	};
+
+	static inline constexpr std::string GetImagePixelTypeName(const ImagePixelType type) {
+		switch (type) {
+			case ImagePixelType::None:
+				return "None";
+				break;
+			case ImagePixelType::Uint8:
+				return "Uint8";
+				break;
+			case ImagePixelType::Uint16:
+				return "Uint16";
+				break;
+			case ImagePixelType::Uint32:
+				return "Uint32";
+				break;
+			case ImagePixelType::Int8:
+				return "Int8";
+				break;
+			case ImagePixelType::Int16:
+				return "Int16";
+				break;
+			case ImagePixelType::Int32:
+				return "Int32";
+				break;
+			case ImagePixelType::F32:
+				return "F32";
+				break;
+		}
+		return "Unknown";
+	}
+	template<typename PixelType> inline static constexpr ImagePixelType GetPixelType() {return ImagePixelType::None;}
+	template<> inline static constexpr ImagePixelType GetPixelType<uint8_t>() {return ImagePixelType::Uint8;}
+	template<> inline static constexpr ImagePixelType GetPixelType<uint16_t>() {return ImagePixelType::Uint16;}
+	template<> inline static constexpr ImagePixelType GetPixelType<uint32_t>() {return ImagePixelType::Uint32;}
+	template<> inline static constexpr ImagePixelType GetPixelType<int8_t>() {return ImagePixelType::Int8;}
+	template<> inline static constexpr ImagePixelType GetPixelType<int16_t>() {return ImagePixelType::Int16;}
+	template<> inline static constexpr ImagePixelType GetPixelType<int32_t>() {return ImagePixelType::Int32;}
+	template<> inline static constexpr ImagePixelType GetPixelType<float>() {return ImagePixelType::F32;}
+
 	template<typename PixelType = uint8_t>
 	class Image {
 	public:
@@ -30,6 +83,8 @@ namespace Imagine::Core
 
 		void Zeroes();
 
+		static constexpr ImagePixelType GetPixelType() { return Imagine::Core::GetPixelType<PixelType>();}
+
 		BufferView operator()(uint32_t x, uint32_t y);
 		ConstBufferView operator()(uint32_t x, uint32_t y) const;
 
@@ -41,7 +96,6 @@ namespace Imagine::Core
 		Buffer source = Buffer();
 		uint32_t width = 0, height = 0, channels = 0;
 	};
-
 
 	template<typename PixelType>
 	inline void Image<PixelType>::Zeroes() {
@@ -168,4 +222,14 @@ namespace Imagine::Core
 	}
 
 } // namespace Imagine::Core
+
+
+template<>
+struct fmt::formatter<Imagine::Core::ImagePixelType> : fmt::formatter<std::string>
+{
+	auto format(const Imagine::Core::ImagePixelType value, format_context &ctx) const -> decltype(ctx.out())
+	{
+		return format_to(ctx.out(), "{}", GetImagePixelTypeName(value));
+	}
+};
 

@@ -165,7 +165,7 @@ namespace Imagine::Vulkan {
 
 			// TODO: Load the material seconds.
 
-			std::vector<std::shared_ptr<MeshAsset>> meshes;
+			std::vector<std::shared_ptr<AutoDeleteMeshAsset>> meshes;
 			meshes.reserve(scene->mNumMeshes);
 
 			// Load the meshes
@@ -182,7 +182,7 @@ namespace Imagine::Vulkan {
 						continue;
 					}
 
-					std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+					std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 					mesh->name = aiMesh->mName.C_Str();
 
 					indices.clear();
@@ -287,7 +287,7 @@ namespace Imagine::Vulkan {
 					}
 					else if (node->mNumMeshes > 1) {
 						for (int i = 0; i < node->mNumMeshes; ++i) {
-							std::shared_ptr<MeshAsset> mesh = meshes[node->mMeshes[i]];
+							std::shared_ptr<AutoDeleteMeshAsset> mesh = meshes[node->mMeshes[i]];
 							EntityID meshChild = coreScene->CreateEntity(entityId);
 							coreScene->SetName(meshChild, mesh->name);
 							coreScene->AddComponent<Renderable>(meshChild)->gpuMesh = std::static_pointer_cast<GPUMesh>(mesh);
@@ -303,11 +303,11 @@ namespace Imagine::Vulkan {
 			}
 		}
 
-		std::shared_ptr<MeshAsset> LoadLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
+		std::shared_ptr<AutoDeleteMeshAsset> LoadLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
 			std::vector<uint32_t> indices;
 			std::vector<Core::Vertex> vertices;
 
-			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+			std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 
 			for (const Core::LineObject &line: lines) {
 				if (line.points.size() < 2) continue;
@@ -362,7 +362,7 @@ namespace Imagine::Vulkan {
 			return std::move(mesh);
 		}
 
-		std::shared_ptr<MeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Core::Vertex> points) {
+		std::shared_ptr<AutoDeleteMeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Core::Vertex> points) {
 			MGN_CORE_ASSERT(false, "The load points function is not implemented yet.");
 			return nullptr;
 			/*
@@ -372,7 +372,7 @@ namespace Imagine::Vulkan {
 						std::vector<Core::Vertex> vertices;
 						vertices.reserve(points.size());
 
-						std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+						std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 
 						for (const auto & point: points) {
 							vertices.push_back(point);
@@ -391,9 +391,9 @@ namespace Imagine::Vulkan {
 			*/
 		}
 
-		std::optional<std::shared_ptr<MeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh &cpuMesh) {
+		std::optional<std::shared_ptr<AutoDeleteMeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh &cpuMesh) {
 
-			std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+			std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 
 			Core::LOD surface = cpuMesh.Lods.front();
 
@@ -404,7 +404,7 @@ namespace Imagine::Vulkan {
 			return mesh;
 		}
 
-		std::optional<std::vector<std::shared_ptr<MeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath) {
+		std::optional<std::vector<std::shared_ptr<AutoDeleteMeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath) {
 			// Create an instance of the Importer class
 			Assimp::Importer importer;
 
@@ -430,7 +430,7 @@ namespace Imagine::Vulkan {
 				return std::nullopt;
 			}
 
-			std::vector<std::shared_ptr<MeshAsset>> meshes;
+			std::vector<std::shared_ptr<AutoDeleteMeshAsset>> meshes;
 
 			// use the same vectors for all meshes so that the memory doesnt reallocate as
 			// often
@@ -443,7 +443,7 @@ namespace Imagine::Vulkan {
 					continue;
 				}
 
-				std::shared_ptr<MeshAsset> mesh = std::make_shared<MeshAsset>();
+				std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 				mesh->name = aiMesh->mName.C_Str();
 
 				indices.clear();

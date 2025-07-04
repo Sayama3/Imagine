@@ -5,6 +5,8 @@
 #pragma once
 
 #include <vk_mem_alloc.h>
+#include "Imagine/Rendering/GPU/GPUTexture2D.hpp"
+#include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
@@ -16,6 +18,28 @@ namespace Imagine::Vulkan {
 		VmaAllocation allocation{nullptr};
 		VkExtent3D imageExtent{0, 0, 0};
 		VkFormat imageFormat{VK_FORMAT_UNDEFINED};
+	};
+
+	struct VulkanTexture2D final : public Core::GPUTexture2D {
+		VulkanTexture2D();
+		virtual ~VulkanTexture2D() override;
+		VulkanTexture2D(const VulkanTexture2D&) = delete;
+		VulkanTexture2D& operator=(const VulkanTexture2D&) = delete;
+
+		virtual uint64_t GetID() override;
+
+		AllocatedImage image;
+	};
+
+	struct VulkanTexture3D final : public Core::GPUTexture3D {
+		VulkanTexture3D();
+		virtual ~VulkanTexture3D() override;
+		VulkanTexture3D(const VulkanTexture3D&) = delete;
+		VulkanTexture3D& operator=(const VulkanTexture3D&) = delete;
+
+		virtual uint64_t GetID() override;
+
+		AllocatedImage image;
 	};
 
 	struct VulkanImGuiImage : public Core::ImGuiImage {

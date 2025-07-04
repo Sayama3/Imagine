@@ -8,12 +8,13 @@
 using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
-	MeshAsset::MeshAsset() = default;
-	MeshAsset::~MeshAsset() {
+	AutoDeleteMeshAsset::AutoDeleteMeshAsset() = default;
+	AutoDeleteMeshAsset::~AutoDeleteMeshAsset() {
 		VulkanRenderer *renderer = reinterpret_cast<VulkanRenderer *>(Renderer::Get());
-		renderer->PushNextFrameDeletion(meshBuffers.vertexBuffer.allocation, meshBuffers.vertexBuffer.buffer);
-		renderer->PushNextFrameDeletion(meshBuffers.indexBuffer.allocation, meshBuffers.indexBuffer.buffer);
+		renderer->PushFrameDeletion(meshBuffers.vertexBuffer.allocation, meshBuffers.vertexBuffer.buffer);
+		renderer->PushFrameDeletion(meshBuffers.indexBuffer.allocation, meshBuffers.indexBuffer.buffer);
 	}
+
 	ManualDeleteMeshAsset::ManualDeleteMeshAsset(ManualDeleteMeshAsset && o) noexcept : meshBuffers(std::move(o.meshBuffers)),name(std::move(o.name)), lods(std::move(o.lods))
 	{
 	}

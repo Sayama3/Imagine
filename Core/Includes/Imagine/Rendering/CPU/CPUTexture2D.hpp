@@ -3,8 +3,10 @@
 //
 
 #pragma once
+#include "Imagine/Core/InternalCore.hpp"
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Math/Image.hpp"
+#include "Imagine/Rendering/GPU/GPUTexture2D.hpp"
 
 namespace Imagine::Core {
 
@@ -13,6 +15,7 @@ namespace Imagine::Core {
 		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
 	public:
 		Image<uint8_t> image;
+		Ref<GPUTexture2D> gpu{nullptr};
 	};
 
 } // namespace Imagine::Core

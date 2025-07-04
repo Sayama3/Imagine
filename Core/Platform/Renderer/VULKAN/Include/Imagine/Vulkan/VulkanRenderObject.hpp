@@ -16,7 +16,7 @@ namespace Imagine::Vulkan {
 		VulkanRenderObject() = default;
 		virtual ~VulkanRenderObject() = default;
 
-		MeshAsset* GetVulkanMesh();
+		AutoDeleteMeshAsset* GetVulkanMesh();
 	};
 
 

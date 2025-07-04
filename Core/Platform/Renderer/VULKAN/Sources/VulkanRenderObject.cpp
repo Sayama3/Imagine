@@ -7,7 +7,7 @@
 using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
-	MeshAsset *VulkanRenderObject::GetVulkanMesh() {
-		return dynamic_cast<MeshAsset *>(Core::RenderObject::mesh.get());
+	AutoDeleteMeshAsset *VulkanRenderObject::GetVulkanMesh() {
+		return dynamic_cast<AutoDeleteMeshAsset *>(Core::RenderObject::mesh.get());
 	}
 } // namespace Imagine::Vulkan
