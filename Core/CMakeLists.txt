@@ -144,6 +144,33 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/GPU/GPUTexture3D.hpp
 		Includes/Imagine/Rendering/GPU/GPUMesh.hpp
 		Includes/Imagine/Rendering/VirtualTextures.hpp
+		Sources/Assets/FileAssetManager.cpp
+		Includes/Imagine/Assets/FileAssetManager.hpp
+		Includes/Imagine/Assets/Importers/MaterialSerializer.hpp
+		Includes/Imagine/Assets/Importers/MeshImporter.hpp
+		Includes/Imagine/Assets/Importers/SceneImporter.hpp
+		Includes/Imagine/Assets/Importers/ShaderSerializer.hpp
+		Includes/Imagine/Assets/Importers/TextureImporter.hpp
+		Sources/Assets/Importers/MaterialSerializer.cpp
+		Sources/Assets/Importers/MeshImporter.cpp
+		Sources/Assets/Importers/SceneImporter.cpp
+		Sources/Assets/Importers/ShaderSerializer.cpp
+		Sources/Assets/Importers/TextureImporter.cpp
+		Includes/Imagine/Assets/ImGui/TextureImGui.hpp
+		Includes/Imagine/Assets/ImGui/ShaderImGui.hpp
+		Includes/Imagine/Assets/ImGui/SceneImGui.hpp
+		Includes/Imagine/Assets/ImGui/MeshImGui.hpp
+		Includes/Imagine/Assets/ImGui/MaterialImGui.hpp
+		Sources/Assets/ImGui/TextureImGui.cpp
+		Sources/Assets/ImGui/ShaderImGui.cpp
+		Sources/Assets/ImGui/SceneImGui.cpp
+		Sources/Assets/ImGui/MeshImGui.cpp
+		Sources/Assets/ImGui/MaterialImGui.cpp
+		Includes/Imagine/Math/BoundingBox.hpp
+		Includes/Imagine/Math/BoundingObject.hpp
+		Includes/Imagine/Math/BoundingSphere.hpp
+		Sources/Math/BoundingBox.cpp
+		Sources/Math/BoundingSphere.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

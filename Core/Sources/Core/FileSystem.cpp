@@ -108,6 +108,11 @@ namespace Imagine::Core {
 
 		return std::move(fileContent);
 	}
+
+	bool FileSystem::Exist(Path path) {
+		return path.source != FileSource::None && fs::exists(path.GetFullPath());
+	}
+
 	std::filesystem::path FileSystem::GetRootPath(FileSource source) {
 		switch (source) {
 			case FileSource::None:		{ return Project::GetProjectFilePath().parent_path(); }

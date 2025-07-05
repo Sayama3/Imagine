@@ -8,7 +8,7 @@
 ///* Windows x64/x86 */
 //	#ifdef _WIN64
 //		/* Windows x64  */
-//		#define VXM_PLATFORM_WINDOWS
+//		#define MGN_PLATFORM_WINDOWS
 //	#else
 //		/* Windows x86 */
 //		#error "x86 Builds are not supported!"
@@ -23,10 +23,10 @@
 //	#if TARGET_IPHONE_SIMULATOR == 1
 //		#error "IOS simulator is not supported!"
 //	#elif TARGET_OS_IPHONE == 1
-//		#define VXM_PLATFORM_IOS
+//		#define MGN_PLATFORM_IOS
 //		#error "IOS is not supported!"
 //	#elif TARGET_OS_MAC == 1
-//		#define VXM_PLATFORM_MACOS
+//		#define MGN_PLATFORM_MACOS
 //	#else
 //		#error "Unknown Apple platform!"
 //    #endif
@@ -35,10 +35,10 @@
 // * since android is based on the linux kernel
 // * it has __linux__ defined */
 // #elif defined(__ANDROID__)
-// #define VXM_PLATFORM_ANDROID
+// #define MGN_PLATFORM_ANDROID
 //	#error "Android is not supported!"
 // #elif defined(__linux__)
-// #define VXM_PLATFORM_LINUX
+// #define MGN_PLATFORM_LINUX
 // #else
 ///* Unknown compiler/platform */
 // #error "Unknown platform!"

@@ -6,6 +6,7 @@
 
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Assets/AssetMetadata.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
 namespace Imagine::Core {
@@ -23,9 +24,11 @@ namespace Imagine::Core {
 		[[nodiscard]] virtual bool IsAssetHandleValid(AssetHandle handle) const = 0;
 		[[nodiscard]] virtual bool IsAssetLoaded(AssetHandle handle) const = 0;
 		[[nodiscard]] virtual AssetType GetAssetType(AssetHandle handle) const = 0;
+		[[nodiscard]] virtual const AssetMetadata &GetMetadata(AssetHandle handle) const = 0;
 
 		virtual Ref<Asset> GetAsset(AssetHandle handle) = 0;
-		virtual AssetHandle LoadAsset(Ref<Asset> asset) = 0;
 		virtual void UnloadAsset(AssetHandle handle) = 0;
+		virtual bool AddAsset(Ref<Asset> asset) = 0;
+		virtual bool RemoveAsset(AssetHandle handle) = 0;
 	};
 } // namespace Imagine::Core

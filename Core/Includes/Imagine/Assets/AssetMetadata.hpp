@@ -7,17 +7,16 @@
 #include <utility>
 
 #include "Imagine/Core/FileSystem.hpp"
-#include "Imagine/Assets/Asset.hpp"
+#include "Imagine/Assets/AssetType.hpp"
+#include "Imagine/Assets/AssetHandle.hpp"
 
 
 namespace Imagine::Core
 {
 	struct AssetMetadata {
 		inline AssetMetadata() = default;
-		inline AssetMetadata(Path p, AssetType t) : FilePath(std::move(p)), Handle(), Type(t){}
-		Path FilePath;
-		AssetHandle Handle;
-		AssetType Type = AssetType::None;
+		inline ~AssetMetadata() = default;
+		inline AssetMetadata(Path p, const AssetType t) : FilePath(std::move(p)), Handle(), Type(t){}
 
 		inline operator bool() const {
 			return Type != AssetType::None && Handle != NULL_ASSET_HANDLE;
@@ -28,8 +27,10 @@ namespace Imagine::Core
 		inline bool operator !=(const AssetMetadata& other) const {
 			return !(*this == other);
 		}
+
+		Path FilePath;
+		AssetHandle Handle;
+		AssetType Type = AssetType::None;
 	};
-
-
 } // namespace Imagine::Core
 

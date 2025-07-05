@@ -114,6 +114,7 @@ namespace Imagine::Core {
 		static std::vector<char> readTextFile(const std::filesystem::path &filePath);
 		static std::vector<char> readTextFile(const char *filePath);
 
+		[[nodiscard]] static bool Exist(Path path);
 	public:
 		static std::filesystem::path GetRootPath(FileSource source);
 	};
