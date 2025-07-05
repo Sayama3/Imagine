@@ -4,6 +4,8 @@
 
 #include "Imagine/Assets/FileAssetManager.hpp"
 
+#include "Imagine/Assets/AssetImporter.hpp"
+
 namespace Imagine::Core {
 		bool FileAssetManager::IsAssetHandleValid(AssetHandle handle) const
 	{
@@ -19,7 +21,7 @@ namespace Imagine::Core {
 
 	bool FileAssetManager::IsAssetImported(const Path& path, AssetHandle* handle/* = nullptr*/) const
 	{
-		auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&path](std::pair<UUID, AssetMetadata> assets) {
+		auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&path](std::pair<AssetHandle, AssetMetadata> assets) {
 			return assets.second.FilePath.equivalent(path);
 		});
 
@@ -104,7 +106,7 @@ namespace Imagine::Core {
 
 		Ref<Asset> asset = nullptr;
 
-		const auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](const std::pair<UUID, AssetMetadata>& assets) {
+		const auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](const std::pair<AssetHandle, AssetMetadata>& assets) {
 		  return assets.second.FilePath.equivalent(assetPath);
 		});
 
@@ -139,11 +141,11 @@ namespace Imagine::Core {
 	std::optional<AssetMetadata> FileAssetManager::GetMetadata(const Path& assetPath) const
 	{
 		MGN_PROFILE_FUNCTION();
-		auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](std::pair<UUID, AssetMetadata> assets) {
+		auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](std::pair<AssetHandle, AssetMetadata> assets) {
 		  return assets.second.FilePath == assetPath;
 		});
 
-		return it != m_AssetRegistry.end() ? it->second : std::nullopt;
+		return it != m_AssetRegistry.end() ? it->second : std::optional<AssetMetadata>{std::nullopt};
 	}
 
 	void FileAssetManager::SetPath(AssetHandle handle, Path newPath)

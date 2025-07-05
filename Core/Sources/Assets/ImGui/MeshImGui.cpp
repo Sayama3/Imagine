@@ -6,7 +6,7 @@
 
 #include "Imagine/Assets/ImGui/MeshImGui.hpp"
 #include "Imagine/Assets/Importers/MeshImporter.hpp"
-#include "Imagine/Renderer/Shader.hpp"
+#include "Imagine/Rendering/CPU/CPUShader.hpp"
 
 namespace Imagine::Core
 {
@@ -17,29 +17,7 @@ namespace Imagine::Core
 
 	bool MeshImGui::OnModelImGui(Ref<Asset> asset)
 	{
-		if(asset->GetType() != Model::GetStaticType()) return false;
-		Ref<Model> model = CastPtr<Model>(asset);
-		bool changed = false;
-		ImGui::BeginDisabled(true);
-		changed |= ImGuiLib::InputUUID("Model ID", &model->Handle);
-		ImGui::EndDisabled();
-
-		static ShaderField shaderField;
-
-		ImGuiLib::DrawAssetField("Shader", &shaderField);
-
-		if(ImGui::Button("Set Shader On All Materials")) {
-			for(auto& mat : model->m_Materials)
-			{
-				if(mat) {
-					mat.GetAsset()->ChangeShader(shaderField.GetHandle());
-				}
-			}
-			changed = true;
-			MeshSerializer::ExportEditorModel(Project::GetActive()->GetEditorAssetManager()->GetMetadata(asset->Handle), model);
-		}
-
-		return changed;
+		return false;
 	}
 } // namespace Imagine::Core
 

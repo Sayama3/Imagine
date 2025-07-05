@@ -171,6 +171,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/BoundingSphere.hpp
 		Sources/Math/BoundingBox.cpp
 		Sources/Math/BoundingSphere.cpp
+		Includes/Imagine/Assets/AssetImporter.hpp
+		Sources/Assets/AssetImporter.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

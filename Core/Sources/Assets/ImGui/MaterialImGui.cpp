@@ -19,11 +19,12 @@ namespace Imagine::Core
 		if(asset->GetType() != CPUMaterial::GetStaticType()) return false;
 		Ref<CPUMaterial> material = CastPtr<CPUMaterial>(asset);
 		bool changed = false;
-		changed = material->OnImGui();
+
+		// changed = material->OnImGui();
 
 		if(ImGui::Button("Save")) {
-			auto assetManager = Project::GetActive()->GetEditorAssetManager();
-			MaterialSerializer::ExportEditorMaterial(assetManager->GetMetadata(material->Handle), material);
+			auto assetManager = Project::GetActive()->GetAssetManager();
+			MaterialSerializer::ExportReadableMaterial(assetManager->GetMetadata(material->Handle), material);
 		}
 		return changed;
 	}

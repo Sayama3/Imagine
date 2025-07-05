@@ -19,7 +19,7 @@ namespace Imagine::Core
 	{
 	public:
 		static bool IsMaterial(const std::filesystem::path& path);
-		static void ExportEditorMaterial(const AssetMetadata& metadata, Ref<Material> material);
+		static void ExportReadableMaterial(const AssetMetadata& metadata, Ref<CPUMaterial> material);
 		static Ref<Asset> ImportMaterial(const AssetMetadata& metadata);
 	};
 

@@ -3,7 +3,7 @@
 //
 
 #include "Imagine/Math/BoundingSphere.hpp"
-#include "Imagine/Core/Core.hpp"
+#include "Imagine/Core/InternalCore.hpp"
 
 namespace Imagine::Core {
 	bool BoundingSphere::Overlaps(const BoundingSphere &other) const {

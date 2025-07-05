@@ -6,7 +6,18 @@
 
 #include "Imagine/Core/Math.hpp"
 
+#ifdef MGN_IMGUI
+#include <imgui.h>
+#endif
+
 namespace Imagine::Core {
+
+#ifdef MGN_IMGUI
+	static inline constexpr bool c_ImGui{false};
+#else
+	static inline constexpr bool c_ImGui{true};
+#endif
+
 	class MgnImGui {
 	private:
 		inline static bool s_DockingEnabled { false };

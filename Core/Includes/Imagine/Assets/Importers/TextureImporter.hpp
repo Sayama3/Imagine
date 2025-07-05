@@ -17,7 +17,7 @@ namespace Imagine::Core
 	class TextureImporter
 	{
 	public:
-		static bool IsTexture(const std::filesystem::path& path);
+		static bool IsTexture2D(const std::filesystem::path& path);
 		static Ref<CPUTexture2D> LoadTexture2D(const std::filesystem::path& path);
 		static void ExportEditorTexture2D(const AssetMetadata& metadata, Ref<CPUTexture2D> texture);
 		static Ref<Asset> ImportTexture2D(const AssetMetadata& metadata);
