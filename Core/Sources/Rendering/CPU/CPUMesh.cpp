@@ -87,7 +87,7 @@ namespace Imagine::Core {
 
 				indices.reserve(aiMesh->mNumFaces * 3);
 				for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
-					MGN_CORE_ASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
+					MGN_CORE_CASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
 					const aiFace &face = aiMesh->mFaces[i];
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}

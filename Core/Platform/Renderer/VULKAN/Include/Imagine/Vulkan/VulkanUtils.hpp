@@ -35,7 +35,7 @@ namespace Imagine::Vulkan {
 				stages |= (int) VK_SHADER_STAGE_COMPUTE_BIT;
 			}
 
-			MGN_CORE_ASSERT(stages != 0, "The shader stage '{}' in unknown.", (uint16_t) stage);
+			MGN_CORE_MASSERT(stages != 0, "The shader stage '{}' in unknown.", (uint16_t) stage);
 
 			return (VkShaderStageFlagBits) stages;
 		}
@@ -267,7 +267,7 @@ namespace Imagine::Vulkan {
 				default:
 					break;
 			}
-			MGN_CORE_ASSERT(fmt != VK_FORMAT_UNDEFINED, "The pixel format {} with {} channels is not implemented.", pxType, channels);
+			MGN_CORE_MASSERT(fmt != VK_FORMAT_UNDEFINED, "The pixel format {} with {} channels is not implemented.", pxType, channels);
 			return fmt;
 		}
 

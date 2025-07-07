@@ -69,23 +69,36 @@
 #define MGN_BREAK()
 #endif
 
+#define MGN_EXPAND_MACRO(x) x
+#define MGN_STRINGIFY_MACRO(x) #x
 
 #if MGN_USE_ASSERT
-#define MGN_CORE_ASSERT(condition, ...) \
-	while (!(condition)) {				\
-		MGN_CORE_ERROR(__VA_ARGS__);    \
-		MGN_BREAK();                    \
-		break; 							\
-	}
-#define MGN_ASSERT(condition, ...) 		\
-	while (!(condition)) {				\
-		MGN_ERROR(__VA_ARGS__);    		\
-		MGN_BREAK();               		\
-		break; 							\
-	}
+// Fetched from https://github.com/TheCherno/Hazel/blob/1feb70572fa87fa1c4ba784a2cfeada5b4a500db/Hazel/src/Hazel/Core/Base.h
+// Auto expand macro with optional message.
+
+// Alteratively we could use the same "default" message for both "WITH_MSG" and "NO_MSG" and
+// provide support for custom formatting by concatenating the formatting string instead of having the format inside the default message
+#define MGN_INTERNAL_ASSERT_IMPL(type, check, msg, ...) do { if(!(check)) { MGN##type##ERROR(msg, __VA_ARGS__); MGN_BREAK(); } } while (false)
+#define MGN_INTERNAL_ASSERT_WITH_MSG(type, check, ...) MGN_INTERNAL_ASSERT_IMPL(type, check, "Assertion failed: {0}", __VA_ARGS__)
+#define MGN_INTERNAL_ASSERT_NO_MSG(type, check) MGN_INTERNAL_ASSERT_IMPL(type, check, "Assertion '{0}' failed at {1}:{2}", MGN_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__)
+
+#define MGN_INTERNAL_ASSERT_GET_MACRO_NAME(arg1, arg2, macro, ...) macro
+#define MGN_INTERNAL_ASSERT_GET_MACRO(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_GET_MACRO_NAME(__VA_ARGS__, MGN_INTERNAL_ASSERT_WITH_MSG, MGN_INTERNAL_ASSERT_NO_MSG) )
+
+// Currently accepts at least the condition and one additional parameter (the message) being optional
+#define MGN_CASSERT(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_GET_MACRO(__VA_ARGS__)(_, __VA_ARGS__) )
+#define MGN_CORE_CASSERT(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_GET_MACRO(__VA_ARGS__)(_CORE_, __VA_ARGS__) )
+
+#define MGN_MASSERT(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_IMPL(_, __VA_ARGS__) )
+#define MGN_CORE_MASSERT(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_IMPL(_CORE_, __VA_ARGS__) )
+
 #else
-#define MGN_CORE_ASSERT(condition, ...)
-#define MGN_ASSERT(condition, ...)
+
+#define MGN_CASSERT(...)
+#define MGN_CORE_CASSERT(...)
+#define MGN_MASSERT(...)
+#define MGN_CORE_MASSERT(...)
+
 #endif
 
 #if MGN_DEBUG

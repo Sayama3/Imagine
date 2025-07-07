@@ -276,7 +276,7 @@ namespace Imagine::Core {
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
 					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
 						const Mat4 worldMat = scene->GetWorldTransform(id);
-						MGN_CORE_ASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
+						MGN_CORE_MASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
 						ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.gpuMesh);
 					});
 					m_Renderer->Draw(ctx);

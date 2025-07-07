@@ -13,7 +13,7 @@
 
 namespace Imagine::Core {
 	void MgnImGui::InitializeWindow() {
-		MGN_CORE_ASSERT(Imagine::Core::Window::Get(), "Window is not created.");
+		MGN_CORE_CASSERT(Imagine::Core::Window::Get(), "Window is not created.");
 #ifdef MGN_RENDERER_VULKAN
 		ImGui_ImplSDL3_InitForVulkan(static_cast<struct SDL_Window *>(Imagine::Core::Window::Get()->GetWindowPtr()));
 #else

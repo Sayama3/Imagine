@@ -1052,7 +1052,7 @@ namespace Imagine::Vulkan {
 				m_ResizeRequested = true;
 			}
 			else {
-				MGN_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
+				MGN_CORE_CASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failing to acquire the Swap Chain Image.");
 			}
 		}
 
@@ -1144,7 +1144,7 @@ namespace Imagine::Vulkan {
 			ResizeSwapChain();
 		}
 		else {
-			MGN_CORE_ASSERT(result == VK_SUCCESS, "Failing to acquire the Swap Chain Image.");
+			MGN_CORE_CASSERT(result == VK_SUCCESS, "Failing to acquire the Swap Chain Image.");
 		}
 		m_FrameIndex = (m_FrameIndex + 1) % GetRenderParams().NbrFrameInFlight;
 		m_IsDrawing = false;
@@ -1320,7 +1320,7 @@ namespace Imagine::Vulkan {
 										layoutBuilder.AddBinding(binding++, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 										break;
 									default:
-										MGN_CORE_ASSERT(false, "The type {} should already have been handled.", field.type);
+										MGN_CORE_MASSERT(false, "The type {} should already have been handled.", field.type);
 										break;
 								}
 							}
@@ -1409,7 +1409,7 @@ namespace Imagine::Vulkan {
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
 				break;
 			case Topology::Point:
-				MGN_CORE_ASSERT(false, "The point topology is not supported yet.");
+				MGN_CORE_CASSERT(false, "The point topology is not supported yet.");
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 				break;
 		}
@@ -1484,7 +1484,7 @@ namespace Imagine::Vulkan {
 				}
 				else {
 					vkInstance->materialSetVulkanData.back().emplace_back(std::monostate{});
-					MGN_CORE_ASSERT(binding.fields.size() == 1, "[Vulkan] Nah, if it ain't a buffer it's alone.");
+					MGN_CORE_CASSERT(binding.fields.size() == 1, "[Vulkan] Nah, if it ain't a buffer it's alone.");
 					auto &field = binding.fields.back();
 					AssetHandle asset{NULL_ASSET_HANDLE};
 					bool isVirtual{false};
@@ -1682,7 +1682,7 @@ namespace Imagine::Vulkan {
 
 			AutoDeleteMeshAsset *mesh = dynamic_cast<AutoDeleteMeshAsset *>(draw.mesh.get());
 
-			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+			MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
 			const LOD &lod = mesh->lods.front();
 
@@ -1708,7 +1708,7 @@ namespace Imagine::Vulkan {
 		for (uint64_t i = 0; i < lineMeshes.size(); ++i) {
 			ManualDeleteMeshAsset *mesh = &lineMeshes[i];
 
-			MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+			MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 			// TODO: Do some smart LOD selection instead of the best one everytime
 			const LOD &lod = mesh->lods.front();
 
@@ -1735,7 +1735,7 @@ namespace Imagine::Vulkan {
 		//
 		// 	AutoDeleteMeshAsset *mesh = pointMesh.get();
 		//
-		// 	MGN_CORE_ASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+		// 	MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
 		// 	// TODO: Do some smart LOD selection instead of the best one everytime
 		// 	const LOD &lod = mesh->lods.front();
 		//

@@ -24,7 +24,7 @@ namespace Imagine::Vulkan {
 	}
 
 	void Deleter::flush(VkDevice device) {
-		MGN_CORE_ASSERT(device, "Vulkan Device is not set in the Vulkan Deleter.");
+		MGN_CORE_CASSERT(device, "Vulkan Device is not set in the Vulkan Deleter.");
 		// reverse iterate the deletion queue to execute all the functions
 		for (auto it = m_ToDelete.rbegin(); it != m_ToDelete.rend(); ++it) {
 			VkType &type = *it;
@@ -95,9 +95,9 @@ namespace Imagine::Vulkan {
 	AutoDeleter::~AutoDeleter() {
 		using namespace Core;
 		Renderer* renderer = Core::Renderer::Get();
-		MGN_CORE_ASSERT(renderer, "We need a renderer to autodelete");
+		MGN_CORE_CASSERT(renderer, "We need a renderer to autodelete");
 		VulkanRenderer* vkRenderer = dynamic_cast<VulkanRenderer*>(renderer);
-		MGN_CORE_ASSERT(vkRenderer, "We need a vulkan renderer to autodelete the vulkan auto deleter.");
+		MGN_CORE_CASSERT(vkRenderer, "We need a vulkan renderer to autodelete the vulkan auto deleter.");
 		m_Deleter.flush(vkRenderer->GetDevice());
 	}
 	AutoDeleter::AutoDeleter(AutoDeleter &&o) noexcept {

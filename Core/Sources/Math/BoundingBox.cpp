@@ -7,7 +7,7 @@
 namespace Imagine::Core {
 	BoundingBox::BoundingBox(const Vec3 &min, const Vec3 &max) :
 		m_Max(max), m_Min(min) {
-		MGN_CORE_ASSERT(Math::Max(m_Min, m_Max) == m_Max, "The max ({}) should be ({})", m_Max, Math::Max(m_Min, m_Max));
+		MGN_CORE_MASSERT(Math::Max(m_Min, m_Max) == m_Max, "The max ({}) should be ({})", m_Max, Math::Max(m_Min, m_Max));
 	}
 
 	BoundingBox::BoundingBox(const BoundingBox &one, const BoundingBox &two) :

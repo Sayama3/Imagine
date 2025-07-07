@@ -4,10 +4,10 @@
 
 #include "Imagine/Core/Macros.hpp"
 
-#define STBI_ASSERT(x)  MGN_CORE_ASSERT(x, "[STB Image] '{}' is false.", #x)
-#define STBIR_ASSERT(x) MGN_CORE_ASSERT(x, "[STB Image Resize] '{}' is false.", #x)
-#define STBIW_ASSERT(x) MGN_CORE_ASSERT(x, "[STB Image Write] '{}' is false.", #x)
-// #define STBTT_assert(x) MGN_CORE_ASSERT(x, "[STB True Type] '{}' is false.", #x)
+#define STBI_ASSERT(x)  MGN_CORE_CASSERT(x)
+#define STBIR_ASSERT(x) MGN_CORE_CASSERT(x)
+#define STBIW_ASSERT(x) MGN_CORE_CASSERT(x)
+#define STBTT_assert(x) MGN_CORE_CASSERT(x)
 
 #define STB_IMAGE_IMPLEMENTATION 1
 #define STB_IMAGE_RESIZE_IMPLEMENTATION 1

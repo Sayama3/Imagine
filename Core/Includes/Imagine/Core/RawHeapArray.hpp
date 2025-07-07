@@ -110,13 +110,13 @@ namespace Imagine::Core {
 
 	private:
 		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2) {
-			MGN_CORE_ASSERT(id1 < Capacity, "THe index {} is out of bound.", id1);
-			MGN_CORE_ASSERT(id2 < Capacity, "THe index {} is out of bound.", id2);
+			MGN_CORE_MASSERT(id1 < Capacity, "The index {} is out of bound.", id1);
+			MGN_CORE_MASSERT(id2 < Capacity, "The index {} is out of bound.", id2);
 			MemoryHelper::c_swap_memory(&reinterpret_cast<uint8_t *>(data)[id1 * DataSize], &reinterpret_cast<uint8_t *>(data)[id2 * DataSize], DataSize);
 		}
 		void reallocate_and_copy(const UnsignedInteger size) {
 			void *new_data = realloc(data, DataSize * size);
-			MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
+			MGN_CORE_CASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
 			if (new_data) {
 				data = new_data;
 				Capacity = size;
@@ -196,18 +196,18 @@ namespace Imagine::Core {
 
 		void *get(const UnsignedInteger index) {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
-			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_MASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			return GetPtr(index);
 		}
 
 		const void *get(const UnsignedInteger index) const {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
-			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_MASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			return GetPtr(index);
 		}
@@ -222,9 +222,9 @@ namespace Imagine::Core {
 
 		Buffer get_buffer(const UnsignedInteger index) const {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
-			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_MASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			Buffer buff{DataSize};
 			memcpy(buff.Get(), GetPtr(index), DataSize);
@@ -241,9 +241,9 @@ namespace Imagine::Core {
 
 		BufferView get_view(const UnsignedInteger index) {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
-			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_MASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			return {GetPtr(index), 0, DataSize};
 		}
@@ -255,9 +255,9 @@ namespace Imagine::Core {
 
 		ConstBufferView get_const_view(const UnsignedInteger index) const {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
-			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_MASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			return {GetPtr(index), 0, DataSize};
 		}

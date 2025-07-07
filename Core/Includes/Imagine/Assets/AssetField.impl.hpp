@@ -36,8 +36,8 @@ namespace Imagine::Core
 
     template<typename T>
     Ref<T> AssetField<T>::GetAsset() const {
-        MGN_CORE_ASSERT(AssetManager::IsAssetHandleValid(Handle), "The handle is not valid.");
         MGN_PROFILE_FUNCTION();
+        MGN_CORE_CASSERT(AssetManager::IsAssetHandleValid(Handle));
         return AssetManager::GetAssetAs<T>(Handle);
     }
 

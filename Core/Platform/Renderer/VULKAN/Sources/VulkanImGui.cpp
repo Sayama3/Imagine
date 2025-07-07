@@ -14,7 +14,7 @@ namespace Imagine::Core {
 	void MgnImGui::InitializeRenderer() {
 
 		VulkanRenderer *renderer = dynamic_cast<VulkanRenderer *>(Renderer::Get());
-		MGN_CORE_ASSERT(renderer, "Vulkan Renderer not initialized.");
+		MGN_CORE_CASSERT(renderer, "Vulkan Renderer not initialized.");
 		renderer->InitializeImGui();
 	}
 

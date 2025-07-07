@@ -245,7 +245,7 @@ target_include_directories(Core PRIVATE Sources)
 
 target_compile_features(Core PUBLIC cxx_std_20)
 
-target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp xxhash Bitsery::bitsery)
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp xxhash Bitsery::bitsery sol2::sol2)
 
 add_library(Imagine::Core ALIAS Core)
 

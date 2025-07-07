@@ -32,7 +32,7 @@ namespace Imagine::Vulkan {
 		return reinterpret_cast<uint64_t>(pipeline.pipeline);
 	}
 	void GLTFMetallicRoughness::BuildPipeline(VulkanRenderer* renderer) {
-		MGN_CORE_ASSERT(renderer, "The current renderer is not a Vulkan renderer.");
+		MGN_CORE_CASSERT(renderer, "The current renderer is not a Vulkan renderer.");
 
 		opaque = CreateRef<VulkanMaterial>();
 		transparent = CreateRef<VulkanMaterial>();
@@ -108,7 +108,7 @@ namespace Imagine::Vulkan {
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
 				break;
 			case Topology::Point:
-				MGN_CORE_ASSERT(false, "The point topology is not supported yet.");
+				MGN_CORE_CASSERT(false, "The point topology is not supported yet.");
 				builder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 				break;
 		}

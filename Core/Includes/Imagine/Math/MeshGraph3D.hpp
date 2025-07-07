@@ -187,7 +187,7 @@ namespace Imagine::Math {
 
 			[[nodiscard]] inline VertexID GetOtherVertexID(VertexID id) const {
 				if (begin == id) return end;
-				// MGN_CORE_ASSERT(id == end, "The point id {} is not part of this edge.", id.string());
+				// MGN_CORE_CASSERT(id == end, "The point id {} is not part of this edge.", id.string());
 				return begin;
 			}
 
@@ -196,7 +196,7 @@ namespace Imagine::Math {
 					linkedFaces[0] = faceID;
 				}
 				else {
-					// MGN_CORE_ASSERT(!linkedFaces[1].has_value(), "The two possible triangle of the edge are filled.");
+					// MGN_CORE_CASSERT(!linkedFaces[1].has_value(), "The two possible triangle of the edge are filled.");
 					linkedFaces[1] = faceID;
 				}
 			}
@@ -583,7 +583,7 @@ namespace Imagine::Math {
 			if (edgeIds.contains(MGN_MAKE_PAIR_TYPE(edge1.begin, edge1.end, ReversiblePair<VertexID>))) {
 				edge1Id = edgeIds.at(MGN_MAKE_PAIR_TYPE(edge1.begin, edge1.end, ReversiblePair<VertexID>));
 				edge1 = newEdges.at(edge1Id);
-				// MGN_CORE_ASSERT(edge1.begin == vertId1 || edge1.end == vertId1 && edge1.begin == vertId2 || edge1.end == vertId2, "The Edge is not the correct one.");
+				// MGN_CORE_MASSERT(edge1.begin == vertId1 || edge1.end == vertId1 && edge1.begin == vertId2 || edge1.end == vertId2, "The Edge is not the correct one.");
 			}
 			else {
 				edge1Id = EdgeID{};
@@ -594,7 +594,7 @@ namespace Imagine::Math {
 			if (edgeIds.contains(MGN_MAKE_PAIR_TYPE(edge2.begin, edge2.end, ReversiblePair<VertexID>))) {
 				edge2Id = edgeIds.at(MGN_MAKE_PAIR_TYPE(edge2.begin, edge2.end, ReversiblePair<VertexID>));
 				edge2 = newEdges.at(edge2Id);
-				// MGN_CORE_ASSERT(edge2.begin == vertId3 || edge2.end == vertId3 && edge2.begin == vertId2 || edge2.end == vertId2, "The Edge is not the correct one.");
+				// MGN_CORE_MASSERT(edge2.begin == vertId3 || edge2.end == vertId3 && edge2.begin == vertId2 || edge2.end == vertId2, "The Edge is not the correct one.");
 			}
 			else {
 				edge2Id = EdgeID{};
@@ -605,7 +605,7 @@ namespace Imagine::Math {
 			if (edgeIds.contains(MGN_MAKE_PAIR_TYPE(edge3.begin, edge3.end, ReversiblePair<VertexID>))) {
 				edge3Id = edgeIds.at(MGN_MAKE_PAIR_TYPE(edge3.begin, edge3.end, ReversiblePair<VertexID>));
 				edge3 = newEdges.at(edge3Id);
-				// MGN_CORE_ASSERT(edge3.begin == vertId1 || edge3.end == vertId1 && edge3.begin == vertId3 || edge3.end == vertId3, "The Edge is not the correct one.");
+				// MGN_CORE_MASSERT(edge3.begin == vertId1 || edge3.end == vertId1 && edge3.begin == vertId3 || edge3.end == vertId3, "The Edge is not the correct one.");
 			}
 			else {
 				edge3Id = EdgeID{};
@@ -1034,31 +1034,31 @@ namespace Imagine::Math {
 
 			Face newf1;
 			if (f1.GetFollowing(v3Id) == v1Id) {
-				// MGN_CORE_ASSERT(f1.GetFollowing(v1Id) == v2Id, "WTF is this triangle !");
+				// MGN_CORE_CASSERT(f1.GetFollowing(v1Id) == v2Id, "WTF is this triangle !");
 
 				newf1.vertices = {v3Id, v1Id, v4Id};
 				newf1.edges = {vertToEdgeMap.at({v3Id, v1Id}),vertToEdgeMap.at({v1Id, v4Id}),vertToEdgeMap.at({v4Id, v3Id})};
 			} else {
-				// MGN_CORE_ASSERT(f1.GetFollowing(v3Id) == v2Id, "WTF is this triangle !");
-				// MGN_CORE_ASSERT(f1.GetFollowing(v2Id) == v1Id, "WTF is this triangle !");
+				// MGN_CORE_CASSERT(f1.GetFollowing(v3Id) == v2Id, "WTF is this triangle !");
+				// MGN_CORE_CASSERT(f1.GetFollowing(v2Id) == v1Id, "WTF is this triangle !");
 				newf1.vertices = {v3Id, v2Id, v4Id};
 				newf1.edges = {vertToEdgeMap.at({v3Id, v2Id}),vertToEdgeMap.at({v2Id, v4Id}),vertToEdgeMap.at({v4Id, v3Id})};
 			}
 
 			Face newf2;
 			if (f2.GetFollowing(v4Id) == v1Id) {
-				// MGN_CORE_ASSERT(f2.GetFollowing(v1Id) == v2Id, "WTF is this triangle !");
+				// MGN_CORE_CASSERT(f2.GetFollowing(v1Id) == v2Id, "WTF is this triangle !");
 
 				newf2.vertices = {v4Id, v1Id, v3Id};
 				newf2.edges = {vertToEdgeMap.at({v4Id, v1Id}),vertToEdgeMap.at({v1Id, v3Id}),vertToEdgeMap.at({v3Id, v4Id})};
 			} else {
-				// MGN_CORE_ASSERT(f2.GetFollowing(v4Id) == v2Id, "WTF is this triangle !");
-				// MGN_CORE_ASSERT(f2.GetFollowing(v2Id) == v1Id, "WTF is this triangle !");
+				// MGN_CORE_CASSERT(f2.GetFollowing(v4Id) == v2Id, "WTF is this triangle !");
+				// MGN_CORE_CASSERT(f2.GetFollowing(v2Id) == v1Id, "WTF is this triangle !");
 				newf2.vertices = {v4Id, v2Id, v3Id};
 				newf2.edges = {vertToEdgeMap.at({v4Id, v2Id}),vertToEdgeMap.at({v2Id, v3Id}),vertToEdgeMap.at({v3Id, v4Id})};
 			}
 
-			// MGN_CORE_ASSERT(newf1.vertices[1] != newf2.vertices[1], "We used the same vertice for the two triangles, there is a problem somewhere.");
+			// MGN_CORE_CASSERT(newf1.vertices[1] != newf2.vertices[1], "We used the same vertice for the two triangles, there is a problem somewhere.");
 
 			f1 = newf1;
 			f2 = newf2;

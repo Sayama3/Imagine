@@ -11,7 +11,7 @@
 
 namespace Imagine::Core {
 	void MgnImGui::InitializeWindow() {
-		MGN_CORE_ASSERT(Imagine::Core::Window::Get(), "Window is not created.");
+		MGN_CORE_CASSERT(Imagine::Core::Window::Get(), "Window is not created.");
 #ifdef MGN_RENDERER_VULKAN
 		ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow *>(Imagine::Core::Window::Get()->GetWindowPtr()), true);
 #else

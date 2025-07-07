@@ -376,7 +376,7 @@ namespace Imagine::Core {
 
 		[[nodiscard]] virtual void *Get(const UnsignedInteger id) {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 			return elements.get(sparse[id]);
 		}
@@ -388,14 +388,14 @@ namespace Imagine::Core {
 
 		[[nodiscard]] virtual const void *Get(const UnsignedInteger id) const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 			return elements.get(sparse[id]);
 		}
 
 		[[nodiscard]] virtual Buffer GetBuffer(const UnsignedInteger id) const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 
 			return elements.get_buffer(sparse[id]);
@@ -409,7 +409,7 @@ namespace Imagine::Core {
 
 		[[nodiscard]] virtual BufferView GetView(const UnsignedInteger id) {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 
 			return elements.get_view(sparse[id]);
@@ -423,7 +423,7 @@ namespace Imagine::Core {
 
 		[[nodiscard]] virtual ConstBufferView GetConstView(const UnsignedInteger id) const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 
 			return elements.get_const_view(sparse[id]);

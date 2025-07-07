@@ -49,62 +49,62 @@ namespace Imagine::Core {
 		void Zeroes();
 
 	public:
-		void *Get();
-		const void *Get() const;
+		[[nodiscard]] void *Get();
+		[[nodiscard]] const void *Get() const;
 
-		uint64_t Size() const;
+		[[nodiscard]] uint64_t Size() const;
 
 	public:
 		template<typename T>
-		T *Get() {
+		[[nodiscard]] T *Get() {
 #if MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
+			MGN_CORE_MASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), typeid(T).name(), m_Size, sizeof(T));
 #endif
 			// TODO: Maybe use "static_cast" ?
 			return reinterpret_cast<T *>(m_Data);
 		}
 
 		template<typename T>
-		const T *Get() const {
+		[[nodiscard]] const T *Get() const {
 #if MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+			MGN_CORE_MASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
 #endif
 			// TODO: Maybe use "static_cast" ?
 			return reinterpret_cast<const T *>(m_Data);
 		}
 
 		template<typename T>
-		T &As() {
+		[[nodiscard]] T &As() {
 #if MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+			MGN_CORE_MASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
 #endif
 			// TODO: Maybe use "static_cast" ?
 			return *reinterpret_cast<T *>(m_Data);
 		}
 
 		template<typename T>
-		const T &As() const {
+		[[nodiscard]] const T &As() const {
 #if MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+			MGN_CORE_MASSERT(m_Size >= sizeof(T), "Assertion 'm_Size >= sizeof({})' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
 #endif
 			// TODO: Maybe use "static_cast" ?
 			return *reinterpret_cast<const T *>(m_Data);
 		}
 
 		template<typename T>
-		T &Get(const uint64_t index) {
+		[[nodiscard]] T &Get(const uint64_t index) {
 #if MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
-			MGN_CORE_ASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), index, typeid(T).name(), Count<T>());
+			MGN_CORE_MASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+			MGN_CORE_MASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), index, typeid(T).name(), Count<T>());
 #endif
 			return reinterpret_cast<T *>(m_Data)[index];
 		}
 
 		template<typename T>
-		const T &Get(const uint64_t index) const {
+		[[nodiscard]] const T &Get(const uint64_t index) const {
 #if MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
-			MGN_CORE_ASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), index, typeid(T).name(), Count<T>());
+			MGN_CORE_MASSERT(m_Size % sizeof(T) == 0, "Assertion 'm_Size % sizeof({}) == 0' failed.\n  m_Size = '{}' \n  sizeof({}) = '{}'.", typeid(T).name(), m_Size, typeid(T).name(), sizeof(T));
+			MGN_CORE_MASSERT(index < Count<T>(), "Assertion 'index < Count<{}>()' failed.\n  index = '{}' \n  Count<{}>() = '{}'.", typeid(T).name(), index, typeid(T).name(), Count<T>());
 #endif
 			return reinterpret_cast<const T *>(m_Data)[index];
 		}
@@ -116,14 +116,14 @@ namespace Imagine::Core {
 		const T &operator[](const uint64_t index) const { return Get<T>(index); }
 
 		template<typename T>
-		uint64_t Count() const {
-			MGN_CORE_ASSERT(m_Size % sizeof(T) == 0, "The size of '{}' cannot give a whole number of object.", typeid(T).name());
+		[[nodiscard]] uint64_t Count() const {
+			MGN_CORE_MASSERT(m_Size % sizeof(T) == 0, "The size of '{}' cannot give a whole number of object.", typeid(T).name());
 			if (!m_Data) return 0;
 			return m_Size / sizeof(T);
 		}
 
 		template<typename T>
-		T *TryGet(const uint64_t index) {
+		[[nodiscard]] T *TryGet(const uint64_t index) {
 			static_assert(m_Size % sizeof(T) == 0);
 			if (!m_Data) return nullptr;
 			const uint64_t Count = m_Size / sizeof(T);
@@ -133,7 +133,7 @@ namespace Imagine::Core {
 		}
 
 		template<typename T>
-		const T *TryGet(const uint64_t index) const {
+		[[nodiscard]] const T *TryGet(const uint64_t index) const {
 			static_assert(m_Size % sizeof(T) == 0);
 			if (!m_Data) return nullptr;
 			const uint64_t Count = m_Size / sizeof(T);

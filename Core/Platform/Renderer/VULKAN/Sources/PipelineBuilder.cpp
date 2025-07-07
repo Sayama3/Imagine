@@ -140,7 +140,7 @@ namespace Imagine::Vulkan {
 	}
 
 	VkPipeline PipelineBuilder::BuildPipeline(VkDevice device) {
-		MGN_CORE_ASSERT(m_PipelineLayout, "Cannot build a pipeline without a pipeline layout.");
+		MGN_CORE_CASSERT(m_PipelineLayout, "Cannot build a pipeline without a pipeline layout.");
 		if (!m_PipelineLayout) return VK_NULL_HANDLE;
 
 		VkPipelineViewportStateCreateInfo viewportState = {};

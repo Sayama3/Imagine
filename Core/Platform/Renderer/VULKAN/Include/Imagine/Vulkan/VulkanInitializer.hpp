@@ -213,7 +213,7 @@ namespace Imagine::Vulkan {
 		}
 
 		inline static VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shader, const char *entrypointName = "main") {
-			MGN_CORE_ASSERT(entrypointName != nullptr, "[Vulkan] Cannot create a shader without a name.");
+			MGN_CORE_CASSERT(entrypointName != nullptr, "[Vulkan] Cannot create a shader without a name.");
 
 			VkPipelineShaderStageCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

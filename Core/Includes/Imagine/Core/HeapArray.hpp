@@ -135,14 +135,14 @@ namespace Imagine::Core {
 		inline const_iterator cend() const { return const_iterator(this, Count);}
 	private:
 		void c_swap_elements(const UnsignedInteger id1, const UnsignedInteger id2) {
-			MGN_CORE_ASSERT(id1 < Capacity, "The index {} is out of bound.", id1);
-			MGN_CORE_ASSERT(id2 < Capacity, "The index {} is out of bound.", id2);
+			MGN_CORE_MASSERT(id1 < Capacity, "The index {} is out of bound.", id1);
+			MGN_CORE_MASSERT(id2 < Capacity, "The index {} is out of bound.", id2);
 			MemoryHelper::c_swap_memory(&data[id1], &data[id2]);
 		}
 
 		void reallocate_and_copy(const UnsignedInteger size) {
 			void *new_data = realloc(data, sizeof(T) * size);
-			MGN_CORE_ASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
+			MGN_CORE_CASSERT(new_data, "The reallocation failed. Not enough memory in RAM.");
 			if (new_data) {
 				data = reinterpret_cast<T *>(new_data);
 				Capacity = size;
@@ -214,9 +214,9 @@ namespace Imagine::Core {
 		[[nodiscard]] T &at(const UnsignedInteger index) {return get(index);}
 		[[nodiscard]] T &get(const UnsignedInteger index) {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
-			MGN_ASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_MASSERT(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			return data[index];
 		}
@@ -229,8 +229,8 @@ namespace Imagine::Core {
 		[[nodiscard]] const T &at(const UnsignedInteger index) const {return get(index);}
 		[[nodiscard]] const T &get(const UnsignedInteger index) const {
 #ifdef MGN_DEBUG
-			MGN_ASSERT(data, "The buffer is not allocated yet.");
-			MGN_CORE_ASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
+			MGN_CASSERT(data, "The buffer is not allocated yet.");
+			MGN_CORE_MASSERT(index < Capacity, "The index ({}) is not in the allocated ({}) bounds.", index, Capacity);
 			MGN_CORE_CHECK(index < Count, "The index ({}) is not in the Count ({}) bounds.", index, Count);
 #endif
 			return data[index];

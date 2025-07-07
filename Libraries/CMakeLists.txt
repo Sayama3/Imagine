@@ -38,6 +38,16 @@ set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 add_subdirectory(assimp)
 
+set(SOL2_CI OFF) # Whether or not we are in continguous integration mode
+set(SOL2_SYSTEM_INCLUDE OFF) # Whether or not sol2 should be considered a system include. This helps suppress errors for when the sol2 author is a big derp and doesn't fix every single warning, ever.
+set(SOL2_TESTS OFF) # Enable build of tests
+set(SOL2_EXAMPLES OFF) # Enable build of examples
+set(SOL2_INTEROP_EXAMPLES OFF) # Enable build of interop examples
+set(SOL2_DYNAMIC_LOADING_EXAMPLES OFF) # Enable build of interop examples
+set(SOL2_SINGLE OFF) # Enable generation and build of single header files
+set(SOL2_DOCS OFF) # Enable build of documentation
+set(SOL2_ENABLE_INSTALL OFF) # Enable installation of Sol2
+add_subdirectory(sol2)
 
 set(MESHOPT_BUILD_DEMO OFF) # Build demo
 set(MESHOPT_BUILD_GLTFPACK OFF) # Build gltfpack

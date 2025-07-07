@@ -245,7 +245,7 @@ namespace Imagine::SDL3 {
 	Vec2 SDL3Window::GetPosition() {
 		int x, y;
 		const bool result = SDL_GetWindowPosition(m_Window, &x, &y);
-		MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
+		MGN_CORE_MASSERT(result, "[SDL3] {}", SDL_GetError());
 		return Vec2{x, y};
 	}
 	uint32_t SDL3Window::GetWindowWidth() {
@@ -269,12 +269,12 @@ namespace Imagine::SDL3 {
 		int x, y;
 		{
 			const bool result = SDL_GetWindowPosition(m_Window, &x, &y);
-			MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
+			MGN_CORE_MASSERT(result, "[SDL3] {}", SDL_GetError());
 		}
 		int width, height;
 		{
 			const bool result = SDL_GetWindowSize(m_Window, &width, &height);
-			MGN_CORE_ASSERT(result, "[SDL3] {}", SDL_GetError());
+			MGN_CORE_MASSERT(result, "[SDL3] {}", SDL_GetError());
 		}
 		return Rect<>{(float) x, (float) y, (float) x + width, (float) y + height};
 	}

@@ -78,7 +78,7 @@ namespace Imagine::Vulkan {
 			// 	}
 			//
 			//
-			// 	MGN_CORE_ASSERT(image.channels == 4, "[Vulkan] image.channels == 4");
+			// 	MGN_CORE_CASSERT(image.channels == 4, "[Vulkan] image.channels == 4");
 			//
 			// 	images[i] = renderer->CreateImage(image.source.Get(), {image.width, image.height, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, true);
 			// 	deleters[i] = AutoDeleter::MakeShared();
@@ -216,7 +216,7 @@ namespace Imagine::Vulkan {
 
 					indices.reserve(aiMesh->mNumFaces * 3);
 					for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
-						MGN_CORE_ASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
+						MGN_CORE_CASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
 						const aiFace &face = aiMesh->mFaces[i];
 						indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 					}
@@ -363,7 +363,7 @@ namespace Imagine::Vulkan {
 		}
 
 		std::shared_ptr<AutoDeleteMeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Core::Vertex> points) {
-			MGN_CORE_ASSERT(false, "The load points function is not implemented yet.");
+			MGN_CORE_CASSERT(false, "The load points function is not implemented yet.");
 			return nullptr;
 			/*
 						std::vector<uint32_t> indices;
@@ -477,7 +477,7 @@ namespace Imagine::Vulkan {
 
 				indices.reserve(aiMesh->mNumFaces * 3);
 				for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
-					MGN_CORE_ASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
+					MGN_CORE_CASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
 					const aiFace &face = aiMesh->mFaces[i];
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}

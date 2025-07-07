@@ -316,7 +316,7 @@ namespace Imagine::Core {
 
 		[[nodiscard]] virtual T &Get(const UnsignedInteger id) {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 			return elements[sparse[id]];
 		}
@@ -327,18 +327,18 @@ namespace Imagine::Core {
 
 		[[nodiscard]] virtual const T &Get(const UnsignedInteger id) const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(Exist(id), "The element ID {} doesn't exist.", id);
+			MGN_CORE_MASSERT(Exist(id), "The element ID {} doesn't exist.", id);
 #endif
 			return elements[sparse[id]];
 		}
 
 		UnsignedInteger GetIndex(const UnsignedInteger id) const {
-			MGN_CORE_ASSERT(dense[sparse[id]] == id, "ID '{}' is not valid.", id);
+			MGN_CORE_MASSERT(dense[sparse[id]] == id, "ID '{}' is not valid.", id);
 			return sparse[id];
 		}
 
 		UnsignedInteger GetID(const UnsignedInteger index) const {
-			MGN_CORE_ASSERT(sparse[dense[index]] == index, "Index '{}' is not valid.", index);
+			MGN_CORE_MASSERT(sparse[dense[index]] == index, "Index '{}' is not valid.", index);
 			return dense[index];
 		}
 

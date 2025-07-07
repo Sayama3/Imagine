@@ -49,18 +49,18 @@ namespace Imagine::Core {
 		uint64_t Size() const;
 
 		void Set(const Buffer &buffer) {
-			MGN_CORE_ASSERT(buffer.Size() == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(buffer.Size() == m_Size && Get(), "The type or the offset is not valid.");
 			memcpy(m_Buffer, buffer.Get(), m_Size);
 		}
 
 		void Set(const void *buffer) {
-			MGN_CORE_ASSERT(Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(Get(), "The type or the offset is not valid.");
 			memcpy(m_Buffer, buffer, m_Size);
 		}
 
 		template<typename T>
 		void Set(const T &data) {
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
 			memcpy(m_Buffer, &data, sizeof(T));
 		}
 
@@ -68,7 +68,7 @@ namespace Imagine::Core {
 		T *Get() {
 			// static_assert(sizeof(T) == m_Size);
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<T *>(Get());
 		}
@@ -76,7 +76,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T *Get() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<T *>(Get());
 		}
@@ -85,7 +85,7 @@ namespace Imagine::Core {
 		T &As() {
 			// static_assert(sizeof(T) == m_Size);
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
 #endif
 			return *reinterpret_cast<T *>(Get());
 		}
@@ -93,7 +93,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T &As() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(sizeof(T) == m_Size && Get(), "The type or the offset is not valid.");
 #endif
 			return *reinterpret_cast<T *>(Get());
 		}
@@ -102,14 +102,14 @@ namespace Imagine::Core {
 		template<typename T>
 		T &At(const uint64_t index) {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
 #endif
 			return *(reinterpret_cast<T *>(Get()) + index);
 		}
 		template<typename T>
 		const T &At(const uint64_t index) const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
 #endif
 			return *(reinterpret_cast<T *>(Get()) + index);
 		}
@@ -166,7 +166,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T *Get() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size >= sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return reinterpret_cast<const T *>(Get());
 		}
@@ -174,7 +174,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T &At(const uint64_t index) const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
 #endif
 			return *(reinterpret_cast<T *>(Get()) + index);
 		}
@@ -182,7 +182,7 @@ namespace Imagine::Core {
 		template<typename T>
 		const T &As() const {
 #ifdef MGN_DEBUG
-			MGN_CORE_ASSERT(m_Size == sizeof(T) && Get(), "The type or the offset is not valid.");
+			MGN_CORE_CASSERT(m_Size == sizeof(T) && Get(), "The type or the offset is not valid.");
 #endif
 			return *reinterpret_cast<const T *>(Get());
 		}

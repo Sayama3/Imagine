@@ -14,12 +14,12 @@ namespace Imagine::CPU {
 	CPURenderer::~CPURenderer() {}
 
 	void CPURenderer::Draw() {
-		MGN_CORE_ASSERT(false, "CPU Renderer not implemented.");
+		MGN_CORE_CASSERT(false, "CPU Renderer not implemented.");
 	}
 	void CPURenderer::SendImGuiCommands() {
-		MGN_CORE_ASSERT(false, "CPU Renderer not implemented.");
+		MGN_CORE_CASSERT(false, "CPU Renderer not implemented.");
 	}
 	void CPURenderer::PrepareShutdown() {
-		MGN_CORE_ASSERT(false, "CPU Renderer not implemented.");
+		MGN_CORE_CASSERT(false, "CPU Renderer not implemented.");
 	}
 } // namespace Imagine::CPU
