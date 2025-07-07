@@ -7,7 +7,7 @@
 namespace Imagine::Core {
 
 	Buffer CPUFileShader::GetShaderContent() {
-		return FileSystem::readBinaryFile(path.GetFullPath());
+		return FileSystem::ReadBinaryFile(path.GetFullPath());
 	}
 	std::string CPUFileShader::GetName() {
 		return path.path.filename().string();

@@ -1282,7 +1282,7 @@ namespace Imagine::Vulkan {
 				for (uint32_t blockIndex = 0; blockIndex < set.Blocks.size(); ++blockIndex) {
 					const auto &block = set.Blocks[blockIndex];
 					VkDescriptorType bufferType;
-					switch (block.bufferType) {
+					switch (block.GPUBufferType) {
 						case MaterialBlock::SSBO:
 							bufferType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 							break;
@@ -1296,14 +1296,14 @@ namespace Imagine::Vulkan {
 						layoutBuilder.AddBinding(binding++, bufferType);
 					}
 					else {
-						for (uint32_t fieldIndex = 0; fieldIndex < block.fields.size(); ++fieldIndex) {
-							const auto &field = block.fields[fieldIndex];
+						for (uint32_t fieldIndex = 0; fieldIndex < block.Fields.size(); ++fieldIndex) {
+							const auto &field = block.Fields[fieldIndex];
 							gpuMaterial->materialLayoutsDescriptions[setIndex].bindings.push_back({field});
 
 							auto &bindingBlock = gpuMaterial->materialLayoutsDescriptions[setIndex].bindings.back();
-							bindingBlock.bufferType = block.bufferType;
-							bindingBlock.read = block.read;
-							bindingBlock.write = block.write;
+							bindingBlock.GPUBufferType = block.GPUBufferType;
+							bindingBlock.Read = block.Read;
+							bindingBlock.Write = block.Write;
 
 							if (Helper::IsBufferType(field.type)) {
 								layoutBuilder.AddBinding(binding++, bufferType);
@@ -1340,10 +1340,10 @@ namespace Imagine::Vulkan {
 				pcr.stageFlags = Utils::GetShaderStageFlagsBits(pc.Stages);
 				pcr.offset = pc.offset;
 				pcr.size = 0u;
-				for (uint32_t i = 0; i < pc.Block.fields.size(); ++i) {
-					auto &field = pc.Block.fields[i];
+				for (uint32_t i = 0; i < pc.Block.Fields.size(); ++i) {
+					auto &field = pc.Block.Fields[i];
 					if (!Helper::IsBufferType(field.type)) continue;
-					gpuMaterial->pushConstantsDescription.back().fields.push_back(field);
+					gpuMaterial->pushConstantsDescription.back().Fields.push_back(field);
 					pcr.size += field.GetSize();
 				}
 				gpuMaterial->pushConstants.push_back(pcr);
@@ -1453,7 +1453,7 @@ namespace Imagine::Vulkan {
 				if (binding.IsABuffer()) {
 					VkBufferUsageFlagBits usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 					VkDescriptorType type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-					switch (binding.bufferType) {
+					switch (binding.GPUBufferType) {
 						case MaterialBlock::SSBO:
 							usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 							type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1469,8 +1469,8 @@ namespace Imagine::Vulkan {
 					vkInstance->materialSetVulkanData.back().push_back(vkBuffer);
 					vkInstance->deleter->push(m_Allocator, vkBuffer.allocation, vkBuffer.buffer);
 					uint32_t offset{0};
-					for (uint32_t fieldIndex = 0; fieldIndex < binding.fields.size(); ++fieldIndex) {
-						const auto &field = binding.fields[fieldIndex];
+					for (uint32_t fieldIndex = 0; fieldIndex < binding.Fields.size(); ++fieldIndex) {
+						const auto &field = binding.Fields[fieldIndex];
 						const CPUMaterialInstance::SetFieldPosition pos{setIndex, bindingIndex, fieldIndex};
 						if (instance.SetEditions.contains(pos)) {
 							const auto &buff = instance.SetEditions.at(pos);
@@ -1484,8 +1484,8 @@ namespace Imagine::Vulkan {
 				}
 				else {
 					vkInstance->materialSetVulkanData.back().emplace_back(std::monostate{});
-					MGN_CORE_CASSERT(binding.fields.size() == 1, "[Vulkan] Nah, if it ain't a buffer it's alone.");
-					auto &field = binding.fields.back();
+					MGN_CORE_CASSERT(binding.Fields.size() == 1, "[Vulkan] Nah, if it ain't a buffer it's alone.");
+					auto &field = binding.Fields.back();
 					AssetHandle asset{NULL_ASSET_HANDLE};
 					bool isVirtual{false};
 					const CPUMaterialInstance::SetFieldPosition pos{setIndex, bindingIndex, 0};

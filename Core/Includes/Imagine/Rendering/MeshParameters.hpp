@@ -14,6 +14,21 @@ namespace Imagine::Core {
 		Point,
 	};
 
+	static inline constexpr std::string TopologyToString(const Topology val) {
+		switch (val) {
+			case Topology::Triangle: return "Triangle";
+			case Topology::Line: return "Line";
+			case Topology::Point: return "Point";
+		}
+		return "Unknown";
+	}
+	static inline constexpr bool TryTopologyFromString(const std::string& str, Topology& val) {
+		if(str == "Triangle") {val = Topology::Triangle; return true;}
+		if(str == "Line") {val = Topology::Line; return true;}
+		if(str == "Point") {val = Topology::Point; return true;}
+		return false;
+	}
+
 	// Explicitly write the type for the glm types.
 	struct Vertex {
 		glm::fvec3 position{0, 0, 0};
@@ -32,40 +47,3 @@ namespace Imagine::Core {
 	};
 } // namespace Imagine::Core
 
-template<typename S>
-void serialize(S &s, Imagine::Core::Topology &v) {
-	s.value1b(v);
-}
-template<typename S>
-void serialize(S &s, Imagine::Core::LOD &v) {
-	s.value4b(v.index);
-	s.value4b(v.count);
-	s.value<sizeof(Imagine::Core::AssetHandle)>(v.materialInstance);
-}
-
-template<typename S>
-void serialize(S &s, Imagine::Core::Vertex &v) {
-	s.value4b(v.position.x);
-	s.value4b(v.position.y);
-	s.value4b(v.position.z);
-
-	s.value4b(v.uv_x);
-	s.value4b(v.uv_y);
-
-	s.value4b(v.normal.x);
-	s.value4b(v.normal.y);
-	s.value4b(v.normal.z);
-
-	s.value4b(v.tangent.x);
-	s.value4b(v.tangent.y);
-	s.value4b(v.tangent.z);
-
-	s.value4b(v.bitangent.x);
-	s.value4b(v.bitangent.y);
-	s.value4b(v.bitangent.z);
-
-	s.value4b(v.color.r);
-	s.value4b(v.color.g);
-	s.value4b(v.color.b);
-	s.value4b(v.color.a);
-}

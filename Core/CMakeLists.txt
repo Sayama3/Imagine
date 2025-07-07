@@ -173,6 +173,20 @@ set(CORE_SRC_FILES
 		Sources/Math/BoundingSphere.cpp
 		Includes/Imagine/Assets/AssetImporter.hpp
 		Sources/Assets/AssetImporter.cpp
+		Sources/Core/Hash.cpp
+		Includes/Imagine/Core/Hash.hpp
+		Sources/ThirdParty/YamlCpp.cpp
+		Includes/Imagine/ThirdParty/YamlCpp.hpp
+		Includes/Imagine/Core/UUID.forward.hpp
+		Includes/Imagine/ThirdParty/YAML_Math.hpp
+		Includes/Imagine/ThirdParty/YAML_DEFINE.hpp
+		Includes/Imagine/ThirdParty/YAML_ASSET.hpp
+		Includes/Imagine/ThirdParty/YAML_MATERIAL.hpp
+		Includes/Imagine/ThirdParty/YAML_SHADER.hpp
+		Includes/Imagine/ThirdParty/YAML_STD.hpp
+		Includes/Imagine/ThirdParty/YAML_MATERIAL_INSTANCE.hpp
+		Includes/Imagine/ThirdParty/YAML_MESH.hpp
+		Includes/Imagine/ThirdParty/YAML_CORE.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
@@ -245,7 +259,9 @@ target_include_directories(Core PRIVATE Sources)
 
 target_compile_features(Core PUBLIC cxx_std_20)
 
-target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp xxhash Bitsery::bitsery sol2::sol2 yaml-cpp::yaml-cpp)
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp sol2::sol2 yaml-cpp::yaml-cpp)
+# target_link_libraries(Core PUBLIC Bitsery::bitsery)
+target_link_libraries(Core PRIVATE xxhash)
 
 add_library(Imagine::Core ALIAS Core)
 

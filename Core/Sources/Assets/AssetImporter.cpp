@@ -13,31 +13,31 @@
 namespace Imagine::Core
 {
 	std::unordered_map<AssetType, AssetImportFunction> AssetImporter::AssetLoaders = {
-			{AssetType::Texture2D, TextureImporter::ImportTexture2D},
+			// {AssetType::Texture2D, TextureImporter::ImportTexture2D},
 			// {AssetType::Texture3D, TextureImporter::ImportTexture3D},
 			// {AssetType::CubeMap, TextureImporter::ImportCubemap},
 			// {AssetType::Shader, ShaderSerializer::ImportGraphicShader},
 			// {AssetType::ComputeShader, ShaderSerializer::ImportComputeShader},
-			{AssetType::ShaderSource, ShaderSerializer::ImportShaderSource},
-			{AssetType::Mesh, MeshSerializer::ImportMesh},
-			{AssetType::Scene, SceneImporter::ImportScene},
-			{AssetType::Material, MaterialSerializer::ImportMaterial},
-			// {AssetType::MaterialInstance, MaterialSerializer::ImportMaterialInstance},
+			// {AssetType::ShaderSource, ShaderSerializer::ImportShaderSource},
+			// {AssetType::Mesh, MeshSerializer::ImportMesh},
+			// {AssetType::Scene, SceneImporter::ImportScene},
+			{AssetType::Material, MaterialSerializer::ImportReadableMaterial},
+			{AssetType::MaterialInstance, MaterialSerializer::ImportReadableMaterialInstance},
 			//{AssetType::Model, MeshSerializer::ImportModel},
 	};
 
 	std::unordered_map<AssetType, AssetDetectorFunction> AssetImporter::AssetDetectors = {
-			{AssetType::Texture2D, TextureImporter::IsTexture2D},
+			// {AssetType::Texture2D, TextureImporter::IsTexture2D},
 			// {AssetType::Texture3D, TextureImporter::IsTexture3D},
 			// {AssetType::CubeMap, TextureImporter::IsCubemap},
 			// {AssetType::Shader, ShaderSerializer::IsGraphicShader},
 			// {AssetType::ComputeShader, ShaderSerializer::IsComputeShader},
-			{AssetType::ShaderSource, ShaderSerializer::IsShaderSource},
-			{AssetType::Mesh, MeshSerializer::IsMesh},
-			{AssetType::Scene, SceneImporter::IsScene},
+			// {AssetType::ShaderSource, ShaderSerializer::IsShaderSource},
+			// {AssetType::Mesh, MeshSerializer::IsMesh},
+			// {AssetType::Scene, SceneImporter::IsScene},
 			{AssetType::Material, MaterialSerializer::IsMaterial},
-			// {AssetType::MaterialInstance, MaterialSerializer::IsMaterialInstance},
-			{AssetType::Model, MeshSerializer::IsModel},
+			{AssetType::MaterialInstance, MaterialSerializer::IsMaterialInstance},
+			// {AssetType::Model, MeshSerializer::IsModel},
 	};
 
 	Ref<Asset> AssetImporter::ImportAsset(const AssetMetadata &metadata)

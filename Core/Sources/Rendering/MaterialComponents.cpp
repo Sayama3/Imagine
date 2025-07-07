@@ -3,6 +3,7 @@
 //
 
 #include "Imagine/Rendering/MaterialComponents.hpp"
+#include "Imagine/Core/InternalCore.hpp"
 
 namespace Imagine::Core {
 
@@ -18,17 +19,17 @@ namespace Imagine::Core {
 	}
 
 	void MaterialBlock::Push(std::string name, MaterialType type) {
-		fields.push_back({std::move(name), type});
+		Fields.push_back({std::move(name), type});
 	}
 
 	std::vector<MaterialBlock> MaterialBlock::SplitBlock() const {
 		std::vector<MaterialBlock> blocks{MaterialBlock{}};
-		for (uint32_t i = 0; i < fields.size(); ++i) {
-			if (Helper::IsBufferType(fields[i].type)) {
-				blocks.back().fields.push_back(fields[i]);
+		for (uint32_t i = 0; i < Fields.size(); ++i) {
+			if (Helper::IsBufferType(Fields[i].type)) {
+				blocks.back().Fields.push_back(Fields[i]);
 			} else {
 				if (!blocks.empty()) blocks.emplace_back();
-				blocks.back().fields.push_back({fields[i]});
+				blocks.back().Fields.push_back({Fields[i]});
 				blocks.emplace_back();
 			}
 		}
@@ -36,28 +37,28 @@ namespace Imagine::Core {
 	}
 
 	bool MaterialBlock::IsABuffer() const {
-		for (const MaterialField &field: fields) {
+		for (const MaterialField &field: Fields) {
 			if (!Helper::IsBufferType(field.type)) return false;
 		}
 		return true;
 	}
 	void MaterialBlock::Add(const MaterialBlock &block) {
-		fields.insert(fields.end(), block.fields.begin(), block.fields.end());
+		Fields.insert(Fields.end(), block.Fields.begin(), block.Fields.end());
 	}
 
 	MaterialBlock::MaterialBlock(const MaterialField &field) :
-		fields(1, field) {
+		Fields(1, field) {
 	}
 
 	MaterialBlock::MaterialBlock(const std::initializer_list<MaterialField> &fields) :
-		fields(fields) {
+		Fields(fields) {
 	}
 
 	MaterialBlock::MaterialBlock(const std::initializer_list<MaterialField> &fields, const bool readOnly) :
-		fields(fields), write(!readOnly) {
+		Fields(fields), Write(!readOnly) {
 	}
 	MaterialBlock::MaterialBlock(const std::string &name, MaterialType type) :
-		fields(1, {name, type}) {
+		Fields(1, {name, type}) {
 	}
 
 	MaterialBlock MaterialBlock::GetSceneBlock() {
@@ -80,7 +81,7 @@ namespace Imagine::Core {
 	}
 	uint64_t MaterialBlock::GetSize() const {
 		uint64_t total{0};
-		for (const auto &field: fields) {
+		for (const auto &field: Fields) {
 			total += field.GetSize();
 		}
 		return total;
@@ -89,8 +90,8 @@ namespace Imagine::Core {
 	Buffer MaterialBlock::GetCompactBuffer() const {
 		Buffer buffer{GetSize()};
 		uint64_t offset{0};
-		for (uint64_t i = 0; i < fields.size(); ++i) {
-			auto &field = fields[i];
+		for (uint64_t i = 0; i < Fields.size(); ++i) {
+			auto &field = Fields[i];
 			auto view = field.GetView();
 
 			if (!view.IsValid()) continue;
@@ -124,7 +125,7 @@ namespace Imagine::Core {
 			if (block.IsABuffer()) {
 				count += 1;
 			} else {
-				count += static_cast<uint32_t>(block.fields.size());
+				count += static_cast<uint32_t>(block.Fields.size());
 			}
 		}
 		return count;

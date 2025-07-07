@@ -68,34 +68,35 @@ namespace Imagine::Core {
 
 
 	namespace Helper {
+		[[nodiscard]] static constexpr std::string MaterialFillingToString(const MaterialFilling value) {
+			switch (value) {
 
-		static inline constexpr bool IsBufferType(const MaterialType type) {
-			switch (type) {
-				case MaterialType::Float1:
-				case MaterialType::Float2:
-				case MaterialType::Float3:
-				case MaterialType::Float4:
-				case MaterialType::Color3:
-				case MaterialType::Color4:
-				case MaterialType::Int1:
-				case MaterialType::Int2:
-				case MaterialType::Int3:
-				case MaterialType::Int4:
-				case MaterialType::FMat2:
-				case MaterialType::FMat3:
-				case MaterialType::FMat4:
-				case MaterialType::IMat2:
-				case MaterialType::IMat3:
-				case MaterialType::IMat4:
-				case MaterialType::Vertex:
-				case MaterialType::ExternalBuffer:
-					return true;
-				default:
-					return false;
+				case MaterialFilling::Fill: return "Fill";
+				case MaterialFilling::Wire: return "Wire";
 			}
+			return "Unknown";
 		}
+		[[nodiscard]] static constexpr bool TryMaterialFillingFromString(const std::string& str, MaterialFilling& val) {
+			if(str == "Fill") {val = MaterialFilling::Fill; return true;}
+			if(str == "Wire") {val = MaterialFilling::Wire; return true;}
+			return false;
+		}
+		[[nodiscard]] static constexpr std::string MaterialPassToString(const MaterialPass value) {
+			switch (value) {
 
-		[[nodiscard]] static constexpr std::string MaterialTypeString(const MaterialType type) {
+				case MaterialPass::MainColor: return "MainColor";
+				case MaterialPass::Transparent: return "Transparent";
+				case MaterialPass::Other: return "Other";
+			}
+			return "Unknown";
+		}
+		[[nodiscard]] static constexpr bool TryMaterialPassFromString(const std::string& str, MaterialPass& val) {
+			if(str == "MainColor") {val = MaterialPass::MainColor; return true;}
+			if(str == "Transparent") {val = MaterialPass::Transparent; return true;}
+			if(str == "Other") {val = MaterialPass::Other; return true;}
+			return false;
+		}
+		[[nodiscard]] static constexpr std::string MaterialTypeToString(const MaterialType type) {
 			switch (type) {
 				case MaterialType::None: return "None";
 				case MaterialType::Float1: return "Float1";
@@ -123,6 +124,88 @@ namespace Imagine::Core {
 				case MaterialType::ExternalBuffer: return "ExternalBuffer";
 			}
 			return "Unknown";
+		}
+
+		[[nodiscard]] static constexpr MaterialType MaterialTypeFromString(const std::string& str) {
+			if(str == "None") return MaterialType::None;
+			if(str == "Float1") return MaterialType::Float1;
+			if(str == "Float2") return MaterialType::Float2;
+			if(str == "Float3") return MaterialType::Float3;
+			if(str == "Float4") return MaterialType::Float4;
+			if(str == "Color3") return MaterialType::Color3;
+			if(str == "Color4") return MaterialType::Color4;
+			if(str == "Int1") return MaterialType::Int1;
+			if(str == "Int2") return MaterialType::Int2;
+			if(str == "Int3") return MaterialType::Int3;
+			if(str == "Int4") return MaterialType::Int4;
+			if(str == "FMat2") return MaterialType::FMat2;
+			if(str == "FMat3") return MaterialType::FMat3;
+			if(str == "FMat4") return MaterialType::FMat4;
+			if(str == "IMat2") return MaterialType::IMat2;
+			if(str == "IMat3") return MaterialType::IMat3;
+			if(str == "IMat4") return MaterialType::IMat4;
+			if(str == "VirtualTexture2D") return MaterialType::VirtualTexture2D;
+			if(str == "VirtualTexture3D") return MaterialType::VirtualTexture3D;
+			if(str == "Texture2D") return MaterialType::Texture2D;
+			if(str == "Texture3D") return MaterialType::Texture3D;
+			if(str == "Cubemap") return MaterialType::Cubemap;
+			if(str == "Vertex") return MaterialType::Vertex;
+			if(str == "ExternalBuffer") return MaterialType::ExternalBuffer;
+			return MaterialType::None;
+		}
+
+		[[nodiscard]] static constexpr bool TryMaterialTypeFromString(const std::string& str, MaterialType& value) {
+			if(str == "None") {value = MaterialType::None; return true;}
+			if(str == "Float1") {value = MaterialType::Float1; return true;}
+			if(str == "Float2") {value = MaterialType::Float2; return true;}
+			if(str == "Float3") {value = MaterialType::Float3; return true;}
+			if(str == "Float4") {value = MaterialType::Float4; return true;}
+			if(str == "Color3") {value = MaterialType::Color3; return true;}
+			if(str == "Color4") {value = MaterialType::Color4; return true;}
+			if(str == "Int1") {value = MaterialType::Int1; return true;}
+			if(str == "Int2") {value = MaterialType::Int2; return true;}
+			if(str == "Int3") {value = MaterialType::Int3; return true;}
+			if(str == "Int4") {value = MaterialType::Int4; return true;}
+			if(str == "FMat2") {value = MaterialType::FMat2; return true;}
+			if(str == "FMat3") {value = MaterialType::FMat3; return true;}
+			if(str == "FMat4") {value = MaterialType::FMat4; return true;}
+			if(str == "IMat2") {value = MaterialType::IMat2; return true;}
+			if(str == "IMat3") {value = MaterialType::IMat3; return true;}
+			if(str == "IMat4") {value = MaterialType::IMat4; return true;}
+			if(str == "VirtualTexture2D") {value = MaterialType::VirtualTexture2D; return true;}
+			if(str == "VirtualTexture3D") {value = MaterialType::VirtualTexture3D; return true;}
+			if(str == "Texture2D") {value = MaterialType::Texture2D; return true;}
+			if(str == "Texture3D") {value = MaterialType::Texture3D; return true;}
+			if(str == "Cubemap") {value = MaterialType::Cubemap; return true;}
+			if(str == "Vertex") {value = MaterialType::Vertex; return true;}
+			if(str == "ExternalBuffer") {value = MaterialType::ExternalBuffer; return true;}
+			return false;
+		}
+
+		static inline constexpr bool IsBufferType(const MaterialType type) {
+			switch (type) {
+				case MaterialType::Float1:
+				case MaterialType::Float2:
+				case MaterialType::Float3:
+				case MaterialType::Float4:
+				case MaterialType::Color3:
+				case MaterialType::Color4:
+				case MaterialType::Int1:
+				case MaterialType::Int2:
+				case MaterialType::Int3:
+				case MaterialType::Int4:
+				case MaterialType::FMat2:
+				case MaterialType::FMat3:
+				case MaterialType::FMat4:
+				case MaterialType::IMat2:
+				case MaterialType::IMat3:
+				case MaterialType::IMat4:
+				case MaterialType::Vertex:
+				case MaterialType::ExternalBuffer:
+					return true;
+				default:
+					return false;
+			}
 		}
 		[[nodiscard]] static constexpr uint64_t MaterialTypeSize(const MaterialType type) {
 			switch (type) {
@@ -322,7 +405,7 @@ namespace Imagine::Core {
 		MaterialBlock(const std::string &name, MaterialType type);
 		template<typename T>
 		constexpr MaterialBlock(const std::string &name, const MaterialType type, const T &defaultValue) :
-			fields(1, {name, type, defaultValue}) {}
+			Fields(1, {name, type, defaultValue}) {}
 
 	public:
 		static MaterialBlock GetSceneBlock();
@@ -338,11 +421,11 @@ namespace Imagine::Core {
 		[[nodiscard]] uint64_t GetSize() const;
 		[[nodiscard]] Buffer GetCompactBuffer() const;
 
-		std::vector<MaterialField> fields;
-		std::string name{};
-		bool read{true};
-		bool write{true};
-		BufferType bufferType;
+		std::vector<MaterialField> Fields;
+		std::string Name{};
+		bool Read{true};
+		bool Write{true};
+		BufferType GPUBufferType{BufferType::Uniform};
 	};
 
 	class MaterialSet {
@@ -418,39 +501,6 @@ struct fmt::formatter<Imagine::Core::MaterialType> : fmt::formatter<std::string>
 {
 	auto format(Imagine::Core::MaterialType value, format_context &ctx) const -> decltype(ctx.out())
 	{
-		return format_to(ctx.out(), "{}", Imagine::Core::Helper::MaterialTypeString(value));
+		return format_to(ctx.out(), "{}", Imagine::Core::Helper::MaterialTypeToString(value));
 	}
 };
-
-template<typename S>
-void serialize(S &s, Imagine::Core::MaterialType &mt) {
-	s.value2b(mt);
-}
-template<typename S>
-void serialize(S &s, Imagine::Core::MaterialField &mf) {
-	s.text1b(mf.name.c_str(), 32);
-	s.container1b(mf.data);
-	s.serialize(mf.type);
-}
-
-template<typename S>
-void serialize(S &s, Imagine::Core::MaterialBlock &v) {
-	s.container(v.fields, 100, serialize);
-	s.text1b(v.name.c_str(), 32);
-	s.value1b(v.read);
-	s.value1b(v.write);
-	s.value1b(v.bufferType);
-}
-
-template<typename S>
-void serialize(S &s, Imagine::Core::MaterialSet &v) {
-	s.container(v.Blocks, 100, serialize);
-	s.value2b(v.Stages);
-}
-
-template<typename S>
-void serialize(S &s, Imagine::Core::MaterialPushConstant &v) {
-	s.object(v.Block);
-	s.value2b(v.Stages);
-	s.value4b(v.offset);
-}

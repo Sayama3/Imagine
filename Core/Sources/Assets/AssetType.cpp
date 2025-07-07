@@ -18,6 +18,7 @@ namespace Imagine::Core {
 		if(assetType == "Script") return AssetType::Script;
 		return AssetType::None;
 	}
+
 	bool TryAssetTypeFromString(const std::string &assetType, AssetType &type) {
 		if(assetType == "Scene") {type = AssetType::Scene; return true;}
 		if(assetType == "Texture2D") {type = AssetType::Texture2D; return true;}

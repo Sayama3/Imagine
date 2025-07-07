@@ -663,18 +663,3 @@ struct fmt::formatter<glm::vec<L, T, Q>> : fmt::formatter<std::string>
 		return format_to(ctx.out(), "{}", glm::to_string(value));
 	}
 };
-
-template <typename S, glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
-void serialize(S& s, glm::mat<C, R, T, Q>& o) {
-	s.value<sizeof(T)*C*R>(o);
-}
-
-template <typename S, typename T, glm::qualifier Q>
-void serialize(S& s, glm::qua<T, Q>& o) {
-	s.value<sizeof(T)*4>(o);
-}
-
-template <typename S, glm::length_t L, typename T, glm::qualifier Q>
-void serialize(S& s, glm::vec<L, T, Q>& o) {
-	s.value<sizeof(T)*L>(o);
-}

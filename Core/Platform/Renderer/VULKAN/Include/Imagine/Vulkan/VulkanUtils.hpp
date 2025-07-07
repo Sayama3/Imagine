@@ -126,12 +126,12 @@ namespace Imagine::Vulkan {
 		}
 
 		inline static bool LoadShaderModule(const char *filePath, VkDevice device, VkShaderModule *outShaderModule) {
-			const Core::Buffer buffer = Core::FileSystem::readBinaryFile(filePath);
+			const Core::Buffer buffer = Core::FileSystem::ReadBinaryFile(filePath);
 			return LoadShaderModule(buffer, device, outShaderModule);
 		}
 
 		inline static bool LoadShaderModule(const std::filesystem::path &filePath, VkDevice device, VkShaderModule *outShaderModule) {
-			const Core::Buffer buffer = Core::FileSystem::readBinaryFile(filePath);
+			const Core::Buffer buffer = Core::FileSystem::ReadBinaryFile(filePath);
 			return LoadShaderModule(buffer, device, outShaderModule);
 		}
 

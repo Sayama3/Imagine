@@ -15,6 +15,7 @@ namespace Imagine::Core {
 	 * Enum flag to designate one or multiple shader stage.
 	 */
 	enum class ShaderStage : uint16_t {
+		None = 0,
 		Vertex = BIT(0),
 		TessellationControl = BIT(1),
 		TessellationEvaluation = BIT(2),
@@ -57,6 +58,19 @@ namespace Imagine::Core {
 			str += "Compute";
 		}
 		return str;
+	}
+
+	inline static const ShaderStage ShaderStageFromString(const std::string& str) {
+		ShaderStage val{ShaderStage::None};
+
+		if (str.find("Vertex") != std::string::npos) val = val | ShaderStage::Vertex;
+		if (str.find("TessellationControl") != std::string::npos) val = val | ShaderStage::TessellationControl;
+		if (str.find("TessellationEvaluation") != std::string::npos) val = val | ShaderStage::TessellationEvaluation;
+		if (str.find("Geometry") != std::string::npos) val = val | ShaderStage::Geometry;
+		if (str.find("Fragment") != std::string::npos) val = val | ShaderStage::Fragment;
+		if (str.find("Compute") != std::string::npos) val = val | ShaderStage::Compute;
+
+		return val;
 	}
 
 } // namespace Imagine::Core

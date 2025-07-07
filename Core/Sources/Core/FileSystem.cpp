@@ -66,12 +66,76 @@ namespace Imagine::Core {
 		}
 		return {};
 	}
-	Buffer FileSystem::readBinaryFile(const std::filesystem::path &filePath) {
-		const std::string fileStr = filePath.string();
-		return std::move(readBinaryFile(fileStr.c_str()));
+	std::optional<uint32_t> FileSystem::ReadFourCC(const std::filesystem::path &path) {
+		MGN_PROFILE_FUNCTION();
+		if (!fs::exists(path)) return std::nullopt;
+		std::error_code ec;
+		const uintmax_t size = fs::file_size(path, ec);
+		if (size < 4 || size == static_cast<std::uintmax_t>(-1)) return std::nullopt;
+
+		const auto str = path.string();
+		return InternalReadFourCC(str.c_str());
 	}
-	Buffer FileSystem::readBinaryFile(const char *filePath) {
+
+	std::optional<uint32_t> FileSystem::ReadFourCC(const char *cpath) {
+		MGN_PROFILE_FUNCTION();
+		fs::path stdpath = cpath;
+		if (!fs::exists(stdpath)) return std::nullopt;
+		std::error_code ec;
+		const uintmax_t size = fs::file_size(stdpath, ec);
+		if (size < 4 || size == static_cast<std::uintmax_t>(-1)) return std::nullopt;
+
+		return InternalReadFourCC(cpath);
+	}
+
+	std::optional<uint32_t> FileSystem::InternalReadFourCC(const char *cpath) {
+		CFile file(cpath, "rb");
+		if (!file.IsValid()) return std::nullopt;
+
+		union {
+			char fourcc_char[4];
+			uint32_t fourcc_uint = 0;
+		};
+
+		const char *buff = fgets(fourcc_char, 4, file.filePtr);
+
+		if (buff == nullptr) return std::nullopt;
+
+		return fourcc_uint;
+	}
+
+	Buffer FileSystem::ReadBinaryFile(const std::filesystem::path &filePath) {
+		const std::string fileStr = filePath.string();
+		return std::move(ReadBinaryFile(fileStr.c_str()));
+	}
+
+	Buffer FileSystem::ReadBinaryFile(const char *filePath) {
 		Buffer fileContent;
+
+		// Don't use the CFile because fseek(file.filePtr, 0, SEEK_END) for a binary file is undefined behavior...
+		//  Counting on C++ to correct this.
+		std::ifstream file(filePath, std::ios::ate | std::ios::binary);
+
+		if (!file.is_open()) {
+			return fileContent;
+		}
+
+		const size_t fileSize = file.tellg();
+		fileContent.Reallocate(fileSize);
+
+		file.seekg(0);
+		file.read(fileContent.Get<char>(), fileSize);
+		file.close();
+
+		return std::move(fileContent);
+	}
+
+	std::vector<uint8_t> FileSystem::ReadBinaryFileInVector(const std::filesystem::path &filePath) {
+		const std::string fileStr = filePath.string();
+		return std::move(ReadBinaryFileInVector(fileStr.c_str()));
+	}
+	std::vector<uint8_t> FileSystem::ReadBinaryFileInVector(const char *filePath) {
+		std::vector<uint8_t> fileContent;
 
 		// Don't use the CFile because fseek(file.filePtr, 0, SEEK_END) for a binary file is undefined behavior...
 		//  Counting on C++ to correct this.
@@ -82,19 +146,21 @@ namespace Imagine::Core {
 		}
 		const size_t fileSize = file.tellg();
 
-		fileContent.Reallocate(fileSize);
+		fileContent.resize(fileSize);
 
 		file.seekg(0);
-		file.read(fileContent.Get<char>(), fileSize);
+		file.read(reinterpret_cast<char *>(fileContent.data()), fileSize);
 		file.close();
 
 		return std::move(fileContent);
 	}
-	std::vector<char> FileSystem::readTextFile(const std::filesystem::path &filePath) {
+
+	std::vector<char> FileSystem::ReadTextFile(const std::filesystem::path &filePath) {
 		const std::string fileStr = filePath.string();
-		return std::move(readTextFile(fileStr.c_str()));
+		return std::move(ReadTextFile(fileStr.c_str()));
 	}
-	std::vector<char> FileSystem::readTextFile(const char *filePath) {
+
+	std::vector<char> FileSystem::ReadTextFile(const char *filePath) {
 		std::vector<char> fileContent;
 
 		CFile file(filePath, "r");
@@ -107,6 +173,21 @@ namespace Imagine::Core {
 		fgets(fileContent.data(), static_cast<int>(size), file.filePtr);
 
 		return std::move(fileContent);
+	}
+
+	bool FileSystem::WriteBinaryFile(const std::filesystem::path &filePath, ConstBufferView view) {
+		std::string path = filePath.string();
+		return WriteBinaryFile(path.c_str(), view);
+	}
+
+	bool FileSystem::WriteBinaryFile(const char *filePath, ConstBufferView view) {
+		CFile cfile(filePath, "wb");
+
+		if (!cfile.IsValid()) return false;
+
+		const size_t writtenSize = fwrite(view.Get(), 1, view.Size(), cfile.filePtr);
+
+		return writtenSize == view.Size();
 	}
 
 	bool FileSystem::Exist(Path path) {

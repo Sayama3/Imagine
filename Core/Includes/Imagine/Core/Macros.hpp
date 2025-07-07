@@ -92,12 +92,19 @@
 #define MGN_MASSERT(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_IMPL(_, __VA_ARGS__) )
 #define MGN_CORE_MASSERT(...) MGN_EXPAND_MACRO( MGN_INTERNAL_ASSERT_IMPL(_CORE_, __VA_ARGS__) )
 
+#define MGN_ASSERT(...) MGN_MASSERT(__VA_ARGS__)
+#define MGN_CORE_ASSERT(...) MGN_CORE_MASSERT(__VA_ARGS__)
+
 #else
 
 #define MGN_CASSERT(...)
 #define MGN_CORE_CASSERT(...)
+
 #define MGN_MASSERT(...)
 #define MGN_CORE_MASSERT(...)
+
+#define MGN_ASSERT(...)
+#define MGN_CORE_ASSERT(...)
 
 #endif
 

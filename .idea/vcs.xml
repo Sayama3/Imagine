@@ -12,10 +12,12 @@
     <mapping directory="$PROJECT_DIR$/Libraries/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/imgui" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/meshoptimizer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/sol2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/spdlog" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/tracy" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/vk-bootstrap" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/volk" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/xxHash" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/yaml-cpp" vcs="Git" />
   </component>
 </project>

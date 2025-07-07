@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "Imagine/Core/Buffer.hpp"
+#include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/Macros.hpp"
 
 namespace Imagine::Core {
@@ -66,6 +67,23 @@ namespace Imagine::Core {
 		return "Unknown";
 	}
 
+	inline static constexpr FileSource GetFileSourceFromName(const std::string& sourceStr) {
+		if(sourceStr == "Engine") return FileSource::Engine;
+		if(sourceStr == "Assets") return FileSource::Assets;
+		if(sourceStr == "Scripts") return FileSource::Scripts;
+		if(sourceStr == "Cache") return FileSource::Cache;
+		return FileSource::None;
+	}
+
+	inline static constexpr bool TryGetFileSourceFromName(const std::string& sourceStr, FileSource& source) {
+		if(sourceStr == "Engine") {source = FileSource::Engine; return true;}
+		if(sourceStr == "Assets") {source = FileSource::Assets; return true;}
+		if(sourceStr == "Scripts") {source = FileSource::Scripts; return true;}
+		if(sourceStr == "Cache") {source = FileSource::Cache; return true;}
+		if(sourceStr == "None") {source = FileSource::None; return true;}
+		return false;
+	}
+
 	struct Path {
 	public:
 		Path() = default;
@@ -109,15 +127,53 @@ namespace Imagine::Core {
 		inline static std::filesystem::path s_EditorPath{"./"};
 
 	public:
-		static Buffer readBinaryFile(const std::filesystem::path &filePath);
-		static Buffer readBinaryFile(const char *filePath);
-		static std::vector<char> readTextFile(const std::filesystem::path &filePath);
-		static std::vector<char> readTextFile(const char *filePath);
+		static std::optional<uint32_t> ReadFourCC(const std::filesystem::path &path);
+		static std::optional<uint32_t> ReadFourCC(const char *cpath);
+
+	private:
+		static std::optional<uint32_t> InternalReadFourCC(const char *cpath);
+
+	public:
+		static Buffer ReadBinaryFile(const std::filesystem::path &filePath);
+		static Buffer ReadBinaryFile(const char *filePath);
+		static std::vector<uint8_t> ReadBinaryFileInVector(const std::filesystem::path &filePath);
+		static std::vector<uint8_t> ReadBinaryFileInVector(const char *filePath);
+
+		static std::vector<char> ReadTextFile(const std::filesystem::path &filePath);
+		static std::vector<char> ReadTextFile(const char *filePath);
+
+	public:
+		static bool WriteBinaryFile(const std::filesystem::path &filePath, ConstBufferView view);
+		static bool WriteBinaryFile(const char *filePath, ConstBufferView view);
+
+		template<typename T>
+		static bool WriteBinaryFile(const std::filesystem::path &filePath, ConstBufferView view);
+		template<typename T>
+		static bool WriteBinaryFile(const char *filePath, ConstBufferView view);
 
 		[[nodiscard]] static bool Exist(Path path);
+
 	public:
 		static std::filesystem::path GetRootPath(FileSource source);
 	};
+
+	template<typename T>
+	bool FileSystem::WriteBinaryFile(const std::filesystem::path &filePath, ConstBufferView view) {
+		std::string path = filePath.string();
+		return WriteBinaryFile<T>(path.c_str(), view);
+	}
+
+	template<typename T>
+	bool FileSystem::WriteBinaryFile(const char *filePath, ConstBufferView view) {
+		CFile cfile(filePath, "bw");
+
+		if (!cfile.IsValid()) return false;
+
+		const size_t count = view.Count<T>();
+		const size_t writtenSize = fwrite(view.Get(), sizeof(T), count, cfile.filePtr);
+
+		return writtenSize == count;
+	}
 
 } // namespace Imagine::Core
 
@@ -128,7 +184,7 @@ inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::Path &val
 
 template<>
 struct fmt::formatter<Imagine::Core::Path> : fmt::formatter<std::string> {
-	auto format(const Imagine::Core::Path& value, format_context &ctx) const -> decltype(ctx.out()) {
+	auto format(const Imagine::Core::Path &value, format_context &ctx) const -> decltype(ctx.out()) {
 		const std::string pathStr = value.path.string();
 		return format_to(ctx.out(), "Path{{ {}: {} }}", GetFileSourceName(value.source), pathStr);
 	}
