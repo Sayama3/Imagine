@@ -58,6 +58,11 @@ add_subdirectory(meshoptimizer)
 
 add_subdirectory(bitsery)
 
+set(YAML_BUILD_SHARED_LIBS OFF) # Build yaml-cpp shared library
+set(YAML_CPP_INSTALL OFF) # Enable generation of yaml-cpp install targets
+set(YAML_CPP_BUILD_TESTS OFF) # Format source
+add_subdirectory(yaml-cpp)
+
 # ===== Window Libraries =====
 
 if(MGN_WINDOW_GLFW)
