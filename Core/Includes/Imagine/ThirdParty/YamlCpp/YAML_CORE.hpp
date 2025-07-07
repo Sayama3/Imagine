@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "YAML_DEFINE.hpp"
+#include "../YAML_DEFINE.hpp"
 
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Core/UUID.hpp"

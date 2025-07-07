@@ -5,15 +5,15 @@
 #pragma once
 
 
-#include "YAML_DEFINE.hpp"
-#include "YAML_STD.hpp"
-#include "YAML_CORE.hpp"
-#include "YAML_MATH.hpp"
-#include "YAML_ASSET.hpp"
-#include "YAML_MESH.hpp"
-#include "YAML_SHADER.hpp"
-#include "YAML_MATERIAL.hpp"
-#include "YAML_MATERIAL_INSTANCE.hpp"
+#include "YamlCpp/YAML_DEFINE.hpp"
+#include "YamlCpp/YAML_STD.hpp"
+#include "YamlCpp/YAML_CORE.hpp"
+#include "YamlCpp/YAML_MATH.hpp"
+#include "YamlCpp/YAML_ASSET.hpp"
+#include "YamlCpp/YAML_MESH.hpp"
+#include "YamlCpp/YAML_SHADER.hpp"
+#include "YamlCpp/YAML_MATERIAL.hpp"
+#include "YamlCpp/YAML_MATERIAL_INSTANCE.hpp"
 
 
 namespace Imagine::ThirdParty {

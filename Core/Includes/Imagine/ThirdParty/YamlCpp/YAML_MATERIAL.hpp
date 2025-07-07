@@ -5,10 +5,10 @@
 #pragma once
 
 #include <yaml-cpp/yaml.h>
+#include "../YAML_SHADER.hpp"
+#include "../YAML_STD.hpp"
 #include "YAML_DEFINE.hpp"
 #include "YAML_MESH.hpp"
-#include "YAML_SHADER.hpp"
-#include "YAML_STD.hpp"
 
 #include "Imagine/Rendering/CPU/CPUMaterial.hpp"
 #include "Imagine/Rendering/MaterialComponents.hpp"

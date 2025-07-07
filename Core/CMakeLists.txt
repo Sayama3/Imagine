@@ -178,15 +178,15 @@ set(CORE_SRC_FILES
 		Sources/ThirdParty/YamlCpp.cpp
 		Includes/Imagine/ThirdParty/YamlCpp.hpp
 		Includes/Imagine/Core/UUID.forward.hpp
-		Includes/Imagine/ThirdParty/YAML_Math.hpp
-		Includes/Imagine/ThirdParty/YAML_DEFINE.hpp
-		Includes/Imagine/ThirdParty/YAML_ASSET.hpp
-		Includes/Imagine/ThirdParty/YAML_MATERIAL.hpp
-		Includes/Imagine/ThirdParty/YAML_SHADER.hpp
-		Includes/Imagine/ThirdParty/YAML_STD.hpp
-		Includes/Imagine/ThirdParty/YAML_MATERIAL_INSTANCE.hpp
-		Includes/Imagine/ThirdParty/YAML_MESH.hpp
-		Includes/Imagine/ThirdParty/YAML_CORE.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_MATH.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_DEFINE.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_ASSET.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_MATERIAL.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_SHADER.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_STD.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_MATERIAL_INSTANCE.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_MESH.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_CORE.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
