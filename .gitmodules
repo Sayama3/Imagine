@@ -44,3 +44,6 @@
 [submodule "Libraries/sol2"]
 	path = Libraries/sol2
 	url = https://github.com/ThePhD/sol2.git
+[submodule "Libraries/yaml-cpp"]
+	path = Libraries/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
