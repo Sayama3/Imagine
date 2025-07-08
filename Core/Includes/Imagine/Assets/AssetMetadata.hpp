@@ -17,6 +17,15 @@ namespace Imagine::Core
 		inline AssetMetadata() = default;
 		inline ~AssetMetadata() = default;
 		inline AssetMetadata(Path p, const AssetType t) : FilePath(std::move(p)), Handle(), Type(t){}
+		inline AssetMetadata(const AssetMetadata&) = default;
+		inline AssetMetadata& operator=(const AssetMetadata&) = default;
+		inline AssetMetadata(AssetMetadata&& o) noexcept = default;
+		inline AssetMetadata& operator=(AssetMetadata&& o) noexcept = default;
+		void swap(AssetMetadata& o) noexcept {
+			std::swap(FilePath, o.FilePath);
+			std::swap(Handle, o.Handle);
+			std::swap(Type, o.Type);
+		}
 
 		inline operator bool() const {
 			return Type != AssetType::None && Handle != NULL_ASSET_HANDLE;
