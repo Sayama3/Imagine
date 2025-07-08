@@ -48,6 +48,12 @@ namespace Imagine::Core {
 		 */
 		void Zeroes();
 
+
+		template<typename T>
+		void Reallocate(const uint64_t count) {
+			Reallocate(count * sizeof(T));
+		}
+
 	public:
 		[[nodiscard]] void *Get();
 		[[nodiscard]] const void *Get() const;
