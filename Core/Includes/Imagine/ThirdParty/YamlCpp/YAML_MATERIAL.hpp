@@ -5,8 +5,8 @@
 #pragma once
 
 #include <yaml-cpp/yaml.h>
-#include "../YAML_SHADER.hpp"
-#include "../YAML_STD.hpp"
+#include "YAML_SHADER.hpp"
+#include "YAML_STD.hpp"
 #include "YAML_DEFINE.hpp"
 #include "YAML_MESH.hpp"
 
@@ -119,62 +119,62 @@ namespace YAML {
 namespace YAML {
 	template<>
 	struct convert<::Imagine::Core::MaterialFilling> {
-		inline static Node encode(const ::Imagine::Core::MaterialFilling &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialFilling &v) {
 			Node node;
-			node = Imagine::Core::Helper::MaterialFillingToString(rhs);
+			node = Imagine::Core::Helper::MaterialFillingToString(v);
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialFilling &rhs) {
-			return Imagine::Core::Helper::TryMaterialFillingFromString(node.as<std::string>(), rhs);
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialFilling &v) {
+			return Imagine::Core::Helper::TryMaterialFillingFromString(node.as<std::string>(), v);
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialPass> {
-		inline static Node encode(const ::Imagine::Core::MaterialPass &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialPass &v) {
 			Node node;
-			node = Imagine::Core::Helper::MaterialPassToString(rhs);
+			node = Imagine::Core::Helper::MaterialPassToString(v);
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialPass &rhs) {
-			return Imagine::Core::Helper::TryMaterialPassFromString(node.as<std::string>(), rhs);
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialPass &v) {
+			return Imagine::Core::Helper::TryMaterialPassFromString(node.as<std::string>(), v);
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialType> {
-		inline static Node encode(const ::Imagine::Core::MaterialType &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialType &v) {
 			Node node;
-			node = Imagine::Core::Helper::MaterialTypeToString(rhs);
+			node = Imagine::Core::Helper::MaterialTypeToString(v);
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialType &rhs) {
-			return Imagine::Core::Helper::TryMaterialTypeFromString(node.as<std::string>(), rhs);
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialType &v) {
+			return Imagine::Core::Helper::TryMaterialTypeFromString(node.as<std::string>(), v);
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialField> {
-		inline static Node encode(const ::Imagine::Core::MaterialField &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialField &v) {
 			Node node;
-			node["Name"] = rhs.name;
-			node["Type"] = rhs.type;
-			node["Data"] = rhs.data;
+			node["Name"] = v.name;
+			node["Type"] = v.type;
+			node["Data"] = v.data;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialField &rhs) {
-			rhs.name = node["Name"].as<std::string>();
-			rhs.type = node["Type"].as<Imagine::Core::MaterialType>();
-			rhs.data = node["Data"].as<std::array<uint8_t, ::Imagine::Core::MaterialField::DataSize>>();
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialField &v) {
+			v.name = node["Name"].as<std::string>();
+			v.type = node["Type"].as<Imagine::Core::MaterialType>();
+			v.data = node["Data"].as<std::array<uint8_t, ::Imagine::Core::MaterialField::DataSize>>();
 			return false;
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialBlock::BufferType> {
-		inline static Node encode(const ::Imagine::Core::MaterialBlock::BufferType &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialBlock::BufferType &v) {
 			Node node;
-			switch (rhs) {
+			switch (v) {
 				case Imagine::Core::MaterialBlock::SSBO:
 					node = "SSBO";
 					break;
@@ -184,14 +184,14 @@ namespace YAML {
 			}
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialBlock::BufferType &rhs) {
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialBlock::BufferType &v) {
 			std::string str = node.as<std::string>();
 			if (str == "Uniform") {
-				rhs = ::Imagine::Core::MaterialBlock::BufferType::Uniform;
+				v = ::Imagine::Core::MaterialBlock::BufferType::Uniform;
 				return true;
 			}
 			if (str == "SSBO") {
-				rhs = ::Imagine::Core::MaterialBlock::BufferType::SSBO;
+				v = ::Imagine::Core::MaterialBlock::BufferType::SSBO;
 				return true;
 			}
 			return false;
@@ -200,68 +200,68 @@ namespace YAML {
 
 	template<>
 	struct convert<::Imagine::Core::MaterialBlock> {
-		inline static Node encode(const ::Imagine::Core::MaterialBlock &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialBlock &v) {
 			Node node;
-			node["Fields"] = rhs.Fields;
-			node["Name"] = rhs.Name;
-			node["Read"] = rhs.Read;
-			node["Write"] = rhs.Write;
-			node["GPUBufferType"] = rhs.GPUBufferType;
+			node["Fields"] = v.Fields;
+			node["Name"] = v.Name;
+			node["Read"] = v.Read;
+			node["Write"] = v.Write;
+			node["GPUBufferType"] = v.GPUBufferType;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialBlock &rhs) {
-			rhs.Fields = node["Fields"].as<std::vector<::Imagine::Core::MaterialField>>();
-			rhs.Name = node["Name"].as<std::string>();
-			rhs.Read = node["Read"].as<bool>();
-			rhs.Write = node["Write"].as<bool>();
-			rhs.GPUBufferType = node["GPUBufferType"].as<Imagine::Core::MaterialBlock::BufferType>();
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialBlock &v) {
+			v.Fields = node["Fields"].as<std::vector<::Imagine::Core::MaterialField>>();
+			v.Name = node["Name"].as<std::string>();
+			v.Read = node["Read"].as<bool>();
+			v.Write = node["Write"].as<bool>();
+			v.GPUBufferType = node["GPUBufferType"].as<Imagine::Core::MaterialBlock::BufferType>();
 			return true;
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialSet> {
-		inline static Node encode(const ::Imagine::Core::MaterialSet &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialSet &v) {
 			Node node;
-			node["Blocks"] = rhs.Blocks;
-			node["Stages"] = rhs.Stages;
+			node["Blocks"] = v.Blocks;
+			node["Stages"] = v.Stages;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialSet &rhs) {
-			rhs.Blocks = node["Blocks"].as<std::vector<Imagine::Core::MaterialBlock>>();
-			rhs.Stages = node["Stages"].as<Imagine::Core::ShaderStage>();
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialSet &v) {
+			v.Blocks = node["Blocks"].as<std::vector<Imagine::Core::MaterialBlock>>();
+			v.Stages = node["Stages"].as<Imagine::Core::ShaderStage>();
 			return true;
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialPushConstant> {
-		inline static Node encode(const ::Imagine::Core::MaterialPushConstant &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialPushConstant &v) {
 			Node node;
-			node["Block"] = rhs.Block;
-			node["Stages"] = rhs.Stages;
-			node["Offset"] = rhs.offset;
+			node["Block"] = v.Block;
+			node["Stages"] = v.Stages;
+			node["Offset"] = v.offset;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialPushConstant &rhs) {
-			rhs.Block = node["Block"].as<Imagine::Core::MaterialBlock>();
-			rhs.Stages = node["Stages"].as<Imagine::Core::ShaderStage>();
-			rhs.offset = node["Offset"].as<uint32_t>();
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialPushConstant &v) {
+			v.Block = node["Block"].as<Imagine::Core::MaterialBlock>();
+			v.Stages = node["Stages"].as<Imagine::Core::ShaderStage>();
+			v.offset = node["Offset"].as<uint32_t>();
 			return true;
 		}
 	};
 
 	template<>
 	struct convert<::Imagine::Core::MaterialLayout> {
-		inline static Node encode(const ::Imagine::Core::MaterialLayout &rhs) {
+		inline static Node encode(const ::Imagine::Core::MaterialLayout &v) {
 			Node node;
-			node["Sets"] = rhs.Sets;
-			node["PushConstants"] = rhs.PushConstants;
+			node["Sets"] = v.Sets;
+			node["PushConstants"] = v.PushConstants;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::MaterialLayout &rhs) {
-			rhs.Sets = node["Sets"].as<std::vector<Imagine::Core::MaterialSet>>();
-			rhs.PushConstants = node["PushConstants"].as<std::vector<Imagine::Core::MaterialPushConstant>>();
+		inline static bool decode(const Node &node, ::Imagine::Core::MaterialLayout &v) {
+			v.Sets = node["Sets"].as<std::vector<Imagine::Core::MaterialSet>>();
+			v.PushConstants = node["PushConstants"].as<std::vector<Imagine::Core::MaterialPushConstant>>();
 			return true;
 		}
 	};

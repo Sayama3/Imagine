@@ -47,8 +47,8 @@ namespace YAML {
 			Node node;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::Topology &rhs) {
-			return ::Imagine::Core::TryTopologyFromString(node.as<std::string>(), rhs);
+		inline static bool decode(const Node &node, ::Imagine::Core::Topology &v) {
+			return ::Imagine::Core::TryTopologyFromString(node.as<std::string>(), v);
 		}
 	};
 	template<>
@@ -63,15 +63,15 @@ namespace YAML {
 			node["Color"] = v.color;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::Vertex &rhs) {
-			rhs.position = node["Position"].as<glm::fvec3>();
-			rhs.normal = node["Normal"].as<glm::fvec3>();
-			rhs.tangent = glm::fvec4(node["Tangent"].as<glm::fvec3>(), 0);
-			rhs.bitangent = glm::fvec4(node["Bitangent"].as<glm::fvec3>(), 0);
-			rhs.color = node["Color"].as<glm::fvec4>();
+		inline static bool decode(const Node &node, ::Imagine::Core::Vertex &v) {
+			v.position = node["Position"].as<glm::fvec3>();
+			v.normal = node["Normal"].as<glm::fvec3>();
+			v.tangent = glm::fvec4(node["Tangent"].as<glm::fvec3>(), 0);
+			v.bitangent = glm::fvec4(node["Bitangent"].as<glm::fvec3>(), 0);
+			v.color = node["Color"].as<glm::fvec4>();
 			const auto uv = node["UV"].as<glm::fvec2>();
-			rhs.uv_x = uv.x;
-			rhs.uv_y = uv.y;
+			v.uv_x = uv.x;
+			v.uv_y = uv.y;
 			return true;
 		}
 	};
@@ -84,10 +84,10 @@ namespace YAML {
 			node["Material Instance"] = v.materialInstance;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::LOD &rhs) {
-			rhs.index = node["Index"].as<uint32_t>();
-			rhs.count = node["Count"].as<uint32_t>();
-			rhs.materialInstance = node["Material Instance"].as<Imagine::Core::AssetHandle>();
+		inline static bool decode(const Node &node, ::Imagine::Core::LOD &v) {
+			v.index = node["Index"].as<uint32_t>();
+			v.count = node["Count"].as<uint32_t>();
+			v.materialInstance = node["Material Instance"].as<Imagine::Core::AssetHandle>();
 			return true;
 		}
 	};

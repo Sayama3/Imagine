@@ -20,13 +20,13 @@ namespace YAML {
 namespace YAML {
 	template<>
 	struct convert<Imagine::Core::ShaderStage> {
-		inline static Node encode(const Imagine::Core::ShaderStage &rhs) {
+		inline static Node encode(const Imagine::Core::ShaderStage &v) {
 			Node node;
-			node = Imagine::Core::ShaderStageToString(rhs);
+			node = Imagine::Core::ShaderStageToString(v);
 			return node;
 		}
-		inline static bool decode(const Node &node, Imagine::Core::ShaderStage &rhs) {
-			rhs = Imagine::Core::ShaderStageFromString(node.as<std::string>());
+		inline static bool decode(const Node &node, Imagine::Core::ShaderStage &v) {
+			v = Imagine::Core::ShaderStageFromString(node.as<std::string>());
 			return true;
 		}
 	};

@@ -33,22 +33,22 @@ namespace YAML
 	template<>
 	struct convert<::Imagine::Core::UUID>
 	{
-		inline static Node encode(const ::Imagine::Core::UUID& rhs)
+		inline static Node encode(const ::Imagine::Core::UUID& v)
 		{
 			Node node;
-			for (const uint64_t& val : rhs) {
+			for (const uint64_t& val : v) {
 				node.push_back(val);
 			}
 			return node;
 		}
 
-		inline static bool decode(const Node& node, ::Imagine::Core::UUID& rhs)
+		inline static bool decode(const Node& node, ::Imagine::Core::UUID& v)
 		{
 			if(!node.IsSequence() || node.size() != 2) return false;
 			static_assert(sizeof(::Imagine::Core::UUID) == 32);
 			const uint64_t low = node[0].as<uint64_t>(0);
 			const uint64_t high = node[1].as<uint64_t>(0);
-			rhs = ::Imagine::Core::UUID{low, high};
+			v = ::Imagine::Core::UUID{low, high};
 			return true;
 		}
 	};
@@ -56,16 +56,16 @@ namespace YAML
 	template<>
 	struct convert<std::filesystem::path>
 	{
-		inline static Node encode(const std::filesystem::path& rhs)
+		inline static Node encode(const std::filesystem::path& v)
 		{
 			Node node;
-			node = rhs.string();
+			node = v.string();
 			return node;
 		}
 
-		inline static bool decode(const Node& node, std::filesystem::path& rhs)
+		inline static bool decode(const Node& node, std::filesystem::path& v)
 		{
-			rhs = node.as<std::string>();
+			v = node.as<std::string>();
 			return true;
 		}
 	};
@@ -73,20 +73,20 @@ namespace YAML
 	template<>
 	struct convert<::Imagine::Core::Path>
 	{
-		inline static Node encode(const ::Imagine::Core::Path& rhs)
+		inline static Node encode(const ::Imagine::Core::Path& v)
 		{
 			Node node;
-			node["Source"] = Imagine::Core::GetFileSourceName(rhs.source);
-			node["Path"] = rhs.path;
+			node["Source"] = Imagine::Core::GetFileSourceName(v.source);
+			node["Path"] = v.path;
 			return node;
 		}
 
-		inline static bool decode(const Node& node, ::Imagine::Core::Path& rhs)
+		inline static bool decode(const Node& node, ::Imagine::Core::Path& v)
 		{
 			if (!node.IsMap() || node.size() != 2) return false;
-			const bool hasSource = Imagine::Core::TryGetFileSourceFromName(node["Source"].as<std::string>(), rhs.source);
+			const bool hasSource = Imagine::Core::TryGetFileSourceFromName(node["Source"].as<std::string>(), v.source);
 			if (!hasSource) return false;
-			rhs.path = node["Path"].as<std::filesystem::path>();
+			v.path = node["Path"].as<std::filesystem::path>();
 			return true;
 		}
 	};

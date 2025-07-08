@@ -19,18 +19,18 @@ namespace YAML {
 	template<>
 	struct convert<::Imagine::Core::AssetHandle>
 	{
-		inline static Node encode(const ::Imagine::Core::AssetHandle& rhs)
+		inline static Node encode(const ::Imagine::Core::AssetHandle& v)
 		{
 			Node node;
-			node.push_back(rhs.GetID());
+			node.push_back(v.GetID());
 			return node;
 		}
 
-		inline static bool decode(const Node& node, ::Imagine::Core::AssetHandle& rhs)
+		inline static bool decode(const Node& node, ::Imagine::Core::AssetHandle& v)
 		{
 			if(!node.IsSequence() || node.size() != 2) return false;
 			Imagine::Core::UUID id = node.as<Imagine::Core::UUID>(Imagine::Core::UUID{0,0});
-			rhs = Imagine::Core::AssetHandle{id};
+			v = Imagine::Core::AssetHandle{id};
 			return true;
 		}
 	};
