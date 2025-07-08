@@ -145,9 +145,6 @@ namespace Imagine::Vulkan {
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
 
-		virtual void LoadExternalModelInScene(const std::filesystem::path &path, Core::Scene *, Core::EntityID parent = Core::EntityID::NullID) override;
-		virtual void LoadCPUMeshInScene(const Core::CPUMesh &path, Core::Scene *, Core::EntityID entity = Core::EntityID::NullID) override;
-
 		virtual Core::Ref<Core::GPUMesh> LoadMesh(const Core::CPUMesh &mesh) override;
 		virtual Core::Ref<Core::GPUMaterial> LoadMaterial(const Core::CPUMaterial &material) override;
 		virtual Core::Ref<Core::GPUMaterialInstance> LoadMaterialInstance(const Core::CPUMaterialInstance &instance) override;

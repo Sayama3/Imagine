@@ -236,7 +236,6 @@ namespace Imagine::Vulkan {
 
 		std::optional<std::shared_ptr<AutoDeleteMeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& mesh);
 		std::optional<std::vector<std::shared_ptr<AutoDeleteMeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath);
-		void LoadModelAsDynamic(VulkanRenderer *renderer, Core::Scene *coreScene, Core::EntityID parent, const std::filesystem::path &filePath);
 
 		std::shared_ptr<AutoDeleteMeshAsset> LoadLines(VulkanRenderer* renderer, std::span<Core::LineObject> lines);
 		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines);

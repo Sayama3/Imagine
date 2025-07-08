@@ -73,15 +73,11 @@ namespace Imagine::Core {
 		//TODO: Move this out.
 		virtual Vec3 GetWorldPoint(const Vec2 screenPoint) const = 0;
 
-		virtual void LoadCPUMeshInScene(const CPUMesh& path, Scene*, EntityID entity = EntityID::NullID) = 0;
-
 		virtual Ref<GPUMesh> LoadMesh(const CPUMesh& mesh) = 0;
 		virtual Ref<GPUMaterial> LoadMaterial(const CPUMaterial& material) = 0;
 		virtual Ref<GPUMaterialInstance> LoadMaterialInstance(const CPUMaterialInstance& instance) = 0;
 		virtual Ref<GPUTexture2D> LoadTexture2D(const CPUTexture2D& tex2d) = 0;
 		virtual Ref<GPUTexture3D> LoadTexture3D(const CPUTexture3D& tex3d) = 0;
-
-		[[deprecated]] virtual void LoadExternalModelInScene(const std::filesystem::path& path, Scene*, EntityID parent = EntityID::NullID) = 0;
 
 		virtual void SendImGuiCommands() = 0;
 		virtual void PrepareShutdown() = 0;

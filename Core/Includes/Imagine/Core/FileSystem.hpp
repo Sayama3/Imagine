@@ -49,6 +49,7 @@ namespace Imagine::Core {
 		Assets,
 		Scripts,
 		Cache,
+		External,
 	};
 
 	inline static constexpr std::string GetFileSourceName(const FileSource source) {
@@ -63,6 +64,8 @@ namespace Imagine::Core {
 				return "Scripts";
 			case FileSource::Cache:
 				return "Cache";
+			case FileSource::External:
+				return "External";
 		}
 		return "Unknown";
 	}
@@ -72,6 +75,7 @@ namespace Imagine::Core {
 		if(sourceStr == "Assets") return FileSource::Assets;
 		if(sourceStr == "Scripts") return FileSource::Scripts;
 		if(sourceStr == "Cache") return FileSource::Cache;
+		if(sourceStr == "External") return FileSource::External;
 		return FileSource::None;
 	}
 
@@ -80,6 +84,7 @@ namespace Imagine::Core {
 		if(sourceStr == "Assets") {source = FileSource::Assets; return true;}
 		if(sourceStr == "Scripts") {source = FileSource::Scripts; return true;}
 		if(sourceStr == "Cache") {source = FileSource::Cache; return true;}
+		if(sourceStr == "External") {source = FileSource::External; return true;}
 		if(sourceStr == "None") {source = FileSource::None; return true;}
 		return false;
 	}

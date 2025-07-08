@@ -17,10 +17,21 @@
 namespace Imagine::Core {
 
 	Ref<CPUModel> CPUModel::LoadModel(const Path &filePath, Core::Scene *coreScene, Core::EntityID parent) {
+		auto model = LoadModel(filePath.GetFullPath(), coreScene, parent);
+		if (model) {
+			model->modelPath = filePath;
+		}
+		return model;
+	}
+
+	Ref<CPUModel> CPUModel::LoadModel(const std::filesystem::path &filePath, Core::Scene *coreScene, Core::EntityID parent) {
+		MGN_PROFILE_FUNCTION();
 		using namespace Imagine::Core;
 		Assimp::Importer importer;
 
-		const aiScene *scene = importer.ReadFile(filePath.GetFullPath().string(), ThirdParty::Assimp::GetSmoothPostProcess());
+		if (!coreScene) return nullptr;
+
+		const aiScene *scene = importer.ReadFile(filePath.string(), ThirdParty::Assimp::GetSmoothPostProcess());
 
 		// If the import failed, report it
 		if (nullptr == scene) {
@@ -28,12 +39,22 @@ namespace Imagine::Core {
 			return nullptr;
 		}
 
-		Ref<CPUTexture2D> ErrorCheckerboard;
 
 		Ref<CPUModel> model = CreateRef<CPUModel>();
-		model->modelPath = filePath;
+
+		// TODO: Find shaders in another way
+		auto vertex = CreateRef<CPUFileShader>(ShaderStage::Vertex, Path{FileSource::Assets, "mesh.vert.spv"});
+		auto fragment = CreateRef<CPUFileShader>(ShaderStage::Fragment, Path{FileSource::Assets, "mesh.frag.spv"});
+		model->Shaders.push_back(vertex);
+		model->Shaders.push_back(fragment);
+		LOAD_ASSET(vertex);
+		LOAD_ASSET(fragment);
+
+
+		model->modelPath = {FileSource::External, filePath};
 		model->Textures.resize(scene->mNumTextures + 1);
 
+		Ref<CPUTexture2D> ErrorCheckerboard;
 		for (uint32_t i = 0; i < scene->mNumTextures; ++i) {
 			aiTexture *pTexture = scene->mTextures[i];
 			if (pTexture->pcData == nullptr) {
@@ -44,7 +65,7 @@ namespace Imagine::Core {
 					const uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
 					for (int x = 0; x < 16; x++) {
 						for (int y = 0; y < 16; y++) {
-							ErrorCheckerboard->image(x,y).As<uint32_t>() = ((x % 2) ^ (y % 2)) ? magenta : black;
+							ErrorCheckerboard->image(x, y).As<uint32_t>() = ((x % 2) ^ (y % 2)) ? magenta : black;
 						}
 					}
 					LOAD_ASSET(ErrorCheckerboard);
@@ -107,19 +128,23 @@ namespace Imagine::Core {
 		}
 
 		Ref<CPUTexture2D> WhiteImage = CreateRef<CPUTexture2D>();
-		WhiteImage->image.Allocate(1,1,4);
-		WhiteImage->image(0,0).As<uint32_t>() = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
+		WhiteImage->image.Allocate(1, 1, 4);
+		WhiteImage->image(0, 0).As<uint32_t>() = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
 		model->Textures.back() = WhiteImage;
 		LOAD_ASSET(WhiteImage);
 
 		Ref<CPUMaterial> opaqueMaterial = CreateRef<CPUMaterial>();
+		opaqueMaterial->shaders[0] = vertex->Handle;
+		opaqueMaterial->shaders[4] = fragment->Handle;
+
 		opaqueMaterial->layout.Sets.push_back(MaterialSet::GetSceneSet());
 		opaqueMaterial->layout.Sets.push_back(MaterialSet::GetPBRSet());
 		opaqueMaterial->layout.PushConstants.emplace_back(MaterialBlock{
-			{{"WorldMatrix", MaterialType::FMat4},{"VertexBuffer", MaterialType::ExternalBuffer}}
-		}, ShaderStage::Vertex, 0);
+																  {{"WorldMatrix", MaterialType::FMat4}, {"VertexBuffer", MaterialType::ExternalBuffer}}},
+														  ShaderStage::Vertex, 0);
 
 		Ref<CPUMaterial> transparentMaterial = CreateRef<CPUMaterial>(*opaqueMaterial);
+		transparentMaterial->Handle = AssetHandle{};
 		transparentMaterial->pass = MaterialPass::Transparent;
 		model->Materials.push_back(opaqueMaterial);
 		model->Materials.push_back(transparentMaterial);
@@ -133,9 +158,16 @@ namespace Imagine::Core {
 			auto instance = CreateRef<CPUMaterialInstance>();
 			model->Instances.push_back(instance);
 
-			instance->Material = opaqueMaterial->Handle;
 
 			aiMaterial *material = scene->mMaterials[i]; // for some formats (like glTF) metallic and roughness may be the same file
+
+			ai_real opacity;
+			aiReturn opacityReturn = material->Get(AI_MATKEY_OPACITY, opacity);
+
+			if (opacityReturn == aiReturn_SUCCESS && opacity != 1)
+				instance->Material = transparentMaterial->Handle;
+			else
+				instance->Material = opaqueMaterial->Handle;
 
 			std::array<aiTextureType, 6> texTypes{aiTextureType_BASE_COLOR, aiTextureType_NORMALS, aiTextureType_EMISSIVE, aiTextureType_METALNESS, aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_AMBIENT_OCCLUSION};
 			std::array<aiString, 6> imageFiles{}; // fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
@@ -144,12 +176,13 @@ namespace Imagine::Core {
 			for (uint64_t texId = 0; texId < texTypes.size(); ++texId) {
 				hasImage[texId] = material->GetTextureCount(texTypes[texId]) > 0;
 				if (hasImage[texId]) {
-					const CPUMaterialInstance::SetFieldPosition pos {1,(uint32_t)texId+1,0};
+					const CPUMaterialInstance::SetFieldPosition pos{1, (uint32_t) texId + 1, 0};
 					material->GetTexture(texTypes[texId], 0, &imageFiles[texId]);
 					std::pair<const aiTexture *, int> result = scene->GetEmbeddedTextureAndIndex(imageFiles[texId].C_Str());
 					if (result.first) {
 						instance->PushSet(pos, model->Textures[result.second]->Handle);
-					} else {
+					}
+					else {
 						const std::string pathStr = imageFiles[texId].C_Str();
 						if (!loadedTextures.contains(pathStr)) {
 							Core::Image<> img = ThirdParty::Stb::Image::Load(imageFiles[texId].C_Str(), 4);
@@ -162,8 +195,9 @@ namespace Imagine::Core {
 				}
 			}
 
-			ai_real metallic, roughness, emIntens;
-			aiColor3D tint, emColor;
+			ai_real metallic = 1, roughness = 1, emIntens = 1;
+			aiColor3D tint = aiColor3D{1};
+			aiColor3D emColor = aiColor3D{0};
 
 			material->Get(AI_MATKEY_BASE_COLOR, tint);
 			material->Get(AI_MATKEY_EMISSIVE_INTENSITY, emIntens);
@@ -171,10 +205,10 @@ namespace Imagine::Core {
 			material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
 			material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
 
-			instance->PushSet({1,0,0}, glm::fvec4(tint.r, tint.g, tint.b, 1));
-			instance->PushSet({1,0,1}, glm::fvec4(emColor.r * emIntens, emColor.g * emIntens, emColor.b * emIntens, 1));
-			instance->PushSet({1,0,2}, metallic);
-			instance->PushSet({1,0,3}, roughness);
+			instance->PushSet({1, 0, 0}, glm::fvec4(tint.r, tint.g, tint.b, opacity));
+			instance->PushSet({1, 0, 1}, glm::fvec4(emColor.r * emIntens, emColor.g * emIntens, emColor.b * emIntens, 1));
+			instance->PushSet({1, 0, 2}, metallic);
+			instance->PushSet({1, 0, 3}, roughness);
 
 			LOAD_ASSET(instance);
 		}
@@ -219,8 +253,8 @@ namespace Imagine::Core {
 					}
 
 					if (aiMesh->HasTangentsAndBitangents()) {
-						vertices[i].tangent = {aiMesh->mTangents[i].x,aiMesh->mTangents[i].y,aiMesh->mTangents[i].z,0};
-						vertices[i].bitangent = {aiMesh->mBitangents[i].x,aiMesh->mBitangents[i].y,aiMesh->mBitangents[i].z,0};
+						vertices[i].tangent = {aiMesh->mTangents[i].x, aiMesh->mTangents[i].y, aiMesh->mTangents[i].z, 0};
+						vertices[i].bitangent = {aiMesh->mBitangents[i].x, aiMesh->mBitangents[i].y, aiMesh->mBitangents[i].z, 0};
 					}
 
 					if (aiMesh->HasVertexColors(0)) {
@@ -235,6 +269,9 @@ namespace Imagine::Core {
 					const aiFace &face = aiMesh->mFaces[i];
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}
+
+				mesh->Vertices = vertices;
+				mesh->Indices = indices;
 
 				LOD surface;
 				surface.index = 0;
@@ -298,7 +335,7 @@ namespace Imagine::Core {
 				}
 				else if (node->mNumMeshes > 1) {
 					for (int i = 0; i < node->mNumMeshes; ++i) {
-						const auto& pMesh = model->Meshes[node->mMeshes[i]];
+						const auto &pMesh = model->Meshes[node->mMeshes[i]];
 						const AssetHandle meshHandle = pMesh->Handle;
 						EntityID meshChild = coreScene->CreateEntity(entityId);
 						coreScene->SetName(meshChild, pMesh->Name);

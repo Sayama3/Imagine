@@ -15,6 +15,8 @@ namespace Imagine::Core {
 		LayerStack();
 		~LayerStack();
 
+		void Clear();
+
 		void PushLayer(Layer *layer);
 		void PushOverlay(Layer *overlay);
 		void PopLayer(Layer *layer);

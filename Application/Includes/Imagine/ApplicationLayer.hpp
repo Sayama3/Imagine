@@ -45,9 +45,9 @@ namespace Imagine::Application {
 
 		std::filesystem::path m_ModelPath{"Assets/Models/Box.glb"};
 		bool m_MeshChanged = true;
-		Core::CPUMesh m_Mesh;
+		Ref<Core::CPUMesh> m_Mesh;
 		Math::MeshGraph3D* m_MeshGraph{};
-		Core::CPUMesh m_SubdividedMesh;
+		Ref<Core::CPUMesh> m_SubdividedMesh;
 
 		Core::EntityID m_OriginalMeshEntityID;
 		Core::EntityID m_LoopMeshEntityID;

@@ -6,6 +6,11 @@
 
 namespace Imagine::Core {
 
+	CPUShader::CPUShader(const ShaderStage stage) : stage(stage) {
+	}
+	CPUFileShader::CPUFileShader(const ShaderStage stage, Path path) : CPUShader(stage), path(std::move(path)) {
+	}
+
 	Buffer CPUFileShader::GetShaderContent() {
 		return FileSystem::ReadBinaryFile(path.GetFullPath());
 	}

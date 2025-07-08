@@ -8,6 +8,7 @@
 #include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Events/KeyEvent.hpp"
 #include "Imagine/Events/MouseEvent.hpp"
+#include "Imagine/Rendering/CPU/CPUModel.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
@@ -30,18 +31,23 @@ namespace Imagine::Application {
 		m_Window = Window::Get();
 		m_Renderer = Renderer::Get();
 
-		m_Mesh = CPUMesh::LoadExternalModelAsMesh("Assets/Models/Box.glb");
+		m_Mesh = CreateRef<CPUMesh>();
+		m_SubdividedMesh = CreateRef<CPUMesh>();
+		Project::GetActive()->GetAssetManager()->AddAsset(m_Mesh);
+		Project::GetActive()->GetAssetManager()->AddAsset(m_SubdividedMesh);
+
+		*m_Mesh = CPUMesh::LoadExternalModelAsMesh("Assets/Models/Box.glb");
 
 		m_OriginalMeshEntityID = SceneManager::GetMainScene()->CreateEntity();
 		SceneManager::GetMainScene()->GetEntity(m_OriginalMeshEntityID).LocalPosition = {-1, 0, 0};
 
-		m_Renderer->LoadCPUMeshInScene(m_Mesh, SceneManager::GetMainScene().get(), m_OriginalMeshEntityID);
+		m_Mesh->gpu = m_Renderer->LoadMesh(*m_Mesh);
 
 		m_LoopMeshEntityID = SceneManager::GetMainScene()->CreateEntity();
 		SceneManager::GetMainScene()->GetEntity(m_LoopMeshEntityID).LocalPosition = {1, 0, 0};
 
 		m_MeshGraph->Clear();
-		m_MeshGraph->AddMesh(m_Mesh);
+		m_MeshGraph->AddMesh(*m_Mesh);
 
 		m_MeshGraph->EnsureLink();
 		m_MeshChanged = false;
@@ -51,12 +57,14 @@ namespace Imagine::Application {
 
 	void ApplicationLayer::OnDetach() {
 		m_MeshGraph->Clear();
+		m_Mesh.reset();
+		m_SubdividedMesh.reset();
 	}
 
 	void ApplicationLayer::OnUpdate(Core::TimeStep timeStep) {
 		if (m_MeshChanged) {
 			m_MeshGraph->Clear();
-			m_MeshGraph->AddMesh(m_Mesh);
+			m_MeshGraph->AddMesh(*m_Mesh);
 			m_MeshChanged = false;
 		}
 	}
@@ -89,32 +97,32 @@ namespace Imagine::Application {
 
 		EventDispatcher dispatch{event};
 
-		bool handled = dispatch.Dispatch<AppUpdateEvent>([this](AppUpdateEvent& event) {
+		bool handled = dispatch.Dispatch<AppUpdateEvent>([this](AppUpdateEvent &event) {
 			OnUpdate(event.GetTimeStep());
 			return false;
 		});
 
-		if(handled) return;
-		handled = dispatch.Dispatch<ImGuiEvent>([this](ImGuiEvent& event) {
+		if (handled) return;
+		handled = dispatch.Dispatch<ImGuiEvent>([this](ImGuiEvent &event) {
 			OnImGuiRender();
 			return false;
 		});
 
-		if(handled) return;
-		handled = dispatch.Dispatch<AppRenderEvent>([this](AppRenderEvent& event) {
+		if (handled) return;
+		handled = dispatch.Dispatch<AppRenderEvent>([this](AppRenderEvent &event) {
 			Core::DrawContext ctx;
 			OnRender(ctx);
 			Renderer::Get()->Draw(ctx);
 			return false;
 		});
 
-		if(handled) return;
+		if (handled) return;
 		handled = dispatch.Dispatch<MouseMovedEvent>([this](MouseMovedEvent &mouse) -> bool {
 			MoveMouse({mouse.GetX(), mouse.GetY()});
 			return false;
 		});
 
-		if(handled) return;
+		if (handled) return;
 		handled = dispatch.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &mouse) -> bool {
 			if (mouse.GetMouseButton() == Imagine::Mouse::Right) {
 				const Rect<> window = m_Window->GetWindowRect();
@@ -136,18 +144,30 @@ namespace Imagine::Application {
 			return false;
 		});
 
-		if(handled) return;
+		if (handled) return;
 		handled = dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
 			for (const std::filesystem::path &path: e) {
 				if (std::filesystem::exists(path)) {
-					Renderer::Get()->LoadExternalModelInScene(path, SceneManager::GetMainScene().get());
+					auto model = CPUModel::LoadModel(path, SceneManager::GetMainScene().get());
+					for (auto &tex: model->Textures) {
+						tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
+					}
+					for (Ref<CPUMaterial> &material: model->Materials) {
+						material->gpu = Renderer::Get()->LoadMaterial(*material);
+					}
+					for (auto &instance: model->Instances) {
+						instance->gpu = Renderer::Get()->LoadMaterialInstance(*instance);
+					}
+					for (auto &mesh: model->Meshes) {
+						mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
+					}
 				}
 			}
 			return false;
 		});
 
 		// Handle Camera movement.
-		if(handled) return;
+		if (handled) return;
 		handled = dispatch.Dispatch<KeyPressedEvent>([](KeyPressedEvent &e) -> bool {
 			if (e.GetKeyCode() == Imagine::Key::W) {
 				Core::Camera::s_MainCamera->velocity.z = +1;
@@ -186,7 +206,7 @@ namespace Imagine::Application {
 		});
 
 		// Handle Camera movement.
-		if(handled) return;
+		if (handled) return;
 		dispatch.Dispatch<KeyReleasedEvent>([](const KeyReleasedEvent &e) -> bool {
 			if (e.GetKeyCode() == Imagine::Key::W) {
 				Core::Camera::s_MainCamera->velocity.z = 0;
@@ -239,9 +259,9 @@ namespace Imagine::Application {
 		}
 
 		m_ModelPath = path;
-		m_Mesh = std::move(mesh);
+		*m_Mesh = std::move(mesh);
 
-		m_Renderer->LoadCPUMeshInScene(m_Mesh, SceneManager::GetMainScene().get(), m_OriginalMeshEntityID);
+		m_Mesh->gpu = m_Renderer->LoadMesh(*m_Mesh);
 		m_MeshChanged = true;
 
 		return true;
@@ -358,7 +378,7 @@ namespace Imagine::Application {
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
+					*m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_INFO("Creating a smooth mesh took {}ms", ms);
@@ -366,15 +386,15 @@ namespace Imagine::Application {
 				else {
 					const auto before = std::chrono::high_resolution_clock::now();
 					if (s_RandomColor)
-						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+						*m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
 					else
-						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
+						*m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_INFO("Creating a hard mesh took {}ms", ms);
 				}
 
-				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
+				m_SubdividedMesh->gpu = m_Renderer->LoadMesh(*m_SubdividedMesh);
 				if (s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 
@@ -393,7 +413,7 @@ namespace Imagine::Application {
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
+					*m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_INFO("Creating a smooth mesh took {}ms", ms);
@@ -401,15 +421,15 @@ namespace Imagine::Application {
 				else {
 					const auto before = std::chrono::high_resolution_clock::now();
 					if (s_RandomColor)
-						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+						*m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
 					else
-						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
+						*m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_INFO("Creating a hard mesh took {}ms", ms);
 				}
 
-				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
+				m_SubdividedMesh->gpu = m_Renderer->LoadMesh(*m_SubdividedMesh);
 				if (s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 
@@ -428,7 +448,7 @@ namespace Imagine::Application {
 
 				if (s_Smooth) {
 					const auto before = std::chrono::high_resolution_clock::now();
-					m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
+					*m_SubdividedMesh = m_MeshGraph->GetSmoothCPUMesh();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_INFO("Creating a smooth mesh took {}ms", ms);
@@ -436,15 +456,15 @@ namespace Imagine::Application {
 				else {
 					const auto before = std::chrono::high_resolution_clock::now();
 					if (s_RandomColor)
-						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
+						*m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<true>();
 					else
-						m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
+						*m_SubdividedMesh = m_MeshGraph->GetHardCPUMesh<false>();
 					const auto after = std::chrono::high_resolution_clock::now();
 					const auto ms = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(after - before).count();
 					MGN_INFO("Creating a hard mesh took {}ms", ms);
 				}
 
-				m_Renderer->LoadCPUMeshInScene(m_SubdividedMesh, SceneManager::GetMainScene().get(), m_LoopMeshEntityID);
+				m_SubdividedMesh->gpu = m_Renderer->LoadMesh(*m_SubdividedMesh);
 				if (s_ResetMeshAfterSubdivision) m_MeshChanged = true;
 			}
 			ImGui::EndDisabled();

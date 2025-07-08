@@ -17,7 +17,6 @@ namespace Imagine::Core {
 		Renderable(const AssetHandle handle) : cpuMesh(handle) {}
 
 		AssetHandle cpuMesh{NULL_ASSET_HANDLE};
-		Ref<GPUMesh> gpuMesh{nullptr};
 	};
 
 } // namespace Imagine::Core

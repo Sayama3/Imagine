@@ -28,7 +28,9 @@ namespace Imagine::Vulkan {
 		std::vector<Core::MaterialBlock> bindings;
 	};
 
-	struct VulkanMaterial : public Core::GPUMaterial {
+	struct VulkanMaterial final : public Core::GPUMaterial {
+		VulkanMaterial();
+		virtual ~VulkanMaterial() override;
 		virtual uint64_t GetID() override;
 		VulkanMaterialPipeline pipeline;
 		std::vector<VulkanSetLayout> materialLayoutsDescriptions;
@@ -36,9 +38,10 @@ namespace Imagine::Vulkan {
 
 		std::vector<Core::MaterialBlock> pushConstantsDescription;
 		std::vector<VkPushConstantRange> pushConstants;
+		bool autoDelete = true;
 	};
 
-	struct VulkanMaterialInstance : public Core::GPUMaterialInstance {
+	struct VulkanMaterialInstance final : public Core::GPUMaterialInstance {
 	private:
 		static inline uint64_t s_id;
 		uint64_t id;
@@ -47,7 +50,7 @@ namespace Imagine::Vulkan {
 		using VulkanBindingContainer = std::vector<VulkanBinding>;
 	public:
 		VulkanMaterialInstance();
-		virtual ~VulkanMaterialInstance();
+		virtual ~VulkanMaterialInstance() override;
 
 		virtual uint64_t GetID() override;
 

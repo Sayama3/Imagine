@@ -47,10 +47,12 @@ int main(int argc, char **argv) {
 	MGN_FRAME_START();
 
 	Core::Application *application = Core::Application::Initialize(params);
+	{
+		Project::New();
+	}
 	application->PushLayer<Imagine::Application::ApplicationLayer>();
 	application->PushOverlay<Imagine::Core::ImGuiLayer>();
 
-	Project::New();
 
 	MGN_FRAME_END();
 	MGN_PROFILE_END_SESSION();

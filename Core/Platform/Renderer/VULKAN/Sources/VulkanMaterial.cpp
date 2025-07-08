@@ -28,6 +28,26 @@ namespace Imagine::Vulkan {
 		return id;
 	}
 
+	static inline std::atomic<int64_t> counter_material = 0;
+	VulkanMaterial::VulkanMaterial() {
+		const int64_t old_total = counter_material.fetch_add(1, std::memory_order_relaxed);
+		MGN_CORE_INFO("There is {} material", old_total + 1);
+	}
+	VulkanMaterial::~VulkanMaterial() {
+		const int64_t old_total = counter_material.fetch_sub(1, std::memory_order_relaxed);
+		MGN_CORE_INFO("There is {} material", old_total - 1);
+
+		if (autoDelete) {
+			VulkanRenderer* renderer = dynamic_cast<VulkanRenderer*>(Renderer::Get());
+			renderer->PushDeletion(pipeline.layout);
+			renderer->PushDeletion(pipeline.pipeline);
+			for (auto& set : materialLayouts) {
+				renderer->PushDeletion(set);
+				// vkDestroyDescriptorSetLayout(renderer->GetDevice(), set, nullptr);
+			}
+			materialLayouts.clear();
+		}
+	}
 	uint64_t VulkanMaterial::GetID() {
 		return reinterpret_cast<uint64_t>(pipeline.pipeline);
 	}
@@ -36,6 +56,9 @@ namespace Imagine::Vulkan {
 
 		opaque = CreateRef<VulkanMaterial>();
 		transparent = CreateRef<VulkanMaterial>();
+
+		opaque->autoDelete = false;
+		transparent->autoDelete = false;
 
 		// TODO: move the shader paths to parameters or change the way we obtains the shader.
 		//  Taking into account the fact that later the shader will come from data blob.
@@ -150,8 +173,7 @@ namespace Imagine::Vulkan {
 			instance.material = opaque;
 		}
 
-		{
-			auto mat = instance.material.lock();
+		if (auto mat = instance.material.lock()) {
 
 			instance.materialSets.push_back(descriptorAllocator.Allocate(device, mat->materialLayouts.front()));
 

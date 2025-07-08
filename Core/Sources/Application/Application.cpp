@@ -3,6 +3,8 @@
 //
 
 #include "Imagine/Application/Application.hpp"
+
+#include "Imagine/Assets/AssetManager.hpp"
 #include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Core/Macros.hpp"
@@ -15,6 +17,7 @@
 #include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Events/KeyEvent.hpp"
 #include "Imagine/Events/MouseEvent.hpp"
+#include "Imagine/Rendering/CPU/CPUModel.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -84,7 +87,14 @@ namespace Imagine::Core {
 	}
 
 	Application::~Application() {
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+			(*it)->OnDetach();
+		}
+		m_LayerStack.Clear();
+
 		SceneManager::Shutdown();
+
+		Project::Shutdown();
 
 		if (m_Renderer) {
 			m_Renderer->PrepareShutdown();
@@ -124,6 +134,9 @@ namespace Imagine::Core {
 	}
 
 	void Application::Run() {
+		auto model = CPUModel::LoadModel("C:/Users/ianpo/Documents/GitHub/glTF-Sample-Assets/Models/Sponza/glTF/Sponza.gltf", SceneManager::GetMainScene().get());
+
+		MGN_CORE_CASSERT(model);
 
 		while (!m_ShouldStop) {
 			MGN_FRAME_START();
@@ -161,6 +174,21 @@ namespace Imagine::Core {
 			if (canDraw) {
 				MGN_PROFILE_SCOPE("App Draw");
 				Camera::s_MainCamera->Update(m_DeltaTime);
+				if (model) {
+					for (auto & tex: model->Textures) {
+						tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
+					}
+					for (Ref<CPUMaterial> & material: model->Materials) {
+						material->gpu = Renderer::Get()->LoadMaterial(*material);
+					}
+					for (auto & instance: model->Instances) {
+						instance->gpu = Renderer::Get()->LoadMaterialInstance(*instance);
+					}
+					for (auto & mesh: model->Meshes) {
+						mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
+					}
+					model.reset();
+				}
 				Draw();
 			}
 
@@ -275,10 +303,13 @@ namespace Imagine::Core {
 					MGN_PROFILE_SCOPE("Draw One Scene");
 					scene->CacheTransforms();
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
-					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, const Renderable &renderable) {
+					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, Renderable &renderable) {
+						auto gpuMesh = AssetManager::GetAssetAs<CPUMesh>(renderable.cpuMesh)->gpu;
+						if (!gpuMesh) return;
+
 						const Mat4 worldMat = scene->GetWorldTransform(id);
 						MGN_CORE_MASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
-						ctx.OpaqueSurfaces.emplace_back(worldMat, renderable.gpuMesh);
+						ctx.OpaqueSurfaces.emplace_back(worldMat, gpuMesh);
 					});
 					m_Renderer->Draw(ctx);
 					ctx.Clear();

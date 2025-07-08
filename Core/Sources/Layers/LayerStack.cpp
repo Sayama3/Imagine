@@ -8,9 +8,14 @@ namespace Imagine::Core {
 	LayerStack::LayerStack() = default;
 
 	LayerStack::~LayerStack() {
+		Clear();
+	}
+
+	void LayerStack::Clear() {
 		for (Layer* layer : m_Layers) {
 			delete layer;
 		}
+		m_Layers.clear();
 	}
 
 	void LayerStack::PushLayer(Layer *layer) {

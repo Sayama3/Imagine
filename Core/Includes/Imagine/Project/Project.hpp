@@ -34,7 +34,8 @@ namespace Imagine::Core
 	class Project
 	{
 	public:
-		inline static Ref<Project> GetActive() { return s_ActiveProject; }
+		inline static Project* GetActive() { return s_ActiveProject.get(); }
+		inline static void Shutdown() {s_ActiveProject.reset();}
 
 		static std::filesystem::path GetAssetsDirectory();
 		static std::filesystem::path GetCacheDirectory();
@@ -63,8 +64,8 @@ namespace Imagine::Core
 		static const ProjectConfig& GetConfig();
 		inline static bool ProjectIsLoaded() { return s_ActiveProject != nullptr; }
 
-		static Ref<Project> New();
-		static Ref<Project> Load(const std::filesystem::path&);
+		static Project* New();
+		static Project* Load(const std::filesystem::path&);
 		static bool SaveActive(const std::filesystem::path& path);
 		static bool SaveActive();
 
@@ -75,11 +76,11 @@ namespace Imagine::Core
 		Project(ProjectConfig parameters);
 		~Project();
 
-		[[nodiscard]] inline Ref<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
+		[[nodiscard]] inline AssetManagerBase* GetAssetManager() { return m_AssetManager.get(); }
 
-		[[nodiscard]] inline Ref<FileAssetManager> GetEditorAssetManager() {
+		[[nodiscard]] inline FileAssetManager* GetEditorAssetManager() {
 			MGN_PROFILE_FUNCTION();
-			return CastPtr<FileAssetManager>(m_AssetManager);
+			return dynamic_cast<FileAssetManager*>(m_AssetManager.get());
 		}
 		//
 		// [[nodiscard]] inline Ref<RuntimeAssetManager> GetRuntimeAssetManager() {
@@ -98,10 +99,10 @@ namespace Imagine::Core
 	private:
 		std::filesystem::path m_ProjectPath = "./Project.mgn";
 		ProjectConfig m_Config;
-		Ref<AssetManagerBase> m_AssetManager;
+		Scope<AssetManagerBase> m_AssetManager;
 	private:
 		static std::unordered_map<AssetHandle, void_func_ptr>* s_OnLoad;
-		static Ref<Project> s_ActiveProject;
+		static Scope<Project> s_ActiveProject;
 		friend class ProjectSerializer;
 	};
 

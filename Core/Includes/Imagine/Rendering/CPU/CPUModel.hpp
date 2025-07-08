@@ -7,6 +7,7 @@
 #include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Rendering/CPU/CPUMaterial.hpp"
 #include "Imagine/Rendering/CPU/CPUMesh.hpp"
+#include "Imagine/Rendering/CPU/CPUShader.hpp"
 #include "Imagine/Rendering/CPU/CPUTexture2D.hpp"
 #include "Imagine/Rendering/CPU/CPUVirtualTexture.hpp"
 
@@ -21,12 +22,14 @@ namespace Imagine::Core {
 		MGN_IMPLEMENT_ASSET(AssetType::Model);
 	public:
 		static Ref<CPUModel> LoadModel(const Path &filePath, Core::Scene* coreScene, Core::EntityID parent = EntityID::NullID);
+		static Ref<CPUModel> LoadModel(const std::filesystem::path &filePath, Core::Scene* coreScene, Core::EntityID parent = EntityID::NullID);
 	public:
 		Path modelPath;
 		std::vector<Ref<CPUMesh>> Meshes;
 		std::vector<Ref<CPUMaterial>> Materials;
 		std::vector<Ref<CPUMaterialInstance>> Instances;
 		std::vector<Ref<CPUTexture2D>> Textures;
+		std::vector<Ref<CPUShader>> Shaders;
 	};
 
 } // namespace Imagine::Core

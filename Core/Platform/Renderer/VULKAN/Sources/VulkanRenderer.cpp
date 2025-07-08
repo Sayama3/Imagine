@@ -952,6 +952,8 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::ShutdownVulkan() {
+		m_MainDrawContext.Clear();
+
 		for (auto &frame: m_Frames) {
 			vkDestroyCommandPool(m_Device, frame.m_CommandPool, nullptr);
 
@@ -1228,20 +1230,6 @@ namespace Imagine::Vulkan {
 #endif
 	}
 
-	void VulkanRenderer::LoadExternalModelInScene(const std::filesystem::path &path, Scene *scene, EntityID parent) {
-		Initializer::LoadModelAsDynamic(this, scene, parent, path);
-	}
-	void VulkanRenderer::LoadCPUMeshInScene(const CPUMesh &m, Scene *scene, EntityID entity) {
-		Ref<AutoDeleteMeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, m).value();
-		if (!entity.IsValid()) {
-			entity = scene->CreateEntity();
-		}
-
-		Renderable *render = scene->GetOrAddComponent<Renderable>(entity);
-		if (!render) return;
-		render->gpuMesh = GPUMesh;
-	}
-
 	Ref<GPUMesh> VulkanRenderer::LoadMesh(const CPUMesh &mesh) {
 		MGN_PROFILE_FUNCTION();
 		Ref<AutoDeleteMeshAsset> GPUMesh = Initializer::LoadCPUMesh(this, mesh).value();
@@ -1415,6 +1403,11 @@ namespace Imagine::Vulkan {
 		}
 
 		gpuMaterial->pipeline.pipeline = builder.BuildPipeline(m_Device);
+		for (int i = 0; i < shaderModules.size(); ++i) {
+			if (!shaderModules[i]) continue;
+			vkDestroyShaderModule(m_Device, shaderModules[i], nullptr);
+		}
+
 		return gpuMaterial;
 	}
 
@@ -1466,7 +1459,7 @@ namespace Imagine::Vulkan {
 
 					Buffer buffer = binding.GetCompactBuffer();
 					AllocatedBuffer vkBuffer = CreateBuffer(buffer.Size(), usage, VMA_MEMORY_USAGE_CPU_TO_GPU);
-					vkInstance->materialSetVulkanData.back().push_back(vkBuffer);
+					vkInstance->materialSetVulkanData.back().emplace_back(vkBuffer);
 					vkInstance->deleter->push(m_Allocator, vkBuffer.allocation, vkBuffer.buffer);
 					uint32_t offset{0};
 					for (uint32_t fieldIndex = 0; fieldIndex < binding.Fields.size(); ++fieldIndex) {
@@ -1511,52 +1504,59 @@ namespace Imagine::Vulkan {
 						}
 					}
 
+
 					VkImageView view = m_ErrorCheckerboardImage.imageView;
 					VkSampler sampler = m_DefaultSamplerNearest;
-					Ref<Asset> texture = AssetManager::GetAsset(asset);
-					switch (texture->GetType()) {
-						case AssetType::Texture2D: {
-							if (field.type != MaterialType::VirtualTexture2D && field.type != MaterialType::Texture2D) break;
-							if(isVirtual) {
-								auto gpuTex = CastPtr<CPUVirtualTexture2D>(texture);
-								if(!gpuTex || !gpuTex->gpu) break;
-								auto vkTex = CastPtr<VulkanTexture2D>(gpuTex->gpu);
-								view = vkTex->image.imageView;
-								sampler = vkTex->sampler;
-							} else {
-								auto cpuTex = CastPtr<CPUTexture2D>(texture);
-								if(!cpuTex || !cpuTex->gpu) break;
-								auto vkTex = CastPtr<VulkanTexture2D>(cpuTex->gpu);
-								view = vkTex->image.imageView;
-								sampler = vkTex->sampler;
-							}
-						} break;
-						case AssetType::Texture3D: {
-							if (field.type != MaterialType::VirtualTexture3D && field.type != MaterialType::Texture3D) break;
-							if(isVirtual) {
-								auto gpuTex = CastPtr<CPUVirtualTexture3D>(texture);
-								if(!gpuTex || !gpuTex->gpu) break;
-								auto vkTex = CastPtr<VulkanTexture3D>(gpuTex->gpu);
-								view = vkTex->image.imageView;
-								sampler = vkTex->sampler;
-							} else {
-								auto cpuTex = CastPtr<CPUTexture3D>(texture);
-								if(!cpuTex || !cpuTex->gpu) break;
-								auto vkTex = CastPtr<VulkanTexture3D>(cpuTex->gpu);
-								view = vkTex->image.imageView;
-								sampler = vkTex->sampler;
-							}
-						} break;
-						case AssetType::CubeMap:
-							//TODO: Implement the cubemap.
-							break;
-						default:
-							break;
-					}
 
-					if (isVirtual) {
-						writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+					if (asset) {
+						Ref<Asset> texture = AssetManager::GetAsset(asset);
+						switch (texture->GetType()) {
+							case AssetType::Texture2D: {
+								if (field.type != MaterialType::VirtualTexture2D && field.type != MaterialType::Texture2D) break;
+								if(isVirtual) {
+									auto gpuTex = CastPtr<CPUVirtualTexture2D>(texture);
+									if(!gpuTex || !gpuTex->gpu) break;
+									auto vkTex = CastPtr<VulkanTexture2D>(gpuTex->gpu);
+									view = vkTex->image.imageView;
+									sampler = vkTex->sampler;
+								} else {
+									auto cpuTex = CastPtr<CPUTexture2D>(texture);
+									if(!cpuTex || !cpuTex->gpu) break;
+									auto vkTex = CastPtr<VulkanTexture2D>(cpuTex->gpu);
+									view = vkTex->image.imageView;
+									sampler = vkTex->sampler;
+								}
+							} break;
+							case AssetType::Texture3D: {
+								if (field.type != MaterialType::VirtualTexture3D && field.type != MaterialType::Texture3D) break;
+								if(isVirtual) {
+									auto gpuTex = CastPtr<CPUVirtualTexture3D>(texture);
+									if(!gpuTex || !gpuTex->gpu) break;
+									auto vkTex = CastPtr<VulkanTexture3D>(gpuTex->gpu);
+									view = vkTex->image.imageView;
+									sampler = vkTex->sampler;
+								} else {
+									auto cpuTex = CastPtr<CPUTexture3D>(texture);
+									if(!cpuTex || !cpuTex->gpu) break;
+									auto vkTex = CastPtr<VulkanTexture3D>(cpuTex->gpu);
+									view = vkTex->image.imageView;
+									sampler = vkTex->sampler;
+								}
+							} break;
+							case AssetType::CubeMap:
+								//TODO: Implement the cubemap.
+								break;
+							default:
+								break;
+						}
+						if (isVirtual) {
+							writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+						} else {
+							writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+						}
 					} else {
+						view = m_WhiteImage.imageView;
+						sampler = m_DefaultSamplerLinear;
 						writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					}
 				}

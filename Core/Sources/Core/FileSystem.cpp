@@ -201,6 +201,7 @@ namespace Imagine::Core {
 			case FileSource::Assets:	{ return Project::GetAssetsDirectory(); }
 			case FileSource::Scripts:	{ return Project::GetScriptsDirectory(); }
 			case FileSource::Cache:		{ return Project::GetCacheDirectory(); }
+			case FileSource::External:		{ return ""; }
 			default: break;
 		}
 		return Project::GetProjectFilePath().parent_path();

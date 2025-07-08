@@ -9,7 +9,7 @@
 
 namespace Imagine::Core {
 std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
-	Ref<Project> Project::s_ActiveProject = nullptr;
+	Scope<Project> Project::s_ActiveProject = nullptr;
 
 	// void TryLoadGizmoMaterial()
 	// {
@@ -55,7 +55,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 		if(m_ProjectPath.is_relative()) {
 			m_ProjectPath = std::filesystem::current_path() / m_ProjectPath;
 		}
-		m_AssetManager = CreateRef<FileAssetManager>();
+		m_AssetManager = CreateScope<FileAssetManager>();
 	}
 
 	Project::Project(ProjectConfig parameters) : m_Config(std::move(parameters))
@@ -63,20 +63,22 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 		if(m_ProjectPath.is_relative()) {
 			m_ProjectPath = std::filesystem::current_path() / m_ProjectPath;
 		}
-		m_AssetManager = CreateRef<FileAssetManager>();
+		m_AssetManager = CreateScope<FileAssetManager>();
 	}
 
-	Project::~Project() = default;
+	Project::~Project() {
+		m_AssetManager.reset();
+	}
 
-	Ref<Project> Project::New()
+	Project* Project::New()
 	{
 		MGN_PROFILE_FUNCTION();
-		s_ActiveProject = CreateRef<Project>();
+		s_ActiveProject = CreateScope<Project>();
 		s_ActiveProject->CallOnLoad();
-		return s_ActiveProject;
+		return s_ActiveProject.get();
 	}
 
-	Ref<Project> Project::Load(const std::filesystem::path &path)
+	Project* Project::Load(const std::filesystem::path &path)
 	{
 		MGN_PROFILE_FUNCTION();
 		MGN_CORE_ERROR("Not Implemented.");
