@@ -69,6 +69,7 @@
 #define MGN_BREAK()
 #endif
 
+#define MGN_TYPE(TYPE) Imagine::Core::##TYPE
 #define MGN_EXPAND_MACRO(x) x
 #define MGN_STRINGIFY_MACRO(x) #x
 

@@ -150,12 +150,12 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Assets/Importers/MeshImporter.hpp
 		Includes/Imagine/Assets/Importers/SceneImporter.hpp
 		Includes/Imagine/Assets/Importers/ShaderSerializer.hpp
-		Includes/Imagine/Assets/Importers/TextureImporter.hpp
+		Includes/Imagine/Assets/Importers/TextureSerializer.hpp
 		Sources/Assets/Importers/MaterialSerializer.cpp
 		Sources/Assets/Importers/MeshImporter.cpp
 		Sources/Assets/Importers/SceneImporter.cpp
 		Sources/Assets/Importers/ShaderSerializer.cpp
-		Sources/Assets/Importers/TextureImporter.cpp
+		Sources/Assets/Importers/TextureSerializer.cpp
 		Includes/Imagine/Assets/ImGui/TextureImGui.hpp
 		Includes/Imagine/Assets/ImGui/ShaderImGui.hpp
 		Includes/Imagine/Assets/ImGui/SceneImGui.hpp

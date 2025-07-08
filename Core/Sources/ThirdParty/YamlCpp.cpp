@@ -11,15 +11,21 @@ namespace Imagine::ThirdParty {
 			std::ofstream fileOut(path);
 			fileOut << emitter.c_str();
 		}
+		void WriteYamlFile(const Core::Path &path, YAML::Emitter &emitter) {
+			WriteYamlFile(path.GetFullPath(), emitter);
+		}
 
 		YAML::Node ReadFileAsYAML(const std::filesystem::path &path) {
 			MGN_PROFILE_FUNCTION();
 			YAML::Node data;
 			std::ifstream ifstream(path);
-			std::stringstream  stringstream;
+			std::stringstream stringstream;
 			stringstream << ifstream.rdbuf();
 			data = YAML::Load(stringstream.str());
 			return data;
+		}
+		YAML::Node ReadFileAsYAML(const Core::Path &path) {
+			return ReadFileAsYAML(path.GetFullPath());
 		}
 
 	} // namespace YamlCpp

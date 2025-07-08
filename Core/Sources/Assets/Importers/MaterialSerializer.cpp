@@ -14,15 +14,24 @@ namespace Imagine::Core {
 	void MaterialSerializer::ExportReadableMaterial(const AssetMetadata &metadata, Ref<CPUMaterial> material) {
 		if (!material) return;
 		YAML::Emitter out;
-		out << *material;
-		ThirdParty::YamlCpp::WriteYamlFile(metadata.FilePath.path, out);
+		out << YAML::BeginMap;
+		out << KEYVAL("Type", "Material");
+		out << KEYVAL("Data", *material);
+		out << YAML::EndMap;
+		ThirdParty::YamlCpp::WriteYamlFile(metadata.FilePath, out);
 	}
 	Ref<Asset> MaterialSerializer::ImportReadableMaterial(const AssetMetadata &metadata) {
 		if (!FileSystem::Exist(metadata.FilePath)) return nullptr;
 		const YAML::Node root = ThirdParty::YamlCpp::ReadFileAsYAML(metadata.FilePath.GetFullPath());
-		Ref<CPUMaterial> mat = CreateRef<CPUMaterial>();
-		*mat = root.as<CPUMaterial>();
-		return mat;
+
+		if (root["Type"] && root["Type"].as<std::string>() == "Material") {
+			Ref<CPUMaterial> mat = CreateRef<CPUMaterial>();
+			*mat = root["Data"].as<CPUMaterial>();
+			mat->Handle = metadata.Handle;
+			return mat;
+		}
+
+		return nullptr;
 	}
 
 	bool MaterialSerializer::IsMaterialInstance(const std::filesystem::path &path) {
@@ -31,14 +40,23 @@ namespace Imagine::Core {
 	void MaterialSerializer::ExportReadableMaterialInstance(const AssetMetadata &metadata, Ref<CPUMaterialInstance> instance) {
 		if (!instance) return;
 		YAML::Emitter out;
-		out << *instance;
-		ThirdParty::YamlCpp::WriteYamlFile(metadata.FilePath.path, out);
+		out << YAML::BeginMap;
+		out << KEYVAL("Type", "Material Instance");
+		out << KEYVAL("Data", *instance);
+		out << YAML::EndMap;
+		ThirdParty::YamlCpp::WriteYamlFile(metadata.FilePath, out);
 	}
 	Ref<Asset> MaterialSerializer::ImportReadableMaterialInstance(const AssetMetadata &metadata) {
 		if (!FileSystem::Exist(metadata.FilePath)) return nullptr;
 		const YAML::Node root = ThirdParty::YamlCpp::ReadFileAsYAML(metadata.FilePath.GetFullPath());
-		Ref<CPUMaterialInstance> mat = CreateRef<CPUMaterialInstance>();
-		*mat = root.as<CPUMaterialInstance>();
-		return mat;
+
+		if (root["Type"] && root["Type"].as<std::string>() == "Material Instance") {
+			Ref<CPUMaterialInstance> mat = CreateRef<CPUMaterialInstance>();
+			*mat = root["Data"].as<CPUMaterialInstance>();
+			mat->Handle = metadata.Handle;
+			return mat;
+		}
+
+		return nullptr;
 	}
 } // namespace Imagine::Core

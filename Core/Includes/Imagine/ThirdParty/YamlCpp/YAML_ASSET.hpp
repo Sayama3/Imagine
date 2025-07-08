@@ -14,7 +14,16 @@
 namespace YAML {
 	YAML_SIMPLE_MGN_EMITTER_FUNC(AssetHandle, v.GetID());
 	YAML_SIMPLE_MGN_ENUM_EMITTER(AssetType);
-	YAML_TEMPLATE_EMITTER_T(AssetMetadata, FilePath, Handle, Type)
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::AssetMetadata &v) {
+		out << YAML::BeginMap;
+		{
+			out << YAML::Key << "FilePath" << YAML::Value << v.FilePath;
+			out << YAML::Key << "Handle" << YAML::Value << v.Handle;
+			out << YAML::Key << "Type" << YAML::Value << v.Type;
+		}
+		out << YAML::EndMap;
+		return out;
+	}
 } // namespace YAML
 
 namespace YAML {
@@ -46,9 +55,9 @@ namespace YAML {
 			return node;
 		}
 		inline static bool decode(const Node &node, Imagine::Core::AssetMetadata &v) {
-			YAML_NODE_IN_MGN_VAL(FilePath, Path);
-			YAML_NODE_IN_MGN_VAL(Handle, AssetHandle);
-			YAML_NODE_IN_MGN_VAL(Type, AssetType);
+			YAML_NODE_IN_VAL(FilePath, Path);
+			YAML_NODE_IN_VAL(Handle, AssetHandle);
+			YAML_NODE_IN_VAL(Type, AssetType);
 			return true;
 		}
 	};

@@ -55,6 +55,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 		if(m_ProjectPath.is_relative()) {
 			m_ProjectPath = std::filesystem::current_path() / m_ProjectPath;
 		}
+		m_AssetManager = CreateRef<FileAssetManager>();
 	}
 
 	Project::Project(ProjectConfig parameters) : m_Config(std::move(parameters))
@@ -62,6 +63,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 		if(m_ProjectPath.is_relative()) {
 			m_ProjectPath = std::filesystem::current_path() / m_ProjectPath;
 		}
+		m_AssetManager = CreateRef<FileAssetManager>();
 	}
 
 	Project::~Project() = default;

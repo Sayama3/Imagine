@@ -11,8 +11,7 @@
 #include <any>
 
 
-#define ShaderExtension ".mgn"
-#define ComputeShaderExtension ".mgn"
+#define ShaderExtension ".shd.mgn"
 
 namespace Imagine::Core
 {
@@ -21,8 +20,8 @@ namespace Imagine::Core
 	{
 	public:
 		static bool IsShaderSource(const std::filesystem::path& path);
-		static Ref<Asset> ImportShaderSource(const AssetMetadata& metadata);
-		static void ExportEditorShaderSource(const AssetMetadata& metadata, Ref<CPUShader> source);
+		static Ref<Asset> ImportReadableShaderSource(const AssetMetadata& metadata);
+		static void ExportReadableShaderSource(const AssetMetadata& metadata, Ref<CPUShader> source);
 	};
 
 } // namespace Imagine::Core

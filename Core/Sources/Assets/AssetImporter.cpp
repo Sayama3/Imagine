@@ -2,23 +2,21 @@
 // Created by ianpo on 09/04/2024.
 //
 
-#include "Imagine/Core/InternalCore.hpp"
 #include "Imagine/Assets/AssetImporter.hpp"
-#include "Imagine/Assets/Importers/TextureImporter.hpp"
 #include "Imagine/Assets/Importers/MaterialSerializer.hpp"
 #include "Imagine/Assets/Importers/MeshImporter.hpp"
-#include "Imagine/Assets/Importers/ShaderSerializer.hpp"
 #include "Imagine/Assets/Importers/SceneImporter.hpp"
+#include "Imagine/Assets/Importers/ShaderSerializer.hpp"
+#include "Imagine/Assets/Importers/TextureSerializer.hpp"
+#include "Imagine/Core/InternalCore.hpp"
 
 namespace Imagine::Core
 {
 	std::unordered_map<AssetType, AssetImportFunction> AssetImporter::AssetLoaders = {
-			// {AssetType::Texture2D, TextureImporter::ImportTexture2D},
-			// {AssetType::Texture3D, TextureImporter::ImportTexture3D},
-			// {AssetType::CubeMap, TextureImporter::ImportCubemap},
-			// {AssetType::Shader, ShaderSerializer::ImportGraphicShader},
-			// {AssetType::ComputeShader, ShaderSerializer::ImportComputeShader},
-			// {AssetType::ShaderSource, ShaderSerializer::ImportShaderSource},
+			// {AssetType::Texture2D, TextureSerializer::ImportTexture2D},
+			// {AssetType::Texture3D, TextureSerializer::ImportTexture3D},
+			// {AssetType::CubeMap, TextureSerializer::ImportCubemap},
+			{AssetType::ShaderSource, ShaderSerializer::ImportReadableShaderSource},
 			// {AssetType::Mesh, MeshSerializer::ImportMesh},
 			// {AssetType::Scene, SceneImporter::ImportScene},
 			{AssetType::Material, MaterialSerializer::ImportReadableMaterial},
@@ -27,12 +25,10 @@ namespace Imagine::Core
 	};
 
 	std::unordered_map<AssetType, AssetDetectorFunction> AssetImporter::AssetDetectors = {
-			// {AssetType::Texture2D, TextureImporter::IsTexture2D},
-			// {AssetType::Texture3D, TextureImporter::IsTexture3D},
-			// {AssetType::CubeMap, TextureImporter::IsCubemap},
-			// {AssetType::Shader, ShaderSerializer::IsGraphicShader},
-			// {AssetType::ComputeShader, ShaderSerializer::IsComputeShader},
-			// {AssetType::ShaderSource, ShaderSerializer::IsShaderSource},
+			// {AssetType::Texture2D, TextureSerializer::IsTexture2D},
+			// {AssetType::Texture3D, TextureSerializer::IsTexture3D},
+			// {AssetType::CubeMap, TextureSerializer::IsCubemap},
+			{AssetType::ShaderSource, ShaderSerializer::IsShaderSource},
 			// {AssetType::Mesh, MeshSerializer::IsMesh},
 			// {AssetType::Scene, SceneImporter::IsScene},
 			{AssetType::Material, MaterialSerializer::IsMaterial},

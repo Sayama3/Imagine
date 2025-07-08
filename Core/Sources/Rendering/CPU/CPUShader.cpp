@@ -9,14 +9,14 @@ namespace Imagine::Core {
 	Buffer CPUFileShader::GetShaderContent() {
 		return FileSystem::ReadBinaryFile(path.GetFullPath());
 	}
-	std::string CPUFileShader::GetName() {
+	std::string CPUFileShader::GetName() const {
 		return path.path.filename().string();
 	}
 
 	Buffer CPUMemoryShader::GetShaderContent() {
 		return Buffer::Copy(shader);
 	}
-	std::string CPUMemoryShader::GetName() {
+	std::string CPUMemoryShader::GetName() const {
 		return name;
 	}
 

@@ -20,7 +20,9 @@
 namespace Imagine::ThirdParty {
 	namespace YamlCpp {
 		void WriteYamlFile(const std::filesystem::path& path, YAML::Emitter& emitter);
+		void WriteYamlFile(const Core::Path& path, YAML::Emitter& emitter);
 		YAML::Node ReadFileAsYAML(const std::filesystem::path& path);
+		YAML::Node ReadFileAsYAML(const Core::Path& path);
 	}
 } // namespace Imagine::ThirdParty
 

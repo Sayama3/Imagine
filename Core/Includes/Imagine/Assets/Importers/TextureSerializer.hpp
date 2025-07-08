@@ -14,13 +14,12 @@
 
 namespace Imagine::Core
 {
-	class TextureImporter
+	class TextureSerializer
 	{
 	public:
 		static bool IsTexture2D(const std::filesystem::path& path);
-		static Ref<CPUTexture2D> LoadTexture2D(const std::filesystem::path& path);
-		static void ExportEditorTexture2D(const AssetMetadata& metadata, Ref<CPUTexture2D> texture);
-		static Ref<Asset> ImportTexture2D(const AssetMetadata& metadata);
+		static Ref<Asset> ImportReadableTexture2D(const AssetMetadata &metadata);
+		static void ExportReadableTexture2D(const AssetMetadata& metadata, Ref<CPUTexture2D> texture);
 
 		// static bool IsCubemap(const std::filesystem::path& path);
 		// static void ExportEditorCubemap(const AssetMetadata& metadata, Ref<Cubemap> cubemap);

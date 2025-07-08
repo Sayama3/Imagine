@@ -176,7 +176,7 @@ namespace Imagine::Core {
 #ifdef MGN_DEBUG
 			MGN_CORE_CASSERT(m_Size >= (index * sizeof(T) + sizeof(T)) && Get(), "The type or the offset is not valid.");
 #endif
-			return *(reinterpret_cast<T *>(Get()) + index);
+			return *(reinterpret_cast<const T *>(Get()) + index);
 		}
 
 		template<typename T>

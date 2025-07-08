@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "Imagine/Assets/AssetManagerBase.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Assets/AssetManagerBase.hpp"
+#include "Imagine/Assets/FileAssetManager.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
 namespace Imagine::Core
@@ -76,10 +77,10 @@ namespace Imagine::Core
 
 		[[nodiscard]] inline Ref<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
 
-		// [[nodiscard]] inline Ref<EditorAssetManager> GetEditorAssetManager() {
-		// 	MGN_PROFILE_FUNCTION();
-		// 	return CastPtr<EditorAssetManager>(m_AssetManager);
-		// }
+		[[nodiscard]] inline Ref<FileAssetManager> GetEditorAssetManager() {
+			MGN_PROFILE_FUNCTION();
+			return CastPtr<FileAssetManager>(m_AssetManager);
+		}
 		//
 		// [[nodiscard]] inline Ref<RuntimeAssetManager> GetRuntimeAssetManager() {
 		// 	MGN_PROFILE_FUNCTION();

@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
 	Core::Application *application = Core::Application::Initialize(params);
 	application->PushLayer<Imagine::Application::ApplicationLayer>();
 	application->PushOverlay<Imagine::Core::ImGuiLayer>();
+
 	Project::New();
 
 	MGN_FRAME_END();

@@ -27,8 +27,8 @@ namespace Imagine::Core
 		static Ref<Asset> ImportMesh(const AssetMetadata& metadata);
 
 		static bool IsModel(const std::filesystem::path& path);
-		// static void ExportEditorModel(const AssetMetadata& metadata, Ref<CPUModel> model);
-		// static Ref<Asset> ImportModel(const AssetMetadata& metadata);
+		static void ExportEditorModel(const AssetMetadata& metadata, Ref<CPUModel> model);
+		static Ref<Asset> ImportModel(const AssetMetadata& metadata);
 	};
 } // namespace Imagine::Core
 

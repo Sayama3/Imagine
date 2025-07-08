@@ -124,6 +124,7 @@ namespace Imagine::Core {
 	}
 
 	void Application::Run() {
+
 		while (!m_ShouldStop) {
 			MGN_FRAME_START();
 			bool canDraw = true;

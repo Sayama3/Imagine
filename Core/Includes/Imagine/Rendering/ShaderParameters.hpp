@@ -32,8 +32,10 @@ namespace Imagine::Core {
 		return static_cast<ShaderStage>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
 	}
 
-	inline static const std::string ShaderStageToString(const ShaderStage ss) {
+	inline static constexpr std::string ShaderStageToString(const ShaderStage ss) {
 		std::string str;
+		if (ss == ShaderStage::None) return "None";
+
 		if (CHECK_SHADER_STAGE_BIT(ss, ShaderStage::Vertex)) {
 			str += "Vertex";
 		}
@@ -60,8 +62,9 @@ namespace Imagine::Core {
 		return str;
 	}
 
-	inline static const ShaderStage ShaderStageFromString(const std::string& str) {
-		ShaderStage val{ShaderStage::None};
+	inline static constexpr bool TryShaderStageFromString(const std::string& str, ShaderStage& val) {
+		val = ShaderStage::None;
+		if (str == "None") return true;
 
 		if (str.find("Vertex") != std::string::npos) val = val | ShaderStage::Vertex;
 		if (str.find("TessellationControl") != std::string::npos) val = val | ShaderStage::TessellationControl;
@@ -70,6 +73,12 @@ namespace Imagine::Core {
 		if (str.find("Fragment") != std::string::npos) val = val | ShaderStage::Fragment;
 		if (str.find("Compute") != std::string::npos) val = val | ShaderStage::Compute;
 
+		return val != ShaderStage::None;
+	}
+
+	inline static constexpr ShaderStage ShaderStageFromString(const std::string& str) {
+		ShaderStage val{ShaderStage::None};
+		TryShaderStageFromString(str, val);
 		return val;
 	}
 
