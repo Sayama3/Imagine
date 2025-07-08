@@ -8,6 +8,7 @@
 #include "Imagine/Assets/AssetMetadata.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Rendering/CPU/CPUMesh.hpp"
+#include "Imagine/Rendering/CPU/CPUModel.hpp"
 // #include "Imagine/Rendering/CPU/CPUModel.hpp"
 
 

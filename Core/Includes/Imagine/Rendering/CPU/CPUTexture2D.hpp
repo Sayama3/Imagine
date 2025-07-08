@@ -14,6 +14,12 @@ namespace Imagine::Core {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
 	public:
+		CPUTexture2D() = default;
+		virtual ~CPUTexture2D() override = default;
+		CPUTexture2D(const Image<uint8_t>& i);
+		CPUTexture2D(Image<uint8_t>&& i);
+
+	public:
 		Image<uint8_t> image;
 		Ref<GPUTexture2D> gpu{nullptr};
 	};

@@ -17,6 +17,10 @@ namespace Imagine::Core {
 		if (type == MaterialType::None) return {};
 		return ConstBufferView{(const void *) data.data(), GetSize()};
 	}
+	BufferView MaterialField::GetView() {
+		if (type == MaterialType::None) return {};
+		return BufferView{(void *) data.data(), GetSize()};
+	}
 
 	void MaterialBlock::Push(std::string name, MaterialType type) {
 		Fields.push_back({std::move(name), type});
@@ -111,11 +115,12 @@ namespace Imagine::Core {
 	MaterialSet MaterialSet::GetPBRSet() {
 		return {
 				MaterialBlock::GetPBRConstantBlock(),
-				{"Color Texture", MaterialType::Texture2D},
-				{"Metal Texture", MaterialType::Texture2D},
-				{"Roughness Texture", MaterialType::Texture2D},
-				{"Normal Texture", MaterialType::Texture2D},
-				{"Ambien Occlusion Texture", MaterialType::Texture2D},
+				{"Color Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
+				{"Normal Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
+				{"Emissive Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
+				{"Metal Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
+				{"Roughness Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
+				{"Ambien Occlusion Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
 		};
 	}
 

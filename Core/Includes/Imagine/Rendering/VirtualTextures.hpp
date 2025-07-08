@@ -11,13 +11,13 @@
 
 namespace Imagine::Core {
 
-	class VirtualTexture2D final : public Asset {
+	class CPUVirtualTexture2D final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture2D);
 		Ref<GPUTexture2D> gpu{nullptr};
 	};
 
-	class VirtualTexture3D final : public Asset {
+	class CPUVirtualTexture3D final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
 		Ref<GPUTexture3D> gpu{nullptr};

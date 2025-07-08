@@ -16,7 +16,6 @@ namespace Imagine::Core {
 		MGN_IMPLEMENT_ASSET(AssetType::MaterialInstance);
 	public:
 		using MaterialDataBuffer = std::array<uint8_t, MaterialField::DataSize>;
-
 		struct SetFieldPosition {
 			uint32_t SetIndex;
 			uint32_t BindingIndex;
@@ -45,6 +44,20 @@ namespace Imagine::Core {
 				return PCIndex <=> o.PCIndex;
 			}
 		};
+
+		template<typename T>
+		void PushSet(const SetFieldPosition pos, const T& data) {
+			MaterialDataBuffer buffer{0};
+			memcpy(buffer.data(), &data, std::min(sizeof(T), buffer.size()));
+			SetEditions[pos] = buffer;
+		}
+
+		template<typename T>
+		void PushConst(const PushConstantFieldPosition pos, const T& data) {
+			MaterialDataBuffer buffer{0};
+			memcpy(buffer.data(), &data, std::min(sizeof(T), buffer.size()));
+			PushConstantEditions[pos] = buffer;
+		}
 	public:
 		std::map<SetFieldPosition, MaterialDataBuffer> SetEditions;
 		std::map<PushConstantFieldPosition, MaterialDataBuffer> PushConstantEditions;

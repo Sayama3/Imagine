@@ -6,44 +6,44 @@
 
 namespace Imagine::Core {
 
-	VirtualTexture2D::~VirtualTexture2D() = default;
-	uint32_t VirtualTexture2D::GetWidth() {
+	CPUVirtualTexture2D::~CPUVirtualTexture2D() = default;
+	uint32_t CPUVirtualTexture2D::GetWidth() {
 		return width;
 	}
-	uint32_t VirtualTexture2D::GetHeight() {
+	uint32_t CPUVirtualTexture2D::GetHeight() {
 		return height;
 	}
-	uint32_t VirtualTexture2D::GetDepth() {
+	uint32_t CPUVirtualTexture2D::GetDepth() {
 		return 1;
 	}
-	uint32_t VirtualTexture2D::GetChannels() {
+	uint32_t CPUVirtualTexture2D::GetChannels() {
 		return channels;
 	}
-	ImagePixelType VirtualTexture2D::GetPixelType() {
+	ImagePixelType CPUVirtualTexture2D::GetPixelType() {
 		return type;
 	}
-	TextureUsage VirtualTexture2D::GetUsage() {
+	TextureUsage CPUVirtualTexture2D::GetUsage() {
 		return usage;
 	}
 
-	VirtualTexture3D::~VirtualTexture3D() = default;
+	CPUVirtualTexture3D::~CPUVirtualTexture3D() = default;
 
-	uint32_t VirtualTexture3D::GetWidth() {
+	uint32_t CPUVirtualTexture3D::GetWidth() {
 		return width;
 	}
-	uint32_t VirtualTexture3D::GetHeight() {
+	uint32_t CPUVirtualTexture3D::GetHeight() {
 		return height;
 	}
-	uint32_t VirtualTexture3D::GetDepth() {
+	uint32_t CPUVirtualTexture3D::GetDepth() {
 		return depth;
 	}
-	uint32_t VirtualTexture3D::GetChannels() {
+	uint32_t CPUVirtualTexture3D::GetChannels() {
 		return channels;
 	}
-	ImagePixelType VirtualTexture3D::GetPixelType() {
+	ImagePixelType CPUVirtualTexture3D::GetPixelType() {
 		return type;
 	}
-	TextureUsage VirtualTexture3D::GetUsage() {
+	TextureUsage CPUVirtualTexture3D::GetUsage() {
 		return usage;
 	}
 } // namespace Imagine::Core

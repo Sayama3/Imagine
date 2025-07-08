@@ -1518,7 +1518,7 @@ namespace Imagine::Vulkan {
 						case AssetType::Texture2D: {
 							if (field.type != MaterialType::VirtualTexture2D && field.type != MaterialType::Texture2D) break;
 							if(isVirtual) {
-								auto gpuTex = CastPtr<VirtualTexture2D>(texture);
+								auto gpuTex = CastPtr<CPUVirtualTexture2D>(texture);
 								if(!gpuTex || !gpuTex->gpu) break;
 								auto vkTex = CastPtr<VulkanTexture2D>(gpuTex->gpu);
 								view = vkTex->image.imageView;
@@ -1534,7 +1534,7 @@ namespace Imagine::Vulkan {
 						case AssetType::Texture3D: {
 							if (field.type != MaterialType::VirtualTexture3D && field.type != MaterialType::Texture3D) break;
 							if(isVirtual) {
-								auto gpuTex = CastPtr<VirtualTexture3D>(texture);
+								auto gpuTex = CastPtr<CPUVirtualTexture3D>(texture);
 								if(!gpuTex || !gpuTex->gpu) break;
 								auto vkTex = CastPtr<VulkanTexture3D>(gpuTex->gpu);
 								view = vkTex->image.imageView;

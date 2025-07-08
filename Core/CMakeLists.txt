@@ -194,6 +194,8 @@ set(CORE_SRC_FILES
 		Sources/Rendering/CPU/CPUVirtualTexture.cpp
 		Sources/Assets/Importers/MetadataSerializer.cpp
 		Includes/Imagine/Assets/Importers/MetadataSerializer.hpp
+		Sources/Rendering/CPU/CPUModel.cpp
+		Includes/Imagine/Rendering/CPU/CPUModel.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

@@ -1,0 +1,320 @@
+//
+// Created by ianpo on 08/07/2025.
+//
+
+#include "Imagine/Rendering/CPU/CPUModel.hpp"
+
+#include "Imagine/Assets/AssetManager.hpp"
+#include "Imagine/Components/Renderable.hpp"
+#include "Imagine/Rendering/CPU/CPUMaterialInstance.hpp"
+#include "Imagine/Scene/Scene.hpp"
+
+#include "Imagine/ThirdParty/Assimp.hpp"
+#include "Imagine/ThirdParty/Stb.hpp"
+
+#define LOAD_ASSET(ASSET) Imagine::Core::Project::GetActive()->GetAssetManager()->AddAsset(ASSET);
+
+namespace Imagine::Core {
+
+	Ref<CPUModel> CPUModel::LoadModel(const Path &filePath, Core::Scene *coreScene, Core::EntityID parent) {
+		using namespace Imagine::Core;
+		Assimp::Importer importer;
+
+		const aiScene *scene = importer.ReadFile(filePath.GetFullPath().string(), ThirdParty::Assimp::GetSmoothPostProcess());
+
+		// If the import failed, report it
+		if (nullptr == scene) {
+			MGN_CORE_ERROR(importer.GetErrorString());
+			return nullptr;
+		}
+
+		Ref<CPUTexture2D> ErrorCheckerboard;
+
+		Ref<CPUModel> model = CreateRef<CPUModel>();
+		model->modelPath = filePath;
+		model->Textures.resize(scene->mNumTextures + 1);
+
+		for (uint32_t i = 0; i < scene->mNumTextures; ++i) {
+			aiTexture *pTexture = scene->mTextures[i];
+			if (pTexture->pcData == nullptr) {
+				if (!ErrorCheckerboard) {
+					ErrorCheckerboard = CreateRef<CPUTexture2D>();
+					ErrorCheckerboard->image.Allocate(16, 16, 4);
+					const uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 1));
+					const uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
+					for (int x = 0; x < 16; x++) {
+						for (int y = 0; y < 16; y++) {
+							ErrorCheckerboard->image(x,y).As<uint32_t>() = ((x % 2) ^ (y % 2)) ? magenta : black;
+						}
+					}
+					LOAD_ASSET(ErrorCheckerboard);
+				}
+
+				model->Textures[i] = ErrorCheckerboard;
+			}
+			Core::Image<> image;
+			if (pTexture->mHeight == 0) {
+				image = std::move(ThirdParty::Stb::Image::LoadFromMemory(ConstBufferView{pTexture->pcData, pTexture->mWidth}, 4));
+			}
+			else {
+				image.Allocate(pTexture->mWidth, (uint32_t) pTexture->mHeight, 4u);
+				uint8_t a{255};
+				uint8_t r{255};
+				uint8_t g{255};
+				uint8_t b{255};
+				if (pTexture->achFormatHint[0] == 0) {
+					a = 0u;
+					r = 1u;
+					g = 2u;
+					b = 3u;
+				}
+				else {
+					for (uint32_t i = 0; i < 4; ++i) {
+						switch (pTexture->achFormatHint[i]) {
+							case 'r':
+								r = pTexture->achFormatHint[4 + i] == '8' ? i : 255;
+								break;
+							case 'g':
+								g = pTexture->achFormatHint[4 + i] == '8' ? i : 255;
+								break;
+							case 'b':
+								b = pTexture->achFormatHint[4 + i] == '8' ? i : 255;
+								break;
+							case 'a':
+								a = pTexture->achFormatHint[4 + i] == '8' ? i : 255;
+								break;
+							default:
+								break;
+						}
+					}
+				}
+
+				for (uint32_t x = 0; x < pTexture->mWidth; ++x) {
+					for (uint32_t y = 0; y < pTexture->mHeight; ++y) {
+						uint8_t *aiPixel = (uint8_t *) &pTexture->pcData[x * pTexture->mHeight + y];
+						BufferView pixel = image(x, y);
+						pixel.At<uint8_t>(0u) = r != 255 ? aiPixel[r] : 0;
+						pixel.At<uint8_t>(1u) = g != 255 ? aiPixel[g] : 0;
+						pixel.At<uint8_t>(2u) = b != 255 ? aiPixel[b] : 0;
+						pixel.At<uint8_t>(3u) = a != 255 ? aiPixel[a] : 255;
+					}
+				}
+			}
+
+			MGN_CORE_CASSERT(image.channels == 4, "[Vulkan] image.channels == 4");
+			model->Textures[i] = CreateRef<CPUTexture2D>(std::move(image));
+			LOAD_ASSET(model->Textures[i]);
+		}
+
+		Ref<CPUTexture2D> WhiteImage = CreateRef<CPUTexture2D>();
+		WhiteImage->image.Allocate(1,1,4);
+		WhiteImage->image(0,0).As<uint32_t>() = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
+		model->Textures.back() = WhiteImage;
+		LOAD_ASSET(WhiteImage);
+
+		Ref<CPUMaterial> opaqueMaterial = CreateRef<CPUMaterial>();
+		opaqueMaterial->layout.Sets.push_back(MaterialSet::GetSceneSet());
+		opaqueMaterial->layout.Sets.push_back(MaterialSet::GetPBRSet());
+		opaqueMaterial->layout.PushConstants.emplace_back(MaterialBlock{
+			{{"WorldMatrix", MaterialType::FMat4},{"VertexBuffer", MaterialType::ExternalBuffer}}
+		}, ShaderStage::Vertex, 0);
+
+		Ref<CPUMaterial> transparentMaterial = CreateRef<CPUMaterial>(*opaqueMaterial);
+		transparentMaterial->pass = MaterialPass::Transparent;
+		model->Materials.push_back(opaqueMaterial);
+		model->Materials.push_back(transparentMaterial);
+
+		LOAD_ASSET(opaqueMaterial);
+		LOAD_ASSET(transparentMaterial);
+
+		std::unordered_map<std::string, Ref<CPUTexture2D>> loadedTextures;
+
+		for (int i = 0; i < scene->mNumMaterials; ++i) {
+			auto instance = CreateRef<CPUMaterialInstance>();
+			model->Instances.push_back(instance);
+
+			instance->Material = opaqueMaterial->Handle;
+
+			aiMaterial *material = scene->mMaterials[i]; // for some formats (like glTF) metallic and roughness may be the same file
+
+			std::array<aiTextureType, 6> texTypes{aiTextureType_BASE_COLOR, aiTextureType_NORMALS, aiTextureType_EMISSIVE, aiTextureType_METALNESS, aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_AMBIENT_OCCLUSION};
+			std::array<aiString, 6> imageFiles{}; // fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
+			std::array<bool, 6> hasImage{}; // fileBaseColor, fileNormal, fileEmissive, fileMetallic, fileRoughness, fileAo;
+
+			for (uint64_t texId = 0; texId < texTypes.size(); ++texId) {
+				hasImage[texId] = material->GetTextureCount(texTypes[texId]) > 0;
+				if (hasImage[texId]) {
+					const CPUMaterialInstance::SetFieldPosition pos {1,(uint32_t)texId+1,0};
+					material->GetTexture(texTypes[texId], 0, &imageFiles[texId]);
+					std::pair<const aiTexture *, int> result = scene->GetEmbeddedTextureAndIndex(imageFiles[texId].C_Str());
+					if (result.first) {
+						instance->PushSet(pos, model->Textures[result.second]->Handle);
+					} else {
+						const std::string pathStr = imageFiles[texId].C_Str();
+						if (!loadedTextures.contains(pathStr)) {
+							Core::Image<> img = ThirdParty::Stb::Image::Load(imageFiles[texId].C_Str(), 4);
+							loadedTextures[pathStr] = CreateRef<CPUTexture2D>(std::move(img));
+							LOAD_ASSET(loadedTextures[pathStr]);
+						}
+						Ref<CPUTexture2D> tex = loadedTextures.at(pathStr);
+						instance->PushSet(pos, tex->Handle);
+					}
+				}
+			}
+
+			ai_real metallic, roughness, emIntens;
+			aiColor3D tint, emColor;
+
+			material->Get(AI_MATKEY_BASE_COLOR, tint);
+			material->Get(AI_MATKEY_EMISSIVE_INTENSITY, emIntens);
+			material->Get(AI_MATKEY_COLOR_EMISSIVE, emColor);
+			material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+			material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+
+			instance->PushSet({1,0,0}, glm::fvec4(tint.r, tint.g, tint.b, 1));
+			instance->PushSet({1,0,1}, glm::fvec4(emColor.r * emIntens, emColor.g * emIntens, emColor.b * emIntens, 1));
+			instance->PushSet({1,0,2}, metallic);
+			instance->PushSet({1,0,3}, roughness);
+
+			LOAD_ASSET(instance);
+		}
+
+		model->Meshes.reserve(scene->mNumMeshes);
+
+		// Load the meshes
+		{
+			// use the same vectors for all meshes so that the memory doesnt reallocate as
+			// often
+			std::vector<uint32_t> indices;
+			std::vector<Core::Vertex> vertices;
+
+			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
+				const aiMesh *aiMesh = scene->mMeshes[i];
+				if (!aiMesh->HasPositions()) {
+					continue;
+				}
+
+				Ref<CPUMesh> mesh = CreateRef<CPUMesh>();
+				model->Meshes.push_back(mesh);
+				mesh->Name = aiMesh->mName.C_Str();
+
+				indices.clear();
+				vertices.clear();
+
+				vertices.reserve(aiMesh->mNumVertices);
+				for (uint64_t i = 0; i < aiMesh->mNumVertices; ++i) {
+					vertices.emplace_back();
+					const auto &pos = aiMesh->mVertices[i];
+					vertices[i].position = {pos.x, pos.y, pos.z};
+
+					if (aiMesh->HasNormals()) {
+						const auto &normal = aiMesh->mNormals[i];
+						vertices[i].normal = {normal.x, normal.y, normal.z};
+					}
+
+					if (aiMesh->HasTextureCoords(0)) {
+						const auto &texCoords = aiMesh->mTextureCoords[0][i];
+						vertices[i].uv_x = texCoords.x;
+						vertices[i].uv_y = texCoords.y;
+					}
+
+					if (aiMesh->HasTangentsAndBitangents()) {
+						vertices[i].tangent = {aiMesh->mTangents[i].x,aiMesh->mTangents[i].y,aiMesh->mTangents[i].z,0};
+						vertices[i].bitangent = {aiMesh->mBitangents[i].x,aiMesh->mBitangents[i].y,aiMesh->mBitangents[i].z,0};
+					}
+
+					if (aiMesh->HasVertexColors(0)) {
+						const auto &color = aiMesh->mColors[0][i];
+						vertices[i].color = {color.r, color.g, color.b, color.a};
+					}
+				}
+
+				indices.reserve(aiMesh->mNumFaces * 3);
+				for (uint64_t i = 0; i < aiMesh->mNumFaces; ++i) {
+					MGN_CORE_CASSERT(aiMesh->mFaces[i].mNumIndices == 3, "The face wasn't properly triangulated.");
+					const aiFace &face = aiMesh->mFaces[i];
+					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
+				}
+
+				LOD surface;
+				surface.index = 0;
+				surface.count = indices.size();
+				surface.materialInstance = model->Instances[aiMesh->mMaterialIndex]->Handle;
+
+				mesh->Lods.push_back(surface);
+				LOAD_ASSET(mesh);
+			}
+		}
+
+		// Load the nodes as entity in the scene.
+		{
+			// Unwrapping everything in a vector to avoid recursion.
+			std::vector<std::tuple<aiNode *, Core::EntityID>> nodes{{scene->mRootNode, parent}};
+			nodes.reserve(scene->mNumMeshes);
+			while (!nodes.empty()) {
+				// Pop the last node available
+				auto [node, parentEntityID] = nodes.back();
+				nodes.pop_back();
+
+				const char *cName = node->mName.C_Str();
+
+				const aiMatrix4x4 &localMatrix = node->mTransformation; // * parentMatrix;
+
+				// Going from ASSIMP to GLM is going from row major to column major.
+				//  Therefore, I create the glm matrix by rotating the matrix and
+				//  setting the data properly using the constructor with 4 column
+				//  (or vec4 basically) to be explicit and not have any issue later on.
+				const glm::mat4 glmLocalMatrix{
+						{localMatrix.a1, localMatrix.b1, localMatrix.c1, localMatrix.d1}, // Col 1
+						{localMatrix.a2, localMatrix.b2, localMatrix.c2, localMatrix.d2}, // col 2
+						{localMatrix.a3, localMatrix.b3, localMatrix.c3, localMatrix.d3}, // col 3
+						{localMatrix.a4, localMatrix.b4, localMatrix.c4, localMatrix.d4}, // col 4
+				};
+				glm::vec3 pos;
+				glm::quat rot;
+				glm::vec3 scale;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(glmLocalMatrix, scale, rot, pos, skew, perspective);
+
+				MGN_CORE_CHECK(Math::Approx(skew, glm::vec3(0)), "skew transformation not supported.");
+				MGN_CORE_CHECK(Math::Approx(perspective, glm::vec4(0, 0, 0, 1)), "perspective transformation not supported.");
+
+				if (scale.x != scale.y || scale.y != scale.z) {
+					MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
+				}
+				else if (Math::Magnitude2(scale) != 1) {
+					// MGN_CORE_WARN("The scale of the node {} in the model {} is not 1. It's preferred to have a uniform scale of 1.");
+				}
+
+				EntityID entityId = coreScene->CreateEntity(parentEntityID);
+				coreScene->SetName(entityId, node->mName.C_Str());
+				coreScene->GetEntity(entityId).LocalPosition = pos;
+				coreScene->GetEntity(entityId).LocalRotation = rot;
+				coreScene->GetEntity(entityId).LocalScale = scale;
+
+				if (node->mNumMeshes == 1) {
+					coreScene->AddComponent<Renderable>(entityId)->cpuMesh = model->Meshes[*node->mMeshes]->Handle;
+				}
+				else if (node->mNumMeshes > 1) {
+					for (int i = 0; i < node->mNumMeshes; ++i) {
+						const auto& pMesh = model->Meshes[node->mMeshes[i]];
+						const AssetHandle meshHandle = pMesh->Handle;
+						EntityID meshChild = coreScene->CreateEntity(entityId);
+						coreScene->SetName(meshChild, pMesh->Name);
+						coreScene->AddComponent<Renderable>(meshChild)->cpuMesh = meshHandle;
+					}
+				}
+
+
+				for (int i = 0; i < node->mNumChildren; ++i) {
+					aiNode *child = node->mChildren[i];
+					nodes.push_back({child, entityId});
+				}
+			}
+		}
+
+		LOAD_ASSET(model);
+		return model;
+	}
+} // namespace Imagine::Core

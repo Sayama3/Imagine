@@ -279,6 +279,7 @@ namespace Imagine::Core {
 	public:
 		[[nodiscard]] uint64_t GetSize() const;
 		[[nodiscard]] ConstBufferView GetView() const;
+		[[nodiscard]] BufferView GetView();
 
 	public:
 		std::string name{};

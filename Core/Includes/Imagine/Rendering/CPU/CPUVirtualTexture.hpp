@@ -12,7 +12,7 @@
 
 namespace Imagine::Core {
 
-	class VirtualTexture : public Asset {
+	class CPUVirtualTexture : public Asset {
 	public:
 		virtual uint32_t GetWidth() = 0;
 		virtual uint32_t GetHeight() = 0;
@@ -26,11 +26,11 @@ namespace Imagine::Core {
 		uint32_t channels, width, height;
 	};
 
-	class VirtualTexture2D final : public VirtualTexture {
+	class CPUVirtualTexture2D final : public CPUVirtualTexture {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture2D)
 	public:
-		~VirtualTexture2D() override;
+		~CPUVirtualTexture2D() override;
 	public:
 		virtual uint32_t GetWidth() override;
 		virtual uint32_t GetHeight() override;
@@ -42,11 +42,11 @@ namespace Imagine::Core {
 		Ref<GPUTexture2D> gpu;
 	};
 
-	class VirtualTexture3D final : public VirtualTexture {
+	class CPUVirtualTexture3D final : public CPUVirtualTexture {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
 	public:
-		~VirtualTexture3D() override;
+		~CPUVirtualTexture3D() override;
 	public:
 		virtual uint32_t GetWidth() override;
 		virtual uint32_t GetHeight() override;
