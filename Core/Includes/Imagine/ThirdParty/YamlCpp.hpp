@@ -10,6 +10,7 @@
 #include "YamlCpp/YAML_CORE.hpp"
 #include "YamlCpp/YAML_MATH.hpp"
 #include "YamlCpp/YAML_ASSET.hpp"
+#include "YamlCpp/YAML_VIRTUAL_TEXTURE.hpp"
 #include "YamlCpp/YAML_MESH.hpp"
 #include "YamlCpp/YAML_SHADER.hpp"
 #include "YamlCpp/YAML_MATERIAL.hpp"
