@@ -22,14 +22,5 @@ namespace Imagine::ThirdParty {
 			return data;
 		}
 
-		YAML::Emitter &operator<<(YAML::Emitter &out, const Core::AssetHandle &v) {
-			out << v.GetID();
-			return out;
-		}
-
-		YAML::Emitter &operator<<(YAML::Emitter &out, const Core::AssetType &rhs) {
-			out << Core::AssetTypeToString(rhs);
-			return out;
-		}
 	} // namespace YamlCpp
 }

@@ -187,6 +187,11 @@ set(CORE_SRC_FILES
 		Includes/Imagine/ThirdParty/YamlCpp/YAML_MATERIAL_INSTANCE.hpp
 		Includes/Imagine/ThirdParty/YamlCpp/YAML_MESH.hpp
 		Includes/Imagine/ThirdParty/YamlCpp/YAML_CORE.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_VIRTUAL_TEXTURE.hpp
+		Includes/Imagine/Rendering/CPU/CPUVirtualTexture.hpp
+		Includes/Imagine/Rendering/TextureParameters.hpp
+		Includes/Imagine/Math/ImagePixelType.hpp
+		Sources/Rendering/CPU/CPUVirtualTexture.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

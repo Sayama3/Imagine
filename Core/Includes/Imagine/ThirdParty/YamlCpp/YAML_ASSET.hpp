@@ -4,14 +4,15 @@
 
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+#include "YAML_DEFINE.hpp"
+#include "YAML_CORE.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
 #include "Imagine/Assets/AssetType.hpp"
 
 
 namespace YAML {
-	YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::AssetHandle &v);
-	YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::AssetType &rhs);
+	YAML_SIMPLE_MGN_EMITTER_FUNC(AssetHandle, v.GetID());
+	YAML_SIMPLE_MGN_ENUM_EMITTER(AssetType);
 } // namespace Imagine::ThirdParty::YamlCpp
 
 namespace YAML {
@@ -34,20 +35,5 @@ namespace YAML {
 		}
 	};
 
-	template<>
-	struct convert<::Imagine::Core::AssetType>
-	{
-		inline static Node encode(const ::Imagine::Core::AssetType& rhs)
-		{
-			Node node;
-			node.push_back(Imagine::Core::AssetTypeToString(rhs));
-			return node;
-		}
-
-		inline static bool decode(const Node& node, ::Imagine::Core::AssetType& rhs)
-		{
-			auto str = node.as<std::string>(std::string());
-			return ::Imagine::Core::TryAssetTypeFromString(str, rhs);
-		}
-	};
+	YAML_SIMPLE_MGN_ENUM_CONVERTER(AssetType);
 }

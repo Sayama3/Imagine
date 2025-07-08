@@ -4,17 +4,14 @@
 
 #pragma once
 
-#include "../YAML_DEFINE.hpp"
+#include "YAML_DEFINE.hpp"
 
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Core/UUID.hpp"
 
 namespace YAML {
+	YAML_SIMPLE_EMITTER_FUNC(std::filesystem::path, v.string());
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const std::filesystem::path &v) {
-		out << v.string();
-		return out;
-	}
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::Path &v) {
 		out << KEYVAL("Source", Imagine::Core::GetFileSourceName(v.source));
 		out << KEYVAL("Path", v.path);

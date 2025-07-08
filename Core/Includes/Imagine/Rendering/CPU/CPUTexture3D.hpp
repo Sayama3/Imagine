@@ -6,7 +6,7 @@
 
 #include "Imagine/Core/InternalCore.hpp"
 #include "Imagine/Assets/Asset.hpp"
-#include "Imagine/Math/Image.hpp"
+#include "Imagine/Math/ImagePixelType.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 
 namespace Imagine::Core {
