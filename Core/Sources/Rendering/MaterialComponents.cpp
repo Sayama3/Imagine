@@ -120,7 +120,7 @@ namespace Imagine::Core {
 				{"Emissive Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
 				{"Metal Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
 				{"Roughness Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
-				{"Ambien Occlusion Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
+				{"Ambient Occlusion Texture", MaterialType::Texture2D, NULL_ASSET_HANDLE},
 		};
 	}
 

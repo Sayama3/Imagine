@@ -441,7 +441,7 @@ namespace Imagine::Core {
 		uint32_t CountBindinds() const;
 	public:
 		std::vector<MaterialBlock> Blocks;
-		ShaderStage Stages{ShaderStage::All};
+		ShaderStage Stages{ShaderStage::Vertex|ShaderStage::Fragment};
 	};
 
 	class MaterialPushConstant {

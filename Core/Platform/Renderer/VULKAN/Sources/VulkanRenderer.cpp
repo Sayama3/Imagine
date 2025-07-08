@@ -48,7 +48,7 @@ using namespace Imagine::Core;
 using namespace Imagine::Literal;
 
 namespace Imagine::Vulkan {
-	constexpr bool c_BreakOnError = true;
+	constexpr bool c_BreakOnError = false;
 
 	static inline VkBool32 VkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
 		const char *mt = vkb::to_string_message_type(messageType);
@@ -1513,19 +1513,11 @@ namespace Imagine::Vulkan {
 						switch (texture->GetType()) {
 							case AssetType::Texture2D: {
 								if (field.type != MaterialType::VirtualTexture2D && field.type != MaterialType::Texture2D) break;
-								if(isVirtual) {
-									auto gpuTex = CastPtr<CPUVirtualTexture2D>(texture);
-									if(!gpuTex || !gpuTex->gpu) break;
-									auto vkTex = CastPtr<VulkanTexture2D>(gpuTex->gpu);
-									view = vkTex->image.imageView;
-									sampler = vkTex->sampler;
-								} else {
-									auto cpuTex = CastPtr<CPUTexture2D>(texture);
-									if(!cpuTex || !cpuTex->gpu) break;
-									auto vkTex = CastPtr<VulkanTexture2D>(cpuTex->gpu);
-									view = vkTex->image.imageView;
-									sampler = vkTex->sampler;
-								}
+								auto cpuTex = CastPtr<CPUTexture2D>(texture);
+								if(!cpuTex || !cpuTex->gpu) break;
+								auto vkTex = CastPtr<VulkanTexture2D>(cpuTex->gpu);
+								view = vkTex->image.imageView;
+								sampler = vkTex->sampler;
 							} break;
 							case AssetType::Texture3D: {
 								if (field.type != MaterialType::VirtualTexture3D && field.type != MaterialType::Texture3D) break;
@@ -1572,7 +1564,8 @@ namespace Imagine::Vulkan {
 		MGN_PROFILE_FUNCTION();
 		Ref<VulkanTexture2D> vkTex2d = CreateRef<VulkanTexture2D>();
 
-		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width, tex2d.image.height, 1}, Utils::GetImageVkFormat(tex2d.image), VK_IMAGE_USAGE_SAMPLED_BIT, true);
+		auto format = Utils::GetImageVkFormat(tex2d.image);
+		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width, tex2d.image.height, 1}, format, VK_IMAGE_USAGE_SAMPLED_BIT, true);
 		vkTex2d->sampler = m_DefaultSamplerLinear;
 
 		return vkTex2d;
@@ -1687,12 +1680,15 @@ namespace Imagine::Vulkan {
 			const LOD &lod = mesh->lods.front();
 
 			// TODO: Get the real material from the LOD.
-			const VulkanMaterialInstance *material = GetDefaultMeshMaterial().get();
-			if (auto vkMat = material->material.lock()) {
+			auto instance = AssetManager::GetAssetAs<CPUMaterialInstance>(lod.materialInstance);
+			auto vkInstance = dynamic_cast<VulkanMaterialInstance*>(instance->gpu.get());
+			if (auto vkMat = vkInstance->material.lock()) {
 
 				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
+				for (int i = 1; i < vkMat->materialLayouts.size(); ++i) {
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, i, 1, &vkInstance->materialSets.at(i), 0, nullptr);
+				}
 
 				vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 

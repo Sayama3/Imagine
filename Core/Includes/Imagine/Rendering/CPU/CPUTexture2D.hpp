@@ -12,7 +12,7 @@ namespace Imagine::Core {
 
 	class CPUTexture2D final : public Asset {
 	public:
-		MGN_IMPLEMENT_ASSET(AssetType::Texture3D);
+		MGN_IMPLEMENT_ASSET(AssetType::Texture2D);
 	public:
 		CPUTexture2D() = default;
 		virtual ~CPUTexture2D() override = default;

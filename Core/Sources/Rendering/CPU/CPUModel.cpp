@@ -43,8 +43,8 @@ namespace Imagine::Core {
 		Ref<CPUModel> model = CreateRef<CPUModel>();
 
 		// TODO: Find shaders in another way
-		auto vertex = CreateRef<CPUFileShader>(ShaderStage::Vertex, Path{FileSource::Assets, "mesh.vert.spv"});
-		auto fragment = CreateRef<CPUFileShader>(ShaderStage::Fragment, Path{FileSource::Assets, "mesh.frag.spv"});
+		auto vertex = CreateRef<CPUFileShader>(ShaderStage::Vertex, Path{FileSource::Assets, "pbr.vert.spv"});
+		auto fragment = CreateRef<CPUFileShader>(ShaderStage::Fragment, Path{FileSource::Assets, "pbr.frag.spv"});
 		model->Shaders.push_back(vertex);
 		model->Shaders.push_back(fragment);
 		LOAD_ASSET(vertex);
@@ -183,10 +183,12 @@ namespace Imagine::Core {
 						instance->PushSet(pos, model->Textures[result.second]->Handle);
 					}
 					else {
-						const std::string pathStr = imageFiles[texId].C_Str();
+						const std::filesystem::path fullPath = filePath.parent_path() / imageFiles[texId].C_Str();
+						const std::string pathStr = fullPath.string();
 						if (!loadedTextures.contains(pathStr)) {
-							Core::Image<> img = ThirdParty::Stb::Image::Load(imageFiles[texId].C_Str(), 4);
+							Core::Image<> img = ThirdParty::Stb::Image::Load(pathStr.c_str(), 4);
 							loadedTextures[pathStr] = CreateRef<CPUTexture2D>(std::move(img));
+							model->Textures.push_back(loadedTextures[pathStr]);
 							LOAD_ASSET(loadedTextures[pathStr]);
 						}
 						Ref<CPUTexture2D> tex = loadedTextures.at(pathStr);
