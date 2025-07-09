@@ -75,6 +75,14 @@ namespace Imagine::Core {
 		}
 
 		if (parameters.Renderer) {
+			Ref<CPUShader> vert = CreateRef<CPUFileShader>(ShaderStage::Vertex, Path{FileSource::Assets, "pbr.vert.spv"});
+			Ref<CPUShader> frag = CreateRef<CPUFileShader>(ShaderStage::Fragment, Path{FileSource::Assets, "pbr.frag.spv"});
+
+			Project::GetActive()->GetAssetManager()->AddAsset(vert);
+			Project::GetActive()->GetAssetManager()->AddAsset(frag);
+
+			CPUMaterial::InitDefaultMaterials(vert->Handle, frag->Handle);
+
 			m_Renderer = Renderer::Initialize(parameters);
 		}
 #ifdef MGN_IMGUI
@@ -99,6 +107,8 @@ namespace Imagine::Core {
 		if (m_Renderer) {
 			m_Renderer->PrepareShutdown();
 		}
+
+		CPUMaterial::DestroyDefaultMaterials();
 
 #ifdef MGN_IMGUI
 		MgnImGui::ShutdownRenderer();
@@ -278,7 +288,10 @@ namespace Imagine::Core {
 	void Application::DrawScenes() {
 		MGN_PROFILE_FUNCTION();
 
-		if (m_Renderer->BeginDraw()) {
+		GPUSceneData sceneData{};
+		GPULightData lightData{};
+
+		if (m_Renderer->BeginDraw(sceneData, lightData)) {
 			m_Renderer->Draw();
 
 

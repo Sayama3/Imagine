@@ -122,8 +122,8 @@ namespace Imagine::Vulkan {
 		VkFormat GetDepthImageFormat() const;
 		void CreateDefaultSamplers();
 
-		std::shared_ptr<VulkanMaterialInstance> GetDefaultMeshMaterial() { return m_DefaultMeshMaterial; }
-		std::shared_ptr<VulkanMaterialInstance> GetDefaultLineMaterial() { return m_DefaultLineMaterial; }
+		// std::shared_ptr<VulkanMaterialInstance> GetDefaultMeshMaterial() { return m_DefaultMeshMaterial; }
+		// std::shared_ptr<VulkanMaterialInstance> GetDefaultLineMaterial() { return m_DefaultLineMaterial; }
 		// std::shared_ptr<VulkanMaterialInstance> GetDefaultPointMaterial() {return m_DefaultPointMaterial;}
 
 	private:
@@ -137,7 +137,7 @@ namespace Imagine::Vulkan {
 	public:
 		virtual bool Resize() override;
 
-		virtual bool BeginDraw() override;
+		virtual bool BeginDraw(const Imagine::Core::GPUSceneData& sceneData, const Imagine::Core::GPULightData& lightData) override;
 		virtual void EndDraw() override;
 		virtual void Present() override;
 		virtual void Draw(const Core::DrawContext &ctx) override;
@@ -159,7 +159,7 @@ namespace Imagine::Vulkan {
 		virtual Core::DrawContext &GetDrawContext() override;
 
 	public:
-		GLTFMetallicRoughness &GetGLTFMaterial() { return m_MetalRoughMaterial; }
+		// GLTFMetallicRoughness &GetGLTFMaterial() { return m_MetalRoughMaterial; }
 		DescriptorAllocatorGrowable &GetDescriptorAllocatorGrowable() { return m_GlobalDescriptorAllocator; }
 		inline AllocatedImage GetWhiteImage() {return m_WhiteImage;}
 		inline AllocatedImage GetBlackImage() {return m_BlackImage;}
@@ -210,7 +210,8 @@ namespace Imagine::Vulkan {
 		std::optional<Rect<>> m_ImGuiViewport;
 		bool m_ViewportFocused = false;
 
-		GPUSceneData m_SceneData;
+		Core::GPUSceneData m_SceneData;
+		Core::GPULightData m_LightData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
 
 		// immediate submit structures
@@ -232,12 +233,16 @@ namespace Imagine::Vulkan {
 		VkSampler m_DefaultSamplerLinear{nullptr};
 		VkSampler m_DefaultSamplerNearest{nullptr};
 
-		std::shared_ptr<VulkanMaterialInstance> m_DefaultMeshMaterial{};
-		std::shared_ptr<VulkanMaterialInstance> m_DefaultLineMaterial{};
+		Core::Ref<VulkanMaterialInstance> m_OpaqueInstance;
+		Core::Ref<VulkanMaterialInstance> m_TransparentInstance;
+		Core::Ref<VulkanMaterialInstance> m_LineInstance;
+
+		// std::shared_ptr<VulkanMaterialInstance> m_DefaultMeshMaterial{};
+		// std::shared_ptr<VulkanMaterialInstance> m_DefaultLineMaterial{};
 		// std::shared_ptr<VulkanMaterialInstance> m_DefaultPointMaterial{};
 
-		GLTFMetallicRoughness m_MetalRoughMaterial{};
-		GLTFMetallicRoughness m_LineMetalRoughMaterial{};
+		// GLTFMetallicRoughness m_MetalRoughMaterial{};
+		// GLTFMetallicRoughness m_LineMetalRoughMaterial{};
 		// GLTFMetallicRoughness m_PointMetalRoughMaterial{};
 
 		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};

@@ -9,6 +9,9 @@
 #include "Imagine/Rendering/CPU/CPUMesh.hpp"
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
+#include "Imagine/Rendering/Light.hpp"
+#include "Imagine/Rendering/GPU/GPULightData.hpp"
+#include "Imagine/Rendering/GPU/GPUSceneData.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {
@@ -77,15 +80,6 @@ namespace Imagine::Vulkan {
 		std::string name;
 		std::vector<Core::LOD> lods{};
 		GPUMeshBuffers meshBuffers;
-	};
-
-	struct GPUSceneData {
-		glm::mat4 view;
-		glm::mat4 proj;
-		glm::mat4 viewproj;
-		glm::vec4 ambientColor;
-		glm::vec4 sunlightDirection; // w for sun power
-		glm::vec4 sunlightColor;
 	};
 
 

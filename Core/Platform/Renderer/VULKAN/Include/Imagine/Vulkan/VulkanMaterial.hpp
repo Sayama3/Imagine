@@ -43,7 +43,7 @@ namespace Imagine::Vulkan {
 
 	struct VulkanMaterialInstance final : public Core::GPUMaterialInstance {
 	private:
-		static inline uint64_t s_id;
+		static uint64_t s_id;
 		uint64_t id;
 	public:
 		using VulkanBinding = std::variant<std::monostate, AllocatedImage, AllocatedBuffer>;

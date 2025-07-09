@@ -17,10 +17,12 @@
 #include "Imagine/Rendering/CPU/CPUShader.hpp"
 #include "Imagine/Rendering/CPU/CPUTexture2D.hpp"
 #include "Imagine/Rendering/CPU/CPUTexture3D.hpp"
+#include "Imagine/Rendering/GPU/GPULightData.hpp"
 
 #include "Imagine/Rendering/GPU/GPUMaterial.hpp"
 #include "Imagine/Rendering/GPU/GPUMaterialInstance.hpp"
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
+#include "Imagine/Rendering/GPU/GPUSceneData.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture2D.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 
@@ -53,7 +55,7 @@ namespace Imagine::Core {
 	public:
 		virtual RendererAPI GetAPI() = 0;
 
-		virtual bool BeginDraw() = 0;
+		virtual bool BeginDraw(const Imagine::Core::GPUSceneData& m_SceneData, const Imagine::Core::GPULightData& m_LightData) = 0;
 		virtual void EndDraw() = 0;
 		virtual void Present() = 0;
 		virtual void Draw() = 0;

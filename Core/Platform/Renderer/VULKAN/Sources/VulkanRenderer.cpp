@@ -134,6 +134,9 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::PrepareShutdown() {
+		m_OpaqueInstance.reset();
+		m_TransparentInstance.reset();
+		m_LineInstance.reset();
 		vkDeviceWaitIdle(m_Device);
 	}
 
@@ -432,6 +435,7 @@ namespace Imagine::Vulkan {
 		{
 			DescriptorLayoutBuilder builder;
 			builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+			builder.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 			m_GpuSceneDataDescriptorLayout = builder.Build(m_Device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 			m_MainDeletionQueue.push(m_GpuSceneDataDescriptorLayout);
 		}
@@ -452,14 +456,13 @@ namespace Imagine::Vulkan {
 		InitSkyPipeline();
 		InitTrianglePipeline();
 		InitMeshPipeline();
+		// m_MetalRoughMaterial.topology = Topology::Triangle;
+		// m_MetalRoughMaterial.BuildPipeline(this);
+		// m_MainDeletionQueue.push([this](){m_MetalRoughMaterial.ClearResources(m_Device);});
 
-		m_MetalRoughMaterial.topology = Topology::Triangle;
-		m_MetalRoughMaterial.BuildPipeline(this);
-		m_MainDeletionQueue.push([this](){m_MetalRoughMaterial.ClearResources(m_Device);});
-
-		m_LineMetalRoughMaterial.topology = Topology::Line;
-		m_LineMetalRoughMaterial.BuildPipeline(this);
-		m_MainDeletionQueue.push([this](){m_LineMetalRoughMaterial.ClearResources(m_Device);});
+		// m_LineMetalRoughMaterial.topology = Topology::Line;
+		// m_LineMetalRoughMaterial.BuildPipeline(this);
+		// m_MainDeletionQueue.push([this](){m_LineMetalRoughMaterial.ClearResources(m_Device);});
 
 		// m_PointMetalRoughMaterial.topology = Topology::Point;
 		// m_PointMetalRoughMaterial.BuildPipeline(this);
@@ -876,8 +879,26 @@ namespace Imagine::Vulkan {
 		materialResources.dataBuffer = materialConstants.buffer;
 		materialResources.dataBufferOffset = 0;
 
-		m_DefaultMeshMaterial = std::make_shared<VulkanMaterialInstance>(m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
-		m_DefaultLineMaterial = std::make_shared<VulkanMaterialInstance>(m_LineMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
+		auto opaque = CPUMaterial::GetDefaultOpaque();
+		if (opaque) {
+			opaque->gpu = LoadMaterial(*opaque);
+			m_OpaqueInstance = CastPtr<VulkanMaterialInstance>(LoadMaterialInstance(CPUMaterialInstance{opaque->Handle}));
+		}
+
+		auto transparent = CPUMaterial::GetDefaultTransparent();
+		if (transparent) {
+			transparent->gpu = LoadMaterial(*transparent);
+			m_TransparentInstance = CastPtr<VulkanMaterialInstance>(LoadMaterialInstance(CPUMaterialInstance{transparent->Handle}));
+		}
+
+		auto line = CPUMaterial::GetDefaultLine();
+		if (line) {
+			line->gpu = LoadMaterial(*line);
+			m_LineInstance = CastPtr<VulkanMaterialInstance>(LoadMaterialInstance(CPUMaterialInstance{line->Handle}));
+		}
+
+		// m_DefaultMeshMaterial = std::make_shared<VulkanMaterialInstance>(m_MetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
+		// m_DefaultLineMaterial = std::make_shared<VulkanMaterialInstance>(m_LineMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
 		// m_DefaultPointMaterial = std::make_shared<VulkanMaterialInstance>(m_PointMetalRoughMaterial.WriteMaterial(m_Device, MaterialPass::MainColor, materialResources, m_GlobalDescriptorAllocator));
 	}
 
@@ -1006,11 +1027,14 @@ namespace Imagine::Vulkan {
 		return m_IsDrawing;
 	}
 
-	bool VulkanRenderer::BeginDraw() {
+	bool VulkanRenderer::BeginDraw(const Imagine::Core::GPUSceneData& sceneData, const Imagine::Core::GPULightData& lightData) {
 		MGN_PROFILE_FUNCTION();
 
 		m_IsDrawing = true;
 		m_MainDrawContext.OpaqueSurfaces.clear();
+
+		m_LightData = lightData;
+		m_SceneData = sceneData;
 
 		// TODO: Preserve aspect ratio
 		if (MgnImGui::DockingEnabled() && m_ImGuiViewport.has_value()) {
@@ -1073,6 +1097,7 @@ namespace Imagine::Vulkan {
 
 		{
 			MGN_PROFILE_SCOPE("Setup Scene Data");
+			//TODO: Remove when I properly send the scene data from the application.
 			m_SceneData.view = ViewMatrixCached;
 			m_SceneData.proj = ProjectionMatrixCached;
 			m_SceneData.viewproj = ViewProjectMatrixCached;
@@ -1514,39 +1539,42 @@ namespace Imagine::Vulkan {
 							case AssetType::Texture2D: {
 								if (field.type != MaterialType::VirtualTexture2D && field.type != MaterialType::Texture2D) break;
 								auto cpuTex = CastPtr<CPUTexture2D>(texture);
-								if(!cpuTex || !cpuTex->gpu) break;
+								if (!cpuTex || !cpuTex->gpu) break;
 								auto vkTex = CastPtr<VulkanTexture2D>(cpuTex->gpu);
 								view = vkTex->image.imageView;
 								sampler = vkTex->sampler;
 							} break;
 							case AssetType::Texture3D: {
 								if (field.type != MaterialType::VirtualTexture3D && field.type != MaterialType::Texture3D) break;
-								if(isVirtual) {
+								if (isVirtual) {
 									auto gpuTex = CastPtr<CPUVirtualTexture3D>(texture);
-									if(!gpuTex || !gpuTex->gpu) break;
+									if (!gpuTex || !gpuTex->gpu) break;
 									auto vkTex = CastPtr<VulkanTexture3D>(gpuTex->gpu);
 									view = vkTex->image.imageView;
 									sampler = vkTex->sampler;
-								} else {
+								}
+								else {
 									auto cpuTex = CastPtr<CPUTexture3D>(texture);
-									if(!cpuTex || !cpuTex->gpu) break;
+									if (!cpuTex || !cpuTex->gpu) break;
 									auto vkTex = CastPtr<VulkanTexture3D>(cpuTex->gpu);
 									view = vkTex->image.imageView;
 									sampler = vkTex->sampler;
 								}
 							} break;
 							case AssetType::CubeMap:
-								//TODO: Implement the cubemap.
+								// TODO: Implement the cubemap.
 								break;
 							default:
 								break;
 						}
 						if (isVirtual) {
 							writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-						} else {
+						}
+						else {
 							writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 						}
-					} else {
+					}
+					else {
 						view = m_WhiteImage.imageView;
 						sampler = m_DefaultSamplerLinear;
 						writer.WriteImage(static_cast<int>(bindingIndex), view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -1656,19 +1684,25 @@ namespace Imagine::Vulkan {
 		// using CPU_TO_GPU as the `GPUSceneData` type is very small and can probably be cached entirely in VRAM.
 		// better use a dedicated `VMA_MEMORY_USAGE_GPU` for bigger data and do a transfer beforehand.
 		AllocatedBuffer gpuSceneDataBuffer = CreateBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		AllocatedBuffer gpuLightDataBuffer = CreateBuffer(sizeof(GPULightData), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 		// add it to the deletion queue of this frame so it gets deleted once its been used
 		GetCurrentFrame().m_DeletionQueue.push(Deleter::VmaBuffer{m_Allocator, gpuSceneDataBuffer.allocation, gpuSceneDataBuffer.buffer});
+		GetCurrentFrame().m_DeletionQueue.push(Deleter::VmaBuffer{m_Allocator, gpuLightDataBuffer.allocation, gpuLightDataBuffer.buffer});
 
 		// write the buffer
 		GPUSceneData *sceneUniformData = (GPUSceneData *) gpuSceneDataBuffer.allocation->GetMappedData();
 		*sceneUniformData = m_SceneData;
+
+		GPULightData *lightUniformData = (GPULightData *) gpuLightDataBuffer.allocation->GetMappedData();
+		*lightUniformData = m_LightData;
 
 		// create a descriptor set that binds that buffer and update it
 		GetCurrentFrame().m_GlobalDescriptor = GetCurrentFrame().m_FrameDescriptors.Allocate(m_Device, m_GpuSceneDataDescriptorLayout);
 
 		DescriptorWriter writer;
 		writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		writer.WriteBuffer(1, gpuLightDataBuffer.buffer, sizeof(GPULightData), 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 		writer.UpdateSet(m_Device, GetCurrentFrame().m_GlobalDescriptor);
 
 		for (const RenderObject &draw: ctx.OpaqueSurfaces) {
@@ -1681,7 +1715,7 @@ namespace Imagine::Vulkan {
 
 			// TODO: Get the real material from the LOD.
 			auto instance = AssetManager::GetAssetAs<CPUMaterialInstance>(lod.materialInstance);
-			auto vkInstance = dynamic_cast<VulkanMaterialInstance*>(instance->gpu.get());
+			auto vkInstance = dynamic_cast<VulkanMaterialInstance *>(instance->gpu.get());
 			if (auto vkMat = vkInstance->material.lock()) {
 
 				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
@@ -1708,19 +1742,37 @@ namespace Imagine::Vulkan {
 			// TODO: Do some smart LOD selection instead of the best one everytime
 			const LOD &lod = mesh->lods.front();
 
-			// TODO: Get the real material from the LOD.
-			const VulkanMaterialInstance *material = GetDefaultLineMaterial().get();
+			// // TODO: Get the real material from the LOD.
+			// const VulkanMaterialInstance *material = m_LineInstance.get();
+			//
+			// if (auto vkMat = material->material.lock()) {
+			// 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
+			// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+			// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
+			//
+			// 	vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+			//
+			// 	GPUDrawPushConstants pushConstants;
+			// 	pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+			// 	pushConstants.worldMatrix = Math::Identity<glm::mat4>();
+			// 	vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+			//
+			// 	vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+			// }
+			auto vkInstance = m_LineInstance;
+			if (auto vkMat = vkInstance->material.lock()) {
 
-			if (auto vkMat = material->material.lock()) {
 				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
+				for (int i = 1; i < vkMat->materialLayouts.size(); ++i) {
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, i, 1, &vkInstance->materialSets.at(i), 0, nullptr);
+				}
 
 				vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 				GPUDrawPushConstants pushConstants;
 				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-				pushConstants.worldMatrix = Math::Identity<glm::mat4>();
+				pushConstants.worldMatrix = Math::Identity<glm::fmat4>();
 				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
 				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);

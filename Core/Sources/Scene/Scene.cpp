@@ -5,6 +5,7 @@
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Components/Physicalisable.hpp"
 #include "Imagine/Components/Renderable.hpp"
+#include "Imagine/Rendering/Light.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -14,6 +15,7 @@ namespace Imagine::Core {
 	Scene::Scene() {
 		RegisterType<Renderable>();
 		RegisterType<Physicalisable>();
+		RegisterType<Light>();
 	}
 
 	Scene::~Scene() = default;

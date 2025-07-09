@@ -46,10 +46,10 @@ int main(int argc, char **argv) {
 	MGN_PROFILE_BEGIN_SESSION("startup", "ImagineProfile-Startup.json");
 	MGN_FRAME_START();
 
-	Core::Application *application = Core::Application::Initialize(params);
 	{
 		Project::New();
 	}
+	Core::Application *application = Core::Application::Initialize(params);
 	application->PushLayer<Imagine::Application::ApplicationLayer>();
 	application->PushOverlay<Imagine::Core::ImGuiLayer>();
 

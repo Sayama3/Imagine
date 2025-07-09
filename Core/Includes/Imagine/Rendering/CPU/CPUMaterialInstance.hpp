@@ -15,6 +15,10 @@ namespace Imagine::Core {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::MaterialInstance);
 	public:
+		CPUMaterialInstance() = default;
+		~CPUMaterialInstance() = default;
+		CPUMaterialInstance(AssetHandle material);
+	public:
 		using MaterialDataBuffer = std::array<uint8_t, MaterialField::DataSize>;
 		struct SetFieldPosition {
 			uint32_t SetIndex;

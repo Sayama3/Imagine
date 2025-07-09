@@ -17,6 +17,17 @@ namespace Imagine::Core {
 	class CPUMaterial final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Material);
+	private:
+		static Ref<CPUMaterial> s_DefaultOpaqueMaterial;
+		static Ref<CPUMaterial> s_DefaultTransparentMaterial;
+		static Ref<CPUMaterial> s_DefaultLineMaterial;
+	public:
+		static Ref<CPUMaterial> GetDefaultOpaque();
+		static Ref<CPUMaterial> GetDefaultTransparent();
+		static Ref<CPUMaterial> GetDefaultLine();
+		static void DestroyDefaultMaterials();
+		static void InitDefaultMaterials(AssetHandle vertexShader, AssetHandle fragmentShader);
+		static void TryRegisterMaterials();
 	public:
 		MaterialLayout layout;
 		std::array<AssetHandle, 5> shaders;

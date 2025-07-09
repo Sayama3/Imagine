@@ -133,21 +133,8 @@ namespace Imagine::Core {
 		model->Textures.back() = WhiteImage;
 		LOAD_ASSET(WhiteImage);
 
-		Ref<CPUMaterial> opaqueMaterial = CreateRef<CPUMaterial>();
-		opaqueMaterial->shaders[0] = vertex->Handle;
-		opaqueMaterial->shaders[4] = fragment->Handle;
-
-		opaqueMaterial->layout.Sets.push_back(MaterialSet::GetSceneSet());
-		opaqueMaterial->layout.Sets.push_back(MaterialSet::GetPBRSet());
-		opaqueMaterial->layout.PushConstants.emplace_back(MaterialBlock{
-																  {{"WorldMatrix", MaterialType::FMat4}, {"VertexBuffer", MaterialType::ExternalBuffer}}},
-														  ShaderStage::Vertex, 0);
-
-		Ref<CPUMaterial> transparentMaterial = CreateRef<CPUMaterial>(*opaqueMaterial);
-		transparentMaterial->Handle = AssetHandle{};
-		transparentMaterial->pass = MaterialPass::Transparent;
-		model->Materials.push_back(opaqueMaterial);
-		model->Materials.push_back(transparentMaterial);
+		Ref<CPUMaterial> opaqueMaterial = CPUMaterial::GetDefaultOpaque();
+		Ref<CPUMaterial> transparentMaterial = CPUMaterial::GetDefaultTransparent();
 
 		LOAD_ASSET(opaqueMaterial);
 		LOAD_ASSET(transparentMaterial);

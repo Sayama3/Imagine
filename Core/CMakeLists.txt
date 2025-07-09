@@ -196,6 +196,10 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Assets/Importers/MetadataSerializer.hpp
 		Sources/Rendering/CPU/CPUModel.cpp
 		Includes/Imagine/Rendering/CPU/CPUModel.hpp
+		Sources/Rendering/Light.cpp
+		Includes/Imagine/Rendering/Light.hpp
+		Includes/Imagine/Rendering/GPU/GPUSceneData.hpp
+		Includes/Imagine/Rendering/GPU/GPULightData.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

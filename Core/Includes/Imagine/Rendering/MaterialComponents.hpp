@@ -10,6 +10,7 @@
 #include "Imagine/Math/Core.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
+#include "Imagine/Rendering/Light.hpp"
 #include <spdlog/spdlog.h>
 
 #define MGN_CHECK_MAT_SIZE(TYPE, MAT_TYPE) static_assert(sizeof(TYPE) == Helper::MaterialTypeSize(MAT_TYPE));
@@ -62,7 +63,7 @@ namespace Imagine::Core {
 		Cubemap,
 
 		Vertex,
-
+		Light,
 		ExternalBuffer,
 	};
 
@@ -121,6 +122,7 @@ namespace Imagine::Core {
 				case MaterialType::Texture3D: return "Texture3D";
 				case MaterialType::Cubemap: return "Cubemap";
 				case MaterialType::Vertex: return "Vertex";
+				case MaterialType::Light: return "Light";
 				case MaterialType::ExternalBuffer: return "ExternalBuffer";
 			}
 			return "Unknown";
@@ -150,6 +152,7 @@ namespace Imagine::Core {
 			if(str == "Texture3D") return MaterialType::Texture3D;
 			if(str == "Cubemap") return MaterialType::Cubemap;
 			if(str == "Vertex") return MaterialType::Vertex;
+			if(str == "Light") return MaterialType::Light;
 			if(str == "ExternalBuffer") return MaterialType::ExternalBuffer;
 			return MaterialType::None;
 		}
@@ -178,6 +181,7 @@ namespace Imagine::Core {
 			if(str == "Texture3D") {value = MaterialType::Texture3D; return true;}
 			if(str == "Cubemap") {value = MaterialType::Cubemap; return true;}
 			if(str == "Vertex") {value = MaterialType::Vertex; return true;}
+			if(str == "Light") {value = MaterialType::Light; return true;}
 			if(str == "ExternalBuffer") {value = MaterialType::ExternalBuffer; return true;}
 			return false;
 		}
@@ -201,6 +205,7 @@ namespace Imagine::Core {
 				case MaterialType::IMat3:
 				case MaterialType::IMat4:
 				case MaterialType::Vertex:
+				case MaterialType::Light:
 				case MaterialType::ExternalBuffer:
 					return true;
 				default:
@@ -255,6 +260,8 @@ namespace Imagine::Core {
 					return sizeof(AssetHandle);
 				case MaterialType::Vertex:
 					return sizeof(Vertex);
+				case MaterialType::Light:
+					return sizeof(Light);
 				case MaterialType::ExternalBuffer:
 					return sizeof(uint64_t);
 			}
@@ -271,8 +278,12 @@ namespace Imagine::Core {
 		MaterialField() = default;
 		MaterialField(std::string name, MaterialType type);
 		template<typename T>
-		constexpr MaterialField(std::string name, const MaterialType type, const T &defaultValue) :
-			name(std::move(name)), type(type) {
+		constexpr MaterialField(std::string name, const MaterialType type, const T &defaultValue) : name(std::move(name)), type(type) {
+			memcpy(data.data(), &defaultValue, std::min(sizeof(T), DataSize));
+		}
+		MaterialField(uint32_t count, std::string name, MaterialType type);
+		template<typename T>
+		constexpr MaterialField(const uint32_t count, std::string name, const MaterialType type, const T &defaultValue) : name(std::move(name)), type(type), count(count) {
 			memcpy(data.data(), &defaultValue, std::min(sizeof(T), DataSize));
 		}
 
@@ -286,6 +297,7 @@ namespace Imagine::Core {
 		// Preallocated data for all subsequent types.
 		std::array<uint8_t, DataSize> data{0};
 		MaterialType type{MaterialType::None};
+		uint32_t count = 1;
 	};
 
 	template<typename T>
@@ -384,6 +396,10 @@ namespace Imagine::Core {
 		MGN_CHECK_MAT_SIZE(Vertex, MaterialType::Vertex);
 		MGN_IMPLEMENT_MAT_TYPE(MaterialType::Vertex);
 	};
+	struct MaterialFieldLight : public TMaterialField<Light> {
+		MGN_CHECK_MAT_SIZE(Light, MaterialType::Light);
+		MGN_IMPLEMENT_MAT_TYPE(MaterialType::Light);
+	};
 	struct MaterialFieldExternalBuffer : public TMaterialField<uint64_t> {
 		MGN_CHECK_MAT_SIZE(uint64_t, MaterialType::ExternalBuffer);
 		MGN_IMPLEMENT_MAT_TYPE(MaterialType::ExternalBuffer);
@@ -402,6 +418,7 @@ namespace Imagine::Core {
 		MaterialBlock(const MaterialField &field);
 		MaterialBlock(const std::initializer_list<MaterialField> &fields);
 		MaterialBlock(const std::initializer_list<MaterialField> &fields, bool readOnly);
+		MaterialBlock(const std::initializer_list<MaterialField> &fields, bool readOnly, BufferType bufferType);
 
 		MaterialBlock(const std::string &name, MaterialType type);
 		template<typename T>
@@ -410,13 +427,14 @@ namespace Imagine::Core {
 
 	public:
 		static MaterialBlock GetSceneBlock();
+		static MaterialBlock GetLightBlock();
 		static MaterialBlock GetPBRConstantBlock();
 
 	public:
 		void Push(std::string name, MaterialType type);
 		/// This function will separate the buffer from the non-buffer types and return a material block per optimal binding.
-		std::vector<MaterialBlock> SplitBlock() const;
-		bool IsABuffer() const;
+		[[nodiscard]] std::vector<MaterialBlock> SplitBlock() const;
+		[[nodiscard]] bool IsABuffer() const;
 		void Add(const MaterialBlock& block);
 	public:
 		[[nodiscard]] uint64_t GetSize() const;
@@ -446,12 +464,16 @@ namespace Imagine::Core {
 
 	class MaterialPushConstant {
 	public:
+		static MaterialPushConstant GetTransformPC();
+	public:
 		MaterialBlock Block;
 		ShaderStage Stages{ShaderStage::Vertex};
 		uint32_t offset{0};
 	};
 
 	class MaterialLayout {
+	public:
+		static MaterialLayout GetDefaultLayout();
 	public:
 		std::vector<MaterialSet> Sets;
 		std::vector<MaterialPushConstant> PushConstants;

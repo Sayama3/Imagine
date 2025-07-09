@@ -9,6 +9,9 @@ namespace Imagine::Core {
 
 	MaterialField::MaterialField(std::string name, MaterialType type) :
 		name(std::move(name)), type(type) {}
+	MaterialField::MaterialField(const uint32_t count, std::string name, MaterialType type) :
+		name(std::move(name)), type(type), count(count) {}
+
 	uint64_t MaterialField::GetSize() const {
 		return Helper::MaterialTypeSize(type);
 	}
@@ -31,7 +34,8 @@ namespace Imagine::Core {
 		for (uint32_t i = 0; i < Fields.size(); ++i) {
 			if (Helper::IsBufferType(Fields[i].type)) {
 				blocks.back().Fields.push_back(Fields[i]);
-			} else {
+			}
+			else {
 				if (!blocks.empty()) blocks.emplace_back();
 				blocks.back().Fields.push_back({Fields[i]});
 				blocks.emplace_back();
@@ -51,29 +55,53 @@ namespace Imagine::Core {
 	}
 
 	MaterialBlock::MaterialBlock(const MaterialField &field) :
-		Fields(1, field) {
+		Fields(field.count, field) {
+		for (uint32_t i = 0; i < Fields.size(); ++i) {
+			auto &field = Fields[i];
+			field.count = 1;
+			field.name += "_" + std::to_string(i);
+		}
 	}
 
-	MaterialBlock::MaterialBlock(const std::initializer_list<MaterialField> &fields) :
-		Fields(fields) {
+	MaterialBlock::MaterialBlock(const std::initializer_list<MaterialField> &fields) {
+		for (const auto &field: fields) {
+			for (uint32_t i = 0; i < field.count; ++i) {
+				Fields.push_back(field);
+				Fields.back().count = 1;
+				Fields.back().name += "_" + std::to_string(i);
+			}
+		}
 	}
 
 	MaterialBlock::MaterialBlock(const std::initializer_list<MaterialField> &fields, const bool readOnly) :
-		Fields(fields), Write(!readOnly) {
+		MaterialBlock(fields) {
+		Write = !readOnly;
 	}
+	MaterialBlock::MaterialBlock(const std::initializer_list<MaterialField> &fields, const bool readOnly, const BufferType bufferType) : MaterialBlock(fields, readOnly) {
+		GPUBufferType = bufferType;
+	}
+
 	MaterialBlock::MaterialBlock(const std::string &name, MaterialType type) :
-		Fields(1, {name, type}) {
+		Fields{1, MaterialField{name, type}} {
 	}
 
 	MaterialBlock MaterialBlock::GetSceneBlock() {
-		return {
-				{"View", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
-				{"Proj", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
-				{"ViewProj", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
-				{"Ambient Color", MaterialType::Color4, glm::vec4(1)},
-				{"Sunlight Direction", MaterialType::Float4, glm::vec4(1)},
-				{"Sunlight Color", MaterialType::Color4, glm::vec4(1)},
-		};
+		return {{
+						{"View", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
+						{"Proj", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
+						{"ViewProj", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
+						{"Ambient Color", MaterialType::Color4, glm::vec4(1)},
+						{"Sunlight Direction", MaterialType::Float4, glm::vec4(1)},
+						{"Sunlight Color", MaterialType::Color4, glm::vec4(1)},
+				},
+				true};
+	}
+	MaterialBlock MaterialBlock::GetLightBlock() {
+		return {{
+						{32, "Light", MaterialType::Light},
+						{"Light Count", MaterialType::Int1, 0},
+				},
+				true, SSBO};
 	}
 	MaterialBlock MaterialBlock::GetPBRConstantBlock() {
 		return {
@@ -106,11 +134,12 @@ namespace Imagine::Core {
 		return buffer;
 	}
 
-	MaterialSet::MaterialSet(const std::initializer_list<MaterialBlock> &blocks) : Blocks(blocks) {
+	MaterialSet::MaterialSet(const std::initializer_list<MaterialBlock> &blocks) :
+		Blocks(blocks) {
 	}
 
 	MaterialSet MaterialSet::GetSceneSet() {
-		return {MaterialBlock::GetSceneBlock()};
+		return {MaterialBlock::GetSceneBlock(), MaterialBlock::GetLightBlock()};
 	}
 	MaterialSet MaterialSet::GetPBRSet() {
 		return {
@@ -126,13 +155,32 @@ namespace Imagine::Core {
 
 	uint32_t MaterialSet::CountBindinds() const {
 		uint32_t count{0};
-		for (const MaterialBlock & block: Blocks) {
+		for (const MaterialBlock &block: Blocks) {
 			if (block.IsABuffer()) {
 				count += 1;
-			} else {
+			}
+			else {
 				count += static_cast<uint32_t>(block.Fields.size());
 			}
 		}
 		return count;
+	}
+
+	MaterialPushConstant MaterialPushConstant::GetTransformPC() {
+		return MaterialPushConstant{
+				{{
+						 {"WorldMatrix", MaterialType::FMat4, Math::Identity<glm::f32mat4>()},
+						 {"VertexBuffer", MaterialType::ExternalBuffer},
+				 },
+				 true},
+				ShaderStage::Vertex,
+				0};
+	}
+
+	MaterialLayout MaterialLayout::GetDefaultLayout() {
+		return {
+			{MaterialSet::GetSceneSet(), MaterialSet::GetPBRSet()},
+			{MaterialPushConstant::GetTransformPC()}
+		};
 	}
 } // namespace Imagine::Core

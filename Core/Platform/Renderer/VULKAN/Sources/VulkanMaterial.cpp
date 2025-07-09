@@ -13,10 +13,12 @@ using namespace Imagine::Core;
 using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
-	VulkanMaterialInstance::VulkanMaterialInstance() :
-		passType(MaterialPass::MainColor) {
+	uint64_t VulkanMaterialInstance::s_id{0};
+
+	VulkanMaterialInstance::VulkanMaterialInstance() : passType(MaterialPass::MainColor) {
 		id = ++s_id;
 	}
+
 	VulkanMaterialInstance::~VulkanMaterialInstance() {
 		if (deleter) {
 			static_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(deleter);
@@ -28,15 +30,9 @@ namespace Imagine::Vulkan {
 		return id;
 	}
 
-	static inline std::atomic<int64_t> counter_material = 0;
-	VulkanMaterial::VulkanMaterial() {
-		const int64_t old_total = counter_material.fetch_add(1, std::memory_order_relaxed);
-		MGN_CORE_INFO("There is {} material", old_total + 1);
-	}
-	VulkanMaterial::~VulkanMaterial() {
-		const int64_t old_total = counter_material.fetch_sub(1, std::memory_order_relaxed);
-		MGN_CORE_INFO("There is {} material", old_total - 1);
+	VulkanMaterial::VulkanMaterial() = default;
 
+	VulkanMaterial::~VulkanMaterial() {
 		if (autoDelete) {
 			VulkanRenderer* renderer = dynamic_cast<VulkanRenderer*>(Renderer::Get());
 			renderer->PushDeletion(pipeline.layout);
@@ -48,6 +44,7 @@ namespace Imagine::Vulkan {
 			materialLayouts.clear();
 		}
 	}
+
 	uint64_t VulkanMaterial::GetID() {
 		return reinterpret_cast<uint64_t>(pipeline.pipeline);
 	}

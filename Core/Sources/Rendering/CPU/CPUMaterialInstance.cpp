@@ -5,6 +5,8 @@
 #include "Imagine/Rendering/CPU/CPUMaterialInstance.hpp"
 
 namespace Imagine::Core {
+	CPUMaterialInstance::CPUMaterialInstance(const AssetHandle material) : Material(material) {
+	}
 	bool CPUMaterialInstance::SetFieldPosition::operator==(const SetFieldPosition &o) const {
 		return SetIndex == o.SetIndex && BindingIndex == o.BindingIndex && FieldIndex == o.FieldIndex;
 	}
