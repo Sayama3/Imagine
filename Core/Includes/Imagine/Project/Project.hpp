@@ -79,7 +79,6 @@ namespace Imagine::Core
 		[[nodiscard]] inline AssetManagerBase* GetAssetManager() { return m_AssetManager.get(); }
 
 		[[nodiscard]] inline FileAssetManager* GetEditorAssetManager() {
-			MGN_PROFILE_FUNCTION();
 			return dynamic_cast<FileAssetManager*>(m_AssetManager.get());
 		}
 		//

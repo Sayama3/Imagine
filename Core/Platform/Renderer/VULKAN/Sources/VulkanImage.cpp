@@ -18,15 +18,16 @@ namespace Imagine::Vulkan {
 	VulkanTexture2D::~VulkanTexture2D() {
 		dynamic_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(image.allocation, image.image);
 		dynamic_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(image.imageView);
+		dynamic_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(sampler);
 		image = {};
+		sampler = nullptr;
 	}
 
 	uint64_t VulkanTexture2D::GetID() {
 		return reinterpret_cast<uint64_t>(image.imageView);
 	}
 
-	VulkanTexture3D::VulkanTexture3D() {
-	}
+	VulkanTexture3D::VulkanTexture3D() = default;
 	VulkanTexture3D::~VulkanTexture3D() {
 		dynamic_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(image.allocation, image.image);
 		dynamic_cast<VulkanRenderer*>(Renderer::Get())->PushFrameDeletion(image.imageView);

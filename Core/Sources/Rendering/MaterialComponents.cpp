@@ -90,6 +90,7 @@ namespace Imagine::Core {
 						{"View", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
 						{"Proj", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
 						{"ViewProj", MaterialType::FMat4, Math::Identity<glm::fmat4>()},
+						{"Camera Position", MaterialType::Float4, glm::vec4(0)},
 						{"Ambient Color", MaterialType::Color4, glm::vec4(1)},
 						{"Sunlight Direction", MaterialType::Float4, glm::vec4(1)},
 						{"Sunlight Color", MaterialType::Color4, glm::vec4(1)},
@@ -107,8 +108,8 @@ namespace Imagine::Core {
 		return {
 				{"Tint", MaterialType::Color4, glm::vec4(1)},
 				{"Emissive", MaterialType::Color4, glm::vec4(0)},
-				{"Metal Factor", MaterialType::Float1, glm::vec1(1)},
-				{"Rough Factor", MaterialType::Float1, glm::vec1(1)},
+				{"Metal Factor", MaterialType::Float3, glm::vec3(1,0,0)},
+				{"Rough Factor", MaterialType::Float3, glm::vec3(1,0,0)},
 		};
 	}
 	uint64_t MaterialBlock::GetSize() const {
@@ -170,6 +171,7 @@ namespace Imagine::Core {
 		return MaterialPushConstant{
 				{{
 						 {"WorldMatrix", MaterialType::FMat4, Math::Identity<glm::f32mat4>()},
+						 {"NormalMatrix", MaterialType::FMat4, Math::Identity<glm::f32mat4>()},
 						 {"VertexBuffer", MaterialType::ExternalBuffer},
 				 },
 				 true},

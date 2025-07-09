@@ -9,7 +9,9 @@
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/RawSparseSet.hpp"
 #include "Imagine/Core/SparseSet.hpp"
+#include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Core/UUID.hpp"
+#include "Imagine/Rendering/Light.hpp"
 #include "Relationship.hpp"
 
 namespace Imagine::Core {
@@ -19,6 +21,7 @@ namespace Imagine::Core {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Scene);
 	public:
+		using ImGuiFunction = std::function<bool(BufferView)>;
 		static constexpr uint64_t c_EntityPrepareCount = 1024;
 		using Ref = std::shared_ptr<Scene>;
 
@@ -207,16 +210,24 @@ namespace Imagine::Core {
 		void RegisterType(std::string name, UUID componentId, uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
 		UUID RegisterType(std::string name, uint64_t size, void (*constructor)(void *, uint32_t) = nullptr, void (*destructor)(void *, uint32_t) = nullptr, void (*copy_constructor)(void *, uint32_t, ConstBufferView view) = nullptr);
 
+		void RegisterImGui(UUID componentId, ImGuiFunction);
+
 
 		template<typename T>
 		void RegisterType() {
 			RegisterType(
-					typeid(T).name(),
+					NiceTypeName<T>(),
 					UUID::FromType<T>(),
 					sizeof(T),
 					[](void *data, uint32_t size) { new (data) T(); },
 					[](void *data, uint32_t size) { reinterpret_cast<T *>(data)->~T(); },
 					[](void *data, uint32_t size, ConstBufferView view) { new (data) T(view.template As<T>()); });
+			RegisterImGui<T>();
+		}
+
+		template<typename T>
+		void RegisterImGui() {
+			RegisterImGui(UUID::FromType<T>(), [](BufferView view) {return ImGuiLib::RenderData<T>(NiceTypeName<T>(), view.Get<T>());});
 		}
 
 		BufferView AddComponent(EntityID entityId, UUID componentId);
@@ -307,6 +318,7 @@ namespace Imagine::Core {
 		AutoIdSparseSet<Entity, uint32_t> m_SparseEntities;
 		std::unordered_map<UUID, RawSparseSet<uint32_t>> m_CustomComponents;
 		std::unordered_map<UUID, Metadata> m_CustomComponentsMetadata;
+		std::unordered_map<UUID, ImGuiFunction> m_CustomComponentsImGui;
 
 		std::unordered_set<EntityID> m_Roots;
 		SparseSet<Parent, uint32_t> m_Parents;

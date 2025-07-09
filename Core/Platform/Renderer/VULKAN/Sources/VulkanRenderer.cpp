@@ -230,6 +230,10 @@ namespace Imagine::Vulkan {
 
 		// VkPhysicalDeviceVulkan11Features features11{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
 
+		VkPhysicalDeviceFeatures requiredFeatures{};
+		requiredFeatures.geometryShader = true;
+		requiredFeatures.tessellationShader = true;
+		requiredFeatures.samplerAnisotropy = true;
 
 		// use vkbootstrap to select a gpu.
 		// We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
@@ -238,12 +242,12 @@ namespace Imagine::Vulkan {
 													 .set_minimum_version(1, 3)
 													 .set_required_features_13(features)
 													 .set_required_features_12(features12)
+													 .set_required_features(requiredFeatures)
 													 .set_surface(m_Surface)
 													 .select()
 													 .value();
 
 		physicalDevice.enable_extension_if_present(VK_KHR_DISPLAY_EXTENSION_NAME);
-		// physicalDevice.enable_features_if_present(VK_FEATURE)
 
 		// create the final vulkan device
 		vkb::DeviceBuilder deviceBuilder{physicalDevice};
@@ -692,9 +696,11 @@ namespace Imagine::Vulkan {
 											  .set_desired_format(VkSurfaceFormatKHR{
 													  .format = m_SwapchainImageFormat,
 													  .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR})
-											  // use vsync present mode
-											  .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-											  // Hard VSync. Will limit the refreshrate to the one of the monitor.
+		                                      .set_desired_min_image_count(3)
+											  // no vsync present mode. AKA ASAP
+											  .set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
+											  .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_RELAXED_KHR)
+											  .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 											  .set_desired_extent(width, height)
 											  .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 											  .build()
@@ -731,7 +737,41 @@ namespace Imagine::Vulkan {
 
 		m_ResizeRequested = false;
 	}
+	VkCommandBuffer VulkanRenderer::BeginSingleTimeCommands() {
 
+		// As it's a command, we need a temporary command buffer to allow the transfer.
+		//  Might be doable in a pre-draw dedicated command buffer and a list of those temporary buffer.
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandPool = m_ImmCommandPool;
+		allocInfo.commandBufferCount = 1;
+
+		VkCommandBuffer commandBuffer;
+		vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // We'll only use the command buffer once for the copy. We tell it to the driver so mayber some opti will be done ?
+
+		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+		return commandBuffer;
+	}
+
+	void VulkanRenderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer) {
+		vkEndCommandBuffer(commandBuffer);
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(m_GraphicsQueue);
+
+		vkFreeCommandBuffers(m_Device, m_ImmCommandPool, 1, &commandBuffer);
+	}
 	AllocatedBuffer VulkanRenderer::CreateBuffer(const uint64_t allocSize, const VkBufferUsageFlags usage, const VmaMemoryUsage memoryUsage) {
 		// allocate buffer
 		VkBufferCreateInfo bufferInfo = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -809,7 +849,26 @@ namespace Imagine::Vulkan {
 	}
 
 	void VulkanRenderer::CreateDefaultSamplers() {
+		VkPhysicalDeviceProperties properties{};
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
+
+
 		VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+
+		sampl.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		sampl.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		sampl.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+		sampl.unnormalizedCoordinates = VK_FALSE;
+
+		sampl.anisotropyEnable = VK_TRUE;
+		sampl.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+
+		sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		sampl.mipLodBias = 0.0f;
+		sampl.minLod = 0.0f;
+		sampl.maxLod = 0.0f;
+
 		sampl.magFilter = VK_FILTER_NEAREST;
 		sampl.minFilter = VK_FILTER_NEAREST;
 
@@ -818,6 +877,7 @@ namespace Imagine::Vulkan {
 
 		sampl.magFilter = VK_FILTER_LINEAR;
 		sampl.minFilter = VK_FILTER_LINEAR;
+
 
 		vkCreateSampler(m_Device, &sampl, nullptr, &m_DefaultSamplerLinear);
 		m_MainDeletionQueue.push(m_DefaultSamplerLinear);
@@ -933,6 +993,7 @@ namespace Imagine::Vulkan {
 
 		return img;
 	}
+
 	AllocatedImage VulkanRenderer::CreateImage(const void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
 		size_t dataSize = size.depth * size.width * size.height * 4;
 		AllocatedBuffer uploadbuffer = CreateBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -959,14 +1020,106 @@ namespace Imagine::Vulkan {
 			vkCmdCopyBufferToImage(cmd, uploadbuffer.buffer, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
 								   &copyRegion);
 
-			Utils::TransitionImage(cmd, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-								   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			if (!mipmapped) Utils::TransitionImage(cmd, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		});
+
+		if (mipmapped) {
+			GenerateMipmaps(new_image.image, VK_FORMAT_R8G8B8A8_SRGB, size.width, size.height, static_cast<uint32_t>(std::floor(std::log2(std::max(size.width, size.height)))) + 1);
+		}
 
 		DestroyBuffer(uploadbuffer);
 
 		return new_image;
 	}
+
+	void VulkanRenderer::GenerateMipmaps(VkImage image, VkFormat imageFormat, const int32_t texWidth, const int32_t texHeight, const uint32_t mipLevels) {
+		// Check if image format supports linear blitting
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, imageFormat, &formatProperties);
+
+		if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+			throw std::runtime_error("texture image format does not support linear blitting!");
+			//TODO: Special case of creating the mipmaps through a compute shader or on CPU.
+		}
+
+		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = image;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.levelCount = 1;
+
+		int32_t mipWidth = texWidth;
+		int32_t mipHeight = texHeight;
+
+		for (int64_t i = 1; i < mipLevels; ++i)	{
+			barrier.subresourceRange.baseMipLevel = i - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+			vkCmdPipelineBarrier(commandBuffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
+
+			VkImageBlit blit{};
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.mipLevel = i - 1;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.mipLevel = i;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+
+			vkCmdBlitImage(commandBuffer,
+				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit,
+				VK_FILTER_LINEAR);
+
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(commandBuffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
+
+			if (mipWidth > 1) mipWidth /= 2;
+			if (mipHeight > 1) mipHeight /= 2;
+		}
+
+		// Switching the last mip levels before starting the command buffer.
+		barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+		EndSingleTimeCommands(commandBuffer);
+	}
+
 	void VulkanRenderer::DestroyImage(const AllocatedImage &img) {
 		vkDestroyImageView(m_Device, img.imageView, nullptr);
 		vmaDestroyImage(m_Allocator, img.image, img.allocation);
@@ -1103,6 +1256,7 @@ namespace Imagine::Vulkan {
 			m_SceneData.viewproj = ViewProjectMatrixCached;
 
 			// some default lighting parameters
+			m_SceneData.cameraPosition = glm::vec4(Camera::s_MainCamera ? Camera::s_MainCamera->position : glm::vec3(0), 1);
 			m_SceneData.ambientColor = glm::vec4(.1f);
 			m_SceneData.sunlightColor = glm::vec4(1.f);
 			m_SceneData.sunlightDirection = glm::vec4(0, 1, 0.5, 1.f);
@@ -1594,7 +1748,30 @@ namespace Imagine::Vulkan {
 
 		auto format = Utils::GetImageVkFormat(tex2d.image);
 		vkTex2d->image = CreateImage(tex2d.image.source.Get(), {tex2d.image.width, tex2d.image.height, 1}, format, VK_IMAGE_USAGE_SAMPLED_BIT, true);
-		vkTex2d->sampler = m_DefaultSamplerLinear;
+
+		VkPhysicalDeviceProperties properties{};
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
+
+		VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+
+		sampl.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		sampl.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		sampl.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+		sampl.unnormalizedCoordinates = VK_FALSE;
+
+		sampl.anisotropyEnable = VK_TRUE;
+		sampl.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+
+		sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		sampl.mipLodBias = 0.0f;
+		sampl.minLod = 0.0f;
+		sampl.maxLod =  std::floor(std::log2(std::max((float)tex2d.image.width, (float)tex2d.image.height))) + 1;
+
+		sampl.magFilter = VK_FILTER_LINEAR;
+		sampl.minFilter = VK_FILTER_LINEAR;
+
+		vkCreateSampler(m_Device, &sampl, nullptr, &vkTex2d->sampler);
 
 		return vkTex2d;
 	}
@@ -1729,6 +1906,7 @@ namespace Imagine::Vulkan {
 				GPUDrawPushConstants pushConstants;
 				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
 				pushConstants.worldMatrix = draw.transform;
+				pushConstants.normalMatrix = glm::transpose(glm::inverse(pushConstants.worldMatrix));
 				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
 				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
@@ -1773,6 +1951,7 @@ namespace Imagine::Vulkan {
 				GPUDrawPushConstants pushConstants;
 				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
 				pushConstants.worldMatrix = Math::Identity<glm::fmat4>();
+				pushConstants.normalMatrix = Math::Identity<glm::fmat4>();
 				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
 				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);

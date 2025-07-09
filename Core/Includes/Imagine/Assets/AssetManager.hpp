@@ -24,7 +24,6 @@ namespace Imagine::Core
 		template<typename T>
 		inline static Ref<T> GetAssetAs(AssetHandle handle)
 		{
-			MGN_PROFILE_FUNCTION();
 			Ref<Asset> asset = GetAsset(handle);
 			if(!asset) return nullptr;
 

@@ -55,7 +55,6 @@ namespace Imagine::Core
 	template<class ListVec3>
 	BoundingBox::BoundingBox(const ListVec3 &points) : m_Max(std::numeric_limits<Real>::min()), m_Min(std::numeric_limits<Real>::max())
 	{
-		MGN_PROFILE_FUNCTION();
 		for(const Vec3& point : points)
 		{
 			Grow(point);

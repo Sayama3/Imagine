@@ -10,6 +10,8 @@
 #ifdef MGN_IMGUI
 #include <imgui.h>
 #include <imgui_stdlib.h>
+
+#include <utility>
 #endif
 namespace Imagine::Core {
 	Scene::Scene() {
@@ -429,45 +431,77 @@ namespace Imagine::Core {
 					ImGui::LabelText("ID", "%u", m_SelectedEntity.id);
 					ImGui::InputText("Name", &m_Names.GetOrCreate(m_SelectedEntity.id));
 
-					ImGui::Separator();
-					Entity& e = GetEntity(m_SelectedEntity);
-					ImGui::DragFloat3("Position", Math::ValuePtr(e.LocalPosition), 0.1,0,0,"%.3f");
-					auto degRot = e.LocalRotation * Math::RadToDeg;
-					if (ImGui::DragFloat4("Rotation", Math::ValuePtr(degRot), 0.1,0,0,"%.3f")) {
-						e.LocalRotation = Math::Normalize(degRot * Math::DegToRad);
+					ImGui::SeparatorText("Transform");
+					{
+						Entity &e = GetEntity(m_SelectedEntity);
+						ImGui::DragFloat3("Position", Math::ValuePtr(e.LocalPosition), 0.1, 0, 0, "%.3f");
+						static auto degRot = glm::eulerAngles(e.LocalRotation) * Math::RadToDeg;
+						if (ImGui::DragFloat3("Rotation", Math::ValuePtr(degRot), 1, 0, 0, "%.2f")) {
+							e.LocalRotation = Math::Normalize(Quat(degRot * Math::DegToRad));
+						}
+						if (ImGui::IsItemDeactivatedAfterEdit()) {
+							degRot = glm::eulerAngles(e.LocalRotation) * Math::RadToDeg;
+						}
+						ImGui::DragFloat3("Scale", Math::ValuePtr(e.LocalScale), 0.1, 0, 0, "%.3f");
 					}
-					ImGui::DragFloat3("Scale", Math::ValuePtr(e.LocalScale), 0.1,0,0,"%.3f");
+					ImGui::Separator();
+					if (ImGui::Button("Add Component"))
+						ImGui::OpenPopup("add_component_popup");
 
-					for (const auto& [id, cc] : m_CustomComponents) {
+					for (auto& [id, cc] : m_CustomComponents) {
 						if (!cc.Exist(m_SelectedEntity.id)) continue;
 						const auto& metadata = m_CustomComponentsMetadata.at(id);
-						ImGui::Separator();
-						ImGui::Text("===== %s =====", metadata.name.c_str());
+						if (m_CustomComponentsImGui.contains(id)) {
+							m_CustomComponentsImGui.at(id)(cc.GetView(m_SelectedEntity.id));
+						} else {
+							ImGui::SeparatorText(metadata.name.c_str());
+						}
+						if (ImGui::Button("Remove")) {
+							cc.Remove(m_SelectedEntity.id);
+						}
 					}
 
-					if (ImGui::Button("Select Parent")) {
-						m_ChosenParent = m_SelectedEntity;
+					if (ImGui::BeginPopup("add_component_popup"))
+					{
+						ImGui::SeparatorText("Add Components");
+
+						for (const auto& [id, cc] : m_CustomComponents) {
+							if (cc.Exist(m_SelectedEntity.id)) continue;
+							const auto& metadata = m_CustomComponentsMetadata.at(id);
+							if (ImGui::Selectable(metadata.name.c_str())) {
+								AddComponent(m_SelectedEntity.id, id);
+							}
+						}
+						ImGui::EndPopup();
 					}
 
-					ImGui::BeginDisabled(!m_Parents.Exist(m_SelectedEntity.id));
-					if (ImGui::Button("Move To Root")) {
-						MoveToRoot(m_SelectedEntity);
-					}
-					ImGui::EndDisabled();
+					ImGui::SeparatorText("Hierarchy");
+					{
+						if (ImGui::Button("Select Parent")) {
+							m_ChosenParent = m_SelectedEntity;
+						}
 
-					const uint32_t step = 1;
-					const uint32_t step_fast = 100;
-					ImGui::InputScalar("Parent", ImGuiDataType_U32, &m_ChosenParent.id, &step, &step_fast, "%u");
-					ImGui::BeginDisabled(m_ChosenParent == m_SelectedEntity || !m_ChosenParent.IsValid() || !Exist(m_ChosenParent));
-					if (ImGui::Button("Set as child")) {
-						AddToChild(m_ChosenParent, m_SelectedEntity);
-					}
-					ImGui::EndDisabled();
+						ImGui::BeginDisabled(!m_Parents.Exist(m_SelectedEntity.id));
+						if (ImGui::Button("Move To Root")) {
+							MoveToRoot(m_SelectedEntity);
+						}
+						ImGui::EndDisabled();
 
-					if (ImGui::Button("Delete")) {
-						DestroyEntity(m_SelectedEntity);
-						m_SelectedEntity = EntityID::NullID;
+						const uint32_t step = 1;
+						const uint32_t step_fast = 100;
+						ImGui::InputScalar("Parent", ImGuiDataType_U32, &m_ChosenParent.id, &step, &step_fast, "%u");
+						ImGui::BeginDisabled(m_ChosenParent == m_SelectedEntity || !m_ChosenParent.IsValid() || !Exist(m_ChosenParent));
+						if (ImGui::Button("Set as child")) {
+							AddToChild(m_ChosenParent, m_SelectedEntity);
+						}
+						ImGui::EndDisabled();
+
+						if (ImGui::Button("Delete")) {
+							DestroyEntity(m_SelectedEntity);
+							m_SelectedEntity = EntityID::NullID;
+						}
 					}
+					ImGui::Separator();
 				}
 			}
 			ImGui::End();
@@ -566,6 +600,9 @@ namespace Imagine::Core {
 		UUID id{};
 		RegisterType(std::move(name), id, size, constructor, destructor, copy_constructor);
 		return id;
+	}
+	void Scene::RegisterImGui(const UUID componentId, ImGuiFunction func) {
+		m_CustomComponentsImGui[componentId] = std::move(func);
 	}
 	void Scene::RegisterType(std::string name, const UUID componentId, const uint64_t size, void (*constructor)(void *, uint32_t), void (*destructor)(void *, uint32_t), void (*copy_constructor)(void *, uint32_t, ConstBufferView view)) {
 		m_CustomComponentsMetadata[componentId] = {

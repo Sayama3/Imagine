@@ -36,7 +36,6 @@ namespace Imagine::Core
 
     template<typename T>
     Ref<T> AssetField<T>::GetAsset() const {
-        MGN_PROFILE_FUNCTION();
         MGN_CORE_CASSERT(AssetManager::IsAssetHandleValid(Handle));
         return AssetManager::GetAssetAs<T>(Handle);
     }
@@ -58,7 +57,6 @@ namespace Imagine::Core
 
     template<typename T>
     bool AssetField<T>::IsValid() const {
-        MGN_PROFILE_FUNCTION();
         return HasHandle() && AssetManager::IsAssetHandleValid(Handle);
     }
 

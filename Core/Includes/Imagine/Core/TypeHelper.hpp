@@ -6,6 +6,23 @@
 
 namespace Imagine::Core {
 
+	template<typename T>
+	inline static constexpr const char* const TypeName() {
+		return typeid(T).name();
+	}
+
+	template<typename T>
+	inline static constexpr const char* const NiceTypeName() {
+		const char* name = TypeName<T>();
+		const uint64_t len = strlen(name);
+		uint64_t beg = len - 1;
+		while ((std::isalnum(name[beg])||name[beg]=='_') && beg != 0) {
+			--beg;
+		}
+		return name + beg + 1;
+	}
+
+
 	template<typename T2, typename T1>
 	inline static T2 &reinterpret_raw(T1 &value) {
 		static_assert(sizeof(T2) == sizeof(T1));

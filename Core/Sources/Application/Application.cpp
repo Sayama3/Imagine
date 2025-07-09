@@ -291,6 +291,27 @@ namespace Imagine::Core {
 		GPUSceneData sceneData{};
 		GPULightData lightData{};
 
+		std::atomic<int> counter{0};
+
+		for (auto& scene : SceneManager::GetLoadedScenes()) {
+			scene->ForEachWithComponent<Light>([this,&lightData,&counter](const Scene* scn, const EntityID id, const Light& comp) {
+				const auto index = counter.fetch_add(1, std::memory_order_relaxed);
+				if (index >= GPULightData::MaxLight) return;
+				Light light = comp;
+				const auto world = scn->GetWorldTransform(id);
+				const auto normal = glm::transpose(glm::inverse(world));
+				light.position += scn->GetWorldTransform(id) * Vec4(scn->GetEntity(id).LocalPosition, 1);
+				const auto w = light.direction.w;
+				const auto len = Math::Magnitude(glm::fvec3(light.direction));
+				light.direction = normal * glm::fvec4(0,-1,0,0);
+				light.direction *= len;
+				light.direction.w = w;
+				lightData.lights[index] = light;
+			});
+		}
+
+		lightData.lightCount = std::min(counter.load(std::memory_order_acquire), GPULightData::MaxLight);
+
 		if (m_Renderer->BeginDraw(sceneData, lightData)) {
 			m_Renderer->Draw();
 

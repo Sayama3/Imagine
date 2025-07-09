@@ -45,6 +45,7 @@ namespace Imagine::Vulkan {
 	// push constants for our mesh object draws
 	struct GPUDrawPushConstants {
 		glm::mat4 worldMatrix;
+		glm::mat4 normalMatrix;
 		VkDeviceAddress vertexBuffer;
 	};
 

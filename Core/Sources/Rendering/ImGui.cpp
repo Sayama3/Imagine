@@ -103,7 +103,7 @@ namespace Imagine::Core {
 	void MgnImGui::BlockEvents() {
 		SetEventsBlocked(true);
 	}
-	void MgnImGui::UnblockEvents(){
+	void MgnImGui::UnblockEvents() {
 		SetEventsBlocked(false);
 	}
 	void MgnImGui::SetEventsBlocked(const bool eventBlocked) {
@@ -112,12 +112,38 @@ namespace Imagine::Core {
 	bool MgnImGui::EventsBlocked() {
 		return s_EventBlocked;
 	}
+	namespace ImGuiLib {
+#ifdef MGN_DOUBLE
+#define ImGuiDataType_Real ImGuiDataType_Double
+#else
+#define ImGuiDataType_Real ImGuiDataType_Float
+#endif
+		bool DragReal(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
+			return ImGui::DragScalarN(label, ImGuiDataType_Real, v, 1, v_speed, &v_min, &v_max, format, flags);
+		}
+		bool DragReal2(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
+			return ImGui::DragScalarN(label, ImGuiDataType_Real, v, 2, v_speed, &v_min, &v_max, format, flags);
+		}
+		bool DragReal3(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
+			return ImGui::DragScalarN(label, ImGuiDataType_Real, v, 3, v_speed, &v_min, &v_max, format, flags);
+		}
+		bool DragReal4(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
+			return ImGui::DragScalarN(label, ImGuiDataType_Real, v, 4, v_speed, &v_min, &v_max, format, flags);
+		}
+#undef ImGuiDataType_Real
+	} // namespace ImGuiLib
 
 #else
 
 	bool MgnImGui::DockingEnabled() {
 		MGN_LOG_ERROR("ImGui Not Implemented.");
 		return false;
+	}
+	namespace ImGuiLib {
+		bool DragReal(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, int flags) { return false; }
+		bool DragReal2(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, int flags) { return false; }
+		bool DragReal3(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, int flags) { return false; }
+		bool DragReal4(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, int flags) { return false; }
 	}
 	void MgnImGui::CreateContext() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 	void MgnImGui::InitializeWindow() { MGN_LOG_ERROR("ImGui Not Implemented."); }
@@ -132,8 +158,11 @@ namespace Imagine::Core {
 	void MgnImGui::ShutdownWindow() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 	void MgnImGui::ShutdownRenderer() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 	void MgnImGui::BlockEvents() { MGN_LOG_ERROR("ImGui Not Implemented."); }
-	void MgnImGui::UnblockEvents(){ MGN_LOG_ERROR("ImGui Not Implemented."); }
-	bool MgnImGui::EventsBlocked() { MGN_LOG_ERROR("ImGui Not Implemented."); return false;}
+	void MgnImGui::UnblockEvents() { MGN_LOG_ERROR("ImGui Not Implemented."); }
+	bool MgnImGui::EventsBlocked() {
+		MGN_LOG_ERROR("ImGui Not Implemented.");
+		return false;
+	}
 	void MgnImGui::SetEventsBlocked() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 #endif
 } // namespace Imagine::Core

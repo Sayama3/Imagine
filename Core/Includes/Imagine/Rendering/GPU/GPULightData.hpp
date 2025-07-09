@@ -8,7 +8,8 @@
 #include "Imagine/Rendering/Light.hpp"
 namespace Imagine::Core {
 struct GPULightData {
-	Imagine::Core::Light lights[32];
+	static inline constexpr int MaxLight{32};
+	Imagine::Core::Light lights[MaxLight];
 	int lightCount{0};
 };
 }

@@ -196,8 +196,15 @@ namespace Imagine::Core {
 
 			instance->PushSet({1, 0, 0}, glm::fvec4(tint.r, tint.g, tint.b, opacity));
 			instance->PushSet({1, 0, 1}, glm::fvec4(emColor.r * emIntens, emColor.g * emIntens, emColor.b * emIntens, 1));
-			instance->PushSet({1, 0, 2}, metallic);
-			instance->PushSet({1, 0, 3}, roughness);
+			if (imageFiles[3] == imageFiles[4]) {
+				// GLTF Specific MetalRough Texture
+				instance->PushSet({1, 0, 2}, glm::fvec3(0, 0, metallic));
+				instance->PushSet({1, 0, 3}, glm::fvec3(0, roughness,0));
+			} else {
+				// Other where R is each of the data.
+				instance->PushSet({1, 0, 2}, glm::fvec3(metallic,0,0));
+				instance->PushSet({1, 0, 3}, glm::fvec3(roughness,0,0));
+			}
 
 			LOAD_ASSET(instance);
 		}
@@ -337,6 +344,53 @@ namespace Imagine::Core {
 					aiNode *child = node->mChildren[i];
 					nodes.push_back({child, entityId});
 				}
+			}
+		}
+
+		for (uint32_t i = 0; i < scene->mNumLights; ++i) {
+			aiLight* pLight = scene->mLights[i];
+			switch (pLight->mType) {
+				case aiLightSource_DIRECTIONAL: {
+					EntityID entityId = coreScene->CreateEntity(parent);
+					coreScene->SetName(entityId, std::string{"Directional Light - "} + pLight->mName.C_Str());
+					Entity& entity = coreScene->GetEntity(entityId);
+					Light* light = coreScene->AddComponent<Light>(entityId);
+					if(!light) continue;
+					light->type = LIGHT_DIRECTIONAL;
+					entity.LocalPosition = Vec3(pLight->mPosition.x,pLight->mPosition.y,pLight->mPosition.z);
+					entity.LocalRotation = glm::rotation(Vec3{0,-1,0},Vec3{pLight->mDirection.x,pLight->mDirection.y,pLight->mDirection.z});
+					light->color = Vec4{pLight->mColorDiffuse.r,pLight->mColorDiffuse.g,pLight->mColorDiffuse.b,1};
+				}
+					break;
+				case aiLightSource_POINT: {
+					EntityID entityId = coreScene->CreateEntity(parent);
+					coreScene->SetName(entityId, std::string{"Point Light - "} + pLight->mName.C_Str());
+					Entity& entity = coreScene->GetEntity(entityId);
+					Light* light = coreScene->AddComponent<Light>(entityId);
+					if(!light) continue;
+					light->type = LIGHT_POINT;
+					entity.LocalPosition = Vec3(pLight->mPosition.x,pLight->mPosition.y,pLight->mPosition.z);
+					entity.LocalRotation = glm::rotation(Vec3{0,-1,0},Vec3{pLight->mDirection.x,pLight->mDirection.y,pLight->mDirection.z});
+					light->direction.x = 50;
+					light->color = Vec4{pLight->mColorDiffuse.r,pLight->mColorDiffuse.g,pLight->mColorDiffuse.b,1};
+				}
+					break;
+				case aiLightSource_SPOT: {
+					EntityID entityId = coreScene->CreateEntity(parent);
+					coreScene->SetName(entityId, std::string{"Spot Light - "} + pLight->mName.C_Str());
+					Entity& entity = coreScene->GetEntity(entityId);
+					Light* light = coreScene->AddComponent<Light>(entityId);
+					if(!light) continue;
+					light->type = LIGHT_SPOT;
+					light->direction.w = pLight->mAngleOuterCone;
+					light->direction.x = 50;
+					entity.LocalPosition = Vec3(pLight->mPosition.x,pLight->mPosition.y,pLight->mPosition.z);
+					entity.LocalRotation = glm::rotation(Vec3{0,-1,0},Vec3{pLight->mDirection.x,pLight->mDirection.y,pLight->mDirection.z});
+					light->color = Vec4{pLight->mColorDiffuse.r,pLight->mColorDiffuse.g,pLight->mColorDiffuse.b,1};
+				}
+					break;
+				default:
+					continue;
 			}
 		}
 

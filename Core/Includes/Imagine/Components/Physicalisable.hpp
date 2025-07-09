@@ -8,6 +8,8 @@
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/UUID.hpp"
 
+#include "Imagine/Rendering/MgnImGui.hpp"
+
 namespace Imagine::Core {
 
 	struct Physicalisable {
@@ -16,5 +18,21 @@ namespace Imagine::Core {
 		Vec3 AngularVelocity;
 		UUID IdToPhysics;
 	};
+
+	namespace ImGuiLib {
+		template<>
+		inline bool RenderData<Physicalisable>(const char* label, Physicalisable* data) {
+			bool changed = false;
+#ifdef MGN_IMGUI
+			ImGui::PushID(label);
+			ImGui::SeparatorText(label);
+			changed |= ImGuiLib::DragReal3("Velocity", Math::ValuePtr(data->Velocity));
+			changed |= ImGuiLib::DragReal3("Angular Velocity", Math::ValuePtr(data->AngularVelocity));
+			changed |= ImGuiLib::DragReal("Mass", &data->Mass);
+			ImGui::PopID();
+#endif
+			return changed;
+		}
+	}
 
 } // namespace Imagine::Core

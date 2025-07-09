@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "Imagine/Core/Math.hpp"
+#include "Imagine/Core/TypeHelper.hpp"
+#include "Imagine/Math/Core.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -58,4 +59,19 @@ namespace Imagine::Core {
 		virtual uint64_t GetImGuiID() = 0;
 		virtual glm::fvec2 GetSize() = 0;
 	};
+
+	namespace ImGuiLib {
+		 bool DragReal(const char* label, Real* v, float v_speed = 1.0f, Real v_min = 0, Real v_max = 0, const char *format = "%.3f", int flags = 0);
+		 bool DragReal2(const char* label, Real* v, float v_speed = 1.0f, Real v_min = 0, Real v_max = 0, const char *format = "%.3f", int flags = 0);
+		 bool DragReal3(const char* label, Real* v, float v_speed = 1.0f, Real v_min = 0, Real v_max = 0, const char *format = "%.3f", int flags = 0);
+		 bool DragReal4(const char* label, Real* v, float v_speed = 1.0f, Real v_min = 0, Real v_max = 0, const char *format = "%.3f", int flags = 0);
+
+		template<typename T>
+		inline bool RenderData(const char* label, T* data) {
+#ifdef MGN_IMGUI
+			ImGui::Text("Component '%s' cannot be rendered yet.", NiceTypeName<T>());
+#endif
+			return false;
+		}
+	}
 } // namespace Imagine::Core

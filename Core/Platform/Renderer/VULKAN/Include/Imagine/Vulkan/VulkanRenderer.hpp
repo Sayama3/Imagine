@@ -60,6 +60,9 @@ namespace Imagine::Vulkan {
 
 		void ResizeSwapChain();
 
+		VkCommandBuffer BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
 	private:
 		AllocatedBuffer CreateBuffer(uint64_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void DestroyBuffer(AllocatedBuffer &buffer);
@@ -68,6 +71,7 @@ namespace Imagine::Vulkan {
 	public:
 		AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
 		AllocatedImage CreateImage(const void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+		void GenerateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 		void DestroyImage(const AllocatedImage &img);
 
 	public:
