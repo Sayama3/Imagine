@@ -47,3 +47,6 @@
 [submodule "Libraries/yaml-cpp"]
 	path = Libraries/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "Libraries/JoltPhysics"]
+	path = Libraries/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics.git
