@@ -200,6 +200,19 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/Light.hpp
 		Includes/Imagine/Rendering/GPU/GPUSceneData.hpp
 		Includes/Imagine/Rendering/GPU/GPULightData.hpp
+		Sources/ThirdParty/JoltPhysics.cpp
+		Includes/Imagine/ThirdParty/JoltPhysics.hpp
+		Sources/Layers/PhysicsLayer.cpp
+		Includes/Imagine/Layers/PhysicsLayer.hpp
+		Includes/Imagine/Physics/BroadPhaseLayerInterface.hpp
+		Includes/Imagine/Physics/ObjectLayerPairFilter.hpp
+		Includes/Imagine/Physics/ObjectVsBroadPhaseLayerFilter.hpp
+		Includes/Imagine/Physics/PhysicsListener.hpp
+		Includes/Imagine/Physics/PhysicsTypeHelpers.hpp
+		Sources/Physics/BroadPhaseLayerInterface.cpp
+		Sources/Physics/ObjectLayerPairFilter.cpp
+		Sources/Physics/ObjectVsBroadPhaseLayerFilter.cpp
+		Sources/Physics/PhysicsListener.cpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

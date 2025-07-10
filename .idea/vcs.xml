@@ -4,6 +4,7 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/EASTL" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/JoltPhysics" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/SDL" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/VulkanMemoryAllocator" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/assimp" vcs="Git" />
