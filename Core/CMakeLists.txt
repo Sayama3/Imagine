@@ -272,7 +272,7 @@ target_include_directories(Core PRIVATE Sources)
 
 target_compile_features(Core PUBLIC cxx_std_20)
 
-target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp sol2::sol2 yaml-cpp::yaml-cpp)
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp sol2::sol2 yaml-cpp::yaml-cpp Jolt)
 # target_link_libraries(Core PUBLIC Bitsery::bitsery)
 target_link_libraries(Core PRIVATE xxhash)
 

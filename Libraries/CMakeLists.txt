@@ -49,6 +49,16 @@ set(SOL2_DOCS OFF) # Enable build of documentation
 set(SOL2_ENABLE_INSTALL OFF) # Enable installation of Sol2
 add_subdirectory(sol2)
 
+set(CROSS_PLATFORM_DETERMINISTIC ON)
+set(ENABLE_ALL_WARNINGS OFF)
+set(INTERPROCEDURAL_OPTIMIZATION OFF)
+
+add_subdirectory(JoltPhysics/Build)
+
+set_target_properties(Jolt PROPERTIES
+		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+)
+
 set(MESHOPT_BUILD_DEMO OFF) # Build demo
 set(MESHOPT_BUILD_GLTFPACK OFF) # Build gltfpack
 set(MESHOPT_BUILD_SHARED_LIBS OFF) # Build shared libraries
