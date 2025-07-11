@@ -13,7 +13,11 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#include "Imagine/Core/SmartPointers.hpp"
+
 namespace Imagine::Core {
+
+	class Scene;
 
 	class PhysicsLayer final : public Layer {
 	public:
@@ -24,6 +28,14 @@ namespace Imagine::Core {
 		virtual void OnEvent(Event &event) override;
 	private:
 		bool OnUpdate(AppUpdateEvent &event);
+		bool OnImGui(ImGuiEvent &event);
+
+	private:
+		void Update(Scene* scene, TimeStep dt);
+
+	public:
+	std::vector<Weak<Scene>> scenes;
+
 	public:
 		/// This is the max amount of rigid bodies that you can add to the physics system. If you try to add more you'll get an error.
 		static constexpr uint32_t cMaxBodies = 65536;

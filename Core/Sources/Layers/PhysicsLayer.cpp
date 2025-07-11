@@ -3,6 +3,7 @@
 //
 
 #include "Imagine/Layers/PhysicsLayer.hpp"
+#include "Imagine/Scene/Scene.hpp"
 // Jolt includes
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
@@ -19,6 +20,7 @@ namespace Imagine::Core {
 
 	PhysicsLayer::~PhysicsLayer() {
 	}
+
 	void PhysicsLayer::OnAttach() {
 
 		// Create a factory, this class is responsible for creating instances of classes based on their name or hash and is mainly used for deserialization of saved data.
@@ -42,12 +44,25 @@ namespace Imagine::Core {
 	void PhysicsLayer::OnEvent(Event &event) {
 		EventDispatcher dispatch(event);
 		dispatch.Dispatch<AppUpdateEvent>(MGN_BIND_EVENT_FN(OnUpdate));
+		dispatch.Dispatch<ImGuiEvent>(MGN_BIND_EVENT_FN(OnImGui));
 	}
 
 	bool PhysicsLayer::OnUpdate(AppUpdateEvent &event) {
-
-
-
+		for (Weak<Scene> scene: scenes) {
+			if (auto lock = scene.lock()) {
+				Update(lock.get(), event.GetTimeStep());
+			}
+		}
 		return false;
+	}
+
+	bool PhysicsLayer::OnImGui(ImGuiEvent &event) {
+#ifdef MGN_IMGUI
+#endif
+		return false;
+	}
+
+	void PhysicsLayer::Update(Scene* scene, TimeStep dt) {
+
 	}
 } // namespace Imagine::Core

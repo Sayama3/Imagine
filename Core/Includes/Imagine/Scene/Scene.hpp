@@ -16,7 +16,6 @@
 
 namespace Imagine::Core {
 
-
 	class Scene final : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Scene);
@@ -41,6 +40,7 @@ namespace Imagine::Core {
 
 		/// The copy constructor WILL keep the same ID. Be mindful.
 		Scene(const Scene &o) = default;
+
 		/// The copy assignment WILL keep the same ID. Be mindful.
 		Scene &operator=(const Scene &s) = default;
 
