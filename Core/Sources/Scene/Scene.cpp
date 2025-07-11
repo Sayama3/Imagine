@@ -5,6 +5,7 @@
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Components/Physicalisable.hpp"
 #include "Imagine/Components/Renderable.hpp"
+#include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Rendering/Light.hpp"
 
 #ifdef MGN_IMGUI
@@ -321,7 +322,7 @@ namespace Imagine {
 		if (pParent) {
 			Parent &parent = *pParent;
 			if (parent.parent.IsValid()) {
-				Child& firstChild = m_Children.Get(parent.parent.id);
+				Child &firstChild = m_Children.Get(parent.parent.id);
 				if (firstChild.firstChild == child) {
 					// Removing the parent from having child or attaching the next sibling if there is any.
 					Sibling *sibling = m_Siblings.TryGet(child.id);
@@ -338,7 +339,7 @@ namespace Imagine {
 					// Reordering the siblings to preserve the hierarchy as a linked-list would do.
 					Sibling *pSibling = m_Siblings.TryGet(child.id);
 					if (pSibling) {
-						Sibling& sibling = *pSibling;
+						Sibling &sibling = *pSibling;
 						Sibling *previous = sibling.previous.IsValid() ? m_Siblings.TryGet(sibling.previous.id) : nullptr;
 						Sibling *next = sibling.next.IsValid() ? m_Siblings.TryGet(sibling.next.id) : nullptr;
 
@@ -391,7 +392,6 @@ namespace Imagine {
 	TransformR Scene::GetTransform(const EntityID id) const {
 		const TransformR *trs = m_WorldTransform.TryGet(id.id);
 		return trs ? *trs : TransformR();
-
 	}
 	void Scene::SendImGuiCommands() {
 #ifdef MGN_IMGUI
@@ -427,6 +427,7 @@ namespace Imagine {
 			}
 			ImGui::End();
 		}
+
 		{
 			const std::string PropertiesName = "Properties##" + Handle.string();
 			ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
@@ -439,43 +440,57 @@ namespace Imagine {
 					ImGui::SeparatorText("Transform");
 					{
 						Entity &e = GetEntity(m_SelectedEntity);
-						ImGui::DragFloat3("Position", Math::ValuePtr(e.LocalPosition), 0.1, 0, 0, "%.3f");
 						static auto degRot = glm::eulerAngles(e.LocalRotation) * Math::RadToDeg;
-						if (ImGui::DragFloat3("Rotation", Math::ValuePtr(degRot), 1, 0, 0, "%.2f")) {
-							e.LocalRotation = Math::Normalize(Quat(degRot * Math::DegToRad));
-						}
-						if (ImGui::IsItemDeactivatedAfterEdit()) {
+						if (HasComponent<Physicalisable>(m_SelectedEntity) && PhysicsLayer::IsSimulating()) {
+							ImGui::BeginDisabled(true);
+							ImGui::DragFloat3("Position", Math::ValuePtr(e.LocalPosition), 0.1, 0, 0, "%.3f");
 							degRot = glm::eulerAngles(e.LocalRotation) * Math::RadToDeg;
+							ImGui::DragFloat3("Rotation", Math::ValuePtr(degRot), 1, 0, 0, "%.2f");
+							ImGui::DragFloat3("Scale", Math::ValuePtr(e.LocalScale), 0.1, 0, 0, "%.3f");
+							ImGui::EndDisabled();
 						}
-						ImGui::DragFloat3("Scale", Math::ValuePtr(e.LocalScale), 0.1, 0, 0, "%.3f");
+						else {
+							ImGui::DragFloat3("Position", Math::ValuePtr(e.LocalPosition), 0.1, 0, 0, "%.3f");
+							if (ImGui::DragFloat3("Rotation", Math::ValuePtr(degRot), 1, 0, 0, "%.2f")) {
+								e.LocalRotation = Math::Normalize(Quat(degRot * Math::DegToRad));
+							}
+							if (ImGui::IsItemDeactivatedAfterEdit()) {
+								degRot = glm::eulerAngles(e.LocalRotation) * Math::RadToDeg;
+							}
+							ImGui::DragFloat3("Scale", Math::ValuePtr(e.LocalScale), 0.1, 0, 0, "%.3f");
+						}
 					}
 					ImGui::Separator();
 					if (ImGui::Button("Add Component"))
 						ImGui::OpenPopup("add_component_popup");
 
-					for (auto& [id, cc] : m_CustomComponents) {
+					for (auto &[id, cc]: m_CustomComponents) {
 						if (!cc.Exist(m_SelectedEntity.id)) continue;
-						const auto& metadata = m_CustomComponentsMetadata.at(id);
+						ImGui::PushID(*id.cbegin());
+						const auto &metadata = m_CustomComponentsMetadata.at(id);
 						if (m_CustomComponentsImGui.contains(id)) {
 							m_CustomComponentsImGui.at(id)(cc.GetView(m_SelectedEntity.id));
-						} else {
+						}
+						else {
 							ImGui::SeparatorText(metadata.name.c_str());
 						}
 						if (ImGui::Button("Remove")) {
 							cc.Remove(m_SelectedEntity.id);
 						}
+						ImGui::PopID();
 					}
 
-					if (ImGui::BeginPopup("add_component_popup"))
-					{
+					if (ImGui::BeginPopup("add_component_popup")) {
 						ImGui::SeparatorText("Add Components");
 
-						for (const auto& [id, cc] : m_CustomComponents) {
+						for (const auto &[id, cc]: m_CustomComponents) {
 							if (cc.Exist(m_SelectedEntity.id)) continue;
-							const auto& metadata = m_CustomComponentsMetadata.at(id);
+							ImGui::PushID(*id.cbegin());
+							const auto &metadata = m_CustomComponentsMetadata.at(id);
 							if (ImGui::Selectable(metadata.name.c_str())) {
 								AddComponent(m_SelectedEntity.id, id);
 							}
+							ImGui::PopID();
 						}
 						ImGui::EndPopup();
 					}

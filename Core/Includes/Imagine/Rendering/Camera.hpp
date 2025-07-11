@@ -14,16 +14,16 @@ namespace Imagine {
 		static Camera* s_MainCamera;
 	public:
 		glm::vec3 velocity{0};
-		glm::vec3 position{0,2,-2};
+		glm::vec3 position{-7, 6, 0};
 		// vertical rotation
-		float pitch { 45.f };
+		float pitch { 30.f };
 		// horizontal rotation
-		float yaw { 0.f };
+		float yaw { 90.f };
 
 		float pitchVelocity { 0.f };
 		float yawVelocity { 0.f };
 
-		float velocityMultiplier = 2.f;
+		float velocityMultiplier = 4.f;
 
 		glm::mat4 GetViewMatrix() const;
 		glm::mat4 GetRotationMatrix() const;

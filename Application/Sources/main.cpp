@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 			std::string{"Imagine"},
 			MGN_MAKE_VERSION(0, 0, 1),
 			WindowParameters{
-					1200,
+					1600,
 					900,
 					true,
 			},

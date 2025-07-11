@@ -60,11 +60,6 @@ namespace Imagine {
 		// The main way to interact with the bodies in the physics system is through the body interface. There is a locking and a non-locking
 		// variant of this. We're going to use the locking version (even though we're not planning to access bodies from multiple threads)
 		m_BodyInterface = &m_PhysicsSystem->GetBodyInterface();
-
-		for (auto& scene : SceneManager::GetLoadedScenes()) {
-			scenes.emplace_back(scene);
-		}
-
 	}
 	void PhysicsLayer::OnDetach() {
 		m_BodyInterface = nullptr;
@@ -76,8 +71,6 @@ namespace Imagine {
 		// Destroy the factory
 		delete JPH::Factory::sInstance;
 		JPH::Factory::sInstance = nullptr;
-
-		scenes.clear();
 	}
 
 	void PhysicsLayer::OnEvent(Event &event) {
@@ -86,13 +79,19 @@ namespace Imagine {
 		dispatch.Dispatch<ImGuiEvent>(MGN_DISPATCH_FALSE(OnImGui));
 	}
 
-	void PhysicsLayer::OnUpdate(AppUpdateEvent &event) {
-		if (!m_Simulate) return;
+	bool PhysicsLayer::IsSimulating() {
+		return s_Simulate;
+	}
 
-		for (Weak<Scene> scene: scenes) {
-			if (auto lock = scene.lock()) {
-				Update(lock.get(), event.GetTimeStep());
-			}
+	void PhysicsLayer::OnUpdate(AppUpdateEvent &event) {
+
+		if (s_Simulate) {
+			const int cCollisionSteps = 4;
+			m_PhysicsSystem->Update(event.GetTimeStep().GetSeconds(), cCollisionSteps, &m_TempAllocator, &m_JobSystem);
+		}
+
+		for (auto scene : SceneManager::GetLoadedScenes()) {
+			Update(scene.get(), event.GetTimeStep());
 		}
 	}
 
@@ -101,27 +100,38 @@ namespace Imagine {
 		ImGui::SetNextWindowSize({200,200}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Physics");
 		{
-			ImGui::Checkbox("Simulate", &m_Simulate);
+			if (ImGui::Checkbox("Simulate", &s_Simulate) && s_Simulate) {
+				m_PhysicsSystem->OptimizeBroadPhase();
+			}
 		}
 		ImGui::End();
 #endif
 	}
 
 	void PhysicsLayer::Update(Scene* scene, TimeStep ts) {
-		if (!m_Simulate) {
-			scene->ForEachWithComponent<Physicalisable>([this](Scene* scene, EntityID id, Physicalisable& comp) {
+		if (!s_Simulate) {
 
+			scene->ForEachWithComponent<Physicalisable>([this](Scene* scene, EntityID id, Physicalisable& comp) {
 				const TransformR trs = scene->GetTransform(id);
-				const Vec3 pos = trs.GetWorldPosition();
-				const Quat rot = trs.GetWorldRotation();
+				const Vec3 pos = trs.LocalPosition;
+				const Quat rot = trs.LocalRotation;
 				const Vec3 lin = comp.GetLinearVelocity();
 				const Vec3 ang = comp.GetRadAngularVelocity();
 				const JPH::Shape* shp = comp.GetShape();
 				const JPH::EActivation activation = comp.GetActivation();
 
+				// if (!scene->BeginRelationship(id).IsRoot()) {
+				// 	scene->MoveToRoot(id);
+				// 	Entity& e = scene->GetEntity(id);
+				// 	e.LocalPosition = trs.GetWorldPosition();
+				// 	e.LocalRotation = trs.GetWorldRotation();
+				// 	e.LocalScale = trs.GetWorldScale();
+				// }
+
 				if (comp.BodyID.IsInvalid()) {
 					if(!shp) return;
 					JPH::BodyCreationSettings creationSettings = {shp, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetMotionType(), comp.GetLayer()};
+					creationSettings.mAllowDynamicOrKinematic = true;
 					comp.BodyID = m_BodyInterface->CreateAndAddBody(creationSettings, activation);
 				} else {
 					m_BodyInterface->SetShape(comp.BodyID, shp, true, activation);
@@ -135,17 +145,16 @@ namespace Imagine {
 				m_BodyInterface->SetGravityFactor(comp.BodyID, comp.GetGravityFactor());
 			});
 		} else {
-			const int cCollisionSteps = 4;
-			m_PhysicsSystem->Update(ts.GetSeconds(), cCollisionSteps, &m_TempAllocator, &m_JobSystem);
 			scene->ForEachWithComponent<Physicalisable>([this](Scene* scene, EntityID id, Physicalisable& comp) {
 				if(comp.BodyID.IsInvalid()) return;
 				const TransformR trs = scene->GetTransform(id);
 				const auto wpos = Convert(m_BodyInterface->GetPosition(comp.BodyID));
 				const auto wrot = Convert(m_BodyInterface->GetRotation(comp.BodyID));
 				Entity& entity = scene->GetEntity(id);
-				entity.LocalPosition = trs.InvTransformPosition(wpos);
-				entity.LocalRotation = trs.PositionWorldToLocal * glm::toMat4(wrot);
+				entity.LocalPosition = wpos;
+				entity.LocalRotation = wrot;
 			});
+			scene->CacheTransforms();
 		}
 	}
 } // namespace Imagine

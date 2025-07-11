@@ -161,6 +161,7 @@ namespace Imagine {
 			else ImGui::Separator();
 
 			changed |= ImGuiLib::RenderData("Shape", &data->Shape);
+			changed |= ImGui::Combo("Rigidbody Type", (int*)&data->RBType, "Static\0Dynamic\0Kinematic");
 			changed |= ImGuiLib::DragReal3("Velocity", Math::ValuePtr(data->LinearVelocity), 0.1, 0, 0, "%.2f");
 			changed |= ImGuiLib::DragReal3("Angular Velocity", Math::ValuePtr(data->AngularVelocity), 1, 0,0 , "%.2f");
 			changed |= ImGuiLib::SliderReal("Friction", &data->Friction, 0, 1);

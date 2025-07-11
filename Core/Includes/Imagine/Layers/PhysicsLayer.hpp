@@ -29,15 +29,15 @@ namespace Imagine {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event &event) override;
+	public:
+		static bool IsSimulating();
+
 	private:
 		void OnUpdate(AppUpdateEvent &event);
 		void OnImGui(ImGuiEvent &event);
 
 	private:
 		void Update(Scene* scene, TimeStep ts);
-
-	public:
-	std::vector<Weak<Scene>> scenes;
 
 	public:
 		/// This is the max amount of rigid bodies that you can add to the physics system. If you try to add more you'll get an error.
@@ -91,7 +91,7 @@ namespace Imagine {
 
 		JPH::BodyInterface* m_BodyInterface = nullptr;
 	private:
-		bool m_Simulate{false};
+		static inline bool s_Simulate{false};
 	};
 
 } // namespace Imagine

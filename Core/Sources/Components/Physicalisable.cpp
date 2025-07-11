@@ -40,9 +40,9 @@ namespace Imagine {
 	JPH::ObjectLayer Physicalisable::GetLayer() const {
 		switch (RBType) {
 			case RB_Static:
-				return PhysicalLayers::MOVING;
-			case RB_Dynamic:
 				return PhysicalLayers::NON_MOVING;
+			case RB_Dynamic:
+				return PhysicalLayers::MOVING;
 			case RB_Kinematic:
 				return PhysicalLayers::MOVING;
 		}
@@ -52,9 +52,9 @@ namespace Imagine {
 	JPH::EMotionType Physicalisable::GetMotionType() const {
 		switch (RBType) {
 			case RB_Static:
-				return JPH::EMotionType::Dynamic;
-			case RB_Dynamic:
 				return JPH::EMotionType::Static;
+			case RB_Dynamic:
+				return JPH::EMotionType::Dynamic;
 			case RB_Kinematic:
 				return JPH::EMotionType::Kinematic;
 		}
