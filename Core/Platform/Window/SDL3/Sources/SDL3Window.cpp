@@ -26,7 +26,7 @@
 #ifdef MGN_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 #endif
 
 using namespace Imagine;

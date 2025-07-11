@@ -10,7 +10,7 @@
 
 #include "Imagine/ThirdParty/JoltPhysics.hpp"
 
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
 namespace Imagine {
 
@@ -60,7 +60,7 @@ namespace Imagine {
 	struct RigidbodyDirty
 	{
 	};
-	namespace ImGuiLib {
+	namespace ThirdParty::ImGuiLib {
 		template<>
 		inline bool RenderData<Physicalisable>(const char* label, Physicalisable* data) {
 			bool changed = false;

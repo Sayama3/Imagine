@@ -7,7 +7,7 @@
 #include <vk_mem_alloc.h>
 #include "Imagine/Rendering/GPU/GPUTexture2D.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 
 namespace Imagine::Vulkan {
@@ -44,7 +44,7 @@ namespace Imagine::Vulkan {
 		VkSampler sampler{nullptr};
 	};
 
-	struct VulkanImGuiImage : public ImGuiImage {
+	struct VulkanImGuiImage : public ThirdParty::ImGuiLib::ImGuiImage {
 		virtual ~VulkanImGuiImage() = default;
 
 		static VulkanImGuiImage Add(VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout, uint32_t width, uint32_t height);

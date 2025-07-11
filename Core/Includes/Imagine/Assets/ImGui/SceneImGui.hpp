@@ -8,7 +8,7 @@
 #include "Imagine/Assets/AssetMetadata.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Scene/Scene.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
 namespace Imagine
 {

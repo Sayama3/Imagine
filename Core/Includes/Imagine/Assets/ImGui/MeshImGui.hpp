@@ -10,7 +10,7 @@
 #include "Imagine/Rendering/CPU/CPUMesh.hpp"
 // #include "Imagine/Rendering/CPU/CPUModel.hpp"
 
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
 namespace Imagine
 {

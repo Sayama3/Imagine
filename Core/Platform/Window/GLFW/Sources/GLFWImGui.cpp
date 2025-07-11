@@ -7,10 +7,10 @@
 #include "GLFWWindow.hpp"
 #include "Imagine/Application/Window.hpp"
 #include "Imagine/Core/Macros.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
-namespace Imagine {
-	void MgnImGui::InitializeWindow() {
+namespace Imagine::ThirdParty::ImGuiLib {
+	void InitializeWindow() {
 		MGN_CORE_CASSERT(Imagine::Window::Get(), "Window is not created.");
 #ifdef MGN_RENDERER_VULKAN
 		ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow *>(Imagine::Window::Get()->GetWindowPtr()), true);
@@ -19,11 +19,11 @@ namespace Imagine {
 #endif
 	}
 
-	void MgnImGui::NewWindowFrame() {
+	void NewWindowFrame() {
 		ImGui_ImplGlfw_NewFrame();
 	}
 
-	void MgnImGui::ShutdownWindow() {
+	void ShutdownWindow() {
 		ImGui_ImplGlfw_Shutdown();
 	}
 } // namespace Imagine

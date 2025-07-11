@@ -213,6 +213,9 @@ set(CORE_SRC_FILES
 		Sources/Physics/ObjectLayerPairFilter.cpp
 		Sources/Physics/ObjectVsBroadPhaseLayerFilter.cpp
 		Sources/Physics/PhysicsListener.cpp
+		Sources/ThirdParty/ImGui.cpp
+		Includes/Imagine/ThirdParty/ImGui.hpp
+		Includes/Imagine/Math/Math.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
@@ -238,6 +241,7 @@ target_precompile_headers(Core PUBLIC
 		<coroutine>
 		<bitset>
 		<execution>
+		<numbers>
 
 		# Stream related
 		<fstream>

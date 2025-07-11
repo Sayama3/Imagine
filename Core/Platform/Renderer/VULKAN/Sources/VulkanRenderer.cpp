@@ -166,7 +166,7 @@ namespace Imagine::Vulkan {
 
 	Rect<> VulkanRenderer::GetViewport() const {
 #ifdef MGN_IMGUI
-		if (MgnImGui::DockingEnabled() && m_ImGuiViewport.has_value()) {
+		if (ThirdParty::ImGuiLib::DockingEnabled() && m_ImGuiViewport.has_value()) {
 			return m_ImGuiViewport.value();
 		}
 		else {
@@ -1190,7 +1190,7 @@ namespace Imagine::Vulkan {
 		m_SceneData = sceneData;
 
 		// TODO: Preserve aspect ratio
-		if (MgnImGui::DockingEnabled() && m_ImGuiViewport.has_value()) {
+		if (ThirdParty::ImGuiLib::DockingEnabled() && m_ImGuiViewport.has_value()) {
 			auto size = m_ImGuiViewport.value().GetSize();
 			m_DrawExtent.width = std::max(std::ceil(size.x * m_RenderScale), 1.f);
 			m_DrawExtent.height = std::max(std::ceil(size.y * m_RenderScale), 1.f);
@@ -1393,7 +1393,7 @@ namespace Imagine::Vulkan {
 			const bool viewportFocused = ImGui::IsWindowFocused();
 			// const bool viewportHovered = ImGui::IsWindowHovered();
 			if (m_ViewportFocused != viewportFocused) {
-				MgnImGui::SetEventsBlocked(!viewportFocused);
+				ThirdParty::ImGuiLib::SetEventsBlocked(!viewportFocused);
 				m_ViewportFocused = viewportFocused;
 				// TODO: Launch event for viewport focus changed.
 			}

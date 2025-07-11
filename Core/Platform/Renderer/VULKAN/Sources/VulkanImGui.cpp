@@ -3,26 +3,26 @@
 //
 
 #include <imgui_impl_vulkan.h>
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Vulkan/Vulkan.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
 using namespace Imagine::Vulkan;
 
-namespace Imagine {
-	void MgnImGui::InitializeRenderer() {
+namespace Imagine::ThirdParty::ImGuiLib {
+	void InitializeRenderer() {
 
 		VulkanRenderer *renderer = dynamic_cast<VulkanRenderer *>(Renderer::Get());
 		MGN_CORE_CASSERT(renderer, "Vulkan Renderer not initialized.");
 		renderer->InitializeImGui();
 	}
 
-	void MgnImGui::NewRenderFrame() {
+	void NewRenderFrame() {
 		ImGui_ImplVulkan_NewFrame();
 	}
 
-	void MgnImGui::PostRender(){
+	void PostRender(){
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -32,7 +32,7 @@ namespace Imagine {
 		}
 	}
 
-	void MgnImGui::ShutdownRenderer() {
+	void ShutdownRenderer() {
 		ImGui_ImplVulkan_Shutdown();
 	}
 } // namespace Imagine

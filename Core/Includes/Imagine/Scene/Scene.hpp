@@ -227,7 +227,7 @@ namespace Imagine {
 
 		template<typename T>
 		void RegisterImGui() {
-			RegisterImGui(UUID::FromType<T>(), [](BufferView view) {return ImGuiLib::RenderData<T>(NiceTypeName<T>(), view.Get<T>());});
+			RegisterImGui(UUID::FromType<T>(), [](BufferView view) {return ThirdParty::ImGuiLib::RenderData<T>(NiceTypeName<T>(), view.Get<T>());});
 		}
 
 		BufferView AddComponent(EntityID entityId, UUID componentId);

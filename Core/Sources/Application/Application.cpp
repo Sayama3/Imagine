@@ -20,8 +20,7 @@
 #include "Imagine/Rendering/CPU/CPUModel.hpp"
 
 #ifdef MGN_IMGUI
-#include <imgui.h>
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 #endif
 namespace Imagine {
 
@@ -88,11 +87,11 @@ namespace Imagine {
 			m_Renderer = Renderer::Initialize(parameters);
 		}
 #ifdef MGN_IMGUI
-		MgnImGui::CreateContext();
-		MgnImGui::InitializeWindow();
-		MgnImGui::InitializeRenderer();
+		ThirdParty::ImGuiLib::CreateContext();
+		ThirdParty::ImGuiLib::InitializeWindow();
+		ThirdParty::ImGuiLib::InitializeRenderer();
 
-		MgnImGui::EnableDocking();
+		ThirdParty::ImGuiLib::EnableDocking();
 #endif
 	}
 
@@ -113,9 +112,9 @@ namespace Imagine {
 		CPUMaterial::DestroyDefaultMaterials();
 
 #ifdef MGN_IMGUI
-		MgnImGui::ShutdownRenderer();
-		MgnImGui::ShutdownWindow();
-		MgnImGui::Shutdown();
+		ThirdParty::ImGuiLib::ShutdownRenderer();
+		ThirdParty::ImGuiLib::ShutdownWindow();
+		ThirdParty::ImGuiLib::Shutdown();
 #endif
 
 		if (m_Renderer) {
@@ -248,9 +247,9 @@ namespace Imagine {
 	void Application::DrawImGui() {
 		MGN_PROFILE_FUNCTION();
 #ifdef MGN_IMGUI
-		MgnImGui::NewRenderFrame();
-		MgnImGui::NewWindowFrame();
-		MgnImGui::NewFrame();
+		ThirdParty::ImGuiLib::NewRenderFrame();
+		ThirdParty::ImGuiLib::NewWindowFrame();
+		ThirdParty::ImGuiLib::NewFrame();
 
 		{
 
@@ -282,7 +281,7 @@ namespace Imagine {
 		// TODO: Other imgui rendering functions
 		{
 			MGN_PROFILE_SCOPE("ImGui Render");
-			MgnImGui::Render();
+			ThirdParty::ImGuiLib::Render();
 		}
 #endif
 	}
@@ -355,7 +354,7 @@ namespace Imagine {
 			m_Renderer->EndDraw();
 
 #ifdef MGN_IMGUI
-			MgnImGui::PostRender();
+			ThirdParty::ImGuiLib::PostRender();
 #endif
 
 			m_Renderer->Present();

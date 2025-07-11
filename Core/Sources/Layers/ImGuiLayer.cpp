@@ -5,12 +5,13 @@
 #include "Imagine/Layers/ImGuiLayer.hpp"
 #include "Imagine/Application/Application.hpp"
 #include "Imagine/Events/ApplicationEvent.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
 #include <imgui_stdlib.h>
 #endif
+
 
 namespace Imagine {
 	ImGuiLayer::~ImGuiLayer() {
@@ -24,7 +25,7 @@ namespace Imagine {
 		dispatch.Dispatch<ImGuiEvent>(MGN_BIND_EVENT_FN(ImGuiLayer::OnImGui));
 		dispatch.Dispatch<WindowResizeEvent>(MGN_BIND_EVENT_FN(ImGuiLayer::OnResize));
 
-		if (MgnImGui::EventsBlocked()) {
+		if (ThirdParty::ImGuiLib::EventsBlocked()) {
 			const ImGuiIO &io = ImGui::GetIO();
 			e.m_Handled |= e.IsInCategory(EventCategory::EventCategoryMouse) & io.WantCaptureMouse;
 			e.m_Handled |= e.IsInCategory(EventCategory::EventCategoryKeyboard) & io.WantCaptureKeyboard;
@@ -35,7 +36,7 @@ namespace Imagine {
 	}
 
 	bool ImGuiLayer::OnImGui(ImGuiEvent &e) {
-		if (MgnImGui::DockingEnabled()) {
+		if (ThirdParty::ImGuiLib::DockingEnabled()) {
 			RenderImGuiDockspace();
 		}
 #ifdef MGN_DEBUG

@@ -9,7 +9,7 @@
 #include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Rendering/CPU/CPUTexture2D.hpp"
 #include "Imagine/Rendering/CPU/CPUTexture3D.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
 namespace Imagine
 {

@@ -4,6 +4,9 @@
 
 #include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Scene/Scene.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
+
+
 // Jolt includes
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
@@ -15,6 +18,8 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
+
+
 
 namespace Imagine {
 

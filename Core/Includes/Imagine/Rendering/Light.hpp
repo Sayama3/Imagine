@@ -4,7 +4,7 @@
 
 #pragma once
 #include "Imagine/Math/Core.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 namespace Imagine {
 
 	enum LightType : int32_t {
@@ -21,7 +21,7 @@ namespace Imagine {
 		LightType type{LIGHT_POINT};
 	};
 
-	namespace ImGuiLib {
+	namespace ThirdParty::ImGuiLib {
 		template<>
 		inline bool RenderData<Light>(const char* label, Light* data) {
 			bool changed = false;

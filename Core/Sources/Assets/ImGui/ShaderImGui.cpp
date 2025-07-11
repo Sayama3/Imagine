@@ -4,7 +4,7 @@
 
 #include "Imagine/Assets/ImGui/ShaderImGui.hpp"
 #include "Imagine/Assets/Importers/ShaderSerializer.hpp"
-#include "Imagine/Rendering/MgnImGui.hpp"
+#include "Imagine/ThirdParty/ImGui.hpp"
 
 namespace Imagine {
 
