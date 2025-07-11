@@ -29,7 +29,10 @@ namespace Imagine {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event &event) override;
+
+
 	public:
+		static void PushDeletion(JPH::BodyID body_id);
 		static bool IsSimulating();
 
 	private:
@@ -92,6 +95,8 @@ namespace Imagine {
 		JPH::BodyInterface* m_BodyInterface = nullptr;
 	private:
 		static inline bool s_Simulate{false};
+		static inline std::vector<JPH::BodyID> s_BodyToDelete{};
+		static inline std::mutex s_DeletionMutex{};
 	};
 
 } // namespace Imagine

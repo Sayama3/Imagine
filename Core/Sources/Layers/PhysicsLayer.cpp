@@ -79,11 +79,22 @@ namespace Imagine {
 		dispatch.Dispatch<ImGuiEvent>(MGN_DISPATCH_FALSE(OnImGui));
 	}
 
+	void PhysicsLayer::PushDeletion(JPH::BodyID body_id) {
+		auto lock = std::scoped_lock(s_DeletionMutex);
+		s_BodyToDelete.push_back(body_id);
+	}
+
 	bool PhysicsLayer::IsSimulating() {
 		return s_Simulate;
 	}
 
 	void PhysicsLayer::OnUpdate(AppUpdateEvent &event) {
+
+		{
+			auto lock = std::scoped_lock(s_DeletionMutex);
+			m_BodyInterface->RemoveBodies(s_BodyToDelete.data(), static_cast<int>(s_BodyToDelete.size()));
+			s_BodyToDelete.clear();
+		}
 
 		if (s_Simulate) {
 			const int cCollisionSteps = 4;

@@ -3,6 +3,8 @@
 //
 
 #include "Imagine/Components/Physicalisable.hpp"
+
+#include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Physics/ObjectLayerPairFilter.hpp"
 #include "Imagine/ThirdParty/JoltPhysics.hpp"
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
@@ -35,6 +37,12 @@ namespace Imagine::ColliderShapes
 }
 
 namespace Imagine {
+
+	Physicalisable::~Physicalisable() {
+		if (!BodyID.IsInvalid()) {
+			PhysicsLayer::PushDeletion(BodyID);
+		}
+	}
 
 	JPH::EActivation Physicalisable::GetActivation() const { return IsAwake ? JPH::EActivation::Activate : JPH::EActivation::DontActivate; }
 	JPH::ObjectLayer Physicalisable::GetLayer() const {

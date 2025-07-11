@@ -52,6 +52,9 @@ namespace Imagine {
 		static inline const std::array<std::string, 4> TypeNames {"Box","Sphere","Capsule","Cylinder"};
 		static inline constexpr char TypeNamesCombo[] = "Box\0Sphere\0Capsule\0Cylinder";
 	public:
+		Physicalisable() = default;
+		~Physicalisable();
+	public:
 		// Getters
 		[[nodiscard]] Vec3 GetLinearVelocity() const {return LinearVelocity;}
 		[[nodiscard]] Vec3 GetRadAngularVelocity() const {return AngularVelocity * Math::DegToRad;}
