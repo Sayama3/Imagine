@@ -19,6 +19,8 @@ namespace Imagine {
 		CPUMesh() = default;
 		CPUMesh(std::vector<Vertex> &&vertices, std::vector<uint32_t> &&indices);
 		CPUMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices);
+		CPUMesh(const std::vector<Vertex> &vertices);
+		CPUMesh(std::vector<Vertex> &&vertices);
 		virtual ~CPUMesh() override = default;
 		CPUMesh(const CPUMesh &) = default;
 		CPUMesh &operator=(const CPUMesh &) = default;

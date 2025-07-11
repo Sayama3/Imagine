@@ -37,6 +37,7 @@ namespace Imagine {
 
 	private:
 		void OnUpdate(AppUpdateEvent &event);
+		void OnRender(AppRenderEvent &event);
 		void OnImGui(ImGuiEvent &event);
 
 	private:

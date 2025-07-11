@@ -17,6 +17,7 @@
 #include "Imagine/Events/ApplicationEvent.hpp"
 #include "Imagine/Events/KeyEvent.hpp"
 #include "Imagine/Events/MouseEvent.hpp"
+#include "Imagine/Physics/PhysicsDebugRenderer.hpp"
 #include "Imagine/Rendering/CPU/CPUModel.hpp"
 
 #ifdef MGN_IMGUI
@@ -349,6 +350,21 @@ namespace Imagine {
 					m_Renderer->Draw(ctx);
 					ctx.Clear();
 				}
+			}
+
+			{
+				MGN_PROFILE_SCOPE("Physics Rendering");
+				DrawContext ctx;
+				if (!PhysicsDebugRenderer::s_Lines.empty()) {
+					ctx.OpaqueLines = std::move(PhysicsDebugRenderer::s_Lines);
+				}
+				if (!PhysicsDebugRenderer::s_Vertices.empty()) {
+					Scope<CPUMesh> mesh = CreateScope<CPUMesh>(std::move(PhysicsDebugRenderer::s_Vertices));
+					mesh->Lods.emplace_back(0, (uint32_t)mesh->Indices.size(), NULL_ASSET_HANDLE);
+					mesh->gpu = m_Renderer->LoadMesh(*mesh);
+					ctx.OpaqueSurfaces.emplace_back(Math::Identity<Mat4>(), mesh->gpu);
+				}
+				m_Renderer->Draw(ctx);
 			}
 
 			m_Renderer->EndDraw();

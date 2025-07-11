@@ -12,7 +12,27 @@ namespace Imagine {
 	CPUMesh::CPUMesh(std::vector<Vertex> &&vertices, std::vector<uint32_t> &&indices) :
 		Vertices(std::move(vertices)), Indices(std::move(indices)) {CalcAABB();}
 	CPUMesh::CPUMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices) :
-		Vertices(vertices), Indices(indices) {CalcAABB();}
+		Vertices(vertices), Indices(indices) { CalcAABB(); }
+
+	CPUMesh::CPUMesh(const std::vector<Vertex> &vertices) :
+		Vertices(vertices), Indices(Vertices.size()) {
+		if (Vertices.empty()) return;
+		aabb.SetMinMax(Vertices.begin()->position, Vertices.begin()->position);
+		for (uint32_t i = 0; i < Indices.size(); ++i) {
+			Indices.push_back(i);
+			aabb.Grow(Vertices[i].position);
+		}
+	}
+	CPUMesh::CPUMesh(std::vector<Vertex> &&vertices) :
+		Vertices(std::move(vertices)), Indices(Vertices.size()) {
+		if (Vertices.empty()) return;
+		aabb.SetMinMax(Vertices.begin()->position, Vertices.begin()->position);
+		for (uint32_t i = 0; i < Indices.size(); ++i) {
+			Indices.push_back(i);
+			aabb.Grow(Vertices[i].position);
+		}
+	}
+
 	CPUMesh::CPUMesh(CPUMesh &&o) noexcept { swap(o); }
 	CPUMesh &CPUMesh::operator=(CPUMesh &&o) noexcept {
 		swap(o);

@@ -219,6 +219,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Math/Transform.hpp
 		Sources/Layers/ProjectLayer.cpp
 		Includes/Imagine/Layers/ProjectLayer.hpp
+		Sources/Physics/PhysicsDebugRenderer.cpp
+		Includes/Imagine/Physics/PhysicsDebugRenderer.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

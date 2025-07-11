@@ -475,7 +475,7 @@ namespace Imagine {
 		}
 
 		template<typename T, glm::qualifier Q = glm::defaultp>
-		inline static glm::vec<3, T, Q> Cross(const glm::vec<3, T, Q> &a, const glm::vec<3, T, Q> &b) {
+		inline static constexpr glm::vec<3, T, Q> Cross(const glm::vec<3, T, Q> &a, const glm::vec<3, T, Q> &b) {
 			return glm::cross(a, b);
 		}
 

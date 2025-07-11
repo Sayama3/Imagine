@@ -16,6 +16,30 @@ namespace Imagine::Math {
 
 		return Normalize(Cross(AB,AC));
 	}
+	template<typename T = Real, glm::qualifier Q = glm::qualifier::defaultp>
+	inline static std::pair<GLM_VEC_T(3,T,Q), GLM_VEC_T(3,T,Q)> CalculateTangentAndBitangent(const GLM_VEC_T(3,T,Q)& normal) {
+		using vec3 = GLM_VEC_T(3,T,Q);
+		vec3 tangent;
+		vec3 bitangent;
+
+		vec3 c1 = Cross(normal, vec3(0.0, 0.0, 1.0));
+		vec3 c2 = Cross(normal, vec3(0.0, 1.0, 0.0));
+
+		if (Magnitude(c1) > Magnitude(c2))
+		{
+			tangent = c1;
+		}
+		else
+		{
+			tangent = c2;
+		}
+
+		tangent = Normalize(tangent);
+
+		bitangent = Cross(normal, tangent);
+		bitangent = Normalize(bitangent);
+		return {tangent, bitangent};
+	}
 
 	template<typename T = Real, glm::qualifier Q = glm::qualifier::defaultp>
 	inline static GLM_VEC_T(3,T,Q) CalculateTriangleNormalNonNormalized(const GLM_VEC_T(3,T,Q)& a, const GLM_VEC_T(3,T,Q)& b, const GLM_VEC_T(3,T,Q)& c) {

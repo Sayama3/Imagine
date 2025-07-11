@@ -20,7 +20,9 @@
 #include <Jolt/RegisterTypes.h>
 
 #include "Imagine/Components/Physicalisable.hpp"
+#include "Imagine/Physics/PhysicsDebugRenderer.hpp"
 #include "Imagine/Physics/PhysicsTypeHelpers.hpp"
+#include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 #include "Jolt/Physics/Collision/Shape/MeshShape.h"
 
@@ -60,8 +62,20 @@ namespace Imagine {
 		// The main way to interact with the bodies in the physics system is through the body interface. There is a locking and a non-locking
 		// variant of this. We're going to use the locking version (even though we're not planning to access bodies from multiple threads)
 		m_BodyInterface = &m_PhysicsSystem->GetBodyInterface();
+
+		// Draw Physics
+		if(JPH::DebugRenderer::sInstance == nullptr) {
+			JPH::DebugRenderer::sInstance = new PhysicsDebugRenderer();
+		}
 	}
 	void PhysicsLayer::OnDetach() {
+
+		// Draw Physics
+		if(JPH::DebugRenderer::sInstance != nullptr) {
+			delete JPH::DebugRenderer::sInstance;
+			JPH::DebugRenderer::sInstance = nullptr;
+		}
+
 		m_BodyInterface = nullptr;
 		m_PhysicsSystem.reset();
 
@@ -77,6 +91,7 @@ namespace Imagine {
 		EventDispatcher dispatch(event);
 		dispatch.Dispatch<AppUpdateEvent>(MGN_DISPATCH_FALSE(OnUpdate));
 		dispatch.Dispatch<ImGuiEvent>(MGN_DISPATCH_FALSE(OnImGui));
+		dispatch.Dispatch<AppRenderEvent>(MGN_DISPATCH_FALSE(OnRender));
 	}
 
 	void PhysicsLayer::PushDeletion(JPH::BodyID body_id) {
@@ -110,6 +125,36 @@ namespace Imagine {
 				Update(scene.get(), event.GetTimeStep());
 			}
 		}
+	}
+	void PhysicsLayer::OnRender(AppRenderEvent &event) {
+		if (!JPH::DebugRenderer::sInstance) return;
+		// TODO: Fetch the 'JPH::BodyManager::DrawSettings' from some project settings somewhere
+		static JPH::BodyManager::DrawSettings s_DrawSettings {
+		false, 												// mDrawGetSupportFunction
+		false, 												// mDrawSupportDirection
+		false, 												// mDrawGetSupportingFace
+		false, 												// mDrawShape
+		false, 												// mDrawShapeWireframe
+		JPH::BodyManager::EShapeColor::MotionTypeColor,		// mDrawShapeColor
+		true, 												// mDrawBoundingBox
+		false, 												// mDrawCenterOfMassTransform
+		false, 												// mDrawWorldTransform
+		false, 												// mDrawVelocity
+		false, 												// mDrawMassAndInertia
+		false, 												// mDrawSleepStats
+		false, 												// mDrawSoftBodyVertices
+		false, 												// mDrawSoftBodyVertexVelocities
+		false, 												// mDrawSoftBodyEdgeConstraints
+		false, 												// mDrawSoftBodyBendConstraints
+		false, 												// mDrawSoftBodyVolumeConstraints
+		false, 												// mDrawSoftBodySkinConstraints
+		false, 												// mDrawSoftBodyLRAConstraints
+		false, 												// mDrawSoftBodyPredictedBounds
+		JPH::ESoftBodyConstraintColor::ConstraintType,		// mDrawSoftBodyConstraintColor
+	};
+
+		((PhysicsDebugRenderer*)JPH::DebugRenderer::sInstance)->SetCameraPos(Convert(Camera::s_MainCamera->position));
+		m_PhysicsSystem->DrawBodies(s_DrawSettings, JPH::DebugRenderer::sInstance);
 	}
 
 	void PhysicsLayer::OnImGui(ImGuiEvent &event) {

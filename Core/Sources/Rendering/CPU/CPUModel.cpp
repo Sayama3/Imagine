@@ -330,9 +330,9 @@ namespace Imagine {
 				if (node->mNumMeshes == 1) {
 					AssetHandle meshHandle = model->Meshes[*node->mMeshes]->Handle;
 					coreScene->AddComponent<Renderable>(entityId)->cpuMesh = meshHandle;
-					Physicalisable* p = coreScene->AddComponent<Physicalisable>(entityId);
-					p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
-					p->RBType = RB_Static;
+					// Physicalisable* p = coreScene->AddComponent<Physicalisable>(entityId);
+					// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
+					// p->RBType = RB_Static;
 				}
 				else if (node->mNumMeshes > 1) {
 					for (int i = 0; i < node->mNumMeshes; ++i) {
@@ -341,9 +341,9 @@ namespace Imagine {
 						EntityID meshChild = coreScene->CreateEntity(entityId);
 						coreScene->SetName(meshChild, pMesh->Name);
 						coreScene->AddComponent<Renderable>(meshChild)->cpuMesh = meshHandle;
-						Physicalisable* p = coreScene->AddComponent<Physicalisable>(meshChild);
-						p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
-						p->RBType = RB_Static;
+						// Physicalisable* p = coreScene->AddComponent<Physicalisable>(meshChild);
+						// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
+						// p->RBType = RB_Static;
 					}
 				}
 

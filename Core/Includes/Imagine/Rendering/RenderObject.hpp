@@ -12,7 +12,7 @@ namespace Imagine {
 	struct RenderObject {
 		RenderObject() = default;
 		virtual ~RenderObject() = default;
-		RenderObject(const Mat4& trs, std::shared_ptr<GPUMesh> m) : transform(trs), mesh(m) {}
+		RenderObject(const Mat4& trs, std::shared_ptr<GPUMesh> m) : transform(trs), mesh(std::move(m)) {}
 		Mat4 transform{};
 		std::shared_ptr<GPUMesh> mesh{nullptr};
 		//MaterialInstance *material{nullptr};

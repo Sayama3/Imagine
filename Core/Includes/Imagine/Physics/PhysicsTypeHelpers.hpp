@@ -8,6 +8,7 @@
 #include <Jolt/Renderer/DebugRenderer.h>
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Math/BoundingBox.hpp"
+#include "Imagine/Math/Geometry.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 
 namespace Imagine
@@ -24,14 +25,15 @@ namespace Imagine
 				inModelMatrix(0,2),inModelMatrix(1,2),inModelMatrix(2,2),inModelMatrix(3,2),
 				inModelMatrix(0,3),inModelMatrix(1,3),inModelMatrix(2,3),inModelMatrix(3,3)
 		};}
-	inline static constexpr Vertex Convert(const JPH::DebugRenderer::Vertex &vert) {
+	inline static Vertex Convert(const JPH::DebugRenderer::Vertex &vert) {
+		auto [tangent, bitangent] = Math::CalculateTangentAndBitangent({vert.mNormal.x,vert.mNormal.y,vert.mNormal.z});
 		return {
 			{vert.mPosition.x,vert.mPosition.y,vert.mPosition.z},
 			vert.mUV.x,
 			{vert.mNormal.x,vert.mNormal.y,vert.mNormal.z},
 			vert.mUV.y,
-			{vert.mNormal.z, -vert.mNormal.x,vert.mNormal.y, 0},
-			{vert.mNormal.y,-vert.mNormal.z, vert.mNormal.x, 0},
+			{tangent, 0},
+			{bitangent, 0},
 			Convert(vert.mColor)
 		};
 	}
