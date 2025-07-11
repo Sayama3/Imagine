@@ -20,7 +20,7 @@ namespace Imagine
 
 		template<class ListVec3>
 		inline BoundingBox(const ListVec3& points);
-		BoundingBox(const Vec3& min, const Vec3& max);
+		inline constexpr BoundingBox(const Vec3& min, const Vec3& max) : m_Min(Math::Min(min, max)), m_Max(Math::Max(min, max)) {}
 		BoundingBox(const BoundingBox& one, const BoundingBox& two);
 	public:
 		[[nodiscard]] bool Overlaps(const BoundingBox& other) const;

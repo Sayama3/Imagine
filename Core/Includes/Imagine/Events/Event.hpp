@@ -6,6 +6,10 @@
 
 #include "Imagine/Core/Macros.hpp"
 
+#define MGN_DISPATCH_FALSE(fn) [this](auto &&...args) -> bool { this->fn(std::forward<decltype(args)>(args)...); return false;}
+#define MGN_DISPATCH_TRUE(fn) [this](auto &&...args) -> bool { this->fn(std::forward<decltype(args)>(args)...); return true;}
+#define MGN_DISPATCH(fn) MGN_BIND_EVENT_FN(fn)
+
 namespace Imagine {
 
 	enum class EventType : uint32_t {

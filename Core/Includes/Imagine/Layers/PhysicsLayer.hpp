@@ -14,6 +14,9 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 
 #include "Imagine/Core/SmartPointers.hpp"
+#include "Imagine/Physics/ObjectLayerPairFilter.hpp"
+#include "Imagine/Physics/ObjectVsBroadPhaseLayerFilter.hpp"
+#include "Imagine/Physics/PhysicsListener.hpp"
 
 namespace Imagine {
 
@@ -21,17 +24,17 @@ namespace Imagine {
 
 	class PhysicsLayer final : public Layer {
 	public:
-		PhysicsLayer() = default;
+		PhysicsLayer();
 		virtual ~PhysicsLayer() override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event &event) override;
 	private:
-		bool OnUpdate(AppUpdateEvent &event);
-		bool OnImGui(ImGuiEvent &event);
+		void OnUpdate(AppUpdateEvent &event);
+		void OnImGui(ImGuiEvent &event);
 
 	private:
-		void Update(Scene* scene, TimeStep dt);
+		void Update(Scene* scene, TimeStep ts);
 
 	public:
 	std::vector<Weak<Scene>> scenes;
@@ -61,7 +64,34 @@ namespace Imagine {
 		/// you would implement the JobSystem interface yourself and let Jolt Physics run on top
 		/// of your own job scheduler. JobSystemThreadPool is an example implementation.
 		JPH::JobSystemThreadPool m_JobSystem{JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, static_cast<int>(std::thread::hardware_concurrency() - 1)};
+	private:
+		Scope<JPH::PhysicsSystem> m_PhysicsSystem;
 
+		/// Create mapping table from object layer to broadphase layer
+		/// Note: As this is an interface, PhysicsSystem will take a reference to this so this instance needs to stay alive!
+		BroadPhaseLayerInterface m_BroadPhaseLayer;
+
+		/// Create class that filters object vs broadphase layers
+		/// Note: As this is an interface, PhysicsSystem will take a reference to this so this instance needs to stay alive!
+		ObjectVsBroadPhaseLayerFilter m_ObjectVsBroadphaseLayerFilter;
+
+		/// Create class that filters object vs object layers
+		/// Note: As this is an interface, PhysicsSystem will take a reference to this so this instance needs to stay alive!
+		ObjectLayerPairFilter m_ObjectVsObjectLayerFilter;
+
+		/// A body activation listener gets notified when bodies activate and go to sleep
+		/// Note that this is called from a job so whatever you do here needs to be thread safe.
+		/// Registering one is entirely optional.
+		LoggerActivationListener m_BodyActivationListener;
+
+		/// A contact listener gets notified when bodies (are about to) collide, and when they separate again.
+		/// Note that this is called from a job so whatever you do here needs to be thread safe.
+		/// Registering one is entirely optional.
+		LoggerContactListener m_ContactListener;
+
+		JPH::BodyInterface* m_BodyInterface = nullptr;
+	private:
+		bool m_Simulate{false};
 	};
 
 } // namespace Imagine

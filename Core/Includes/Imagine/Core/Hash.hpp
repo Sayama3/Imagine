@@ -8,7 +8,7 @@
 
 namespace Imagine::Hasher {
 	struct hash128_t {
-		static_assert(sizeof(UUID) == 32);
+		static_assert(sizeof(UUID) == 16);
 
 		constexpr hash128_t() :	low64{0}, high64{0} {}
 		constexpr ~hash128_t() = default;
@@ -28,4 +28,13 @@ namespace Imagine::Hasher {
 	[[nodiscard]] uint32_t xxHash32(ConstBufferView view, uint32_t seed = 0);
 	[[nodiscard]] uint64_t xxHash64(ConstBufferView view, uint64_t seed = 0);
 	[[nodiscard]] hash128_t xxHash128(ConstBufferView view, uint64_t seed = 0);
+
+	template<typename T>
+	[[nodiscard]] uint32_t xxHash32T(const T& data, uint32_t seed = 0) { return xxHash32({&data, sizeof(T)}, seed); }
+
+	template<typename T>
+	[[nodiscard]] uint64_t xxHash64T(const T& data, uint64_t seed = 0) { return xxHash64({&data, sizeof(T)}, seed); }
+
+	template<typename T>
+	[[nodiscard]] hash128_t xxHash128T(const T& data, uint64_t seed = 0) { return xxHash128({&data, sizeof(T)}, seed); }
 }

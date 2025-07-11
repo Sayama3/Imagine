@@ -3,6 +3,7 @@
 //
 
 #include "Imagine/ThirdParty/ImGui.hpp"
+#include "Imagine/Core/InternalCore.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui_internal.h>
@@ -128,10 +129,21 @@ namespace Imagine::ThirdParty::ImGuiLib {
 	bool DragReal4(const char *label, Real *v, float v_speed, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
 		return ImGui::DragScalarN(label, ImGuiDataType_Real, v, 4, v_speed, &v_min, &v_max, format, flags);
 	}
+	bool SliderReal(const char *label, Real *v, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
+		return ImGui::SliderScalar(label, ImGuiDataType_Real, v, &v_min, &v_max, format, flags);
+	}
 
+	bool InputUUID(const char *name, UUID *id, ImGuiInputTextFlags flags) {
+		return ImGui::InputScalarN(name, ImGuiDataType_U64, id, UUID::Count64, nullptr, nullptr, "%llu", flags);
+	}
 
 #else
-
+	bool InputUUID(const char *name, UUID *id, ImGuiInputTextFlags flags) {
+		return false;
+	}
+	bool SliderReal(const char *label, Real *v, Real v_min, Real v_max, const char *format, ImGuiSliderFlags flags) {
+		return false;
+	}
 	bool DockingEnabled() {
 		MGN_LOG_ERROR("ImGui Not Implemented.");
 		return false;

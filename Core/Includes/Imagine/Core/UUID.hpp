@@ -15,9 +15,13 @@ namespace Imagine {
 		friend YAML::convert<Imagine::UUID>;
 		friend AssetHandle;
 	public:
-		using Array64 = std::array<uint64_t, 2>;
-		using Array32 = std::array<uint64_t, 4>;
-		using Array8 = std::array<uint8_t, 16>;
+		static inline constexpr uint64_t Count64 = 2;
+		static inline constexpr uint64_t Count32 = 4;
+		static inline constexpr uint64_t Count8 = 16;
+
+		using Array64 = std::array<uint64_t, Count64>;
+		using Array32 = std::array<uint32_t, Count32>;
+		using Array8 = std::array<uint8_t, Count8>;
 
 		using DefaultArray = Array64;
 	public:
@@ -73,7 +77,7 @@ namespace Imagine {
 		const_iterator_8 cbegin8() const;
 		const_iterator_8 cend8() const;
 
-	private:
+	public:
 		// Some iterator because it's really useful to be able to iterate on the bytes of an UUID.
 		iterator begin();
 		iterator end();

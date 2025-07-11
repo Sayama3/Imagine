@@ -216,6 +216,7 @@ set(CORE_SRC_FILES
 		Sources/ThirdParty/ImGui.cpp
 		Includes/Imagine/ThirdParty/ImGui.hpp
 		Includes/Imagine/Math/Math.hpp
+		Includes/Imagine/Math/Transform.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

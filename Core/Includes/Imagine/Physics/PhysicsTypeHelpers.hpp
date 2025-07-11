@@ -43,8 +43,8 @@ namespace Imagine
 		};
 	}
 
-	inline static constexpr JPH::Vec3 Convert(const Vec3 val) {return {val.x,val.y,val.z};}
-	inline static constexpr JPH::Vec4 Convert(const Vec4 val) {return {val.x,val.y,val.z,val.w};}
-	inline static constexpr JPH::Quat Convert(const Quat val) {return {val.x, val.y, val.z, val.w};}
+	inline static JPH::Vec3 Convert(const Vec3 val) {return {val.x,val.y,val.z};}
+	inline static JPH::Vec4 Convert(const Vec4 val) {return {val.x,val.y,val.z,val.w};}
+	inline static JPH::Quat Convert(const Quat val) {return {val.x, val.y, val.z, val.w};}
 
 }

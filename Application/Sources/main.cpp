@@ -8,6 +8,8 @@
 #include "Imagine/ApplicationLayer.hpp"
 #include "Imagine/Core.hpp"
 #include "Imagine/Layers/ImGuiLayer.hpp"
+#include "Imagine/Layers/PhysicsLayer.hpp"
+#include "Imagine/Physics/ObjectLayerPairFilter.hpp"
 
 int main(int argc, char **argv) {
 	using namespace Imagine;
@@ -20,6 +22,11 @@ int main(int argc, char **argv) {
 			c_DefaultLogPattern,
 			true,
 	});
+
+	// Initialize Jolt. It's need to be done before the application started.
+	// Register allocation hook. In this example we'll just let Jolt use malloc / free but you can override these if you want (see Memory.h).
+	// This needs to be done before any other Jolt function is called.
+	JPH::RegisterDefaultAllocator();
 
 	ApplicationParameters params{
 			std::string{"Imagine"},
@@ -46,6 +53,7 @@ int main(int argc, char **argv) {
 	MGN_FRAME_START();
 	Application *application = Application::Initialize(params);
 	application->PushLayer<Imagine::Runtime::ApplicationLayer>();
+	application->PushLayer<Imagine::PhysicsLayer>();
 	application->PushOverlay<Imagine::ImGuiLayer>();
 
 

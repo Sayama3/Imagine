@@ -11,6 +11,7 @@
 #include "Imagine/Core/SparseSet.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
 #include "Imagine/Core/UUID.hpp"
+#include "Imagine/Math/Transform.hpp"
 #include "Imagine/Rendering/Light.hpp"
 #include "Relationship.hpp"
 
@@ -159,6 +160,7 @@ namespace Imagine {
 	public:
 		void CacheTransforms();
 		Mat4 GetWorldTransform(EntityID id) const;
+		TransformR GetTransform(EntityID id) const;
 
 	public:
 		void SendImGuiCommands();
@@ -325,7 +327,7 @@ namespace Imagine {
 		SparseSet<Child, uint32_t> m_Children;
 		SparseSet<Sibling, uint32_t> m_Siblings;
 		SparseSet<std::string, uint32_t> m_Names;
-		SparseSet<Mat4, uint32_t> m_WorldTransform;
+		SparseSet<TransformR, uint32_t> m_WorldTransform;
 
 	private:
 		// Dedicated to ImGui Rendering.

@@ -19,15 +19,21 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
 
+#include "Imagine/Components/Physicalisable.hpp"
+#include "Imagine/Physics/PhysicsTypeHelpers.hpp"
+#include "Imagine/Scene/SceneManager.hpp"
 
 
 namespace Imagine {
+
+	PhysicsLayer::PhysicsLayer() {
+
+	}
 
 	PhysicsLayer::~PhysicsLayer() {
 	}
 
 	void PhysicsLayer::OnAttach() {
-
 		// Create a factory, this class is responsible for creating instances of classes based on their name or hash and is mainly used for deserialization of saved data.
 		// It is not directly used in this example but still required.
 		JPH::Factory::sInstance = new JPH::Factory();
@@ -36,38 +42,110 @@ namespace Imagine {
 		// If you have your own custom shape types you probably need to register their handlers with the CollisionDispatch before calling this function.
 		// If you implement your own default material (PhysicsMaterial::sDefault) make sure to initialize it before this function or else this function will create one for you.
 		JPH::RegisterTypes();
+
+		m_PhysicsSystem = CreateScope<JPH::PhysicsSystem>();
+
+		m_PhysicsSystem->Init(PhysicsLayer::cMaxBodies, PhysicsLayer::cNumBodyMutexes, PhysicsLayer::cMaxBodyPairs, PhysicsLayer::cMaxContactConstraints, m_BroadPhaseLayer, m_ObjectVsBroadphaseLayerFilter, m_ObjectVsObjectLayerFilter);
+
+		// A body activation listener gets notified when bodies activate and go to sleep
+		// Note that this is called from a job so whatever you do here needs to be thread safe.
+		// Registering one is entirely optional.
+		m_PhysicsSystem->SetBodyActivationListener(&m_BodyActivationListener);
+
+		// A contact listener gets notified when bodies (are about to) collide, and when they separate again.
+		// Note that this is called from a job so whatever you do here needs to be thread safe.
+		// Registering one is entirely optional.
+		m_PhysicsSystem->SetContactListener(&m_ContactListener);
+
+		// The main way to interact with the bodies in the physics system is through the body interface. There is a locking and a non-locking
+		// variant of this. We're going to use the locking version (even though we're not planning to access bodies from multiple threads)
+		m_BodyInterface = &m_PhysicsSystem->GetBodyInterface();
+
+		for (auto& scene : SceneManager::GetLoadedScenes()) {
+			scenes.emplace_back(scene);
+		}
+
 	}
 	void PhysicsLayer::OnDetach() {
+		m_BodyInterface = nullptr;
+		m_PhysicsSystem.reset();
+
 		// Unregisters all types with the factory and cleans up the default material
 		JPH::UnregisterTypes();
 
 		// Destroy the factory
 		delete JPH::Factory::sInstance;
 		JPH::Factory::sInstance = nullptr;
+
+		scenes.clear();
 	}
 
 	void PhysicsLayer::OnEvent(Event &event) {
 		EventDispatcher dispatch(event);
-		dispatch.Dispatch<AppUpdateEvent>(MGN_BIND_EVENT_FN(OnUpdate));
-		dispatch.Dispatch<ImGuiEvent>(MGN_BIND_EVENT_FN(OnImGui));
+		dispatch.Dispatch<AppUpdateEvent>(MGN_DISPATCH_FALSE(OnUpdate));
+		dispatch.Dispatch<ImGuiEvent>(MGN_DISPATCH_FALSE(OnImGui));
 	}
 
-	bool PhysicsLayer::OnUpdate(AppUpdateEvent &event) {
+	void PhysicsLayer::OnUpdate(AppUpdateEvent &event) {
+		if (!m_Simulate) return;
+
 		for (Weak<Scene> scene: scenes) {
 			if (auto lock = scene.lock()) {
 				Update(lock.get(), event.GetTimeStep());
 			}
 		}
-		return false;
 	}
 
-	bool PhysicsLayer::OnImGui(ImGuiEvent &event) {
+	void PhysicsLayer::OnImGui(ImGuiEvent &event) {
 #ifdef MGN_IMGUI
+		ImGui::SetNextWindowSize({200,200}, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Physics");
+		{
+			ImGui::Checkbox("Simulate", &m_Simulate);
+		}
+		ImGui::End();
 #endif
-		return false;
 	}
 
-	void PhysicsLayer::Update(Scene* scene, TimeStep dt) {
+	void PhysicsLayer::Update(Scene* scene, TimeStep ts) {
+		if (!m_Simulate) {
+			scene->ForEachWithComponent<Physicalisable>([this](Scene* scene, EntityID id, Physicalisable& comp) {
 
+				const TransformR trs = scene->GetTransform(id);
+				const Vec3 pos = trs.GetWorldPosition();
+				const Quat rot = trs.GetWorldRotation();
+				const Vec3 lin = comp.GetLinearVelocity();
+				const Vec3 ang = comp.GetRadAngularVelocity();
+				const JPH::Shape* shp = comp.GetShape();
+				const JPH::EActivation activation = comp.GetActivation();
+
+				if (comp.BodyID.IsInvalid()) {
+					if(!shp) return;
+					JPH::BodyCreationSettings creationSettings = {shp, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetMotionType(), comp.GetLayer()};
+					comp.BodyID = m_BodyInterface->CreateAndAddBody(creationSettings, activation);
+				} else {
+					m_BodyInterface->SetShape(comp.BodyID, shp, true, activation);
+					m_BodyInterface->SetPositionAndRotation(comp.BodyID, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetActivation());
+					m_BodyInterface->SetMotionType(comp.BodyID, comp.GetMotionType(), activation);
+					m_BodyInterface->SetObjectLayer(comp.BodyID, comp.GetLayer());
+				}
+
+				m_BodyInterface->SetLinearAndAngularVelocity(comp.BodyID, JPH::Vec3(lin.x, lin.y, lin.z), JPH::Vec3(ang.x, ang.y, ang.z));
+				m_BodyInterface->SetFriction(comp.BodyID, comp.GetFriction());
+				m_BodyInterface->SetGravityFactor(comp.BodyID, comp.GetGravityFactor());
+			});
+		} else {
+			const int cCollisionSteps = 4;
+			m_PhysicsSystem->Update(ts.GetSeconds(), cCollisionSteps, &m_TempAllocator, &m_JobSystem);
+			scene->ForEachWithComponent<Physicalisable>([this](Scene* scene, EntityID id, Physicalisable& comp) {
+				if(comp.BodyID.IsInvalid()) return;
+				const TransformR trs = scene->GetTransform(id);
+				const auto wpos = Convert(m_BodyInterface->GetPosition(comp.BodyID));
+				const auto wrot = Convert(m_BodyInterface->GetRotation(comp.BodyID));
+				Entity& entity = scene->GetEntity(id);
+				entity.LocalPosition = trs.InvTransformPosition(wpos);
+				entity.LocalRotation = trs.PositionWorldToLocal * glm::toMat4(wrot);
+			});
+		}
 	}
 } // namespace Imagine

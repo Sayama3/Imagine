@@ -6,6 +6,7 @@
 
 #include "AssetField.forward.hpp"
 #include "AssetHandle.hpp"
+#include "AssetType.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
 

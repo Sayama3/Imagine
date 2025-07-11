@@ -252,15 +252,17 @@ namespace Imagine {
 			}
 #endif
 
-			rotation.y = asin(-Row[0][2]);
-			if (cos(rotation.y) != 0) {
-				rotation.x = atan2(Row[1][2], Row[2][2]);
-				rotation.z = atan2(Row[0][1], Row[0][0]);
+			Vec3 euler;
+			euler.y = asin(-Row[0][2]);
+			if (cos(euler.y) != 0) {
+				euler.x = atan2(Row[1][2], Row[2][2]);
+				euler.z = atan2(Row[0][1], Row[0][0]);
 			}
 			else {
-				rotation.x = atan2(-Row[2][0], Row[1][1]);
-				rotation.z = 0;
+				euler.x = atan2(-Row[2][0], Row[1][1]);
+				euler.z = 0;
 			}
+			rotation = Quat(euler);
 
 			return true;
 		}
@@ -321,29 +323,29 @@ namespace Imagine {
 		inline static Real Sin(Real value) { return std::sin(value); };
 
 		template<typename T>
-		inline static T Min(T v1, T v2) { return glm::min(v1, v2); }
+		inline static constexpr T Min(T v1, T v2) { return glm::min(v1, v2); }
 		template<typename T>
-		inline static T Max(T v1, T v2) { return glm::max(v1, v2); }
+		inline static constexpr T Max(T v1, T v2) { return glm::max(v1, v2); }
 		template<typename T>
-		inline static T Min(T v1, T v2, T v3) { return Min(Min(v1, v2), v3); }
+		inline static constexpr T Min(T v1, T v2, T v3) { return Min(Min(v1, v2), v3); }
 		template<typename T>
-		inline static T Max(T v1, T v2, T v3) { return Max(Max(v1, v2), v3); }
+		inline static constexpr T Max(T v1, T v2, T v3) { return Max(Max(v1, v2), v3); }
 		template<typename T>
-		inline static T Min(T v1, T v2, T v3, T v4) { return Min(Min(Min(v1, v2), v3), v4); }
+		inline static constexpr T Min(T v1, T v2, T v3, T v4) { return Min(Min(Min(v1, v2), v3), v4); }
 		template<typename T>
-		inline static T Max(T v1, T v2, T v3, T v4) { return Max(Max(Max(v1, v2), v3), v4); }
+		inline static constexpr T Max(T v1, T v2, T v3, T v4) { return Max(Max(Max(v1, v2), v3), v4); }
 		template<typename T>
-		inline static T Min(T v1, T v2, T v3, T v4, T v5) { return Min(Min(Min(Min(v1, v2), v3), v4), v5); }
+		inline static constexpr T Min(T v1, T v2, T v3, T v4, T v5) { return Min(Min(Min(Min(v1, v2), v3), v4), v5); }
 		template<typename T>
-		inline static T Max(T v1, T v2, T v3, T v4, T v5) { return Max(Max(Max(Max(v1, v2), v3), v4), v5); }
+		inline static constexpr T Max(T v1, T v2, T v3, T v4, T v5) { return Max(Max(Max(Max(v1, v2), v3), v4), v5); }
 		template<typename T, typename TIter>
-		inline static T Min(TIter begin, TIter end) { return std::max_element(begin, end, Min); }
+		inline static constexpr T Min(TIter begin, TIter end) { return std::max_element(begin, end, Min); }
 		template<typename T, typename TIter>
-		inline static T Max(TIter begin, TIter end) { return std::min_element(begin, end, Max); }
+		inline static constexpr T Max(TIter begin, TIter end) { return std::min_element(begin, end, Max); }
 		template<typename T, typename TContainer>
-		inline static T Min(const TContainer &container) { return Max(container.begin(), container.end()); }
+		inline static constexpr T Min(const TContainer &container) { return Max(container.begin(), container.end()); }
 		template<typename T, typename TContainer>
-		inline static T Max(const TContainer &container) { return Min(container.begin(), container.end()); }
+		inline static constexpr T Max(const TContainer &container) { return Min(container.begin(), container.end()); }
 
 		/**
 		 * @brief Clamps a value between a minimum and maximum bound.

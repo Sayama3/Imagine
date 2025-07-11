@@ -65,7 +65,7 @@ namespace YAML {
 
 		inline static bool decode(const Node &node, ::Imagine::UUID &v) {
 			if (!node.IsSequence() || node.size() != 2) return false;
-			static_assert(sizeof(::Imagine::UUID) == 32);
+			static_assert(sizeof(::Imagine::UUID) == 16);
 			const uint64_t low = node[0].as<uint64_t>(0);
 			const uint64_t high = node[1].as<uint64_t>(0);
 			v = ::Imagine::UUID{low, high};

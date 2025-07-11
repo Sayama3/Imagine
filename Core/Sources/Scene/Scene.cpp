@@ -376,17 +376,22 @@ namespace Imagine {
 	}
 
 	void Scene::CacheTransforms() {
-		Mat4 identity = Math::Identity<Mat4>();
-		ForEach<Mat4>(identity, [](const Mat4 &parentMatrix, Scene *scene, const EntityID id) {
-			const Mat4 localMat = scene->GetEntity(id).GetLocalMatrix();
-			const Mat4 worldMat = parentMatrix * localMat;
-			scene->m_WorldTransform.GetOrCreate(id.id) = worldMat;
-			return worldMat;
+		TransformR trs{};
+		ForEach<TransformR>(trs, [](const TransformR &parentTrs, Scene *scene, const EntityID id) {
+			const TransformR worldTrs{scene->GetEntity(id).LocalPosition, scene->GetEntity(id).LocalRotation, scene->GetEntity(id).LocalScale, parentTrs.PositionLocalToWorld};
+			scene->m_WorldTransform.GetOrCreate(id.id) = worldTrs;
+			return worldTrs;
 		});
 	}
 	Mat4 Scene::GetWorldTransform(const EntityID id) const {
-		const Mat4 *trs = m_WorldTransform.TryGet(id.id);
-		return trs ? *trs : Mat4(0);
+		const TransformR *trs = m_WorldTransform.TryGet(id.id);
+		return trs ? trs->PositionLocalToWorld : Mat4(0);
+	}
+
+	TransformR Scene::GetTransform(const EntityID id) const {
+		const TransformR *trs = m_WorldTransform.TryGet(id.id);
+		return trs ? *trs : TransformR();
+
 	}
 	void Scene::SendImGuiCommands() {
 #ifdef MGN_IMGUI
