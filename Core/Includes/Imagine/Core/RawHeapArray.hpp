@@ -9,7 +9,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/MemoryHelper.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 
 	/**
@@ -340,4 +340,4 @@ namespace Imagine::Core {
 		 */
 		UnsignedInteger DataSize{0};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

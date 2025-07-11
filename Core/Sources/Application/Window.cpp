@@ -12,7 +12,7 @@
 #include "HeadLessWindow.hpp"
 #endif
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	Window *Window::s_Window{nullptr};
 
@@ -42,4 +42,4 @@ namespace Imagine::Core {
 	Window *Window::Get() {
 		return s_Window;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

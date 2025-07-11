@@ -6,10 +6,10 @@
 
 #include "Imagine/Layers/Layer.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class WindowResizeEvent;
 }
-namespace Imagine::Core {
+namespace Imagine {
 
 	class ImGuiEvent;
 
@@ -26,5 +26,5 @@ namespace Imagine::Core {
 		void RenderImGuiMenuBar();
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 // Imagine

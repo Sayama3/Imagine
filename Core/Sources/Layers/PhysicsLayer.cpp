@@ -16,7 +16,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	PhysicsLayer::~PhysicsLayer() {
 	}
@@ -65,4 +65,4 @@ namespace Imagine::Core {
 	void PhysicsLayer::Update(Scene* scene, TimeStep dt) {
 
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

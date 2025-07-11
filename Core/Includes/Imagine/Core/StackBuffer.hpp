@@ -6,7 +6,7 @@
 
 #include "MemoryHelper.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	template<typename UnsignedInteger, UnsignedInteger ByteCapacity>
 	class StackBuffer {
@@ -39,4 +39,4 @@ namespace Imagine::Core {
 		UnsignedInteger Count{0};
 		uint8_t m_Buffer[ByteCapacity];
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

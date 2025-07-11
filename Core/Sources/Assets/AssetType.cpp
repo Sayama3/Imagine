@@ -4,7 +4,7 @@
 
 #include "Imagine/Assets/AssetType.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	AssetType AssetTypeFromString(const std::string &assetType) {
 		if(assetType == "Scene") return AssetType::Scene;
 		if(assetType == "Texture2D") return AssetType::Texture2D;

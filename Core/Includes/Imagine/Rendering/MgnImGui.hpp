@@ -11,7 +11,7 @@
 #include <imgui.h>
 #endif
 
-namespace Imagine::Core {
+namespace Imagine {
 
 #ifdef MGN_IMGUI
 	static inline constexpr bool c_ImGui{false};
@@ -74,4 +74,4 @@ namespace Imagine::Core {
 			return false;
 		}
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

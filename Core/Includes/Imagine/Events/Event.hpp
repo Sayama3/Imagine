@@ -6,7 +6,7 @@
 
 #include "Imagine/Core/Macros.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	enum class EventType : uint32_t {
 		None = 0,
@@ -77,17 +77,17 @@ namespace Imagine::Core {
 		}
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::Event &e) {
+inline std::ostream &operator<<(std::ostream &os, const Imagine::Event &e) {
 	return os << e.string();
 }
 
 template<>
-struct fmt::formatter<Imagine::Core::Event> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::Event> : fmt::formatter<std::string>
 {
-	auto format(const Imagine::Core::Event& value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(const Imagine::Event& value, format_context &ctx) const -> decltype(ctx.out())
 	{
 		return format_to(ctx.out(), "{}", value.string());
 	}

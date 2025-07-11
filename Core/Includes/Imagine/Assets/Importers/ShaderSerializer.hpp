@@ -13,7 +13,7 @@
 
 #define ShaderExtension ".shd.mgn"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	class ShaderSerializer
@@ -24,5 +24,5 @@ namespace Imagine::Core
 		static void ExportReadableShaderSource(const AssetMetadata& metadata, Ref<CPUShader> source);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

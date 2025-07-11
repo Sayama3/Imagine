@@ -4,7 +4,7 @@
 
 #include "Imagine/Core/BufferView.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	BufferView::BufferView() :
 		m_Buffer(nullptr), m_Size(0) {
 	}
@@ -61,9 +61,9 @@ namespace Imagine::Core {
 	uint64_t BufferView::Size() const {
 		return m_Size;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine
 
-namespace Imagine::Core {
+namespace Imagine {
 	ConstBufferView::ConstBufferView() :
 		m_Buffer(nullptr), m_Size(0) {
 	}
@@ -115,4 +115,4 @@ namespace Imagine::Core {
 	uint64_t ConstBufferView::Size() const {
 		return m_Size;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

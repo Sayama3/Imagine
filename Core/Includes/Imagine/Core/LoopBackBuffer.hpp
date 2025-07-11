@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 	template<typename T, uint64_t MaxCount>
 	class LoopBackBuffer {
 	public:
@@ -266,4 +266,4 @@ namespace Imagine::Core {
 		const uint64_t offset_index = m_Begin + mod_index;
 		return offset_index % Capacity;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

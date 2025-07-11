@@ -4,7 +4,7 @@
 
 #include "Imagine/Assets/AssetHandle.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	bool operator==(const AssetHandle &lft, const AssetHandle &rht) { return lft.m_Id == rht.m_Id; }
 
@@ -23,4 +23,4 @@ namespace Imagine::Core {
 	UUID AssetHandle::GetID() const {
 		return m_Id;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

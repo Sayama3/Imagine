@@ -29,7 +29,7 @@
 #include "Imagine/Rendering/MgnImGui.hpp"
 #endif
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::SDL3 {
 	void *SDL3Window::GetNativeWindow() {
@@ -47,11 +47,11 @@ namespace Imagine::SDL3 {
 		return m_Window;
 	}
 
-	const Core::KeyboardState &SDL3Window::GetKeyboardState() const {
+	const KeyboardState &SDL3Window::GetKeyboardState() const {
 		return m_Keyboard;
 	}
 
-	const Core::MouseState &SDL3Window::GetMouseState() const {
+	const MouseState &SDL3Window::GetMouseState() const {
 		return m_Mouse;
 	}
 
@@ -122,10 +122,10 @@ namespace Imagine::SDL3 {
 	void SDL3Window::Update() {
 
 		// Reset the PRESSED & RELEASED that should only be for a frame
-		for (Core::Button & button: m_Mouse.Buttons) {
+		for (Button & button: m_Mouse.Buttons) {
 			button &= ~(Button::PRESSED|Button::RELEASED);
 		}
-		for (Core::Button & key: m_Keyboard.Keys) {
+		for (Button & key: m_Keyboard.Keys) {
 			key &= ~(Button::PRESSED|Button::RELEASED);
 		}
 

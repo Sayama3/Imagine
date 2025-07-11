@@ -4,5 +4,5 @@
 
 #include "Imagine/Rendering/RenderObject.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 }

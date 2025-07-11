@@ -10,7 +10,7 @@
 #include "Imagine/Core/Profiling.hpp"
 #include "Imagine/Math/ImagePixelType.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	template<typename PixelType = uint8_t>
@@ -33,7 +33,7 @@ namespace Imagine::Core
 
 		void Zeroes();
 
-		static constexpr ImagePixelType GetPixelType() { return Imagine::Core::GetPixelType<PixelType>();}
+		static constexpr ImagePixelType GetPixelType() { return Imagine::GetPixelType<PixelType>();}
 
 		BufferView operator()(uint32_t x, uint32_t y);
 		ConstBufferView operator()(uint32_t x, uint32_t y) const;
@@ -171,13 +171,13 @@ namespace Imagine::Core
 		return result;
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
 template<>
-struct fmt::formatter<Imagine::Core::ImagePixelType> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::ImagePixelType> : fmt::formatter<std::string>
 {
-	auto format(const Imagine::Core::ImagePixelType value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(const Imagine::ImagePixelType value, format_context &ctx) const -> decltype(ctx.out())
 	{
 		return format_to(ctx.out(), "{}", ImagePixelTypeToString(value));
 	}

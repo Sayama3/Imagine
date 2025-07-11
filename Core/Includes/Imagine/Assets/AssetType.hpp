@@ -6,7 +6,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace Imagine::Core {
+namespace Imagine {
 	enum class AssetType : uint16_t {
 		None = 0,
 		Scene,
@@ -62,19 +62,19 @@ namespace Imagine::Core {
 		}
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::AssetType &value) {
-	return os << Imagine::Core::AssetTypeToString(value);
+inline std::ostream &operator<<(std::ostream &os, const Imagine::AssetType &value) {
+	return os << Imagine::AssetTypeToString(value);
 }
 
 template<>
-struct fmt::formatter<Imagine::Core::AssetType> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::AssetType> : fmt::formatter<std::string>
 {
-	auto format(Imagine::Core::AssetType value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(Imagine::AssetType value, format_context &ctx) const -> decltype(ctx.out())
 	{
-		return format_to(ctx.out(), "{}", Imagine::Core::AssetTypeToString(value));
+		return format_to(ctx.out(), "{}", Imagine::AssetTypeToString(value));
 	}
 };
 

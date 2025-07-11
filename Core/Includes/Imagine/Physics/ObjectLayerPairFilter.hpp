@@ -20,7 +20,7 @@
 //#include <Jolt/Physics/PhysicsSystem.h>
 //#include <Jolt/RegisterTypes.h>
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	// Layer that objects can be in, determines which other objects it can collide with
@@ -41,5 +41,5 @@ namespace Imagine::Core
 		virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

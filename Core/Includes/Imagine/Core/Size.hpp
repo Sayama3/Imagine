@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 	struct Size2 {
 		Size2() :
 			x(0), y(0) {}
@@ -22,7 +22,7 @@ namespace Imagine::Core {
 		uint32_t &operator[](const uint32_t index) { return size[index]; }
 		uint32_t operator[](const uint32_t index) const { return size[index]; }
 
-		[[nodiscard]] bool operator==(const Core::Size2 & size2) const { return x ==size2.x && y == size2.y; }
+		[[nodiscard]] bool operator==(const Size2 & size2) const { return x ==size2.x && y == size2.y; }
 		[[nodiscard]] bool operator!=(const Size2 &size2) const { return !(*this == size2); }
 
 		union {
@@ -64,4 +64,4 @@ namespace Imagine::Core {
 			uint32_t size[3];
 		};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

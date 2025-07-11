@@ -10,7 +10,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/RawHeapArray.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class Terrain {
 	public:
@@ -21,4 +21,4 @@ namespace Imagine::Core {
 		HeapArray<float> m_Terrain;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -44,7 +44,7 @@
 #include <imgui_impl_vulkan.h>
 #endif
 
-using namespace Imagine::Core;
+using namespace Imagine;
 using namespace Imagine::Literal;
 
 namespace Imagine::Vulkan {
@@ -1180,7 +1180,7 @@ namespace Imagine::Vulkan {
 		return m_IsDrawing;
 	}
 
-	bool VulkanRenderer::BeginDraw(const Imagine::Core::GPUSceneData& sceneData, const Imagine::Core::GPULightData& lightData) {
+	bool VulkanRenderer::BeginDraw(const Imagine::GPUSceneData& sceneData, const Imagine::GPULightData& lightData) {
 		MGN_PROFILE_FUNCTION();
 
 		m_IsDrawing = true;
@@ -1545,7 +1545,7 @@ namespace Imagine::Vulkan {
 
 		for (int i = 0; i < shaderModules.size(); ++i) {
 			if (!shaderModules[i]) continue;
-			builder.AddShader(static_cast<Core::ShaderStage>(BIT(i)), shaderModules[i]);
+			builder.AddShader(static_cast<ShaderStage>(BIT(i)), shaderModules[i]);
 		}
 
 		switch (material.pass) {

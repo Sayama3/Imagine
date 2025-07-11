@@ -10,7 +10,7 @@
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 #include "Imagine/Rendering/TextureParameters.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUVirtualTexture : public Asset {
 	public:

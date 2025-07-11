@@ -7,7 +7,7 @@
 #include "BoundingObject.hpp"
 #include "Basics.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	struct BoundingSphere : public BoundingObject<BoundingSphere>
@@ -52,5 +52,5 @@ namespace Imagine::Core
 		}
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

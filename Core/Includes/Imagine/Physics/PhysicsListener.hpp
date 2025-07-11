@@ -19,7 +19,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 //#include <Jolt/RegisterTypes.h>
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	// An example contact listener
@@ -66,5 +66,5 @@ namespace Imagine::Core
 		}
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

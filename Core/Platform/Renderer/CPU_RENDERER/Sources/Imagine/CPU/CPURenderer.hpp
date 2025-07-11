@@ -7,14 +7,14 @@
 #include "Imagine/Rendering/Renderer.hpp"
 
 namespace Imagine::CPU {
-	class CPURenderer final : public Core::Renderer {
+	class CPURenderer final : public Renderer {
 	public:
 		CPURenderer();
-		CPURenderer(const Core::ApplicationParameters &appParams);
+		CPURenderer(const ApplicationParameters &appParams);
 		virtual ~CPURenderer() override;
 
-		virtual Core::RendererAPI GetAPI() override {return CPURenderer::GetStaticAPI();}
-		static Core::RendererAPI GetStaticAPI() { return Core::RendererAPI::CPU; }
+		virtual RendererAPI GetAPI() override {return CPURenderer::GetStaticAPI();}
+		static RendererAPI GetStaticAPI() { return RendererAPI::CPU; }
 
 	public:
 		virtual void Draw() override;

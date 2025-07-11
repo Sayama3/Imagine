@@ -5,6 +5,6 @@
 #include "Imagine/Assets/Importers/SceneImporter.hpp"
 
 
-namespace Imagine::Core
+namespace Imagine
 {
-} // namespace Imagine::Core
+} // namespace Imagine

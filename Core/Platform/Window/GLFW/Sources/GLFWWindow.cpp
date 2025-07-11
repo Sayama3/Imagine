@@ -9,7 +9,7 @@
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::GLFW {
 	void *GLFWWindow::GetNativeWindow() {
@@ -24,7 +24,7 @@ namespace Imagine::GLFW {
 	void *GLFWWindow::GetWindowPtr() {
 		return m_Window;
 	}
-	Core::MouseInput &GLFWWindow::GetMouse() {
+	MouseInput &GLFWWindow::GetMouse() {
 		//TODO: Implement input system properly
 	}
 
@@ -116,4 +116,4 @@ namespace Imagine::GLFW {
 		glfwGetFramebufferSize(m_Window, &width, &height);
 		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

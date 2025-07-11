@@ -29,75 +29,75 @@ namespace Imagine::ThirdParty::Stb {
 
 	namespace Image {
 
-		Imagine::Core::Image<uint8_t> Load(const char *path, int desired_channels /*= 0*/) {
+		Imagine::Image<uint8_t> Load(const char *path, int desired_channels /*= 0*/) {
 			int width, height, channels;
 			stbi_uc *image = stbi_load(path, &width, &height, &channels, desired_channels);
 			channels = desired_channels ? desired_channels : channels;
 			if (image) {
-				return Core::Image<uint8_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
+				return Imagine::Image<uint8_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
 			}
 			else {
-				return Core::Image<uint8_t>{};
+				return Imagine::Image<uint8_t>{};
 			}
 		}
 
-		Imagine::Core::Image<uint16_t> Load16(const char *path, int desired_channels) {
+		Imagine::Image<uint16_t> Load16(const char *path, int desired_channels) {
 			int width, height, channels;
 			stbi_us *image = stbi_load_16(path, &width, &height, &channels, desired_channels);
 			channels = desired_channels ? desired_channels : channels;
 			if (image) {
-				return Core::Image<uint16_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
+				return Imagine::Image<uint16_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
 			}
 			else {
-				return Core::Image<uint16_t>{};
+				return Imagine::Image<uint16_t>{};
 			}
 		}
 
-		Imagine::Core::Image<float> LoadFloat(const char *path, int desired_channels) {
+		Imagine::Image<float> LoadFloat(const char *path, int desired_channels) {
 			int width, height, channels;
 			float *image = stbi_loadf(path, &width, &height, &channels, desired_channels);
 			channels = desired_channels ? desired_channels : channels;
 			if (image) {
-				return Core::Image<float>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
+				return Imagine::Image<float>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
 			}
 			else {
-				return Core::Image<float>{};
+				return Imagine::Image<float>{};
 			}
 		}
 
-		Core::Image<uint8_t> LoadFromMemory(Core::ConstBufferView memoryImage, int desired_channels /*= 0*/) {
+		Imagine::Image<uint8_t> LoadFromMemory(ConstBufferView memoryImage, int desired_channels /*= 0*/) {
 			int width, height, channels;
 			stbi_uc *image = stbi_load_from_memory(memoryImage.Get<stbi_uc>(), memoryImage.Size(), &width, &height, &channels, desired_channels);
 			channels = desired_channels ? desired_channels : channels;
 			if (image) {
-				return Core::Image<uint8_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
+				return Imagine::Image<uint8_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
 			}
 			else {
-				return Core::Image<uint8_t>{};
+				return Imagine::Image<uint8_t>{};
 			}
 		}
 
-		Core::Image<uint16_t> Load16FromMemory(Core::ConstBufferView memoryImage, int desired_channels /*= 0*/) {
+		Imagine::Image<uint16_t> Load16FromMemory(ConstBufferView memoryImage, int desired_channels /*= 0*/) {
 			int width, height, channels;
 			stbi_us *image = stbi_load_16_from_memory(memoryImage.Get<stbi_uc>(), memoryImage.Size(), &width, &height, &channels, desired_channels);
 			channels = desired_channels ? desired_channels : channels;
 			if (image) {
-				return Core::Image<uint16_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
+				return Imagine::Image<uint16_t>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
 			}
 			else {
-				return Core::Image<uint16_t>{};
+				return Imagine::Image<uint16_t>{};
 			}
 		}
 
-		Imagine::Core::Image<float> LoadFloatFromMemory(Core::ConstBufferView memoryImage, int desired_channels) {
+		Imagine::Image<float> LoadFloatFromMemory(ConstBufferView memoryImage, int desired_channels) {
 			int width, height, channels;
 			float *image = stbi_loadf_from_memory(memoryImage.Get<stbi_uc>(), memoryImage.Size(), &width, &height, &channels, desired_channels);
 			channels = desired_channels ? desired_channels : channels;
 			if (image) {
-				return Core::Image<float>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
+				return Imagine::Image<float>{image, (uint32_t) width, (uint32_t) height, (uint32_t) channels};
 			}
 			else {
-				return Core::Image<float>{};
+				return Imagine::Image<float>{};
 			}
 		}
 	} // namespace Image

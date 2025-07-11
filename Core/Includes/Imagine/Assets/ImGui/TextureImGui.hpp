@@ -11,7 +11,7 @@
 #include "Imagine/Rendering/CPU/CPUTexture3D.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class TextureImGui
 	{

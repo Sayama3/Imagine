@@ -8,7 +8,7 @@
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/UUID.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	struct EntityID {
 		static inline constexpr uint32_t NullID{-1u};
 
@@ -37,17 +37,17 @@ namespace Imagine::Core {
 
 		Mat4 GetLocalMatrix() const;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
 
 template<>
-struct std::hash<Imagine::Core::EntityID> {
-	std::size_t operator()(const Imagine::Core::EntityID &s) const noexcept {
+struct std::hash<Imagine::EntityID> {
+	std::size_t operator()(const Imagine::EntityID &s) const noexcept {
 		return std::hash<uint32_t>{}(s.id);
 	}
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::EntityID &value) {
+inline std::ostream &operator<<(std::ostream &os, const Imagine::EntityID &value) {
 	return os << value.string();
 }

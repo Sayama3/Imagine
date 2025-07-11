@@ -15,7 +15,7 @@
 #define MGN_EXTENSION_GLTF ".gltf"
 #define MGN_EXTENSION_GLB ".glb"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class MeshSerializer
 	{
@@ -31,5 +31,5 @@ namespace Imagine::Core
 		static void ExportEditorModel(const AssetMetadata& metadata, Ref<CPUModel> model);
 		static Ref<Asset> ImportModel(const AssetMetadata& metadata);
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 

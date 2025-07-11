@@ -6,7 +6,7 @@
 #include "Imagine/Rendering/RenderObject.hpp"
 
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class DrawContext {
 	public:
@@ -21,4 +21,4 @@ namespace Imagine::Core {
 		}
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

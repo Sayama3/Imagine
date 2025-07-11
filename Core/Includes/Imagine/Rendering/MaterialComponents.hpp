@@ -18,7 +18,7 @@
 	[[nodiscard]] static inline constexpr MaterialType GetStaticType() { return TYPE; } \
 	[[nodiscard]] inline bool IsProperType() const { return GetStaticType() == MaterialField::type; }
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	enum class MaterialFilling : uint8_t {
 		Fill,
@@ -479,20 +479,20 @@ namespace Imagine::Core {
 		std::vector<MaterialPushConstant> PushConstants;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
 template<>
-struct fmt::formatter<Imagine::Core::MaterialFilling> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::MaterialFilling> : fmt::formatter<std::string>
 {
-	auto format(Imagine::Core::MaterialFilling value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(Imagine::MaterialFilling value, format_context &ctx) const -> decltype(ctx.out())
 	{
 		std::string str{"Unknown."};
 		switch (value) {
-			case Imagine::Core::MaterialFilling::Fill:
+			case Imagine::MaterialFilling::Fill:
 				str = "Fill";
 				break;
-			case Imagine::Core::MaterialFilling::Wire:
+			case Imagine::MaterialFilling::Wire:
 				str = "Wire";
 				break;
 		}
@@ -500,19 +500,19 @@ struct fmt::formatter<Imagine::Core::MaterialFilling> : fmt::formatter<std::stri
 	}
 };
 template<>
-struct fmt::formatter<Imagine::Core::MaterialPass> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::MaterialPass> : fmt::formatter<std::string>
 {
-	auto format(Imagine::Core::MaterialPass value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(Imagine::MaterialPass value, format_context &ctx) const -> decltype(ctx.out())
 	{
 		std::string str{"Unknown."};
 		switch (value) {
-			case Imagine::Core::MaterialPass::MainColor:
+			case Imagine::MaterialPass::MainColor:
 				str = "MainColor";
 				break;
-			case Imagine::Core::MaterialPass::Transparent:
+			case Imagine::MaterialPass::Transparent:
 				str = "Transparent";
 				break;
-			case Imagine::Core::MaterialPass::Other:
+			case Imagine::MaterialPass::Other:
 				str = "Other";
 				break;
 		}
@@ -520,10 +520,10 @@ struct fmt::formatter<Imagine::Core::MaterialPass> : fmt::formatter<std::string>
 	}
 };
 template<>
-struct fmt::formatter<Imagine::Core::MaterialType> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::MaterialType> : fmt::formatter<std::string>
 {
-	auto format(Imagine::Core::MaterialType value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(Imagine::MaterialType value, format_context &ctx) const -> decltype(ctx.out())
 	{
-		return format_to(ctx.out(), "{}", Imagine::Core::Helper::MaterialTypeToString(value));
+		return format_to(ctx.out(), "{}", Imagine::Helper::MaterialTypeToString(value));
 	}
 };

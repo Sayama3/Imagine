@@ -7,7 +7,7 @@
 #include "Event.hpp"
 #include "Imagine/Core/KeyCodes.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class KeyEvent : public Event {
 	public:
 		inline Key GetKeyCode() const { return m_KeyCode; }

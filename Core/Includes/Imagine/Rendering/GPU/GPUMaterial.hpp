@@ -6,7 +6,7 @@
 
 #include "Imagine/Core/SmartPointers.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class GPUMaterial {
 	public:
 		GPUMaterial() = default;

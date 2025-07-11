@@ -10,7 +10,7 @@
 #include "Imagine/CPU/CPURenderer.hpp"
 #endif
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	Renderer *Renderer::s_Renderer{nullptr};
 
@@ -52,4 +52,4 @@ namespace Imagine::Core {
 #endif
 
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

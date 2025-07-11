@@ -10,7 +10,7 @@
 #include "Imagine/Math/BoundingBox.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	template<typename T, typename JT>
 	inline static constexpr T ConvertT(const JT val) {return *(T*)&val;}

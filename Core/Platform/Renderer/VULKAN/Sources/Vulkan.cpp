@@ -4,7 +4,7 @@
 
 #include "Imagine/Vulkan/Vulkan.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 }

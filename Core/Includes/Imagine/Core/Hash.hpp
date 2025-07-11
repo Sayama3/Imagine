@@ -8,7 +8,7 @@
 
 namespace Imagine::Hasher {
 	struct hash128_t {
-		static_assert(sizeof(Core::UUID) == 32);
+		static_assert(sizeof(UUID) == 32);
 
 		constexpr hash128_t() :	low64{0}, high64{0} {}
 		constexpr ~hash128_t() = default;
@@ -17,7 +17,7 @@ namespace Imagine::Hasher {
 		union {
 			struct { uint64_t low64, high64; };
 			std::pair<uint64_t, uint64_t> pair;
-			Core::UUID uuid;
+			UUID uuid;
 #if defined(__GNUC__)
 			unsigned __int128 _u128;
 #endif
@@ -25,7 +25,7 @@ namespace Imagine::Hasher {
 	};
 
 
-	[[nodiscard]] uint32_t xxHash32(Core::ConstBufferView view, uint32_t seed = 0);
-	[[nodiscard]] uint64_t xxHash64(Core::ConstBufferView view, uint64_t seed = 0);
-	[[nodiscard]] hash128_t xxHash128(Core::ConstBufferView view, uint64_t seed = 0);
+	[[nodiscard]] uint32_t xxHash32(ConstBufferView view, uint32_t seed = 0);
+	[[nodiscard]] uint64_t xxHash64(ConstBufferView view, uint64_t seed = 0);
+	[[nodiscard]] hash128_t xxHash128(ConstBufferView view, uint64_t seed = 0);
 }

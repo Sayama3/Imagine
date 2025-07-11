@@ -9,7 +9,7 @@
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 	VulkanTexture2D::VulkanTexture2D() {

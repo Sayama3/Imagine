@@ -9,7 +9,7 @@
 #include <imgui.h>
 #endif
 
-namespace Imagine::Core {
+namespace Imagine {
 
 #ifdef MGN_IMGUI
 	void MgnImGui::CreateContext() {
@@ -165,4 +165,4 @@ namespace Imagine::Core {
 	}
 	void MgnImGui::SetEventsBlocked() { MGN_LOG_ERROR("ImGui Not Implemented."); }
 #endif
-} // namespace Imagine::Core
+} // namespace Imagine

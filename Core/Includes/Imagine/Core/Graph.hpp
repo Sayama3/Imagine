@@ -10,7 +10,7 @@
 #include "MemoryHelper.hpp"
 #include "SparseSet.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	struct DataType {
 		uint32_t id;
 		uint32_t size;
@@ -93,4 +93,4 @@ namespace Imagine::Core {
 	};
 
 
-} // namespace Imagine::Core
+} // namespace Imagine

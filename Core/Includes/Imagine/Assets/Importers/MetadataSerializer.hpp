@@ -8,7 +8,7 @@
 #include "Imagine/Assets/AssetMetadata.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class MetadataSerializer {
 	public:
@@ -21,4 +21,4 @@ namespace Imagine::Core {
 		static void WriteMetadata(const AssetMetadata& meta);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

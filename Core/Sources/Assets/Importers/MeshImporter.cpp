@@ -6,6 +6,6 @@
 #include "Imagine/Assets/Importers/TextureSerializer.hpp"
 
 
-namespace Imagine::Core
+namespace Imagine
 {
-} // namespace Imagine::Core
+} // namespace Imagine

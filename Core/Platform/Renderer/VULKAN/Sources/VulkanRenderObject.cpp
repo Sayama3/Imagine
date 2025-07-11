@@ -4,10 +4,10 @@
 
 #include "Imagine/Vulkan/VulkanRenderObject.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 	AutoDeleteMeshAsset *VulkanRenderObject::GetVulkanMesh() {
-		return dynamic_cast<AutoDeleteMeshAsset *>(Core::RenderObject::mesh.get());
+		return dynamic_cast<AutoDeleteMeshAsset *>(RenderObject::mesh.get());
 	}
 } // namespace Imagine::Vulkan

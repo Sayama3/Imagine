@@ -9,7 +9,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/RawHeapArray.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	/**
 	 * This is a sparse set using HeapArray that suppose the ids will come incrementally from 0 (and may get re-used)
@@ -678,4 +678,4 @@ namespace Imagine::Core {
 		HeapArray<UnsignedInteger> FreeList{RawSparseSet<UnsignedInteger>::c_OverheadResize};
 		UnsignedInteger IDs{0};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

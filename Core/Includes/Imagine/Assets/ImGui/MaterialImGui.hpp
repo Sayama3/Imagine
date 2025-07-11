@@ -10,7 +10,7 @@
 #include "Imagine/Rendering/CPU/CPUMaterial.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	class MaterialImGui
@@ -20,5 +20,5 @@ namespace Imagine::Core
 		static bool OnMenuMaterialImGui(AssetMetadata asset);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

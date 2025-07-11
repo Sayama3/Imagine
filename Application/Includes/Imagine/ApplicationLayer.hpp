@@ -11,9 +11,11 @@
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Math/MeshGraph3D.hpp"
 
-namespace Imagine::Application {
-	using namespace Imagine::Core;
-	class ApplicationLayer final : public Core::Layer {
+namespace Imagine::Runtime {
+
+	using namespace Imagine;
+
+	class ApplicationLayer final : public Layer {
 	public:
 		ApplicationLayer();
 		~ApplicationLayer() override;
@@ -23,9 +25,9 @@ namespace Imagine::Application {
 		virtual void OnEvent(Event &event) override;
 	private:
 
-		void OnUpdate(Core::TimeStep timeStep);
+		void OnUpdate(TimeStep timeStep);
 		void OnImGuiRender();
-		void OnRender(Core::DrawContext &);
+		void OnRender(DrawContext &);
 	private:
 		void MoveMouse(Vec2 pos);
 	public:
@@ -35,8 +37,8 @@ namespace Imagine::Application {
 		[[maybe_unused]] void ImGuiSubdivide();
 
 	private:
-		Core::Window* m_Window{nullptr};
-		Core::Renderer *m_Renderer{nullptr};
+		Window* m_Window{nullptr};
+		Renderer *m_Renderer{nullptr};
 
 
 		Math::ChaikinCurves<> m_ChaikinCurves{};
@@ -45,14 +47,14 @@ namespace Imagine::Application {
 
 		std::filesystem::path m_ModelPath{"Assets/Models/Box.glb"};
 		bool m_MeshChanged = true;
-		Ref<Core::CPUMesh> m_Mesh;
+		Ref<CPUMesh> m_Mesh;
 		Math::MeshGraph3D* m_MeshGraph{};
-		Ref<Core::CPUMesh> m_SubdividedMesh;
+		Ref<CPUMesh> m_SubdividedMesh;
 
-		Core::EntityID m_OriginalMeshEntityID;
-		Core::EntityID m_LoopMeshEntityID;
+		EntityID m_OriginalMeshEntityID;
+		EntityID m_LoopMeshEntityID;
 
 		Vec2 m_MousePos;
 	};
 
-} // namespace Imagine::Application
+} // namespace Imagine::Runtime

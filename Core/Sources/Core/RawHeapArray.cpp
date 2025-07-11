@@ -4,5 +4,5 @@
 
 #include "Imagine/Core/RawHeapArray.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 }

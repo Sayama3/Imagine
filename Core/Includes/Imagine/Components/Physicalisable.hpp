@@ -12,7 +12,7 @@
 
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	enum RigidbodyType : uint8_t {
 		/// (not moving or simulating)
@@ -76,4 +76,4 @@ namespace Imagine::Core {
 		}
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine

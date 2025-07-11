@@ -15,7 +15,7 @@
 
 #include "Imagine/Core/SmartPointers.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class Scene;
 
@@ -64,4 +64,4 @@ namespace Imagine::Core {
 
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

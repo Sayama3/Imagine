@@ -4,5 +4,5 @@
 
 #include "Imagine/Core/Inputs.hpp"
 
-namespace Imagine::Core {
-} // namespace Imagine::Core
+namespace Imagine {
+} // namespace Imagine

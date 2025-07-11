@@ -10,7 +10,7 @@
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	class SceneImGui
@@ -19,5 +19,5 @@ namespace Imagine::Core
 		static bool OnSceneImGui(Ref<Asset> asset);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

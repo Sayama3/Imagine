@@ -7,7 +7,7 @@
 #include "Macros.hpp"
 #include "MemoryHelper.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	/**
 	 * This heap array is a dynamically resizable array on the heap that handle allocation and deallocation of memory
 	 * WITHOUT calling any constructor. This is a DataStructure specifically made for that so if you need to call constructor
@@ -304,4 +304,4 @@ namespace Imagine::Core {
 		UnsignedInteger Capacity{0};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

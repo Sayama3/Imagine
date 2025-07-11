@@ -46,18 +46,18 @@
 		}                                                        \
 	};
 
-#define YAML_SIMPLE_MGN_EMITTER_FUNC(Type, FuncTo) YAML_SIMPLE_EMITTER_FUNC(Imagine::Core::##Type, FuncTo)
-#define YAML_SIMPLE_MGN_CONVERTER_FUNC(Type, FuncTo, FuncFrom) YAML_SIMPLE_CONVERTER_FUNC(Imagine::Core::##Type, FuncTo, FuncFrom)
+#define YAML_SIMPLE_MGN_EMITTER_FUNC(Type, FuncTo) YAML_SIMPLE_EMITTER_FUNC(Imagine::##Type, FuncTo)
+#define YAML_SIMPLE_MGN_CONVERTER_FUNC(Type, FuncTo, FuncFrom) YAML_SIMPLE_CONVERTER_FUNC(Imagine::##Type, FuncTo, FuncFrom)
 
 #define YAML_SIMPLE_MGN_ENUM_EMITTER(EnumType) \
-	YAML_SIMPLE_MGN_EMITTER_FUNC(EnumType, Imagine::Core::##EnumType##ToString(v))
+	YAML_SIMPLE_MGN_EMITTER_FUNC(EnumType, Imagine::##EnumType##ToString(v))
 
 #define YAML_SIMPLE_MGN_ENUM_CONVERTER(EnumType) \
-	YAML_SIMPLE_MGN_CONVERTER_FUNC(EnumType, Imagine::Core::##EnumType##ToString(v), Imagine::Core::Try##EnumType##FromString(node.as<std::string>(), v))
+	YAML_SIMPLE_MGN_CONVERTER_FUNC(EnumType, Imagine::##EnumType##ToString(v), Imagine::Try##EnumType##FromString(node.as<std::string>(), v))
 
 
 #define YAML_TEMPLATE_EMITTER(IMAGINE_TYPE)                                                        \
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::##IMAGINE_TYPE &v) { \
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::##IMAGINE_TYPE &v) { \
 		out << YAML::BeginMap;                                                                     \
 		{                                                                                          \
 		}                                                                                          \
@@ -67,7 +67,7 @@
 
 
 #define YAML_TEMPLATE_EMITTER_T(IMAGINE_TYPE, ...)                                                        \
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::##IMAGINE_TYPE &v) { \
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::##IMAGINE_TYPE &v) { \
 		out << YAML::BeginMap;                                                                     \
 		{                                                                                          \
 			FOR_EACH(YAML_OUT_VAL, __VA_ARGS__)                                                    \
@@ -79,13 +79,13 @@
 
 #define YAML_TEMPLATE_CONVERTER(IMAGINE_TYPE)                                           \
 	template<>                                                                          \
-	struct convert<Imagine::Core::##IMAGINE_TYPE> {                                     \
-		inline static Node encode(const Imagine::Core::##IMAGINE_TYPE &v) {             \
+	struct convert<Imagine::##IMAGINE_TYPE> {                                     \
+		inline static Node encode(const Imagine::##IMAGINE_TYPE &v) {             \
 			Node node;                                                                  \
 			return node;                                                                \
 		}                                                                               \
                                                                                         \
-		inline static bool decode(const Node &node, Imagine::Core::##IMAGINE_TYPE &v) { \
+		inline static bool decode(const Node &node, Imagine::##IMAGINE_TYPE &v) { \
 			return true;                                                                \
 		}                                                                               \
 	};

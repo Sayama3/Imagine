@@ -10,12 +10,12 @@
 namespace Imagine::ThirdParty {
 	namespace Stb {
 		namespace Image {
-			Imagine::Core::Image<uint8_t> Load(const char *path, int desired_channels = 0);
-			Imagine::Core::Image<uint16_t> Load16(const char *path, int desired_channels = 0);
-			Imagine::Core::Image<float> LoadFloat(const char *path, int desired_channels = 0);
-			Imagine::Core::Image<uint8_t> LoadFromMemory(Core::ConstBufferView memoryImage, int desired_channels = 0);
-			Imagine::Core::Image<uint16_t> Load16FromMemory(Core::ConstBufferView memoryImage, int desired_channels = 0);
-			Imagine::Core::Image<float> LoadFloatFromMemory(Core::ConstBufferView memoryImage, int desired_channels = 0);
+			Imagine::Image<uint8_t> Load(const char *path, int desired_channels = 0);
+			Imagine::Image<uint16_t> Load16(const char *path, int desired_channels = 0);
+			Imagine::Image<float> LoadFloat(const char *path, int desired_channels = 0);
+			Imagine::Image<uint8_t> LoadFromMemory(ConstBufferView memoryImage, int desired_channels = 0);
+			Imagine::Image<uint16_t> Load16FromMemory(ConstBufferView memoryImage, int desired_channels = 0);
+			Imagine::Image<float> LoadFloatFromMemory(ConstBufferView memoryImage, int desired_channels = 0);
 		} // namespace Image
 		namespace Perlin {
 			float Noise3(float x, float y, float z, int x_wrap, int y_wrap, int z_wrap);

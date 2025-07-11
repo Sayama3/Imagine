@@ -12,7 +12,7 @@
 
 #define SceneExtension ".mgn"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	class SceneImporter
@@ -23,5 +23,5 @@ namespace Imagine::Core
 		static void ExportEditorScene(const AssetMetadata& metadata, Ref<Scene> scene);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

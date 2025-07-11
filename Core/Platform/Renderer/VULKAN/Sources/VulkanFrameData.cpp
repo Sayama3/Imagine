@@ -4,7 +4,7 @@
 
 #include "Imagine/Vulkan/VulkanFrameData.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 
 namespace Imagine::Vulkan {

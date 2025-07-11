@@ -9,7 +9,7 @@
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct CPUMesh final : public Asset {
 		MGN_IMPLEMENT_ASSET(AssetType::Mesh);
@@ -36,4 +36,4 @@ namespace Imagine::Core {
 		Ref<GPUMesh> gpu{nullptr};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

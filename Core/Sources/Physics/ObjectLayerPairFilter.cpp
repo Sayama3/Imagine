@@ -16,7 +16,7 @@
 // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
 using namespace JPH::literals;
 
-namespace Imagine::Core
+namespace Imagine
 {
 	bool ObjectLayerPairFilter::ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const
 	{
@@ -31,4 +31,4 @@ namespace Imagine::Core
 				return false;
 		}
 	}
-}// namespace Imagine::Core
+}// namespace Imagine

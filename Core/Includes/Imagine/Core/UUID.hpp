@@ -4,15 +4,15 @@
 
 #pragma once
 
-#define NULL_UUID ::Imagine::Core::UUID::Null()
+#define NULL_UUID ::Imagine::UUID::Null()
 
 #include <spdlog/spdlog.h>
 #include "UUID.forward.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class UUID {
-		friend std::hash<Imagine::Core::UUID>;
-		friend YAML::convert<Imagine::Core::UUID>;
+		friend std::hash<Imagine::UUID>;
+		friend YAML::convert<Imagine::UUID>;
 		friend AssetHandle;
 	public:
 		using Array64 = std::array<uint64_t, 2>;
@@ -95,11 +95,11 @@ namespace Imagine::Core {
 			Array8 m_Array8;
 		};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 
 template<>
-struct std::hash<Imagine::Core::UUID> {
-	std::size_t operator()(const Imagine::Core::UUID &s) const noexcept {
+struct std::hash<Imagine::UUID> {
+	std::size_t operator()(const Imagine::UUID &s) const noexcept {
 		constexpr auto hasher = std::hash<uint64_t>{};
 
 		const auto h1 = hasher(s.m_UUID1);
@@ -109,13 +109,13 @@ struct std::hash<Imagine::Core::UUID> {
 	}
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::UUID &value) {
+inline std::ostream &operator<<(std::ostream &os, const Imagine::UUID &value) {
 	return os << value.string();
 }
 
 template<>
-struct fmt::formatter<Imagine::Core::UUID> : fmt::formatter<std::string> {
-	auto format(Imagine::Core::UUID value, format_context &ctx) const -> decltype(ctx.out()) {
+struct fmt::formatter<Imagine::UUID> : fmt::formatter<std::string> {
+	auto format(Imagine::UUID value, format_context &ctx) const -> decltype(ctx.out()) {
 		return format_to(ctx.out(), "{}", value.string());
 	}
 };

@@ -8,7 +8,7 @@
 #include "Imagine/Math/Image.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture2D.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUTexture2D final : public Asset {
 	public:
@@ -24,4 +24,4 @@ namespace Imagine::Core {
 		Ref<GPUTexture2D> gpu{nullptr};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

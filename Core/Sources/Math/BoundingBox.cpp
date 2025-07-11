@@ -4,7 +4,7 @@
 
 #include "Imagine/Math/BoundingBox.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	BoundingBox::BoundingBox(const Vec3 &min, const Vec3 &max) :
 		m_Max(max), m_Min(min) {
 		MGN_CORE_MASSERT(Math::Max(m_Min, m_Max) == m_Max, "The max ({}) should be ({})", m_Max, Math::Max(m_Min, m_Max));
@@ -121,4 +121,4 @@ namespace Imagine::Core {
 	BoundingBox::operator bool() const {
 		return IsValid();
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

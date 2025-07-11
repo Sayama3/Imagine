@@ -8,7 +8,7 @@
 
 #include "Imagine/ThirdParty/Assimp.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	CPUMesh::CPUMesh(std::vector<Vertex> &&vertices, std::vector<uint32_t> &&indices) :
 		Vertices(std::move(vertices)), Indices(std::move(indices)) {}
 	CPUMesh::CPUMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices) :
@@ -29,7 +29,7 @@ namespace Imagine::Core {
 		CPUMesh finalMesh;
 		finalMesh.Name = p.stem().string();
 
-		using namespace Imagine::Core;
+		using namespace Imagine;
 		Assimp::Importer importer;
 
 		const aiScene *scene = importer.ReadFile(p.string(), ThirdParty::Assimp::GetSmoothPostProcess());
@@ -146,4 +146,4 @@ namespace Imagine::Core {
 		finalMesh.Lods.emplace_back(0, static_cast<uint32_t>(finalMesh.Indices.size()));
 		return finalMesh;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -13,7 +13,7 @@
 
 #include <utility>
 #endif
-namespace Imagine::Core {
+namespace Imagine {
 	Scene::Scene() {
 		RegisterType<Renderable>();
 		RegisterType<Physicalisable>();
@@ -752,4 +752,4 @@ namespace Imagine::Core {
 		auto &components = m_CustomComponents.at(componentId);
 		return components.Exist(entityId.id);
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

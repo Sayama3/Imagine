@@ -7,7 +7,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Math/ImagePixelType.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	enum TextureUsage : uint16_t {
 		TexUsg_Undefined = 0,
 		TexUsg_CpuReadable = BIT(0),

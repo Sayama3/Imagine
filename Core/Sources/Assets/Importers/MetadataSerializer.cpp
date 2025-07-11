@@ -11,7 +11,7 @@
 using namespace std::literals;
 namespace fs = std::filesystem;
 
-namespace Imagine::Core {
+namespace Imagine {
 	fs::path MetadataSerializer::GetMetadataPath(const fs::path &assetPath) {
 		fs::path meta = assetPath;
 		meta += ".meta";
@@ -59,4 +59,4 @@ namespace Imagine::Core {
 		e << YAML::EndMap;
 		ThirdParty::YamlCpp::WriteYamlFile(GetMetadataPath(meta.FilePath), e);
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

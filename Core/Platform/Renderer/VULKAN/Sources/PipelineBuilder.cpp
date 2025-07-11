@@ -7,12 +7,12 @@
 #include "Imagine/Vulkan/VulkanInitializer.hpp"
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 	PipelineBuilder::PipelineBuilder() {
 		Clear();
-		m_ShaderStages.reserve(Core::c_ShaderStageCount);
+		m_ShaderStages.reserve(c_ShaderStageCount);
 	}
 
 	PipelineBuilder::PipelineBuilder(VkPipelineLayout pipelineLayout) : PipelineBuilder() {
@@ -134,7 +134,7 @@ namespace Imagine::Vulkan {
 		return *this;
 	}
 
-	PipelineBuilder &PipelineBuilder::AddShader(Core::ShaderStage stage, VkShaderModule shader, const char *name /* = "main"*/) {
+	PipelineBuilder &PipelineBuilder::AddShader(ShaderStage stage, VkShaderModule shader, const char *name /* = "main"*/) {
 		m_ShaderStages.push_back(Initializer::PipelineShaderStageCreateInfo(Utils::GetShaderStageFlagsBits(stage), shader, name));
 		return *this;
 	}

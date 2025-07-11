@@ -7,7 +7,7 @@
 #include "Imagine/ThirdParty/YamlCpp.hpp"
 
 
-namespace Imagine::Core
+namespace Imagine
 {
 	static inline constexpr std::array<const char* const, 17> Extensions {".glsl", ".shader", ".compute", ".comp", ".cs", ".vert", ".vs", ".tessco", ".tcs", ".tessev", ".tes", ".geom", ".gs", ".frag", ".fs", ".pixel", ".ps"};
 
@@ -37,10 +37,10 @@ namespace Imagine::Core
 		if (!source) return;
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		if (auto *shader = dynamic_cast<const Imagine::Core::CPUFileShader *>(source.get())) {
+		if (auto *shader = dynamic_cast<const Imagine::CPUFileShader *>(source.get())) {
 			out << KEYVAL("Type", "FileShader");
 			out << KEYVAL("Data", *shader);
-		} else if (auto *shader = dynamic_cast<const Imagine::Core::CPUMemoryShader *>(source.get())) {
+		} else if (auto *shader = dynamic_cast<const Imagine::CPUMemoryShader *>(source.get())) {
 			out << KEYVAL("Type", "MemoryShader");
 			out << KEYVAL("Data", *shader);
 		}
@@ -48,4 +48,4 @@ namespace Imagine::Core
 		ThirdParty::YamlCpp::WriteYamlFile(metadata.FilePath, out);
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine

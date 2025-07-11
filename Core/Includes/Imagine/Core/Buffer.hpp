@@ -6,7 +6,7 @@
 
 #include "Imagine/Core/Macros.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class Buffer {
 	public:
 		inline static Buffer Copy(void *data, const uint64_t size) {
@@ -156,4 +156,4 @@ namespace Imagine::Core {
 		void *m_Data{nullptr};
 		uint64_t m_Size{0};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

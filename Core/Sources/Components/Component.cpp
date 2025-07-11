@@ -4,5 +4,5 @@
 
 #include "Imagine/Components/Component.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 }

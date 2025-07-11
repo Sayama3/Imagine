@@ -4,7 +4,7 @@
 
 #include "Imagine/Rendering/CPU/CPUShader.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	CPUShader::CPUShader(const ShaderStage stage) : stage(stage) {
 	}
@@ -25,4 +25,4 @@ namespace Imagine::Core {
 		return name;
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine

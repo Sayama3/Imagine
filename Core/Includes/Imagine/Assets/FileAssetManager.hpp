@@ -9,7 +9,7 @@
 #include "AssetMetadata.hpp"
 #include "Imagine/Core/InternalCore.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 #ifdef MGN_DIST
 	using AssetRegistry = std::unordered_map<AssetHandle, AssetMetadata>;
 	using AssetRegistryIterator = std::unordered_map<AssetHandle, AssetMetadata>::iterator;
@@ -81,4 +81,4 @@ namespace Imagine::Core {
 		return asset;
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine

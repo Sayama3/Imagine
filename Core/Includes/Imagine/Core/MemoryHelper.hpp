@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core::MemoryHelper {
+namespace Imagine::MemoryHelper {
 	inline static void c_swap_memory(void *id1, void *id2, const uint64_t size) {
 		// TODO: Optimize ?
 		void *tmp = malloc(size);
@@ -23,4 +23,4 @@ namespace Imagine::Core::MemoryHelper {
 	inline static void c_swap_memory(Type &id1, Type &id2) {
 		c_swap_memory(&id1, &id2);
 	}
-} // namespace Imagine::Core::MemoryHelper
+} // namespace Imagine::MemoryHelper

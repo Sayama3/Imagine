@@ -6,7 +6,7 @@
 
 #include "Entity.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	struct Root {};
 
 	struct Parent {

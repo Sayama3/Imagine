@@ -8,7 +8,7 @@
 #include "AssetMetadata.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	using AssetImportFunction = std::function<Ref<Asset>(const AssetMetadata&)>;
 	using AssetDetectorFunction = std::function<bool(const std::filesystem::path&)>;
@@ -24,5 +24,5 @@ namespace Imagine::Core
 		static std::unordered_map<AssetType, AssetDetectorFunction> AssetDetectors;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

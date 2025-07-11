@@ -11,7 +11,7 @@
 #ifdef MGN_IMGUI
 #include <imgui.h>
 #endif
-namespace Imagine::Core
+namespace Imagine
 {
 #ifdef MGN_IMGUI
 	bool MaterialImGui::OnMaterialImGui(Ref<Asset> asset)
@@ -56,5 +56,5 @@ namespace Imagine::Core
 	bool MaterialImGui::OnMenuMaterialImGui(AssetMetadata asset) { return false; }
 #endif
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

@@ -4,7 +4,7 @@
 
 #include "Imagine/Rendering/CPU/CPUVirtualTexture.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	CPUVirtualTexture2D::~CPUVirtualTexture2D() = default;
 	uint32_t CPUVirtualTexture2D::GetWidth() {
@@ -46,4 +46,4 @@ namespace Imagine::Core {
 	TextureUsage CPUVirtualTexture3D::GetUsage() {
 		return usage;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

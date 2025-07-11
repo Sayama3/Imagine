@@ -9,7 +9,7 @@
 #include "Imagine/Math/ImagePixelType.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUTexture3D final : public Asset {
 	public:

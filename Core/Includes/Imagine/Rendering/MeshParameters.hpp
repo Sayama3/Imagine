@@ -7,7 +7,7 @@
 #include "Imagine/Math/Core.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	enum class Topology : uint8_t {
 		Triangle,
 		Line,
@@ -45,5 +45,5 @@ namespace Imagine::Core {
 		uint32_t count{0};
 		AssetHandle materialInstance{NULL_ASSET_HANDLE};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 

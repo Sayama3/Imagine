@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
     template<typename T>
     class AssetField;
 }

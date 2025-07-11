@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	template<typename T>
 	inline static constexpr const char* const TypeName() {
@@ -44,4 +44,4 @@ namespace Imagine::Core {
 	// explicit deduction guide (not needed as of C++20)
 	template<class... Ts>
 	overloaded(Ts...) -> overloaded<Ts...>;
-} // namespace Imagine::Core
+} // namespace Imagine

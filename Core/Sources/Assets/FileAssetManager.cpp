@@ -6,7 +6,7 @@
 
 #include "Imagine/Assets/AssetImporter.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 		bool FileAssetManager::IsAssetHandleValid(AssetHandle handle) const
 	{
 		MGN_PROFILE_FUNCTION();

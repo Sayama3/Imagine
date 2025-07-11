@@ -25,10 +25,10 @@ namespace Imagine::Vulkan {
 	};
 
 	struct VulkanSetLayout {
-		std::vector<Core::MaterialBlock> bindings;
+		std::vector<MaterialBlock> bindings;
 	};
 
-	struct VulkanMaterial final : public Core::GPUMaterial {
+	struct VulkanMaterial final : public GPUMaterial {
 		VulkanMaterial();
 		virtual ~VulkanMaterial() override;
 		virtual uint64_t GetID() override;
@@ -36,12 +36,12 @@ namespace Imagine::Vulkan {
 		std::vector<VulkanSetLayout> materialLayoutsDescriptions;
 		std::vector<VkDescriptorSetLayout> materialLayouts;
 
-		std::vector<Core::MaterialBlock> pushConstantsDescription;
+		std::vector<MaterialBlock> pushConstantsDescription;
 		std::vector<VkPushConstantRange> pushConstants;
 		bool autoDelete = true;
 	};
 
-	struct VulkanMaterialInstance final : public Core::GPUMaterialInstance {
+	struct VulkanMaterialInstance final : public GPUMaterialInstance {
 	private:
 		static uint64_t s_id;
 		uint64_t id;
@@ -54,20 +54,20 @@ namespace Imagine::Vulkan {
 
 		virtual uint64_t GetID() override;
 
-		Core::Weak<VulkanMaterial> material;
+		Weak<VulkanMaterial> material;
 		std::vector<VulkanBindingContainer> materialSetVulkanData;
 		std::vector<VkDescriptorSet> materialSets;
-		Core::MaterialPass passType;
-		Core::Ref<Deleter> deleter;
+		MaterialPass passType;
+		Ref<Deleter> deleter;
 	};
 
 	struct GLTFMetallicRoughness {
-		Core::Ref<VulkanMaterial> opaque;
-		Core::Ref<VulkanMaterial> transparent;
+		Ref<VulkanMaterial> opaque;
+		Ref<VulkanMaterial> transparent;
 		// VulkanMaterialPipeline opaquePipeline;
 		// VulkanMaterialPipeline transparentPipeline;
 		// VkDescriptorSetLayout materialLayout;
-		Core::Topology topology = Core::Topology::Triangle;
+		Topology topology = Topology::Triangle;
 
 		// Our target for Uniform Buffers is a 256 bytes alignments
 		struct alignas(256) MaterialConstants {
@@ -96,7 +96,7 @@ namespace Imagine::Vulkan {
 		void BuildPipeline(VulkanRenderer* renderer);
 		void ClearResources(VkDevice device);
 
-		VulkanMaterialInstance WriteMaterial(VkDevice device, Core::MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable &descriptorAllocator);
+		VulkanMaterialInstance WriteMaterial(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable &descriptorAllocator);
 	};
 };
 

@@ -7,7 +7,7 @@
 #include "Buffer.hpp"
 #include "Imagine/Core/Macros.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	/**
 	 * A slice of a buffer.
 	 */
@@ -191,4 +191,4 @@ namespace Imagine::Core {
 		const void *m_Buffer{nullptr};
 		uint64_t m_Size;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -6,7 +6,7 @@
 #include "Imagine/Assets/Importers/ShaderSerializer.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	bool ShaderImGui::ShaderTypeCombo(const char *label, ShaderStage *shaderType) {
 		bool changed = false;
@@ -59,4 +59,4 @@ namespace Imagine::Core {
 	bool ShaderImGui::OnComputeShaderImGui(Ref<Asset> asset) {
 		return false;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

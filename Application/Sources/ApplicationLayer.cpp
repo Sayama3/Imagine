@@ -17,9 +17,9 @@
 #include <imgui_stdlib.h>
 #endif
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
-namespace Imagine::Application {
+namespace Imagine::Runtime {
 
 	ApplicationLayer::ApplicationLayer() {
 		m_MeshGraph = new Math::MeshGraph3D();
@@ -61,7 +61,7 @@ namespace Imagine::Application {
 		m_SubdividedMesh.reset();
 	}
 
-	void ApplicationLayer::OnUpdate(Core::TimeStep timeStep) {
+	void ApplicationLayer::OnUpdate(TimeStep timeStep) {
 		if (m_MeshChanged) {
 			m_MeshGraph->Clear();
 			m_MeshGraph->AddMesh(*m_Mesh);
@@ -75,7 +75,7 @@ namespace Imagine::Application {
 		ImGuiSubdivide();
 	}
 
-	void ApplicationLayer::OnRender(Core::DrawContext &ctx) {
+	void ApplicationLayer::OnRender(DrawContext &ctx) {
 		LineObject line;
 		if (!m_ChaikinCurves.line.empty()) {
 			line.points.clear();
@@ -110,7 +110,7 @@ namespace Imagine::Application {
 
 		if (handled) return;
 		handled = dispatch.Dispatch<AppRenderEvent>([this](AppRenderEvent &event) {
-			Core::DrawContext ctx;
+			DrawContext ctx;
 			OnRender(ctx);
 			Renderer::Get()->Draw(ctx);
 			return false;
@@ -170,36 +170,36 @@ namespace Imagine::Application {
 		if (handled) return;
 		handled = dispatch.Dispatch<KeyPressedEvent>([](KeyPressedEvent &e) -> bool {
 			if (e.GetKeyCode() == Imagine::Key::W) {
-				Core::Camera::s_MainCamera->velocity.z = +1;
+				Camera::s_MainCamera->velocity.z = +1;
 			}
 			if (e.GetKeyCode() == Imagine::Key::S) {
-				Core::Camera::s_MainCamera->velocity.z = -1;
+				Camera::s_MainCamera->velocity.z = -1;
 			}
 			if (e.GetKeyCode() == Imagine::Key::A) {
-				Core::Camera::s_MainCamera->velocity.x = -1;
+				Camera::s_MainCamera->velocity.x = -1;
 			}
 			if (e.GetKeyCode() == Imagine::Key::D) {
-				Core::Camera::s_MainCamera->velocity.x = +1;
+				Camera::s_MainCamera->velocity.x = +1;
 			}
 			if (e.GetKeyCode() == Imagine::Key::E) {
-				Core::Camera::s_MainCamera->velocity.y = +1;
+				Camera::s_MainCamera->velocity.y = +1;
 			}
 			if (e.GetKeyCode() == Imagine::Key::Q) {
-				Core::Camera::s_MainCamera->velocity.y = -1;
+				Camera::s_MainCamera->velocity.y = -1;
 			}
 
 			if (e.GetKeyCode() == Imagine::Key::Right) {
-				Core::Camera::s_MainCamera->yawVelocity = +45;
+				Camera::s_MainCamera->yawVelocity = +45;
 			}
 			if (e.GetKeyCode() == Imagine::Key::Left) {
-				Core::Camera::s_MainCamera->yawVelocity = -45;
+				Camera::s_MainCamera->yawVelocity = -45;
 			}
 
 			if (e.GetKeyCode() == Imagine::Key::Up) {
-				Core::Camera::s_MainCamera->pitchVelocity = +45;
+				Camera::s_MainCamera->pitchVelocity = +45;
 			}
 			if (e.GetKeyCode() == Imagine::Key::Down) {
-				Core::Camera::s_MainCamera->pitchVelocity = -45;
+				Camera::s_MainCamera->pitchVelocity = -45;
 			}
 
 			return true;
@@ -209,36 +209,36 @@ namespace Imagine::Application {
 		if (handled) return;
 		dispatch.Dispatch<KeyReleasedEvent>([](const KeyReleasedEvent &e) -> bool {
 			if (e.GetKeyCode() == Imagine::Key::W) {
-				Core::Camera::s_MainCamera->velocity.z = 0;
+				Camera::s_MainCamera->velocity.z = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::S) {
-				Core::Camera::s_MainCamera->velocity.z = 0;
+				Camera::s_MainCamera->velocity.z = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::A) {
-				Core::Camera::s_MainCamera->velocity.x = 0;
+				Camera::s_MainCamera->velocity.x = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::D) {
-				Core::Camera::s_MainCamera->velocity.x = 0;
+				Camera::s_MainCamera->velocity.x = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::E) {
-				Core::Camera::s_MainCamera->velocity.y = 0;
+				Camera::s_MainCamera->velocity.y = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::Q) {
-				Core::Camera::s_MainCamera->velocity.y = 0;
+				Camera::s_MainCamera->velocity.y = 0;
 			}
 
 			if (e.GetKeyCode() == Imagine::Key::Right) {
-				Core::Camera::s_MainCamera->yawVelocity = 0;
+				Camera::s_MainCamera->yawVelocity = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::Left) {
-				Core::Camera::s_MainCamera->yawVelocity = 0;
+				Camera::s_MainCamera->yawVelocity = 0;
 			}
 
 			if (e.GetKeyCode() == Imagine::Key::Up) {
-				Core::Camera::s_MainCamera->pitchVelocity = 0;
+				Camera::s_MainCamera->pitchVelocity = 0;
 			}
 			if (e.GetKeyCode() == Imagine::Key::Down) {
-				Core::Camera::s_MainCamera->pitchVelocity = 0;
+				Camera::s_MainCamera->pitchVelocity = 0;
 			}
 
 			return true;
@@ -476,4 +476,4 @@ namespace Imagine::Application {
 	void ApplicationLayer::ImGuiChaikin() {}
 	void ApplicationLayer::ImGuiSubdivide() {}
 #endif
-} // namespace Imagine::Application
+} // namespace Imagine::Runtime

@@ -7,9 +7,9 @@
 
 
 namespace Imagine::SDL3 {
-	class SDL3Window final : public Core::Window {
+	class SDL3Window final : public Window {
 	public:
-		SDL3Window(const std::string &windowName, const Core::WindowParameters parameters);
+		SDL3Window(const std::string &windowName, const WindowParameters parameters);
 		~SDL3Window() override;
 
 		void Update() override;
@@ -21,13 +21,13 @@ namespace Imagine::SDL3 {
 
 		[[nodiscard]] uint32_t GetWindowWidth() override;
 		[[nodiscard]] uint32_t GetWindowHeight() override;
-		[[nodiscard]] Core::Size2 GetWindowSize() override;
+		[[nodiscard]] Size2 GetWindowSize() override;
 
 		[[nodiscard]] virtual Rect<> GetWindowRect() override;
 
 		[[nodiscard]] uint32_t GetFramebufferWidth() override;
 		[[nodiscard]] uint32_t GetFramebufferHeight() override;
-		[[nodiscard]] Core::Size2 GetFramebufferSize() override;
+		[[nodiscard]] Size2 GetFramebufferSize() override;
 		[[nodiscard]] void *GetNativeWindow() override;
 
 		[[nodiscard]] bool IsMinimized() override;
@@ -35,18 +35,18 @@ namespace Imagine::SDL3 {
 
 		[[nodiscard]] void *GetWindowPtr() override;
 	public:
-		const Core::KeyboardState& GetKeyboardState() const;
-		const Core::MouseState& GetMouseState() const;
+		const KeyboardState& GetKeyboardState() const;
+		const MouseState& GetMouseState() const;
 	private:
 		static bool OnPixelSizeChanged(void *userdata, SDL_Event *event);
 	private:
 		EventCallBackFn m_EventCallBack{};
 		struct SDL_Window *m_Window{nullptr};
 
-		Core::MouseState m_Mouse;
-		Core::KeyboardState m_Keyboard;
+		MouseState m_Mouse;
+		KeyboardState m_Keyboard;
 
 		bool m_ShouldClose = false;
 		bool m_Minimized = false;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

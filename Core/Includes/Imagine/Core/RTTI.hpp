@@ -5,7 +5,7 @@
 #pragma once
 #include "Macros.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	template<class Base>
 	struct RTTI {
@@ -101,11 +101,11 @@ namespace Imagine::Core {
 		} while (comp != nullptr);
 		return false;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine
 
 template<class Base>
-struct std::hash<::Imagine::Core::RTTI<Base>> {
-	std::size_t operator()(const ::Imagine::Core::RTTI<Base> &s) const noexcept {
+struct std::hash<::Imagine::RTTI<Base>> {
+	std::size_t operator()(const ::Imagine::RTTI<Base> &s) const noexcept {
 		const std::size_t h1 = std::hash<std::string>{}(s.type);
 		const std::size_t h2 = std::hash<uint64_t>{}(s.parent);
 		return h1 ^ (h2 << 1);
@@ -114,10 +114,10 @@ struct std::hash<::Imagine::Core::RTTI<Base>> {
 
 #define RTTI_IMPLEMENT_CREATE(Base, Self) \
 	inline static Base *Create() { return new Self(); }
-#define RTTI_ROOT_ADVANCED_DECLARATION(Base, TypeNameStr) inline static ::Imagine::Core::RTTI<Base> rtti{TypeNameStr, Base::Create, nullptr};
-#define RTTI_ADVANCED_DECLARATION(Base, Self, TypeNameStr, Parent) inline static ::Imagine::Core::RTTI<Base> rtti{TypeNameStr, Self::Create, &Parent::rtti};
+#define RTTI_ROOT_ADVANCED_DECLARATION(Base, TypeNameStr) inline static ::Imagine::RTTI<Base> rtti{TypeNameStr, Base::Create, nullptr};
+#define RTTI_ADVANCED_DECLARATION(Base, Self, TypeNameStr, Parent) inline static ::Imagine::RTTI<Base> rtti{TypeNameStr, Self::Create, &Parent::rtti};
 #define RTTI_IMPLEMENT_THIS_RTTI(Base, Self) \
-	virtual ::Imagine::Core::RTTI<Base> &get_rtti() { return Self::rtti; };
+	virtual ::Imagine::RTTI<Base> &get_rtti() { return Self::rtti; };
 
 #define RTTI_ROOT_DECLARATION(Base) RTTI_IMPLEMENT_CREATE(Base, Base) RTTI_ROOT_ADVANCED_DECLARATION(Base, #Base) RTTI_IMPLEMENT_THIS_RTTI(Base, Base)
 #define RTTI_DECLARATION(Base, Self, Parent) RTTI_IMPLEMENT_CREATE(Base, Self) RTTI_ADVANCED_DECLARATION(Base, Self, #Self, Parent) RTTI_IMPLEMENT_THIS_RTTI(Base, Self)

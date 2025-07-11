@@ -11,11 +11,11 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	void MgnImGui::InitializeWindow() {
-		MGN_CORE_CASSERT(Imagine::Core::Window::Get(), "Window is not created.");
+		MGN_CORE_CASSERT(Imagine::Window::Get(), "Window is not created.");
 #ifdef MGN_RENDERER_VULKAN
-		ImGui_ImplSDL3_InitForVulkan(static_cast<struct SDL_Window *>(Imagine::Core::Window::Get()->GetWindowPtr()));
+		ImGui_ImplSDL3_InitForVulkan(static_cast<struct SDL_Window *>(Imagine::Window::Get()->GetWindowPtr()));
 #else
 #error "The renderer is not implemented for ImGui"
 #endif
@@ -28,4 +28,4 @@ namespace Imagine::Core {
 	void MgnImGui::ShutdownWindow() {
 		ImGui_ImplSDL3_Shutdown();
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

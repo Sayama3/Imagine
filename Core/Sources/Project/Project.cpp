@@ -7,7 +7,7 @@
 #include "Imagine/Core/Profiling.hpp"
 #include "Imagine/Scene/Scene.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 	Scope<Project> Project::s_ActiveProject = nullptr;
 
@@ -303,4 +303,4 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 		MGN_CORE_CASSERT(s_ActiveProject->m_Config.gizmoShaderId.has_value(), "No Gizmo Shader associated with the project.");
 		return s_ActiveProject->m_Config.gizmoShaderId.value_or(NULL_ASSET_HANDLE);
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -7,7 +7,7 @@
 #include "Imagine/Project/Project.hpp"
 
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class ProjectSerializer
 	{
@@ -20,5 +20,5 @@ namespace Imagine::Core
 		bool Deserialize(const std::filesystem::path& filepath);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

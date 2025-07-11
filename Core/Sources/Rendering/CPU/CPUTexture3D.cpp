@@ -5,4 +5,4 @@
 #include "Imagine/Rendering/CPU/CPUTexture3D.hpp"
 
 
-namespace Imagine::Core {}
+namespace Imagine {}

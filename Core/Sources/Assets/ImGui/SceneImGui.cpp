@@ -6,7 +6,7 @@
 
 #include "Imagine/Assets/ImGui/SceneImGui.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	bool SceneImGui::OnSceneImGui(Ref<Asset> asset)
@@ -14,5 +14,5 @@ namespace Imagine::Core
 		return false;
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

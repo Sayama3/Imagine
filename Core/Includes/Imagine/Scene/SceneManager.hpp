@@ -6,7 +6,7 @@
 
 #include "Scene.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class SceneManager {
 	public:
 		using SceneRef = Scene::Ref;
@@ -28,4 +28,4 @@ namespace Imagine::Core {
 		// Lowest order number is first
 		static inline std::multimap<float, SceneRef> s_LoadedScenes{{0.0f, s_MainScene}};
 	};
-} // Imagine::Core
+} // Imagine

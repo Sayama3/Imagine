@@ -5,7 +5,7 @@
 #include "Imagine/Math/BoundingSphere.hpp"
 #include "Imagine/Core/InternalCore.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	bool BoundingSphere::Overlaps(const BoundingSphere &other) const {
 		if (m_Radius < 0 || other.m_Radius < 0) return false;
 
@@ -84,4 +84,4 @@ namespace Imagine::Core {
 		m_Center = point;
 		m_Radius = 0;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

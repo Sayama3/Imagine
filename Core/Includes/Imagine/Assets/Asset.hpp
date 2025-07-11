@@ -10,7 +10,7 @@
 #define MGN_IMPLEMENT_ASSET(assetType) inline static constexpr AssetType GetStaticType() {return assetType;} \
 inline virtual AssetType GetType() const override {return GetStaticType();}
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class Asset {
 	public:
@@ -20,4 +20,4 @@ namespace Imagine::Core {
 		[[nodiscard]] virtual AssetType GetType() const = 0;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

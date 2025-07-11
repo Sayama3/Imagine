@@ -12,7 +12,7 @@ namespace YAML {
 	YAML_SIMPLE_MGN_ENUM_EMITTER(ImagePixelType);
 	YAML_SIMPLE_MGN_ENUM_EMITTER(TextureUsage);
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUVirtualTexture2D &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUVirtualTexture2D &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Usage", v.usage);
@@ -24,7 +24,7 @@ namespace YAML {
 		out << YAML::EndMap;
 		return out;
 	}
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUVirtualTexture3D &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUVirtualTexture3D &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Usage", v.usage);
@@ -45,8 +45,8 @@ namespace YAML {
 	YAML_SIMPLE_MGN_ENUM_CONVERTER(TextureUsage);
 
 	template<>
-	struct convert<Imagine::Core::CPUVirtualTexture2D> {
-		inline static Node encode(const Imagine::Core::CPUVirtualTexture2D &v) {
+	struct convert<Imagine::CPUVirtualTexture2D> {
+		inline static Node encode(const Imagine::CPUVirtualTexture2D &v) {
 			Node node;
 			node["Usage"] = v.usage;
 			node["Type"] = v.type;
@@ -55,9 +55,9 @@ namespace YAML {
 			node["Height"] = v.height;
 			return node;
 		}
-		inline static bool decode(const Node &node, Imagine::Core::CPUVirtualTexture2D &v) {
-			v.usage = node["Usage"].as<Imagine::Core::TextureUsage>();
-			v.type = node["Type"].as<Imagine::Core::ImagePixelType>();
+		inline static bool decode(const Node &node, Imagine::CPUVirtualTexture2D &v) {
+			v.usage = node["Usage"].as<Imagine::TextureUsage>();
+			v.type = node["Type"].as<Imagine::ImagePixelType>();
 			v.channels = node["Channels"].as<uint32_t>();
 			v.width = node["Width"].as<uint32_t>();
 			v.height = node["Height"].as<uint32_t>();
@@ -66,8 +66,8 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Imagine::Core::CPUVirtualTexture3D> {
-		inline static Node encode(const Imagine::Core::CPUVirtualTexture3D &v) {
+	struct convert<Imagine::CPUVirtualTexture3D> {
+		inline static Node encode(const Imagine::CPUVirtualTexture3D &v) {
 			Node node;
 			node["Usage"] = v.usage;
 			node["Type"] = v.type;
@@ -77,9 +77,9 @@ namespace YAML {
 			node["Depth"] = v.depth;
 			return node;
 		}
-		inline static bool decode(const Node &node, Imagine::Core::CPUVirtualTexture3D &v) {
-			v.usage = node["Usage"].as<Imagine::Core::TextureUsage>();
-			v.type = node["Type"].as<Imagine::Core::ImagePixelType>();
+		inline static bool decode(const Node &node, Imagine::CPUVirtualTexture3D &v) {
+			v.usage = node["Usage"].as<Imagine::TextureUsage>();
+			v.type = node["Type"].as<Imagine::ImagePixelType>();
 			v.channels = node["Channels"].as<uint32_t>();
 			v.width = node["Width"].as<uint32_t>();
 			v.height = node["Height"].as<uint32_t>();

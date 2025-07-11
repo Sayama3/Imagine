@@ -9,7 +9,7 @@
 #include "Imagine/Assets/FileAssetManager.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class Scene;
 	using void_func_ptr = std::function<void()>;
@@ -105,5 +105,5 @@ namespace Imagine::Core
 		friend class ProjectSerializer;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

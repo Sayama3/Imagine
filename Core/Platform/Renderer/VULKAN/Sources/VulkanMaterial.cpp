@@ -8,9 +8,9 @@
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 #include "Imagine/Vulkan/VulkanUtils.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 	uint64_t VulkanMaterialInstance::s_id{0};
@@ -109,8 +109,8 @@ namespace Imagine::Vulkan {
 		PipelineBuilder builder = PipelineBuilder()
 										  .SetPipelineLayout(newLayout)
 										  // Parameters
-										  .AddShader(Core::ShaderStage::Vertex, meshVertexShader)
-										  .AddShader(Core::ShaderStage::Fragment, meshFragShader)
+										  .AddShader(ShaderStage::Vertex, meshVertexShader)
+										  .AddShader(ShaderStage::Fragment, meshFragShader)
 										  // .SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
 										  .SetPolygonMode(VK_POLYGON_MODE_FILL)
 										  .SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE)

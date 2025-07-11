@@ -12,7 +12,7 @@
 
 #include "Imagine/Rendering/GPU/GPUMaterial.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUMaterial final : public Asset {
 	public:
@@ -37,4 +37,4 @@ namespace Imagine::Core {
 		Ref<GPUMaterial> gpu{nullptr};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -4,6 +4,6 @@
 
 #include "Imagine/Scene/Terrain.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 }

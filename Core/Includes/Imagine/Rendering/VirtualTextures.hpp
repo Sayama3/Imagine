@@ -9,7 +9,7 @@
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 #include "Imagine/Rendering/GPU/GPUTexture2D.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUVirtualTexture2D final : public Asset {
 	public:

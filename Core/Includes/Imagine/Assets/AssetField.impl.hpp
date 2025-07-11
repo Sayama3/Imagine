@@ -9,7 +9,7 @@
 #include <spdlog/spdlog.h>
 
 
-namespace Imagine::Core
+namespace Imagine
 {
     template<typename T>
     AssetField<T>::AssetField() = default;
@@ -94,21 +94,21 @@ namespace Imagine::Core
 
 
 template<typename T>
-struct std::hash<Imagine::Core::AssetField<T>> {
-    std::size_t operator()(const Imagine::Core::AssetField<T> &s) const noexcept {
-        return std::hash<Imagine::Core::AssetHandle>{}(s.GetHandle());
+struct std::hash<Imagine::AssetField<T>> {
+    std::size_t operator()(const Imagine::AssetField<T> &s) const noexcept {
+        return std::hash<Imagine::AssetHandle>{}(s.GetHandle());
     }
 };
 
 template<typename T>
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::AssetField<T> &value) {
+inline std::ostream &operator<<(std::ostream &os, const Imagine::AssetField<T> &value) {
     return os << value.GetHandle().string();
 }
 
 template<typename T>
-struct fmt::formatter<Imagine::Core::AssetField<T>> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::AssetField<T>> : fmt::formatter<std::string>
 {
-    auto format(Imagine::Core::AssetField<T> value, format_context &ctx) const -> decltype(ctx.out())
+    auto format(Imagine::AssetField<T> value, format_context &ctx) const -> decltype(ctx.out())
     {
         return format_to(ctx.out(), "{}", value.GetHandle().string());
     }

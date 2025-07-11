@@ -23,7 +23,7 @@
 #include <imgui.h>
 #include "Imagine/Rendering/MgnImGui.hpp"
 #endif
-namespace Imagine::Core {
+namespace Imagine {
 
 	class TmpElement {
 	public:
@@ -64,6 +64,8 @@ namespace Imagine::Core {
 
 	Application::Application(const ApplicationParameters &parameters) :
 		m_Parameters(parameters) {
+
+		Project::New();
 
 		m_ShouldStop = false;
 		m_LastFrame = m_Start = std::chrono::high_resolution_clock::now();
@@ -379,4 +381,4 @@ namespace Imagine::Core {
 
 		return false;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

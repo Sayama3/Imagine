@@ -4,7 +4,7 @@
 
 #include "Imagine/Layers/LayerStack.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	LayerStack::LayerStack() = default;
 
 	LayerStack::~LayerStack() {

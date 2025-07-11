@@ -8,7 +8,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Rendering/RendererParameters.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct ApplicationParameters {
 		static inline constexpr const char *const EngineName{"Imagine"};
@@ -23,4 +23,4 @@ namespace Imagine::Core {
 		[[nodiscard]] std::string GetVersionStr() const;
 		void SetVersion(uint32_t major, uint32_t minor, uint32_t patch);
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

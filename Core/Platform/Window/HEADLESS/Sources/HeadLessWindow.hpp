@@ -6,7 +6,7 @@
 
 #include "Imagine/Application/Window.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class HeadLessWindow final : public Window {
 	public:
 		HeadLessWindow(const std::string &windowName, const WindowParameters parameters);
@@ -27,4 +27,4 @@ namespace Imagine::Core {
 
 	private:
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

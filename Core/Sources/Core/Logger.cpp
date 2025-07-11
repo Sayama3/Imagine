@@ -9,7 +9,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	inline static std::string s_LogPattern = "%^[%T] [%l] %n (%s:%#->%!): %v%$";
 	// static constexpr const char* const c_LogPattern = "%^[%T] [%l] %n (%s:%#->%!): %v%$";
@@ -85,4 +85,4 @@ namespace Imagine::Core {
 	void Log::Shutdown() {
 		// TODO: Do something later on.
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

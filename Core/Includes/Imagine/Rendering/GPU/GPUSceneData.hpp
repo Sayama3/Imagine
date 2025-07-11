@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Imagine/Math/Core.hpp"
-namespace Imagine::Core {
+namespace Imagine {
 	struct GPUSceneData {
 		glm::mat4 view;
 		glm::mat4 proj;

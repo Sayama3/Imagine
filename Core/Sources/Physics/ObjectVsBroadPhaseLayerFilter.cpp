@@ -14,6 +14,6 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
 
-namespace Imagine::Core
+namespace Imagine
 {
-} // namespace Imagine::Core
+} // namespace Imagine

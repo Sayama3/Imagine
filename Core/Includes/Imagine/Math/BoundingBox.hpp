@@ -8,7 +8,7 @@
 #include "Basics.hpp"
 #include <vector>
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	struct BoundingBox : public BoundingObject<BoundingBox>
@@ -62,5 +62,5 @@ namespace Imagine::Core
 	}
 
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

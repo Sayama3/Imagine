@@ -8,8 +8,8 @@
 
 #if MGN_PROFILING
 
-#define MGN_PROFILE_BEGIN_SESSION(name, filepath) //::Imagine::Core::Instrumentor::Get().BeginSession(name, filepath)
-#define MGN_PROFILE_END_SESSION() //::Imagine::Core::Instrumentor::Get().EndSession()
+#define MGN_PROFILE_BEGIN_SESSION(name, filepath) //::Imagine::Instrumentor::Get().BeginSession(name, filepath)
+#define MGN_PROFILE_END_SESSION() //::Imagine::Instrumentor::Get().EndSession()
 #define MGN_FRAME_START() FrameMark//FrameMarkStart(s_MainFrame)
 #define MGN_FRAME_END() //FrameMarkEnd(s_MainFrame)
 #define MGN_PROFILE_SCOPE(name) ZoneScopedN(name)

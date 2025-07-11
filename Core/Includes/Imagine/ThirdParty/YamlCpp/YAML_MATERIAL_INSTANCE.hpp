@@ -11,7 +11,7 @@
 
 
 namespace YAML {
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUMaterialInstance::SetFieldPosition &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUMaterialInstance::SetFieldPosition &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Set Index", v.SetIndex);
@@ -21,7 +21,7 @@ namespace YAML {
 		out << YAML::EndMap;
 		return out;
 	}
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUMaterialInstance::PushConstantFieldPosition &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUMaterialInstance::PushConstantFieldPosition &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Push Constant Index", v.PCIndex);
@@ -30,7 +30,7 @@ namespace YAML {
 		out << YAML::EndMap;
 		return out;
 	}
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUMaterialInstance &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUMaterialInstance &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Handle", v.Handle);
@@ -44,37 +44,37 @@ namespace YAML {
 } // namespace Imagine::ThirdParty::YamlCpp
 
 namespace YAML {
-	template<> struct convert<::Imagine::Core::CPUMaterialInstance::SetFieldPosition> {
-		inline static Node encode(const Imagine::Core::CPUMaterialInstance::SetFieldPosition& v) {
+	template<> struct convert<::Imagine::CPUMaterialInstance::SetFieldPosition> {
+		inline static Node encode(const Imagine::CPUMaterialInstance::SetFieldPosition& v) {
 			Node node;
 			node["Set Index"] =  v.SetIndex;
 			node["Binding Index"] =  v.BindingIndex;
 			node["Field Index"] =  v.FieldIndex;
 			return node;
 		}
-		inline static bool decode(const Node& node, Imagine::Core::CPUMaterialInstance::SetFieldPosition& v) {
+		inline static bool decode(const Node& node, Imagine::CPUMaterialInstance::SetFieldPosition& v) {
 			v.SetIndex = node["Set Index"].as<uint32_t>();
 			v.BindingIndex = node["Binding Index"].as<uint32_t>();
 			v.FieldIndex = node["Field Index"].as<uint32_t>();
 			return true;
 		}
 	};
-	template<> struct convert<::Imagine::Core::CPUMaterialInstance::PushConstantFieldPosition> {
-		inline static Node encode(const Imagine::Core::CPUMaterialInstance::PushConstantFieldPosition& v) {
+	template<> struct convert<::Imagine::CPUMaterialInstance::PushConstantFieldPosition> {
+		inline static Node encode(const Imagine::CPUMaterialInstance::PushConstantFieldPosition& v) {
 			Node node;
 			node["Push Constant Index"] =  v.PCIndex;
 			node["Field Index"] =  v.FieldIndex;
 			return node;
 		}
-		inline static bool decode(const Node& node, Imagine::Core::CPUMaterialInstance::PushConstantFieldPosition& v) {
+		inline static bool decode(const Node& node, Imagine::CPUMaterialInstance::PushConstantFieldPosition& v) {
 			v.PCIndex = node["Push Constant Index"].as<uint32_t>();
 			v.FieldIndex = node["Field Index"].as<uint32_t>();
 			return true;
 		}
 	};
 	template<>
-	struct convert<::Imagine::Core::CPUMaterialInstance> {
-		inline static Node encode(const ::Imagine::Core::CPUMaterialInstance &v) {
+	struct convert<::Imagine::CPUMaterialInstance> {
+		inline static Node encode(const ::Imagine::CPUMaterialInstance &v) {
 			Node node;
 			node["Handle"] = v.Handle;
 			node["Set Editions"] = v.SetEditions;
@@ -82,11 +82,11 @@ namespace YAML {
 			node["Material"] = v.Material;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::CPUMaterialInstance &v) {
-			v.Handle = node["Handle"].as<Imagine::Core::AssetHandle>();
-			v.SetEditions = node["Set Editions"].as<std::map<Imagine::Core::CPUMaterialInstance::SetFieldPosition, Imagine::Core::CPUMaterialInstance::MaterialDataBuffer>>();
-			v.PushConstantEditions = node["Push Constant Editions"].as<std::map<Imagine::Core::CPUMaterialInstance::PushConstantFieldPosition, Imagine::Core::CPUMaterialInstance::MaterialDataBuffer>>();
-			v.Material = node["Material"].as<Imagine::Core::AssetHandle>();
+		inline static bool decode(const Node &node, ::Imagine::CPUMaterialInstance &v) {
+			v.Handle = node["Handle"].as<Imagine::AssetHandle>();
+			v.SetEditions = node["Set Editions"].as<std::map<Imagine::CPUMaterialInstance::SetFieldPosition, Imagine::CPUMaterialInstance::MaterialDataBuffer>>();
+			v.PushConstantEditions = node["Push Constant Editions"].as<std::map<Imagine::CPUMaterialInstance::PushConstantFieldPosition, Imagine::CPUMaterialInstance::MaterialDataBuffer>>();
+			v.Material = node["Material"].as<Imagine::AssetHandle>();
 			return true;
 		}
 	};

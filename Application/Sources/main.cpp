@@ -11,9 +11,8 @@
 
 int main(int argc, char **argv) {
 	using namespace Imagine;
-	using namespace Imagine::Core;
 
-	Imagine::Core::Log::Init({
+	Imagine::Log::Init({
 			LogFileParameter{
 					"Imagine.log",
 					"Imagine.old.log",
@@ -45,13 +44,9 @@ int main(int argc, char **argv) {
 
 	MGN_PROFILE_BEGIN_SESSION("startup", "ImagineProfile-Startup.json");
 	MGN_FRAME_START();
-
-	{
-		Project::New();
-	}
-	Core::Application *application = Core::Application::Initialize(params);
-	application->PushLayer<Imagine::Application::ApplicationLayer>();
-	application->PushOverlay<Imagine::Core::ImGuiLayer>();
+	Application *application = Application::Initialize(params);
+	application->PushLayer<Imagine::Runtime::ApplicationLayer>();
+	application->PushOverlay<Imagine::ImGuiLayer>();
 
 
 	MGN_FRAME_END();
@@ -64,10 +59,10 @@ int main(int argc, char **argv) {
 
 	MGN_PROFILE_BEGIN_SESSION("shutdown", "ImagineProfile-Shutdown.json");
 	MGN_FRAME_START();
-	Core::Application::Shutdown();
+	Application::Shutdown();
 	MGN_FRAME_END();
 	MGN_PROFILE_END_SESSION();
-	Imagine::Core::Log::Shutdown();
+	Imagine::Log::Shutdown();
 
 	return 0;
 }

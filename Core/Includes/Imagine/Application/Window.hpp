@@ -9,12 +9,12 @@
 #include "Imagine/Events/Event.hpp"
 #include "WindowParameters.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 
 	class Window {
 	public:
-        using EventCallBackFn = std::function<void(Imagine::Core::Event&, bool fromNormalEventQueue)>;
+        using EventCallBackFn = std::function<void(Imagine::Event&, bool fromNormalEventQueue)>;
 	public:
 		static Window* Create(const std::string &windowName, WindowParameters parameters);
 		static Window* Initialize(const std::string &windowName, WindowParameters parameters);

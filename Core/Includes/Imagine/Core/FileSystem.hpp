@@ -10,7 +10,7 @@
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/Macros.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct CFile {
 		CFile() = default;
@@ -180,16 +180,16 @@ namespace Imagine::Core {
 		return writtenSize == count;
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::Path &value) {
+inline std::ostream &operator<<(std::ostream &os, const Imagine::Path &value) {
 	return os << "Path{" << GetFileSourceName(value.source) << ": " << value.path.string() << "}";
 }
 
 template<>
-struct fmt::formatter<Imagine::Core::Path> : fmt::formatter<std::string> {
-	auto format(const Imagine::Core::Path &value, format_context &ctx) const -> decltype(ctx.out()) {
+struct fmt::formatter<Imagine::Path> : fmt::formatter<std::string> {
+	auto format(const Imagine::Path &value, format_context &ctx) const -> decltype(ctx.out()) {
 		const std::string pathStr = value.path.string();
 		return format_to(ctx.out(), "Path{{ {}: {} }}", GetFileSourceName(value.source), pathStr);
 	}

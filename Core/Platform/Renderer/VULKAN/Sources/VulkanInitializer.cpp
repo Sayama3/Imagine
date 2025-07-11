@@ -15,19 +15,19 @@
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 #include "Imagine/Vulkan/VulkanImage.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 	namespace Initializer {
 		constexpr bool c_OverrideColorVertex = true;
 
-		std::shared_ptr<AutoDeleteMeshAsset> LoadLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
+		std::shared_ptr<AutoDeleteMeshAsset> LoadLines(VulkanRenderer *renderer, std::span<LineObject> lines) {
 			std::vector<uint32_t> indices;
-			std::vector<Core::Vertex> vertices;
+			std::vector<Vertex> vertices;
 
 			std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 
-			for (const Core::LineObject &line: lines) {
+			for (const LineObject &line: lines) {
 				if (line.points.size() < 2) continue;
 				const uint32_t offset = vertices.size();
 				vertices.push_back(line.points.at(0));
@@ -38,26 +38,26 @@ namespace Imagine::Vulkan {
 				}
 			}
 
-			Core::LOD surface;
+			LOD surface;
 			surface.index = 0;
 			surface.count = indices.size();
 			// TODO: Fetch the CPUMaterial and either creater and fetch back the GPUMaterial from it.
 			// surface.materialInstance = renderer->GetDefaultLineMaterial();
 
 			mesh->lods.push_back(surface);
-			mesh->meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
+			mesh->meshBuffers = renderer->UploadMesh(ConstBufferView::Make(indices), ConstBufferView::Make(vertices));
 
 			return mesh;
 		}
 
-		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines) {
+		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<LineObject> lines) {
 			ManualDeleteMeshAsset mesh;
 
 			std::vector<uint32_t> indices;
-			std::vector<Core::Vertex> vertices;
+			std::vector<Vertex> vertices;
 
 
-			for (const Core::LineObject &line: lines) {
+			for (const LineObject &line: lines) {
 				if (line.points.size() < 2) continue;
 				const uint32_t offset = vertices.size();
 				vertices.push_back(line.points.at(0));
@@ -68,26 +68,26 @@ namespace Imagine::Vulkan {
 				}
 			}
 
-			Core::LOD surface;
+			LOD surface;
 			surface.index = 0;
 			surface.count = indices.size();
 			// TODO: Fetch the CPUMaterial and either creater and fetch back the GPUMaterial from it.
 			// surface.materialInstance = renderer->GetDefaultLineMaterial();
 
 			mesh.lods.push_back(surface);
-			mesh.meshBuffers = renderer->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
+			mesh.meshBuffers = renderer->UploadMesh(ConstBufferView::Make(indices), ConstBufferView::Make(vertices));
 
 			return std::move(mesh);
 		}
 
-		std::shared_ptr<AutoDeleteMeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Core::Vertex> points) {
+		std::shared_ptr<AutoDeleteMeshAsset> LoadPoints(VulkanRenderer *renderer, std::span<Vertex> points) {
 			MGN_CORE_CASSERT(false, "The load points function is not implemented yet.");
 			return nullptr;
 			/*
 						std::vector<uint32_t> indices;
 						indices.reserve(points.size());
 
-						std::vector<Core::Vertex> vertices;
+						std::vector<Vertex> vertices;
 						vertices.reserve(points.size());
 
 						std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
@@ -97,7 +97,7 @@ namespace Imagine::Vulkan {
 							indices.push_back(indices.size());
 						}
 
-						Core::LOD surface;
+						LOD surface;
 						surface.index = 0;
 						surface.count = indices.size();
 						surface.material = renderer->GetDefaultPointMaterial();
@@ -109,15 +109,15 @@ namespace Imagine::Vulkan {
 			*/
 		}
 
-		std::optional<std::shared_ptr<AutoDeleteMeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh &cpuMesh) {
+		std::optional<std::shared_ptr<AutoDeleteMeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const CPUMesh &cpuMesh) {
 
 			std::shared_ptr<AutoDeleteMeshAsset> mesh = std::make_shared<AutoDeleteMeshAsset>();
 
-			Core::LOD surface = cpuMesh.Lods.front();
+			LOD surface = cpuMesh.Lods.front();
 
 			mesh->lods.push_back(surface);
 
-			mesh->meshBuffers = engine->UploadMesh(Core::ConstBufferView::Make(cpuMesh.Indices), Core::ConstBufferView::Make(cpuMesh.Vertices));
+			mesh->meshBuffers = engine->UploadMesh(ConstBufferView::Make(cpuMesh.Indices), ConstBufferView::Make(cpuMesh.Vertices));
 
 			return mesh;
 		}
@@ -153,7 +153,7 @@ namespace Imagine::Vulkan {
 			// use the same vectors for all meshes so that the memory doesnt reallocate as
 			// often
 			std::vector<uint32_t> indices;
-			std::vector<Core::Vertex> vertices;
+			std::vector<Vertex> vertices;
 
 			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 				const aiMesh *aiMesh = scene->mMeshes[i];
@@ -200,13 +200,13 @@ namespace Imagine::Vulkan {
 					indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
 				}
 
-				Core::LOD surface;
+				LOD surface;
 				surface.index = 0;
 				surface.count = indices.size();
 
 				mesh->lods.push_back(surface);
 
-				mesh->meshBuffers = engine->UploadMesh(Core::ConstBufferView::Make(indices), Core::ConstBufferView::Make(vertices));
+				mesh->meshBuffers = engine->UploadMesh(ConstBufferView::Make(indices), ConstBufferView::Make(vertices));
 
 				meshes.emplace_back(std::move(mesh));
 			}

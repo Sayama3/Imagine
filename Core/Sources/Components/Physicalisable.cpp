@@ -4,6 +4,6 @@
 
 #include "Imagine/Components/Physicalisable.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 }

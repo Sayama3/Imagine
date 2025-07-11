@@ -8,7 +8,7 @@
 #include "Imagine/Assets/Importers/MeshImporter.hpp"
 #include "Imagine/Rendering/CPU/CPUShader.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	bool MeshImGui::OnMeshImGui(Ref<Asset> asset)
 	{
@@ -19,5 +19,5 @@ namespace Imagine::Core
 	{
 		return false;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine
 

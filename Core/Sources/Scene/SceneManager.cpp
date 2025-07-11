@@ -3,7 +3,7 @@
 //
 
 #include "Imagine/Scene/SceneManager.hpp"
-namespace Imagine::Core {
+namespace Imagine {
 	SceneManager::SceneRef SceneManager::GetMainScene() {
 		return s_MainScene;
 	}
@@ -63,4 +63,4 @@ namespace Imagine::Core {
 		s_MainScene.reset();
 		s_LoadedScenes.clear();
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

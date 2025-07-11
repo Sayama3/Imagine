@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	enum class ImagePixelType : uint8_t {
 		None = 0,

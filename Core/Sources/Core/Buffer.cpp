@@ -4,7 +4,7 @@
 
 #include "Imagine/Core/Buffer.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	Buffer::Buffer() :
 		m_Data(nullptr), m_Size(0) {
 	}
@@ -64,4 +64,4 @@ namespace Imagine::Core {
 		std::swap(m_Data, other.m_Data);
 		std::swap(m_Size, other.m_Size);
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

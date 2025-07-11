@@ -5,7 +5,7 @@
 #pragma once
 #include "Imagine/Math/Core.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
-namespace Imagine::Core {
+namespace Imagine {
 
 	enum LightType : int32_t {
 		LIGHT_POINT = 0,
@@ -60,4 +60,4 @@ namespace Imagine::Core {
 			return changed;
 		}
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

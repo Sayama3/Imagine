@@ -6,7 +6,7 @@
 
 #include "Imagine/Assets/ImGui/TextureImGui.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	bool TextureImGui::OnTexture2DImGui(Ref<Asset> asset) {
 		return false;

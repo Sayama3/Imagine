@@ -7,7 +7,7 @@
 #include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	//TODO: Move the rendering to ECS like
 
@@ -19,4 +19,4 @@ namespace Imagine::Core {
 		AssetHandle cpuMesh{NULL_ASSET_HANDLE};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -11,7 +11,7 @@
 #include "Imagine/Assets/AssetHandle.hpp"
 
 
-namespace Imagine::Core
+namespace Imagine
 {
 	struct AssetMetadata {
 		inline AssetMetadata() = default;
@@ -41,5 +41,5 @@ namespace Imagine::Core
 		AssetHandle Handle;
 		AssetType Type = AssetType::None;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 

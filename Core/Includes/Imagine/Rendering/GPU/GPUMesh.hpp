@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 	class GPUMesh {
 	public:
 		GPUMesh() = default;

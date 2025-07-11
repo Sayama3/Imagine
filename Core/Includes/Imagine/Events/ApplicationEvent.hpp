@@ -7,7 +7,7 @@
 #include "Event.hpp"
 #include "Imagine/Core/TimeStep.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class WindowResizeEvent : public Event {
 	public:
@@ -203,4 +203,4 @@ namespace Imagine::Core {
 	private:
 		TimeStep m_TimeStep;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -8,7 +8,7 @@
 #include "Imagine/Core/KeyCodes.hpp"
 #include "Imagine/Core/MouseButtonCodes.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct Button {
 		enum ButtonState : uint8_t {
@@ -102,14 +102,14 @@ namespace Imagine::Core {
 
 	struct KeyboardState {
 		static constexpr int32_t KeyCount{MGN_KEY_COUNT};
-		std::array<Core::Button, KeyCount> Keys{Core::Button::UP};
+		std::array<Button, KeyCount> Keys{Button::UP};
 		uint32_t WindowId = 0;
 
-		Core::Button& operator[](const uint64_t i) {return Keys[i];}
-		const Core::Button& operator[](const uint64_t i) const {return Keys[i];}
+		Button& operator[](const uint64_t i) {return Keys[i];}
+		const Button& operator[](const uint64_t i) const {return Keys[i];}
 
-		Core::Button& operator[](const Key i) {return Keys[(int32_t)i];}
-		const Core::Button& operator[](const Key i) const {return Keys[(int32_t)i];}
+		Button& operator[](const Key i) {return Keys[(int32_t)i];}
+		const Button& operator[](const Key i) const {return Keys[(int32_t)i];}
 	};
 
 	struct MouseState {
@@ -117,7 +117,7 @@ namespace Imagine::Core {
 		~MouseState() = default;
 
 		static constexpr int32_t ButtonCount{static_cast<int32_t>(Mouse::Last) + 1};
-		std::array<Core::Button, ButtonCount> Buttons{Core::Button::UP};
+		std::array<Button, ButtonCount> Buttons{Button::UP};
 		union {
 			struct {float X, Y;};
 			struct {float x, y;};
@@ -126,10 +126,10 @@ namespace Imagine::Core {
 		float WheelX = 0, WheelY = 0;
 		uint32_t WindowId = 0;
 
-		Core::Button& operator[](const uint64_t i) {return Buttons[i];}
-		const Core::Button& operator[](const uint64_t i) const {return Buttons[i];}
-		Core::Button& operator[](const Mouse i) {return Buttons[(int32_t)i];}
-		const Core::Button& operator[](const Mouse i) const {return Buttons[(int32_t)i];}
+		Button& operator[](const uint64_t i) {return Buttons[i];}
+		const Button& operator[](const uint64_t i) const {return Buttons[i];}
+		Button& operator[](const Mouse i) {return Buttons[(int32_t)i];}
+		const Button& operator[](const Mouse i) const {return Buttons[(int32_t)i];}
 	};
 
 	class Inputs {
@@ -137,4 +137,4 @@ namespace Imagine::Core {
 		static const MouseState& GetMouseState();
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

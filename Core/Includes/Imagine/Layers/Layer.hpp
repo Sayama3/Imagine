@@ -8,7 +8,7 @@
 
 // We shouldn't search layer by name!!
 
-namespace Imagine::Core {
+namespace Imagine {
 	class Layer {
 	public:
 		explicit Layer(std::string name = "Layer");
@@ -25,4 +25,4 @@ namespace Imagine::Core {
 		std::string m_DebugName;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

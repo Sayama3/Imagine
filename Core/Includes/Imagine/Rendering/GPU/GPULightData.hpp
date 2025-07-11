@@ -6,10 +6,10 @@
 
 #include "Imagine/Math/Core.hpp"
 #include "Imagine/Rendering/Light.hpp"
-namespace Imagine::Core {
+namespace Imagine {
 struct GPULightData {
 	static inline constexpr int MaxLight{32};
-	Imagine::Core::Light lights[MaxLight];
+	Imagine::Light lights[MaxLight];
 	int lightCount{0};
 };
 }

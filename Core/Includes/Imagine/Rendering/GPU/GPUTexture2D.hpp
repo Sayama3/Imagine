@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 	class GPUTexture2D {
 	public:
 		GPUTexture2D() = default;

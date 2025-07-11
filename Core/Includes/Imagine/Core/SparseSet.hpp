@@ -6,7 +6,7 @@
 #include "HeapArray.hpp"
 #include "MemoryHelper.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	/**
 	 * This is a sparse set using HeapArray that suppose the ids will come incrementally from 0 (and may get re-used)
 	 * as it's based on this to re-allocate the array of ids inside. Adding the element ID 18000 WILL reallocate the whole
@@ -484,4 +484,4 @@ namespace Imagine::Core {
 		HeapArray<UnsignedInteger> FreeList{SparseSet<T, UnsignedInteger, CallDestructorT>::c_OverheadResize};
 		UnsignedInteger IDs{0};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

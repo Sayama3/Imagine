@@ -11,11 +11,11 @@
 #include "Imagine/Rendering/MeshParameters.hpp"
 
 namespace YAML {
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::Topology &v) {
-		out << Imagine::Core::TopologyToString(v);
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Topology &v) {
+		out << Imagine::TopologyToString(v);
 		return out;
 	}
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::Vertex &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Vertex &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Position", v.position);
@@ -28,7 +28,7 @@ namespace YAML {
 		out << YAML::EndMap;
 		return out;
 	}
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::LOD &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::LOD &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Index", v.index);
@@ -42,18 +42,18 @@ namespace YAML {
 
 namespace YAML {
 	template<>
-	struct convert<::Imagine::Core::Topology> {
-		inline static Node encode(const ::Imagine::Core::Topology &v) {
+	struct convert<::Imagine::Topology> {
+		inline static Node encode(const ::Imagine::Topology &v) {
 			Node node;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::Topology &v) {
-			return ::Imagine::Core::TryTopologyFromString(node.as<std::string>(), v);
+		inline static bool decode(const Node &node, ::Imagine::Topology &v) {
+			return ::Imagine::TryTopologyFromString(node.as<std::string>(), v);
 		}
 	};
 	template<>
-	struct convert<::Imagine::Core::Vertex> {
-		inline static Node encode(const ::Imagine::Core::Vertex &v) {
+	struct convert<::Imagine::Vertex> {
+		inline static Node encode(const ::Imagine::Vertex &v) {
 			Node node;
 			node["Position"] = v.position;
 			node["Normal"] = v.normal;
@@ -63,7 +63,7 @@ namespace YAML {
 			node["Color"] = v.color;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::Vertex &v) {
+		inline static bool decode(const Node &node, ::Imagine::Vertex &v) {
 			v.position = node["Position"].as<glm::fvec3>();
 			v.normal = node["Normal"].as<glm::fvec3>();
 			v.tangent = glm::fvec4(node["Tangent"].as<glm::fvec3>(), 0);
@@ -76,18 +76,18 @@ namespace YAML {
 		}
 	};
 	template<>
-	struct convert<::Imagine::Core::LOD> {
-		inline static Node encode(const ::Imagine::Core::LOD &v) {
+	struct convert<::Imagine::LOD> {
+		inline static Node encode(const ::Imagine::LOD &v) {
 			Node node;
 			node["Index"] = v.index;
 			node["Count"] = v.count;
 			node["Material Instance"] = v.materialInstance;
 			return node;
 		}
-		inline static bool decode(const Node &node, ::Imagine::Core::LOD &v) {
+		inline static bool decode(const Node &node, ::Imagine::LOD &v) {
 			v.index = node["Index"].as<uint32_t>();
 			v.count = node["Count"].as<uint32_t>();
-			v.materialInstance = node["Material Instance"].as<Imagine::Core::AssetHandle>();
+			v.materialInstance = node["Material Instance"].as<Imagine::AssetHandle>();
 			return true;
 		}
 	};

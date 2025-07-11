@@ -7,7 +7,7 @@
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/UUID.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct ComponentID {
 		uint64_t id;
@@ -45,4 +45,4 @@ namespace Imagine::Core {
 		uint64_t componentSize;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

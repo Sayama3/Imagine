@@ -4,5 +4,5 @@
 
 #include "Imagine/Core/RawSparseSet.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 }

@@ -69,7 +69,7 @@
 #define MGN_BREAK()
 #endif
 
-#define MGN_TYPE(TYPE) Imagine::Core::##TYPE
+#define MGN_TYPE(TYPE) Imagine::##TYPE
 #define MGN_EXPAND_MACRO(x) x
 #define MGN_STRINGIFY_MACRO(x) #x
 
@@ -200,22 +200,22 @@ FOR_EACH_7(what,  __VA_ARGS__);
 
 #ifndef MGN_NO_LOG
 
-#define MGN_CORE_LOG_DEBUG(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::debug, __VA_ARGS__)
-#define MGN_CORE_TRACE(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::trace, __VA_ARGS__)
-#define MGN_CORE_INFO(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::info, __VA_ARGS__)
-#define MGN_CORE_WARNING(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
-#define MGN_CORE_WARN(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
-#define MGN_CORE_ERROR(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::err, __VA_ARGS__)
-#define MGN_CORE_CRITICAL(...) ::Imagine::Core::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::critical, __VA_ARGS__)
+#define MGN_CORE_LOG_DEBUG(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::debug, __VA_ARGS__)
+#define MGN_CORE_TRACE(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::trace, __VA_ARGS__)
+#define MGN_CORE_INFO(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::info, __VA_ARGS__)
+#define MGN_CORE_WARNING(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
+#define MGN_CORE_WARN(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
+#define MGN_CORE_ERROR(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::err, __VA_ARGS__)
+#define MGN_CORE_CRITICAL(...) ::Imagine::Log::GetCoreLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::critical, __VA_ARGS__)
 
 
-#define MGN_LOG_DEBUG(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::debug, __VA_ARGS__)
-#define MGN_TRACE(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::trace, __VA_ARGS__)
-#define MGN_INFO(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::info, __VA_ARGS__)
-#define MGN_WARNING(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
-#define MGN_WARN(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
-#define MGN_ERROR(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::err, __VA_ARGS__)
-#define MGN_CRITICAL(...) ::Imagine::Core::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::critical, __VA_ARGS__)
+#define MGN_LOG_DEBUG(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::debug, __VA_ARGS__)
+#define MGN_TRACE(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::trace, __VA_ARGS__)
+#define MGN_INFO(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::info, __VA_ARGS__)
+#define MGN_WARNING(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
+#define MGN_WARN(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::warn, __VA_ARGS__)
+#define MGN_ERROR(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::err, __VA_ARGS__)
+#define MGN_CRITICAL(...) ::Imagine::Log::GetClientLogger()->log(spdlog::source_loc{__FILE__, __LINE__, MGN_FUNC}, spdlog::level::critical, __VA_ARGS__)
 
 #else
 

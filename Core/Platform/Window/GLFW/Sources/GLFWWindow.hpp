@@ -7,9 +7,9 @@
 struct GLFWwindow;
 
 namespace Imagine::GLFW {
-	class GLFWWindow : public Core::Window {
+	class GLFWWindow : public Window {
 	public:
-		GLFWWindow(const std::string &windowName, const Core::WindowParameters parameters);
+		GLFWWindow(const std::string &windowName, const WindowParameters parameters);
 		~GLFWWindow() override;
 
 		void Update() override;
@@ -19,20 +19,20 @@ namespace Imagine::GLFW {
 
 		uint32_t GetWindowWidth() override;
 		uint32_t GetWindowHeight() override;
-		Core::Size2 GetWindowSize() override;
+		Size2 GetWindowSize() override;
 
 		virtual Rect<> GetWindowRect() override;
 
 		uint32_t GetFramebufferWidth() override;
 		uint32_t GetFramebufferHeight() override;
-		Core::Size2 GetFramebufferSize() override;
+		Size2 GetFramebufferSize() override;
 
 		void *GetNativeWindow() override;
 
 		bool ShouldClose() override;
 
 		void *GetWindowPtr() override;
-		Core::MouseInput & GetMouse();
+		MouseInput & GetMouse();
 
 	private:
 		static void framebufferResizeCallback(void *window, int width, int height);
@@ -44,4 +44,4 @@ namespace Imagine::GLFW {
 		struct GLFWwindow *m_Window{nullptr};
 		bool frameBufferResized = false;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

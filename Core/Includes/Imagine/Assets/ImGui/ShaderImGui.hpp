@@ -11,7 +11,7 @@
 #include "Imagine/Rendering/ShaderParameters.hpp"
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	class ShaderImGui
@@ -30,5 +30,5 @@ namespace Imagine::Core
 		static bool OnMemoryShaderSourceImGui(const Ref<CPUMemoryShader>& shaderSource);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

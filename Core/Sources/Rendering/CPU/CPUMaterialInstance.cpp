@@ -4,7 +4,7 @@
 
 #include "Imagine/Rendering/CPU/CPUMaterialInstance.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	CPUMaterialInstance::CPUMaterialInstance(const AssetHandle material) : Material(material) {
 	}
 	bool CPUMaterialInstance::SetFieldPosition::operator==(const SetFieldPosition &o) const {
@@ -19,4 +19,4 @@ namespace Imagine::Core {
 	bool CPUMaterialInstance::PushConstantFieldPosition::operator!=(const PushConstantFieldPosition &o) const {
 		return !(*this == o);
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

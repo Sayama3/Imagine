@@ -12,26 +12,26 @@
 
 namespace Imagine::Vulkan {
 	namespace Utils {
-		inline static VkShaderStageFlagBits GetShaderStageFlagsBits(const Core::ShaderStage stage) {
+		inline static VkShaderStageFlagBits GetShaderStageFlagsBits(const ShaderStage stage) {
 			static_assert(sizeof(VkShaderStageFlagBits) == sizeof(int));
 			int stages = 0;
 
-			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Vertex)) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::ShaderStage::Vertex)) {
 				stages |= (int) VK_SHADER_STAGE_VERTEX_BIT;
 			}
-			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::TessellationControl)) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::ShaderStage::TessellationControl)) {
 				stages |= (int) VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 			}
-			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::TessellationEvaluation)) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::ShaderStage::TessellationEvaluation)) {
 				stages |= (int) VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 			}
-			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Geometry)) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::ShaderStage::Geometry)) {
 				stages |= (int) VK_SHADER_STAGE_GEOMETRY_BIT;
 			}
-			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Fragment)) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::ShaderStage::Fragment)) {
 				stages |= (int) VK_SHADER_STAGE_FRAGMENT_BIT;
 			}
-			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::Core::ShaderStage::Compute)) {
+			if (CHECK_SHADER_STAGE_BIT(stage, Imagine::ShaderStage::Compute)) {
 				stages |= (int) VK_SHADER_STAGE_COMPUTE_BIT;
 			}
 
@@ -103,7 +103,7 @@ namespace Imagine::Vulkan {
 
 			vkCmdBlitImage2(cmd, &blitInfo);
 		}
-		inline static bool LoadShaderModule(const Core::Buffer &shaderBuffer, VkDevice device, VkShaderModule *outShaderModule) {
+		inline static bool LoadShaderModule(const Buffer &shaderBuffer, VkDevice device, VkShaderModule *outShaderModule) {
 
 			// create a new shader module, using the buffer we loaded
 			VkShaderModuleCreateInfo createInfo = {};
@@ -126,19 +126,19 @@ namespace Imagine::Vulkan {
 		}
 
 		inline static bool LoadShaderModule(const char *filePath, VkDevice device, VkShaderModule *outShaderModule) {
-			const Core::Buffer buffer = Core::FileSystem::ReadBinaryFile(filePath);
+			const Buffer buffer = FileSystem::ReadBinaryFile(filePath);
 			return LoadShaderModule(buffer, device, outShaderModule);
 		}
 
 		inline static bool LoadShaderModule(const std::filesystem::path &filePath, VkDevice device, VkShaderModule *outShaderModule) {
-			const Core::Buffer buffer = Core::FileSystem::ReadBinaryFile(filePath);
+			const Buffer buffer = FileSystem::ReadBinaryFile(filePath);
 			return LoadShaderModule(buffer, device, outShaderModule);
 		}
 
-		inline static VkFormat GetImageVkFormat(const Core::ImagePixelType pxType, const uint32_t channels) {
+		inline static VkFormat GetImageVkFormat(const ImagePixelType pxType, const uint32_t channels) {
 			VkFormat fmt = VK_FORMAT_UNDEFINED;
 			switch (pxType) {
-				case Core::ImagePixelType::Uint8:
+				case ImagePixelType::Uint8:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R8_UNORM;
@@ -156,7 +156,7 @@ namespace Imagine::Vulkan {
 							break;
 					}
 					break;
-				case Core::ImagePixelType::Uint16:
+				case ImagePixelType::Uint16:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R16_UNORM;
@@ -174,7 +174,7 @@ namespace Imagine::Vulkan {
 							break;
 					}
 					break;
-				case Core::ImagePixelType::Uint32:
+				case ImagePixelType::Uint32:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R32_UINT;
@@ -192,7 +192,7 @@ namespace Imagine::Vulkan {
 							break;
 					}
 					break;
-				case Core::ImagePixelType::Int8:
+				case ImagePixelType::Int8:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R8_SNORM;
@@ -210,7 +210,7 @@ namespace Imagine::Vulkan {
 							break;
 					}
 					break;
-				case Core::ImagePixelType::Int16:
+				case ImagePixelType::Int16:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R16_SNORM;
@@ -228,7 +228,7 @@ namespace Imagine::Vulkan {
 							break;
 					}
 					break;
-				case Core::ImagePixelType::Int32:
+				case ImagePixelType::Int32:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R32_SINT;
@@ -246,7 +246,7 @@ namespace Imagine::Vulkan {
 							break;
 					}
 					break;
-				case Core::ImagePixelType::F32:
+				case ImagePixelType::F32:
 					switch (channels) {
 						case 1:
 							fmt = VK_FORMAT_R32_SFLOAT;
@@ -272,8 +272,8 @@ namespace Imagine::Vulkan {
 		}
 
 		template<typename PixelType>
-		inline static VkFormat GetImageVkFormat(const Core::Image<PixelType> &image) {
-			return GetImageVkFormat(Core::Image<PixelType>::GetPixelType(), image.channels);
+		inline static VkFormat GetImageVkFormat(const Image<PixelType> &image) {
+			return GetImageVkFormat(Image<PixelType>::GetPixelType(), image.channels);
 		}
 	} // namespace Utils
 } // namespace Imagine::Vulkan

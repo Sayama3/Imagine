@@ -14,12 +14,12 @@
 namespace YAML {
 	YAML_SIMPLE_EMITTER_FUNC(std::filesystem::path, v.string());
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::Path &v) {
-		out << KEYVAL("Source", Imagine::Core::GetFileSourceName(v.source));
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Path &v) {
+		out << KEYVAL("Source", Imagine::GetFileSourceName(v.source));
 		out << KEYVAL("Path", v.path);
 		return out;
 	}
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::UUID &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::UUID &v) {
 		out << YAML::Flow;
 		out << YAML::BeginSeq;
 		for (const auto &value: v) {
@@ -29,7 +29,7 @@ namespace YAML {
 		return out;
 	}
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::Buffer &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Buffer &v) {
 		out << YAML::BeginSeq;
 		{
 			for (uint64_t i = 0; i < v.Size(); ++i) {
@@ -40,7 +40,7 @@ namespace YAML {
 		return out;
 	}
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::ConstBufferView &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::ConstBufferView &v) {
 		out << YAML::BeginSeq;
 		{
 			for (uint64_t i = 0; i < v.Size(); ++i) {
@@ -54,8 +54,8 @@ namespace YAML {
 
 namespace YAML {
 	template<>
-	struct convert<::Imagine::Core::UUID> {
-		inline static Node encode(const ::Imagine::Core::UUID &v) {
+	struct convert<::Imagine::UUID> {
+		inline static Node encode(const ::Imagine::UUID &v) {
 			Node node;
 			for (const uint64_t &val: v) {
 				node.push_back(val);
@@ -63,12 +63,12 @@ namespace YAML {
 			return node;
 		}
 
-		inline static bool decode(const Node &node, ::Imagine::Core::UUID &v) {
+		inline static bool decode(const Node &node, ::Imagine::UUID &v) {
 			if (!node.IsSequence() || node.size() != 2) return false;
-			static_assert(sizeof(::Imagine::Core::UUID) == 32);
+			static_assert(sizeof(::Imagine::UUID) == 32);
 			const uint64_t low = node[0].as<uint64_t>(0);
 			const uint64_t high = node[1].as<uint64_t>(0);
-			v = ::Imagine::Core::UUID{low, high};
+			v = ::Imagine::UUID{low, high};
 			return true;
 		}
 	};
@@ -88,17 +88,17 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<::Imagine::Core::Path> {
-		inline static Node encode(const ::Imagine::Core::Path &v) {
+	struct convert<::Imagine::Path> {
+		inline static Node encode(const ::Imagine::Path &v) {
 			Node node;
-			node["Source"] = Imagine::Core::GetFileSourceName(v.source);
+			node["Source"] = Imagine::GetFileSourceName(v.source);
 			node["Path"] = v.path;
 			return node;
 		}
 
-		inline static bool decode(const Node &node, ::Imagine::Core::Path &v) {
+		inline static bool decode(const Node &node, ::Imagine::Path &v) {
 			if (!node.IsMap() || node.size() != 2) return false;
-			const bool hasSource = Imagine::Core::TryGetFileSourceFromName(node["Source"].as<std::string>(), v.source);
+			const bool hasSource = Imagine::TryGetFileSourceFromName(node["Source"].as<std::string>(), v.source);
 			if (!hasSource) return false;
 			v.path = node["Path"].as<std::filesystem::path>();
 			return true;
@@ -106,8 +106,8 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<::Imagine::Core::Buffer> {
-		inline static Node encode(const ::Imagine::Core::Buffer &v) {
+	struct convert<::Imagine::Buffer> {
+		inline static Node encode(const ::Imagine::Buffer &v) {
 			Node node;
 			for (uint64_t i = 0; i < v.Size(); ++i) {
 				node.push_back(v.Get<uint8_t>(i));
@@ -115,7 +115,7 @@ namespace YAML {
 			return node;
 		}
 
-		inline static bool decode(const Node &node, ::Imagine::Core::Buffer &v) {
+		inline static bool decode(const Node &node, ::Imagine::Buffer &v) {
 			if (node.IsNull() || !node.IsDefined()) {
 				v.Release();
 				return true;

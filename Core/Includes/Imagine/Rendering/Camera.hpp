@@ -7,7 +7,7 @@
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/TimeStep.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class Camera {
 	public:
@@ -33,4 +33,4 @@ namespace Imagine::Core {
 
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

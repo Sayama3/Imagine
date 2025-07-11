@@ -11,7 +11,7 @@
 #include <spdlog/spdlog.h>
 #include "LoopBackBuffer.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	static constexpr const char *const c_DefaultLogPattern = "%^[%T] [%l] %n (%s:%#->%!): %v%$";
 
@@ -64,7 +64,7 @@ namespace Imagine::Core {
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
 		inline static MessageBuffer s_LastLogs{};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
 template<>

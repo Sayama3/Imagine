@@ -10,7 +10,7 @@
 #include "Imagine/Assets/Importers/TextureSerializer.hpp"
 #include "Imagine/Core/InternalCore.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	std::unordered_map<AssetType, AssetImportFunction> AssetImporter::AssetLoaders = {
 			// {AssetType::Texture2D, TextureSerializer::ImportTexture2D},
@@ -80,4 +80,4 @@ namespace Imagine::Core
 
 		return AssetDetectors.at(type)(path.GetFullPath());
 	}
-}// namespace Imagine::Core
+}// namespace Imagine

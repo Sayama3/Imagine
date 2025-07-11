@@ -9,7 +9,7 @@
 #include "Imagine/Core/SmartPointers.hpp"
 
 
-namespace Imagine::Core {
+namespace Imagine {
     template<typename T>
     class AssetField {
     public:

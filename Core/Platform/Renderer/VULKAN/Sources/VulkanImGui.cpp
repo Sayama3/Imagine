@@ -10,7 +10,7 @@
 
 using namespace Imagine::Vulkan;
 
-namespace Imagine::Core {
+namespace Imagine {
 	void MgnImGui::InitializeRenderer() {
 
 		VulkanRenderer *renderer = dynamic_cast<VulkanRenderer *>(Renderer::Get());
@@ -35,4 +35,4 @@ namespace Imagine::Core {
 	void MgnImGui::ShutdownRenderer() {
 		ImGui_ImplVulkan_Shutdown();
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

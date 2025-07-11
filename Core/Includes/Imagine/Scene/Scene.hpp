@@ -14,7 +14,7 @@
 #include "Imagine/Rendering/Light.hpp"
 #include "Relationship.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class Scene final : public Asset {
 	public:
@@ -402,4 +402,4 @@ namespace Imagine::Core {
 			ForEach<T>(childId, childData, func);
 		}
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

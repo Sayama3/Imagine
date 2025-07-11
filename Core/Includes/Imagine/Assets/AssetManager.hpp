@@ -10,7 +10,7 @@
 #include "Imagine/Assets/AssetHandle.hpp"
 #include "Imagine/Project/Project.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class AssetManager
 	{
@@ -40,5 +40,5 @@ namespace Imagine::Core
 		}
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

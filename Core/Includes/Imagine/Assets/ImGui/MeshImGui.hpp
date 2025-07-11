@@ -12,7 +12,7 @@
 
 #include "Imagine/Rendering/MgnImGui.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class MeshImGui
 	{
@@ -21,5 +21,5 @@ namespace Imagine::Core
 
 		static bool OnModelImGui(Ref<Asset> asset);
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 

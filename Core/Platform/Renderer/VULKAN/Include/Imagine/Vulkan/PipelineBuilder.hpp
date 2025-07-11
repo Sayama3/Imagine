@@ -42,7 +42,7 @@ namespace Imagine::Vulkan {
 		 * @param stage  The shader stages the shader should be added to.
 		 * @param shader The vulkan shader module to set.
 		 */
-		PipelineBuilder &AddShader(Core::ShaderStage stage, VkShaderModule shader, const char *name = "main");
+		PipelineBuilder &AddShader(ShaderStage stage, VkShaderModule shader, const char *name = "main");
 
 		VkPipeline BuildPipeline(VkDevice device);
 		void Clear();

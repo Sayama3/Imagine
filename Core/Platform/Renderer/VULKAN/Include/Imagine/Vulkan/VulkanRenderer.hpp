@@ -17,17 +17,17 @@
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 
 namespace Imagine::Vulkan {
-	class VulkanRenderer final : public Core::Renderer {
+	class VulkanRenderer final : public Renderer {
 	public:
-		explicit VulkanRenderer(const Core::ApplicationParameters &appParams);
+		explicit VulkanRenderer(const ApplicationParameters &appParams);
 		virtual ~VulkanRenderer() override;
 
 	public:
 		static VulkanRenderer *Get();
 
 		virtual void PrepareShutdown() override;
-		virtual Core::RendererAPI GetAPI() override { return VulkanRenderer::GetStaticAPI(); }
-		static Core::RendererAPI GetStaticAPI() { return Core::RendererAPI::Vulkan; }
+		virtual RendererAPI GetAPI() override { return VulkanRenderer::GetStaticAPI(); }
+		static RendererAPI GetStaticAPI() { return RendererAPI::Vulkan; }
 
 	public:
 		virtual Mat4 GetViewMatrix() const override;
@@ -75,7 +75,7 @@ namespace Imagine::Vulkan {
 		void DestroyImage(const AllocatedImage &img);
 
 	public:
-		GPUMeshBuffers UploadMesh(Core::ConstBufferView indices, Core::ConstBufferView vertices);
+		GPUMeshBuffers UploadMesh(ConstBufferView indices, ConstBufferView vertices);
 
 	public:
 		void PushDeletion(Deleter::VkType data) {
@@ -134,33 +134,33 @@ namespace Imagine::Vulkan {
 		void ShutdownVulkan();
 		[[nodiscard]] VulkanFrameData &GetCurrentFrame();
 		[[nodiscard]] VulkanFrameData &GetNextFrame();
-		[[nodiscard]] const Core::RendererParameters &GetRenderParams() const;
+		[[nodiscard]] const RendererParameters &GetRenderParams() const;
 
 		void UpdateCache();
 
 	public:
 		virtual bool Resize() override;
 
-		virtual bool BeginDraw(const Imagine::Core::GPUSceneData& sceneData, const Imagine::Core::GPULightData& lightData) override;
+		virtual bool BeginDraw(const Imagine::GPUSceneData& sceneData, const Imagine::GPULightData& lightData) override;
 		virtual void EndDraw() override;
 		virtual void Present() override;
-		virtual void Draw(const Core::DrawContext &ctx) override;
+		virtual void Draw(const DrawContext &ctx) override;
 
 		virtual void Draw() override;
 		virtual void SendImGuiCommands() override;
 
-		virtual Core::Ref<Core::GPUMesh> LoadMesh(const Core::CPUMesh &mesh) override;
-		virtual Core::Ref<Core::GPUMaterial> LoadMaterial(const Core::CPUMaterial &material) override;
-		virtual Core::Ref<Core::GPUMaterialInstance> LoadMaterialInstance(const Core::CPUMaterialInstance &instance) override;
-		virtual Core::Ref<Core::GPUTexture2D> LoadTexture2D(const Core::CPUTexture2D &tex2d) override;
-		virtual Core::Ref<Core::GPUTexture3D> LoadTexture3D(const Core::CPUTexture3D &tex3d) override;
+		virtual Ref<GPUMesh> LoadMesh(const CPUMesh &mesh) override;
+		virtual Ref<GPUMaterial> LoadMaterial(const CPUMaterial &material) override;
+		virtual Ref<GPUMaterialInstance> LoadMaterialInstance(const CPUMaterialInstance &instance) override;
+		virtual Ref<GPUTexture2D> LoadTexture2D(const CPUTexture2D &tex2d) override;
+		virtual Ref<GPUTexture3D> LoadTexture3D(const CPUTexture3D &tex3d) override;
 
 		void DrawBackground(VkCommandBuffer cmd);
 
 		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)> &&function);
 		void InitializeImGui();
 
-		virtual Core::DrawContext &GetDrawContext() override;
+		virtual DrawContext &GetDrawContext() override;
 
 	public:
 		// GLTFMetallicRoughness &GetGLTFMaterial() { return m_MetalRoughMaterial; }
@@ -214,8 +214,8 @@ namespace Imagine::Vulkan {
 		std::optional<Rect<>> m_ImGuiViewport;
 		bool m_ViewportFocused = false;
 
-		Core::GPUSceneData m_SceneData;
-		Core::GPULightData m_LightData;
+		GPUSceneData m_SceneData;
+		GPULightData m_LightData;
 		VkDescriptorSetLayout m_GpuSceneDataDescriptorLayout{nullptr};
 
 		// immediate submit structures
@@ -237,9 +237,9 @@ namespace Imagine::Vulkan {
 		VkSampler m_DefaultSamplerLinear{nullptr};
 		VkSampler m_DefaultSamplerNearest{nullptr};
 
-		Core::Ref<VulkanMaterialInstance> m_OpaqueInstance;
-		Core::Ref<VulkanMaterialInstance> m_TransparentInstance;
-		Core::Ref<VulkanMaterialInstance> m_LineInstance;
+		Ref<VulkanMaterialInstance> m_OpaqueInstance;
+		Ref<VulkanMaterialInstance> m_TransparentInstance;
+		Ref<VulkanMaterialInstance> m_LineInstance;
 
 		// std::shared_ptr<VulkanMaterialInstance> m_DefaultMeshMaterial{};
 		// std::shared_ptr<VulkanMaterialInstance> m_DefaultLineMaterial{};
@@ -252,11 +252,11 @@ namespace Imagine::Vulkan {
 		VkDescriptorSetLayout m_SingleImageDescriptorLayout{nullptr};
 
 		Deleter m_MainDeletionQueue;
-		Core::ApplicationParameters m_AppParams;
+		ApplicationParameters m_AppParams;
 
 		bool m_ResizeRequested{false};
 
-		Core::DrawContext m_MainDrawContext;
+		DrawContext m_MainDrawContext;
 
 		Mat4 ViewMatrixCached;
 		Mat4 ProjectionMatrixCached;

@@ -5,7 +5,7 @@
 #include "Imagine/Vulkan/VulkanTypes.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::Vulkan {
 	AutoDeleteMeshAsset::AutoDeleteMeshAsset() = default;

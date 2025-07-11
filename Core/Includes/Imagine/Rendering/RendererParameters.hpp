@@ -5,7 +5,7 @@
 #pragma once
 
 
-namespace Imagine::Core {
+namespace Imagine {
 
 #ifdef MGN_DEBUG
 	inline static constexpr bool c_DefaultDebugRendering = true;
@@ -17,4 +17,4 @@ namespace Imagine::Core {
 		uint16_t NbrFrameInFlight = 2;
 		bool EnableDebug = c_DefaultDebugRendering;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

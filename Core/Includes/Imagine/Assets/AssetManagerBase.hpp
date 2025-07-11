@@ -9,7 +9,7 @@
 #include "Imagine/Assets/AssetMetadata.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 #ifdef MGN_DIST
 	using AssetMap = std::unordered_map<AssetHandle, Ref<Asset>>;
@@ -31,4 +31,4 @@ namespace Imagine::Core {
 		virtual bool AddAsset(Ref<Asset> asset) = 0;
 		virtual bool RemoveAsset(AssetHandle handle) = 0;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

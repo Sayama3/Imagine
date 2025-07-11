@@ -4,10 +4,10 @@
 
 #include "Imagine/Layers/Layer.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	Layer::Layer(std::string name) :
 		m_DebugName(std::move(name)) {}
 
 	Layer::~Layer() {}
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -234,12 +234,12 @@ namespace Imagine::Vulkan {
 			return info;
 		}
 
-		std::optional<std::shared_ptr<AutoDeleteMeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const Core::CPUMesh& mesh);
+		std::optional<std::shared_ptr<AutoDeleteMeshAsset>> LoadCPUMesh(VulkanRenderer *engine, const CPUMesh& mesh);
 		std::optional<std::vector<std::shared_ptr<AutoDeleteMeshAsset>>> LoadMeshes(VulkanRenderer *engine, const std::filesystem::path &filePath);
 
-		std::shared_ptr<AutoDeleteMeshAsset> LoadLines(VulkanRenderer* renderer, std::span<Core::LineObject> lines);
-		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<Core::LineObject> lines);
-		std::shared_ptr<AutoDeleteMeshAsset> LoadPoints(VulkanRenderer* renderer, std::span<Core::Vertex> points);
+		std::shared_ptr<AutoDeleteMeshAsset> LoadLines(VulkanRenderer* renderer, std::span<LineObject> lines);
+		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<LineObject> lines);
+		std::shared_ptr<AutoDeleteMeshAsset> LoadPoints(VulkanRenderer* renderer, std::span<Vertex> points);
 
 	} // namespace Initializer
 } // namespace Imagine::Vulkan

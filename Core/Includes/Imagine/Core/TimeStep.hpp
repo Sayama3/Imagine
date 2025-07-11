@@ -6,7 +6,7 @@
 
 typedef double TimeType;
 
-namespace Imagine::Core {
+namespace Imagine {
 	struct TimeStep {
 	public:
 		TimeStep(const TimeType timeInSeconds = 1.0) : m_Time(timeInSeconds) {}
@@ -25,4 +25,4 @@ namespace Imagine::Core {
 		TimeType m_Time;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

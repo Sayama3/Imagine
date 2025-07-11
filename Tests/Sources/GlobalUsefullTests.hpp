@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 using namespace Imagine::Literal;
-using namespace Imagine::Core;
+using namespace Imagine;
 using namespace Imagine;
 
 #ifdef MGN_DOUBLE

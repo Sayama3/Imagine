@@ -4,5 +4,5 @@
 
 #include "Imagine/Core/RTTI.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 }

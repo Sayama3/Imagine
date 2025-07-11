@@ -14,7 +14,7 @@
 namespace YAML {
 	YAML_SIMPLE_MGN_ENUM_EMITTER(ShaderStage);
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUFileShader &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUFileShader &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Type", "File");
@@ -25,7 +25,7 @@ namespace YAML {
 		return out;
 	};
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUMemoryShader &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUMemoryShader &v) {
 		out << YAML::BeginMap;
 		{
 			out << KEYVAL("Type", "Memory");
@@ -37,11 +37,11 @@ namespace YAML {
 		return out;
 	};
 
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::CPUShader &v) {
-		if (auto *shader = dynamic_cast<const Imagine::Core::CPUFileShader *>(&v)) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::CPUShader &v) {
+		if (auto *shader = dynamic_cast<const Imagine::CPUFileShader *>(&v)) {
 			out << *shader;
 		}
-		else if (auto *shader = dynamic_cast<const Imagine::Core::CPUMemoryShader *>(&v)) {
+		else if (auto *shader = dynamic_cast<const Imagine::CPUMemoryShader *>(&v)) {
 			out << *shader;
 		}
 		else {
@@ -59,8 +59,8 @@ namespace YAML {
 	YAML_SIMPLE_MGN_ENUM_CONVERTER(ShaderStage);
 
 	template<>
-	struct convert<Imagine::Core::CPUFileShader> {
-		inline static Node encode(const Imagine::Core::CPUFileShader &v) {
+	struct convert<Imagine::CPUFileShader> {
+		inline static Node encode(const Imagine::CPUFileShader &v) {
 			Node node;
 			node["Type"] = "FileShader";
 			YAML_NODE_OUT_VAL_STR("Path", path);
@@ -68,7 +68,7 @@ namespace YAML {
 			return node;
 		}
 
-		inline static bool decode(const Node &node, Imagine::Core::CPUFileShader &v) {
+		inline static bool decode(const Node &node, Imagine::CPUFileShader &v) {
 			MGN_CORE_CASSERT(node["Type"].as<std::string>() == "FileShader");
 			YAML_NODE_IN_VAL_STR("Stage", stage, ShaderStage);
 			YAML_NODE_IN_VAL_STR("Path", path, Path);
@@ -77,8 +77,8 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Imagine::Core::CPUMemoryShader> {
-		inline static Node encode(const Imagine::Core::CPUMemoryShader &v) {
+	struct convert<Imagine::CPUMemoryShader> {
+		inline static Node encode(const Imagine::CPUMemoryShader &v) {
 			Node node;
 			node["Type"] = "MemoryShader";
 			YAML_NODE_OUT_VAL_STR("Stage", stage);
@@ -87,7 +87,7 @@ namespace YAML {
 			return node;
 		}
 
-		inline static bool decode(const Node &node, Imagine::Core::CPUMemoryShader &v) {
+		inline static bool decode(const Node &node, Imagine::CPUMemoryShader &v) {
 			MGN_CORE_CASSERT(node["Type"].as<std::string>() == "MemoryShader");
 			YAML_NODE_IN_VAL_STR("Stage", stage, ShaderStage);
 			YAML_NODE_IN_GLB_VAL_STR("Name", name, std::string);
@@ -97,14 +97,14 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Imagine::Core::CPUShader> {
-		inline static Node encode(const Imagine::Core::CPUShader &v) {
+	struct convert<Imagine::CPUShader> {
+		inline static Node encode(const Imagine::CPUShader &v) {
 			Node node;
-			if (auto *shader = dynamic_cast<const Imagine::Core::CPUFileShader *>(&v)) {
-				return convert<Imagine::Core::CPUShader>::encode(*shader);
+			if (auto *shader = dynamic_cast<const Imagine::CPUFileShader *>(&v)) {
+				return convert<Imagine::CPUShader>::encode(*shader);
 			}
-			else if (auto *shader = dynamic_cast<const Imagine::Core::CPUMemoryShader *>(&v)) {
-				return convert<Imagine::Core::CPUMemoryShader>::encode(*shader);
+			else if (auto *shader = dynamic_cast<const Imagine::CPUMemoryShader *>(&v)) {
+				return convert<Imagine::CPUMemoryShader>::encode(*shader);
 			}
 			else {
 				MGN_CORE_CASSERT(false);
@@ -114,12 +114,12 @@ namespace YAML {
 			return node;
 		}
 
-		inline static bool decode(const Node &node, Imagine::Core::CPUShader &v) {
-			if (auto *shader = dynamic_cast<Imagine::Core::CPUFileShader *>(&v)) {
-				return convert<Imagine::Core::CPUShader>::decode(node, *shader);
+		inline static bool decode(const Node &node, Imagine::CPUShader &v) {
+			if (auto *shader = dynamic_cast<Imagine::CPUFileShader *>(&v)) {
+				return convert<Imagine::CPUShader>::decode(node, *shader);
 			}
-			else if (auto *shader = dynamic_cast<Imagine::Core::CPUMemoryShader *>(&v)) {
-				return convert<Imagine::Core::CPUMemoryShader>::decode(node, *shader);
+			else if (auto *shader = dynamic_cast<Imagine::CPUMemoryShader *>(&v)) {
+				return convert<Imagine::CPUMemoryShader>::decode(node, *shader);
 			}
 			else {
 				MGN_CORE_CASSERT(false);

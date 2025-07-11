@@ -6,7 +6,7 @@
 #include "Imagine/Project/Project.hpp"
 #include "Imagine/Assets/AssetManagerBase.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	Ref<CPUMaterial> CPUMaterial::s_DefaultOpaqueMaterial{nullptr};
 	Ref<CPUMaterial> CPUMaterial::s_DefaultTransparentMaterial{nullptr};
 	Ref<CPUMaterial> CPUMaterial::s_DefaultLineMaterial{nullptr};
@@ -93,4 +93,4 @@ namespace Imagine::Core {
 			}
 		}
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

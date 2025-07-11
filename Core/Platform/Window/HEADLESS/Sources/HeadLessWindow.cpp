@@ -4,7 +4,7 @@
 
 #include "HeadLessWindow.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	HeadLessWindow::HeadLessWindow(const std::string &windowName, const WindowParameters parameters) {}
 
 	HeadLessWindow::~HeadLessWindow() {}
@@ -40,4 +40,4 @@ namespace Imagine::Core {
 	bool HeadLessWindow::ShouldClose() {
 		return false;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

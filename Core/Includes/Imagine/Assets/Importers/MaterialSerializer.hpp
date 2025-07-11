@@ -14,7 +14,7 @@
 
 #define MaterialExtension ".mgn"
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	class MaterialSerializer
@@ -29,5 +29,5 @@ namespace Imagine::Core
 		static Ref<Asset> ImportReadableMaterialInstance(const AssetMetadata& metadata);
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

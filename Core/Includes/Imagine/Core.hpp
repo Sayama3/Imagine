@@ -42,5 +42,5 @@
 #include "Imagine/Assets/AssetMetadata.hpp"
 #include "Imagine/Assets/AssetManager.hpp"
 
-namespace Imagine::Core {
-} // namespace Imagine::Core
+namespace Imagine {
+} // namespace Imagine

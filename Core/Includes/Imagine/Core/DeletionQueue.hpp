@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct DeletionQueue {
 		std::deque<std::function<void()>> deletors;
@@ -22,4 +22,4 @@ namespace Imagine::Core {
 			deletors.clear();
 		}
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

@@ -8,7 +8,7 @@
 #include "Imagine/Core/FileSystem.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUShader : public Asset {
 	public:
@@ -45,4 +45,4 @@ namespace Imagine::Core {
 		std::string name;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

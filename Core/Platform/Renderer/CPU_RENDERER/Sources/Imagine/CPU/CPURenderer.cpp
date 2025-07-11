@@ -6,7 +6,7 @@
 #include "Imagine/CPU/CPURenderer.hpp"
 
 
-using namespace Imagine::Core;
+using namespace Imagine;
 
 namespace Imagine::CPU {
 	CPURenderer::CPURenderer(const ApplicationParameters &appParams) :

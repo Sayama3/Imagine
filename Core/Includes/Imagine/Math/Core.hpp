@@ -107,10 +107,10 @@ namespace Imagine {
 		inline static constexpr Vec3 Gravity = Vec3(0, -9.81, 0);
 		inline static constexpr Real Epsilon = Real(1e-6);
 
-		inline static Vec2 ToVec2(const Core::Size2 s) {
+		inline static Vec2 ToVec2(const Size2 s) {
 			return {s.x, s.y};
 		}
-		inline static Vec3 ToVec3(const Core::Size3 s) {
+		inline static Vec3 ToVec3(const Size3 s) {
 			return {s.x, s.y, s.z};
 		}
 

@@ -8,7 +8,7 @@
 #include "BroadPhaseLayerInterface.hpp"
 
 
-namespace Imagine::Core
+namespace Imagine
 {
 
 	/// Class that determines if an object layer can collide with a broadphase layer
@@ -30,5 +30,5 @@ namespace Imagine::Core
 		}
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

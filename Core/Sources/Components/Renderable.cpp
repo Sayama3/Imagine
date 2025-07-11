@@ -5,6 +5,4 @@
 #include "Imagine/Components/Renderable.hpp"
 
 namespace Imagine {
-	namespace Core {
-	} // namespace Core
-} // namespace Imagine
+}

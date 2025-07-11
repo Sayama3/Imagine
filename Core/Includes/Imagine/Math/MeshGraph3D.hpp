@@ -27,7 +27,7 @@ namespace Imagine::Math {
 		static inline constexpr glm::length_t L = 3;
 		// type definitions
 		using vec = glm::vec<L, T, Q>;
-		using IdType = Imagine::Core::UUID;
+		using IdType = Imagine::UUID;
 
 	public:
 		// struct definition
@@ -463,8 +463,8 @@ namespace Imagine::Math {
 			m_Faces.clear();
 		}
 		void AddFace(vec a, vec b, vec c);
-		void AddMesh(const Core::CPUMesh &mesh);
-		void AddMesh(Core::ConstBufferView vertices, Core::ConstBufferView indices);
+		void AddMesh(const CPUMesh &mesh);
+		void AddMesh(ConstBufferView vertices, ConstBufferView indices);
 
 		bool EnsureLink();
 
@@ -476,9 +476,9 @@ namespace Imagine::Math {
 		void SubdivideKobbelt();
 		void SubdivideButterfly();
 
-		Core::CPUMesh GetSmoothCPUMesh();
+		CPUMesh GetSmoothCPUMesh();
 		template<bool UseRandomColor = false>
-		Core::CPUMesh GetHardCPUMesh();
+		CPUMesh GetHardCPUMesh();
 
 	private:
 		static void AddTriangle(VerticesToEdgeMap &edgeIds, VertexSparseSet &newVertices, EdgeSparseSet &newEdges, FaceSparseSet &newFaces, VertexID vertId1, VertexID vertId2, VertexID vertId3);
@@ -502,21 +502,21 @@ namespace Imagine::Math {
 	}
 
 	// template<typename T, glm::qualifier Q>
-	inline void MeshGraph3D::AddMesh(const Core::CPUMesh &mesh) {
-		Core::ConstBufferView vertices = Core::ConstBufferView::Make(mesh.Vertices);
-		Core::ConstBufferView indices = Core::ConstBufferView::Make(mesh.Indices);
+	inline void MeshGraph3D::AddMesh(const CPUMesh &mesh) {
+		ConstBufferView vertices = ConstBufferView::Make(mesh.Vertices);
+		ConstBufferView indices = ConstBufferView::Make(mesh.Indices);
 		AddMesh(vertices, indices);
 	}
 
 	// template<typename T, glm::qualifier Q>
-	inline void MeshGraph3D::AddMesh(Core::ConstBufferView vertices, Core::ConstBufferView indices) {
+	inline void MeshGraph3D::AddMesh(ConstBufferView vertices, ConstBufferView indices) {
 		std::vector<VertexID> m_IDMap;
 
 		{
 			std::unordered_map<vec, VertexID> m_IDs;
-			m_IDMap.resize(vertices.Count<Imagine::Core::Vertex>());
-			const Imagine::Core::Vertex *array = vertices.Get<Imagine::Core::Vertex>();
-			for (uint64_t i = 0; i < vertices.Count<Imagine::Core::Vertex>(); ++i) {
+			m_IDMap.resize(vertices.Count<Imagine::Vertex>());
+			const Imagine::Vertex *array = vertices.Get<Imagine::Vertex>();
+			for (uint64_t i = 0; i < vertices.Count<Imagine::Vertex>(); ++i) {
 				const vec position = array[i].position;
 				if (m_IDs.contains(position)) {
 					const auto id = m_IDs.at(position);
@@ -1076,8 +1076,8 @@ namespace Imagine::Math {
 	}
 
 	// template<typename T, glm::qualifier Q>
-	inline Core::CPUMesh MeshGraph3D::GetSmoothCPUMesh() {
-		Core::CPUMesh mesh;
+	inline CPUMesh MeshGraph3D::GetSmoothCPUMesh() {
+		CPUMesh mesh;
 		mesh.Vertices.resize(m_Vertices.size());
 		std::unordered_map<VertexID, uint32_t, VertexIDHash> vertexMap{};
 		vertexMap.reserve(m_Vertices.size());
@@ -1102,7 +1102,7 @@ namespace Imagine::Math {
 				Math::NormalizeInPlace(normal);
 			}
 
-			Imagine::Core::Vertex vertex;
+			Imagine::Vertex vertex;
 			vertex.position = vert.position;
 			vertex.normal = normal;
 			vertexMap[vertIt.GetID()] = static_cast<uint32_t>(mesh.Vertices.size());
@@ -1128,8 +1128,8 @@ namespace Imagine::Math {
 
 	// template<typename T, glm::qualifier Q>
 	template<bool UseRandomColor>
-	inline Core::CPUMesh MeshGraph3D::GetHardCPUMesh() {
-		Core::CPUMesh mesh;
+	inline CPUMesh MeshGraph3D::GetHardCPUMesh() {
+		CPUMesh mesh;
 		const auto triangleCount = m_Faces.size() * ((Face::VertexCount - 3) * 3 + 3);
 		mesh.Vertices.resize(triangleCount*3);
 		mesh.Indices.reserve(triangleCount);
@@ -1141,13 +1141,13 @@ namespace Imagine::Math {
 				const VertexID newLastId = it->second.vertices[i];
 
 				const Vertex& first = m_Vertices.at(firstId);
-				Imagine::Core::Vertex vFirst{first.position};
+				Imagine::Vertex vFirst{first.position};
 
 				const Vertex& last = m_Vertices.at(lastId);
-				Imagine::Core::Vertex vLast{last.position};
+				Imagine::Vertex vLast{last.position};
 
 				const Vertex& newLast = m_Vertices.at(newLastId);
-				Imagine::Core::Vertex vNewLast{newLast.position};
+				Imagine::Vertex vNewLast{newLast.position};
 
 				glm::vec<4,T,Q> color{1,1,1,1};
 

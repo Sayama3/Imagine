@@ -11,7 +11,7 @@ namespace Imagine::ThirdParty {
 			std::ofstream fileOut(path);
 			fileOut << emitter.c_str();
 		}
-		void WriteYamlFile(const Core::Path &path, YAML::Emitter &emitter) {
+		void WriteYamlFile(const Path &path, YAML::Emitter &emitter) {
 			WriteYamlFile(path.GetFullPath(), emitter);
 		}
 
@@ -24,7 +24,7 @@ namespace Imagine::ThirdParty {
 			data = YAML::Load(stringstream.str());
 			return data;
 		}
-		YAML::Node ReadFileAsYAML(const Core::Path &path) {
+		YAML::Node ReadFileAsYAML(const Path &path) {
 			return ReadFileAsYAML(path.GetFullPath());
 		}
 

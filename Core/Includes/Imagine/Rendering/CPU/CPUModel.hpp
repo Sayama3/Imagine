@@ -13,7 +13,7 @@
 
 #include "Imagine/Scene/Entity.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	class Scene;
 	class CPUMaterialInstance;
 
@@ -21,8 +21,8 @@ namespace Imagine::Core {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Model);
 	public:
-		static Ref<CPUModel> LoadModel(const Path &filePath, Core::Scene* coreScene, Core::EntityID parent = EntityID::NullID);
-		static Ref<CPUModel> LoadModel(const std::filesystem::path &filePath, Core::Scene* coreScene, Core::EntityID parent = EntityID::NullID);
+		static Ref<CPUModel> LoadModel(const Path &filePath, Scene* coreScene, EntityID parent = EntityID::NullID);
+		static Ref<CPUModel> LoadModel(const std::filesystem::path &filePath, Scene* coreScene, EntityID parent = EntityID::NullID);
 	public:
 		Path modelPath;
 		std::vector<Ref<CPUMesh>> Meshes;
@@ -32,4 +32,4 @@ namespace Imagine::Core {
 		std::vector<Ref<CPUShader>> Shaders;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

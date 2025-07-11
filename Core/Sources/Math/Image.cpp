@@ -4,6 +4,6 @@
 
 #include "Imagine/Math/Image.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
-} // namespace Imagine::Core
+} // namespace Imagine

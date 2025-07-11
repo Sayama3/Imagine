@@ -8,7 +8,6 @@
 #include "Imagine/Vulkan/VulkanImage.hpp"
 #include "Imagine/Vulkan/VulkanRenderer.hpp"
 
-using namespace Imagine::Core;
 
 namespace Imagine::Vulkan {
 
@@ -93,8 +92,7 @@ namespace Imagine::Vulkan {
 	AutoDeleter::AutoDeleter() = default;
 
 	AutoDeleter::~AutoDeleter() {
-		using namespace Core;
-		Renderer* renderer = Core::Renderer::Get();
+		Renderer* renderer = Renderer::Get();
 		MGN_CORE_CASSERT(renderer, "We need a renderer to autodelete");
 		VulkanRenderer* vkRenderer = dynamic_cast<VulkanRenderer*>(renderer);
 		MGN_CORE_CASSERT(vkRenderer, "We need a vulkan renderer to autodelete the vulkan auto deleter.");

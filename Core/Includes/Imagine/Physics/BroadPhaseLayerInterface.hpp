@@ -20,7 +20,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 //#include <Jolt/RegisterTypes.h>
 
-namespace Imagine::Core
+namespace Imagine
 {
 	// Each broadphase layer results in a separate bounding volume tree in the broad phase. You at least want to have
 	// a layer for non-moving and moving objects to avoid having to update a tree full of static objects every frame.
@@ -53,5 +53,5 @@ namespace Imagine::Core
 		JPH::BroadPhaseLayer mObjectToBroadPhase[PhysicalLayers::NUM_LAYERS];
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine
 

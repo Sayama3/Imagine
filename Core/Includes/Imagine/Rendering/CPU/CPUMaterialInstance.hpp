@@ -9,7 +9,7 @@
 #include "Imagine/Assets/AssetHandle.hpp"
 #include "Imagine/Rendering/GPU/GPUMaterialInstance.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class CPUMaterialInstance final : public Asset {
 	public:
@@ -69,4 +69,4 @@ namespace Imagine::Core {
 		Ref<GPUMaterialInstance> gpu{nullptr};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

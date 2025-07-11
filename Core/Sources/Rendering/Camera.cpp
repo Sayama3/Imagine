@@ -5,7 +5,7 @@
 #include "Imagine/Rendering/Camera.hpp"
 
 
-namespace Imagine::Core {
+namespace Imagine {
 	Camera* Camera::s_MainCamera = new Camera();
 
 	glm::mat4 Camera::GetViewMatrix() const {
@@ -39,4 +39,4 @@ namespace Imagine::Core {
 
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine

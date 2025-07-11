@@ -9,7 +9,7 @@
 
 #define CHECK_SHADER_STAGE_BIT(stage1, stage2) ((uint16_t) stage1 & (uint16_t) stage2)
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	/**
 	 * Enum flag to designate one or multiple shader stage.
@@ -82,13 +82,13 @@ namespace Imagine::Core {
 		return val;
 	}
 
-} // namespace Imagine::Core
+} // namespace Imagine
 
 template<>
-struct fmt::formatter<Imagine::Core::ShaderStage> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::ShaderStage> : fmt::formatter<std::string>
 {
-	auto format(Imagine::Core::ShaderStage value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(Imagine::ShaderStage value, format_context &ctx) const -> decltype(ctx.out())
 	{
-		return format_to(ctx.out(), "{}", Imagine::Core::ShaderStageToString(value));
+		return format_to(ctx.out(), "{}", Imagine::ShaderStageToString(value));
 	}
 };

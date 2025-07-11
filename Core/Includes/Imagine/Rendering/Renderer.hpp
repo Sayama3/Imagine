@@ -27,7 +27,7 @@
 #include "Imagine/Rendering/GPU/GPUTexture3D.hpp"
 
 
-namespace Imagine::Core {
+namespace Imagine {
 	class Scene;
 
 	enum class RendererAPI {
@@ -55,7 +55,7 @@ namespace Imagine::Core {
 	public:
 		virtual RendererAPI GetAPI() = 0;
 
-		virtual bool BeginDraw(const Imagine::Core::GPUSceneData& m_SceneData, const Imagine::Core::GPULightData& m_LightData) = 0;
+		virtual bool BeginDraw(const Imagine::GPUSceneData& m_SceneData, const Imagine::GPULightData& m_LightData) = 0;
 		virtual void EndDraw() = 0;
 		virtual void Present() = 0;
 		virtual void Draw() = 0;
@@ -84,4 +84,4 @@ namespace Imagine::Core {
 		virtual void SendImGuiCommands() = 0;
 		virtual void PrepareShutdown() = 0;
 	};
-} // namespace Imagine::Core
+} // namespace Imagine

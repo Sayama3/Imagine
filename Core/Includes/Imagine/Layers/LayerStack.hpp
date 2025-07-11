@@ -8,7 +8,7 @@
 #include "Imagine/Core/TimeStep.hpp"
 #include "Layer.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class LayerStack {
 	public:
@@ -92,4 +92,4 @@ namespace Imagine::Core {
 		unsigned int m_LayerInsertIndex = 0;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

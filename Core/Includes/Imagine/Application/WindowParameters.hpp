@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct WindowParameters {
 		uint32_t Width;
@@ -12,4 +12,4 @@ namespace Imagine::Core {
 		bool Resizable;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

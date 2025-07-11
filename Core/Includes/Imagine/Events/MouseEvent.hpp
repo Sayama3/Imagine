@@ -7,7 +7,7 @@
 #include "Event.hpp"
 #include "Imagine/Core/MouseButtonCodes.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
     class MouseMovedEvent : public Event
     {

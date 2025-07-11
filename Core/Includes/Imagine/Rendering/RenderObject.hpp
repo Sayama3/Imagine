@@ -7,7 +7,7 @@
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct RenderObject {
 		RenderObject() = default;
@@ -29,4 +29,4 @@ namespace Imagine::Core {
 		Vertex point;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

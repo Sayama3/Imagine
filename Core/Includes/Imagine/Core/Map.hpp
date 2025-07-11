@@ -8,7 +8,7 @@
 #include <functional>
 #include "SparseSet.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 	// Declaration of the concept �Hashable�, which is satisfied by any type �T�
 	// such that for values �a� of type �T�, the expression std::hash<T>{}(a)
 	// compiles and its result is convertible to std::size_t
@@ -23,4 +23,4 @@ namespace Imagine::Core {
 		SparseSet<Value> m_Data;
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

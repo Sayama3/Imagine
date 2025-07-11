@@ -7,7 +7,7 @@
 #include "Imagine/ThirdParty/YamlCpp.hpp"
 
 
-namespace Imagine::Core {
+namespace Imagine {
 	bool MaterialSerializer::IsMaterial(const std::filesystem::path &path) {
 		return path.filename().string().ends_with(".mat.mgn");
 	}
@@ -59,4 +59,4 @@ namespace Imagine::Core {
 
 		return nullptr;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

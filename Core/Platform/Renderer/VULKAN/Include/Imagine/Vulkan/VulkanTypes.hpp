@@ -54,7 +54,7 @@ namespace Imagine::Vulkan {
 		uint32_t count{0};
 	};
 
-	struct AutoDeleteMeshAsset final : public Core::GPUMesh {
+	struct AutoDeleteMeshAsset final : public GPUMesh {
 		AutoDeleteMeshAsset();
 		virtual ~AutoDeleteMeshAsset();
 		AutoDeleteMeshAsset(const AutoDeleteMeshAsset&) = delete;
@@ -63,11 +63,11 @@ namespace Imagine::Vulkan {
 		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 
 		std::string name;
-		std::vector<Core::LOD> lods{};
+		std::vector<LOD> lods{};
 		GPUMeshBuffers meshBuffers;
 	};
 
-	struct ManualDeleteMeshAsset final : public Core::GPUMesh {
+	struct ManualDeleteMeshAsset final : public GPUMesh {
 		ManualDeleteMeshAsset() = default;
 		virtual ~ManualDeleteMeshAsset() = default;
 		ManualDeleteMeshAsset(const ManualDeleteMeshAsset&) = delete;
@@ -79,7 +79,7 @@ namespace Imagine::Vulkan {
 		virtual uint64_t GetID() override {return this->meshBuffers.vertexBufferAddress;}
 
 		std::string name;
-		std::vector<Core::LOD> lods{};
+		std::vector<LOD> lods{};
 		GPUMeshBuffers meshBuffers;
 	};
 

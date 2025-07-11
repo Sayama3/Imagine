@@ -12,7 +12,7 @@
 // #include "Imagine/Rendering/CPU/CPUCubemap.hpp"
 #include <any>
 
-namespace Imagine::Core
+namespace Imagine
 {
 	class TextureSerializer
 	{

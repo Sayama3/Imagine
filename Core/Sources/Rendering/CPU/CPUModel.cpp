@@ -12,11 +12,11 @@
 #include "Imagine/ThirdParty/Assimp.hpp"
 #include "Imagine/ThirdParty/Stb.hpp"
 
-#define LOAD_ASSET(ASSET) Imagine::Core::Project::GetActive()->GetAssetManager()->AddAsset(ASSET);
+#define LOAD_ASSET(ASSET) Imagine::Project::GetActive()->GetAssetManager()->AddAsset(ASSET);
 
-namespace Imagine::Core {
+namespace Imagine {
 
-	Ref<CPUModel> CPUModel::LoadModel(const Path &filePath, Core::Scene *coreScene, Core::EntityID parent) {
+	Ref<CPUModel> CPUModel::LoadModel(const Path &filePath, Scene *coreScene, EntityID parent) {
 		auto model = LoadModel(filePath.GetFullPath(), coreScene, parent);
 		if (model) {
 			model->modelPath = filePath;
@@ -24,9 +24,9 @@ namespace Imagine::Core {
 		return model;
 	}
 
-	Ref<CPUModel> CPUModel::LoadModel(const std::filesystem::path &filePath, Core::Scene *coreScene, Core::EntityID parent) {
+	Ref<CPUModel> CPUModel::LoadModel(const std::filesystem::path &filePath, Scene *coreScene, EntityID parent) {
 		MGN_PROFILE_FUNCTION();
-		using namespace Imagine::Core;
+		using namespace Imagine;
 		Assimp::Importer importer;
 
 		if (!coreScene) return nullptr;
@@ -73,7 +73,7 @@ namespace Imagine::Core {
 
 				model->Textures[i] = ErrorCheckerboard;
 			}
-			Core::Image<> image;
+			Image<> image;
 			if (pTexture->mHeight == 0) {
 				image = std::move(ThirdParty::Stb::Image::LoadFromMemory(ConstBufferView{pTexture->pcData, pTexture->mWidth}, 4));
 			}
@@ -173,7 +173,7 @@ namespace Imagine::Core {
 						const std::filesystem::path fullPath = filePath.parent_path() / imageFiles[texId].C_Str();
 						const std::string pathStr = fullPath.string();
 						if (!loadedTextures.contains(pathStr)) {
-							Core::Image<> img = ThirdParty::Stb::Image::Load(pathStr.c_str(), 4);
+							Image<> img = ThirdParty::Stb::Image::Load(pathStr.c_str(), 4);
 							loadedTextures[pathStr] = CreateRef<CPUTexture2D>(std::move(img));
 							model->Textures.push_back(loadedTextures[pathStr]);
 							LOAD_ASSET(loadedTextures[pathStr]);
@@ -216,7 +216,7 @@ namespace Imagine::Core {
 			// use the same vectors for all meshes so that the memory doesnt reallocate as
 			// often
 			std::vector<uint32_t> indices;
-			std::vector<Core::Vertex> vertices;
+			std::vector<Vertex> vertices;
 
 			for (uint64_t i = 0; i < scene->mNumMeshes; ++i) {
 				const aiMesh *aiMesh = scene->mMeshes[i];
@@ -282,7 +282,7 @@ namespace Imagine::Core {
 		// Load the nodes as entity in the scene.
 		{
 			// Unwrapping everything in a vector to avoid recursion.
-			std::vector<std::tuple<aiNode *, Core::EntityID>> nodes{{scene->mRootNode, parent}};
+			std::vector<std::tuple<aiNode *, EntityID>> nodes{{scene->mRootNode, parent}};
 			nodes.reserve(scene->mNumMeshes);
 			while (!nodes.empty()) {
 				// Pop the last node available
@@ -397,4 +397,4 @@ namespace Imagine::Core {
 		LOAD_ASSET(model);
 		return model;
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

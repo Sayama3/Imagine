@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Imagine::Core {
+namespace Imagine {
 	Path::Path(Path &&other) noexcept {
 		swap(other);
 	}
@@ -210,4 +210,4 @@ namespace Imagine::Core {
 	std::string Path::string() const {
 		return GetFullPath().string();
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

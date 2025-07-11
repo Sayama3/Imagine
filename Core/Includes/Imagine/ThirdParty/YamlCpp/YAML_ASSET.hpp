@@ -14,7 +14,7 @@
 namespace YAML {
 	YAML_SIMPLE_MGN_EMITTER_FUNC(AssetHandle, v.GetID());
 	YAML_SIMPLE_MGN_ENUM_EMITTER(AssetType);
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Core::AssetMetadata &v) {
+	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::AssetMetadata &v) {
 		out << YAML::BeginMap;
 		{
 			out << YAML::Key << "FilePath" << YAML::Value << v.FilePath;
@@ -28,17 +28,17 @@ namespace YAML {
 
 namespace YAML {
 	template<>
-	struct convert<::Imagine::Core::AssetHandle> {
-		inline static Node encode(const ::Imagine::Core::AssetHandle &v) {
+	struct convert<::Imagine::AssetHandle> {
+		inline static Node encode(const ::Imagine::AssetHandle &v) {
 			Node node;
 			node.push_back(v.GetID());
 			return node;
 		}
 
-		inline static bool decode(const Node &node, ::Imagine::Core::AssetHandle &v) {
+		inline static bool decode(const Node &node, ::Imagine::AssetHandle &v) {
 			if (!node.IsSequence() || node.size() != 2) return false;
-			Imagine::Core::UUID id = node.as<Imagine::Core::UUID>(Imagine::Core::UUID{0, 0});
-			v = Imagine::Core::AssetHandle{id};
+			Imagine::UUID id = node.as<Imagine::UUID>(Imagine::UUID{0, 0});
+			v = Imagine::AssetHandle{id};
 			return true;
 		}
 	};
@@ -46,15 +46,15 @@ namespace YAML {
 	YAML_SIMPLE_MGN_ENUM_CONVERTER(AssetType);
 
 	template<>
-	struct convert<Imagine::Core::AssetMetadata> {
-		inline static Node encode(const Imagine::Core::AssetMetadata &v) {
+	struct convert<Imagine::AssetMetadata> {
+		inline static Node encode(const Imagine::AssetMetadata &v) {
 			Node node;
 			YAML_NODE_OUT_VAL(FilePath);
 			YAML_NODE_OUT_VAL(Handle);
 			YAML_NODE_OUT_VAL(Type);
 			return node;
 		}
-		inline static bool decode(const Node &node, Imagine::Core::AssetMetadata &v) {
+		inline static bool decode(const Node &node, Imagine::AssetMetadata &v) {
 			YAML_NODE_IN_VAL(FilePath, Path);
 			YAML_NODE_IN_VAL(Handle, AssetHandle);
 			YAML_NODE_IN_VAL(Type, AssetType);

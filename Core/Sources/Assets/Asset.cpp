@@ -4,5 +4,5 @@
 
 #include "Imagine/Assets/Asset.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 }

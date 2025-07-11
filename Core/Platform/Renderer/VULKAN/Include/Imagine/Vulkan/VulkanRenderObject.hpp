@@ -12,7 +12,7 @@
 
 namespace Imagine::Vulkan {
 
-	struct VulkanRenderObject final : public Core::RenderObject {
+	struct VulkanRenderObject final : public RenderObject {
 		VulkanRenderObject() = default;
 		virtual ~VulkanRenderObject() = default;
 

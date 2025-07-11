@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Imagine::Core {
+namespace Imagine {
     template<typename T>
     using Scope = std::unique_ptr<T>;
     template<typename T, typename ... Args>

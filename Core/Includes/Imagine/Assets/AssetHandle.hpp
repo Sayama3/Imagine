@@ -7,12 +7,12 @@
 #include "Imagine/Core/UUID.hpp"
 #include <spdlog/spdlog.h>
 
-#define NULL_ASSET_HANDLE ::Imagine::Core::AssetHandle::Null()
+#define NULL_ASSET_HANDLE ::Imagine::AssetHandle::Null()
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	struct AssetHandle {
-		friend std::hash<Imagine::Core::AssetHandle>;
+		friend std::hash<Imagine::AssetHandle>;
 		static constexpr AssetHandle Null() { return AssetHandle{0, 0}; }
 	public:
 		AssetHandle() = default;
@@ -34,24 +34,24 @@ namespace Imagine::Core {
 	private:
 		UUID m_Id{};
 	};
-} // namespace Imagine::Core
+} // namespace Imagine
 
 
 template<>
-struct std::hash<Imagine::Core::AssetHandle> {
-	std::size_t operator()(const Imagine::Core::AssetHandle &s) const noexcept {
-		return std::hash<Imagine::Core::UUID>{}(s.m_Id);
+struct std::hash<Imagine::AssetHandle> {
+	std::size_t operator()(const Imagine::AssetHandle &s) const noexcept {
+		return std::hash<Imagine::UUID>{}(s.m_Id);
 	}
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Imagine::Core::AssetHandle &value) {
+inline std::ostream &operator<<(std::ostream &os, const Imagine::AssetHandle &value) {
 	return os << value.string();
 }
 
 template<>
-struct fmt::formatter<Imagine::Core::AssetHandle> : fmt::formatter<std::string>
+struct fmt::formatter<Imagine::AssetHandle> : fmt::formatter<std::string>
 {
-	auto format(Imagine::Core::AssetHandle value, format_context &ctx) const -> decltype(ctx.out())
+	auto format(Imagine::AssetHandle value, format_context &ctx) const -> decltype(ctx.out())
 	{
 		return format_to(ctx.out(), "{}", value.string());
 	}

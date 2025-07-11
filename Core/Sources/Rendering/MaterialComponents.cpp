@@ -5,7 +5,7 @@
 #include "Imagine/Rendering/MaterialComponents.hpp"
 #include "Imagine/Core/InternalCore.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	MaterialField::MaterialField(std::string name, MaterialType type) :
 		name(std::move(name)), type(type) {}
@@ -185,4 +185,4 @@ namespace Imagine::Core {
 			{MaterialPushConstant::GetTransformPC()}
 		};
 	}
-} // namespace Imagine::Core
+} // namespace Imagine

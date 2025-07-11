@@ -6,7 +6,7 @@
 
 #include "Basics.hpp"
 
-namespace Imagine::Core
+namespace Imagine
 {
 	template<typename BoundingClass>
 	class BoundingObject
@@ -47,5 +47,5 @@ namespace Imagine::Core
 		MGN_PROFILE_FUNCTION();
 		reinterpret_cast<BoundingClass>(this)->Grow(other);
 	}
-} // namespace Imagine::Core
+} // namespace Imagine
 

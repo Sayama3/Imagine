@@ -12,7 +12,7 @@
 #include <imgui_stdlib.h>
 #endif
 
-namespace Imagine::Core {
+namespace Imagine {
 	ImGuiLayer::~ImGuiLayer() {
 	}
 
@@ -101,4 +101,4 @@ namespace Imagine::Core {
 	void ImGuiLayer::RenderImGuiMenuBar() {}
 	bool ImGuiLayer::OnResize(WindowResizeEvent &e) {}
 #endif
-} // namespace Imagine::Core
+} // namespace Imagine

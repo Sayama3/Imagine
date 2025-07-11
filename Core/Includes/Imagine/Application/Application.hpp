@@ -11,7 +11,7 @@
 #include "Imagine/Rendering/Renderer.hpp"
 #include "Window.hpp"
 
-namespace Imagine::Core {
+namespace Imagine {
 
 	class Application {
 	public:
@@ -91,4 +91,4 @@ namespace Imagine::Core {
 		bool m_ShouldStop{false};
 	};
 
-} // namespace Imagine::Core
+} // namespace Imagine

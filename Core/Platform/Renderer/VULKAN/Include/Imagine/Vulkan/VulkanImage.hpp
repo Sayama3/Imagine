@@ -20,7 +20,7 @@ namespace Imagine::Vulkan {
 		VkFormat imageFormat{VK_FORMAT_UNDEFINED};
 	};
 
-	struct VulkanTexture2D final : public Core::GPUTexture2D {
+	struct VulkanTexture2D final : public GPUTexture2D {
 		VulkanTexture2D();
 		virtual ~VulkanTexture2D() override;
 		VulkanTexture2D(const VulkanTexture2D&) = delete;
@@ -32,7 +32,7 @@ namespace Imagine::Vulkan {
 		VkSampler sampler{nullptr};
 	};
 
-	struct VulkanTexture3D final : public Core::GPUTexture3D {
+	struct VulkanTexture3D final : public GPUTexture3D {
 		VulkanTexture3D();
 		virtual ~VulkanTexture3D() override;
 		VulkanTexture3D(const VulkanTexture3D&) = delete;
@@ -44,7 +44,7 @@ namespace Imagine::Vulkan {
 		VkSampler sampler{nullptr};
 	};
 
-	struct VulkanImGuiImage : public Core::ImGuiImage {
+	struct VulkanImGuiImage : public ImGuiImage {
 		virtual ~VulkanImGuiImage() = default;
 
 		static VulkanImGuiImage Add(VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout, uint32_t width, uint32_t height);
