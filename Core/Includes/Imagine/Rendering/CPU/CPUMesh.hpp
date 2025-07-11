@@ -6,6 +6,7 @@
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Assets/AssetHandle.hpp"
 #include "Imagine/Core/SmartPointers.hpp"
+#include "Imagine/Math/BoundingBox.hpp"
 #include "Imagine/Rendering/GPU/GPUMesh.hpp"
 #include "Imagine/Rendering/MeshParameters.hpp"
 
@@ -28,11 +29,13 @@ namespace Imagine {
 	public:
 		static CPUMesh LoadExternalModelAsMesh(const std::filesystem::path &p);
 
+		void CalcAABB();
 	public:
 		std::string Name;
 		std::vector<Vertex> Vertices;
 		std::vector<uint32_t> Indices;
 		std::vector<LOD> Lods;
+		BoundingBox aabb;
 		Ref<GPUMesh> gpu{nullptr};
 	};
 

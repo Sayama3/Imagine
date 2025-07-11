@@ -10,9 +10,9 @@
 
 namespace Imagine {
 	CPUMesh::CPUMesh(std::vector<Vertex> &&vertices, std::vector<uint32_t> &&indices) :
-		Vertices(std::move(vertices)), Indices(std::move(indices)) {}
+		Vertices(std::move(vertices)), Indices(std::move(indices)) {CalcAABB();}
 	CPUMesh::CPUMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices) :
-		Vertices(vertices), Indices(indices) {}
+		Vertices(vertices), Indices(indices) {CalcAABB();}
 	CPUMesh::CPUMesh(CPUMesh &&o) noexcept { swap(o); }
 	CPUMesh &CPUMesh::operator=(CPUMesh &&o) noexcept {
 		swap(o);
@@ -23,6 +23,7 @@ namespace Imagine {
 		Vertices.swap(o.Vertices);
 		Indices.swap(o.Indices);
 		Lods.swap(o.Lods);
+		std::swap(aabb, o.aabb);
 	}
 
 	CPUMesh CPUMesh::LoadExternalModelAsMesh(const std::filesystem::path &p) {
@@ -145,5 +146,18 @@ namespace Imagine {
 
 		finalMesh.Lods.emplace_back(0, static_cast<uint32_t>(finalMesh.Indices.size()));
 		return finalMesh;
+	}
+
+	void CPUMesh::CalcAABB() {
+		if (Vertices.empty()) {
+			aabb = {{0,0,0},{0,0,0}};
+			return;
+		}
+
+		aabb.SetMinMax(Vertices.begin()->position, Vertices.begin()->position);
+
+		for (const auto & Vertice : Vertices) {
+			aabb.Grow(Vertice.position);
+		}
 	}
 } // namespace Imagine
