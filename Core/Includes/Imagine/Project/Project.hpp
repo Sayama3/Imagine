@@ -13,6 +13,7 @@ namespace Imagine
 {
 	class Scene;
 	using void_func_ptr = std::function<void()>;
+	class ProjectLayer;
 
 	struct ProjectConfig {
 		std::string name = "Untitled";
@@ -33,6 +34,7 @@ namespace Imagine
 
 	class Project
 	{
+		friend ProjectLayer;
 	public:
 		inline static Project* GetActive() { return s_ActiveProject.get(); }
 		inline static void Shutdown() {s_ActiveProject.reset();}

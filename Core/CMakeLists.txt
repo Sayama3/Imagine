@@ -217,6 +217,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/ThirdParty/ImGui.hpp
 		Includes/Imagine/Math/Math.hpp
 		Includes/Imagine/Math/Transform.hpp
+		Sources/Layers/ProjectLayer.cpp
+		Includes/Imagine/Layers/ProjectLayer.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

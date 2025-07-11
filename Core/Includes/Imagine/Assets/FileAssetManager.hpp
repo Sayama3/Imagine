@@ -18,8 +18,10 @@ namespace Imagine {
 	using AssetRegistry = std::map<AssetHandle, AssetMetadata>;
 	using AssetRegistryIterator = std::map<AssetHandle, AssetMetadata>::iterator;
 #endif
+	class ProjectLayer;
 
 	class FileAssetManager final : public AssetManagerBase {
+		friend ProjectLayer;
 	public:
 		[[nodiscard]] virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		[[nodiscard]] virtual bool IsAssetLoaded(AssetHandle handle) const override;

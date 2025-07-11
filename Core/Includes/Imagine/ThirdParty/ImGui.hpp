@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Imagine/Assets/AssetField.decl.hpp"
+#include "Imagine/Assets/AssetField.hpp"
 #include "Imagine/Assets/AssetType.hpp"
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
@@ -109,7 +109,7 @@ namespace Imagine::ThirdParty {
 			UUID handle = v->GetHandle().GetID();
 			if(ImGuiLib::InputUUID("##UUID", &handle))
 			{
-				v->SetHandle(handle);
+				v->SetHandle(AssetHandle{handle});
 				changed = true;
 			}
 
@@ -129,7 +129,7 @@ namespace Imagine::ThirdParty {
 
 			ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
 			if(ImGui::Button("Reset")) {
-				v->SetHandle(0);
+				v->SetHandle(NULL_ASSET_HANDLE);
 				changed = true;
 			}
 

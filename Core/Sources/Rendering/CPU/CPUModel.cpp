@@ -5,6 +5,7 @@
 #include "Imagine/Rendering/CPU/CPUModel.hpp"
 
 #include "Imagine/Assets/AssetManager.hpp"
+#include "Imagine/Components/Physicalisable.hpp"
 #include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Rendering/CPU/CPUMaterialInstance.hpp"
 #include "Imagine/Scene/Scene.hpp"
@@ -327,7 +328,11 @@ namespace Imagine {
 				coreScene->GetEntity(entityId).LocalScale = scale;
 
 				if (node->mNumMeshes == 1) {
-					coreScene->AddComponent<Renderable>(entityId)->cpuMesh = model->Meshes[*node->mMeshes]->Handle;
+					AssetHandle meshHandle = model->Meshes[*node->mMeshes]->Handle;
+					coreScene->AddComponent<Renderable>(entityId)->cpuMesh = meshHandle;
+					Physicalisable* p = coreScene->AddComponent<Physicalisable>(entityId);
+					p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
+					p->RBType = RB_Static;
 				}
 				else if (node->mNumMeshes > 1) {
 					for (int i = 0; i < node->mNumMeshes; ++i) {
@@ -336,6 +341,9 @@ namespace Imagine {
 						EntityID meshChild = coreScene->CreateEntity(entityId);
 						coreScene->SetName(meshChild, pMesh->Name);
 						coreScene->AddComponent<Renderable>(meshChild)->cpuMesh = meshHandle;
+						Physicalisable* p = coreScene->AddComponent<Physicalisable>(meshChild);
+						p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
+						p->RBType = RB_Static;
 					}
 				}
 
