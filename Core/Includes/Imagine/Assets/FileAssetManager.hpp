@@ -19,9 +19,11 @@ namespace Imagine {
 	using AssetRegistryIterator = std::map<AssetHandle, AssetMetadata>::iterator;
 #endif
 	class ProjectLayer;
+	class FileAssetManagerSerializer;
 
 	class FileAssetManager final : public AssetManagerBase {
 		friend ProjectLayer;
+		friend FileAssetManagerSerializer;
 	public:
 		[[nodiscard]] virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		[[nodiscard]] virtual bool IsAssetLoaded(AssetHandle handle) const override;
@@ -82,5 +84,11 @@ namespace Imagine {
 		// TODO: Save asset manager.
 		return asset;
 	}
+
+	class FileAssetManagerSerializer {
+	public:
+		static bool SerializeReadable(const FileAssetManager* manager, const std::filesystem::path& filePath);
+		static bool DeserializeReadable(FileAssetManager* manager, const std::filesystem::path& filePath);
+	};
 
 } // namespace Imagine

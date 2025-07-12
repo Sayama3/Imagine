@@ -16,8 +16,8 @@ namespace Imagine
 	public:
 		ProjectSerializer(Ref<Project>);
 
-		bool Serialize(const std::filesystem::path& filepath);
-		bool Deserialize(const std::filesystem::path& filepath);
+		bool SerializeReadable(const std::filesystem::path& filepath);
+		bool DeserializeReadable(const std::filesystem::path& filepath);
 	};
 
 } // namespace Imagine

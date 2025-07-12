@@ -10,10 +10,10 @@ namespace Imagine {
 	ProjectSerializer::ProjectSerializer(Ref<Project>) {
 	}
 
-	bool ProjectSerializer::Serialize(const std::filesystem::path &filepath) {
+	bool ProjectSerializer::SerializeReadable(const std::filesystem::path &filepath) {
 		return false;
 	}
-	bool ProjectSerializer::Deserialize(const std::filesystem::path &filepath) {
+	bool ProjectSerializer::DeserializeReadable(const std::filesystem::path &filepath) {
 		return false;
 	}
 } // namespace Imagine

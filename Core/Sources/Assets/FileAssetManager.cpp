@@ -5,53 +5,50 @@
 #include "Imagine/Assets/FileAssetManager.hpp"
 
 #include "Imagine/Assets/AssetImporter.hpp"
+#include "Imagine/Scene/Scene.hpp"
+#include "Imagine/ThirdParty/YamlCpp.hpp"
 
 namespace Imagine {
-		bool FileAssetManager::IsAssetHandleValid(AssetHandle handle) const
-	{
+	bool FileAssetManager::IsAssetHandleValid(AssetHandle handle) const {
 		MGN_PROFILE_FUNCTION();
 		return handle && (m_AssetRegistry.contains(handle) || m_MemoryAssets.contains(handle));
 	}
 
-	bool FileAssetManager::IsAssetLoaded(AssetHandle handle) const
-	{
+	bool FileAssetManager::IsAssetLoaded(AssetHandle handle) const {
 		MGN_PROFILE_FUNCTION();
 		return m_LoadedAssets.contains(handle) || m_MemoryAssets.contains(handle);
 	}
 
-	bool FileAssetManager::IsAssetImported(const Path& path, AssetHandle* handle/* = nullptr*/) const
-	{
+	bool FileAssetManager::IsAssetImported(const Path &path, AssetHandle *handle /* = nullptr*/) const {
 		auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&path](std::pair<AssetHandle, AssetMetadata> assets) {
 			return assets.second.FilePath.equivalent(path);
 		});
 
-		if(handle && it != m_AssetRegistry.end()) {
+		if (handle && it != m_AssetRegistry.end()) {
 			*handle = it->first;
 		}
 
 		return it != m_AssetRegistry.end();
 	}
 
-	Ref<Asset> FileAssetManager::GetAsset(AssetHandle handle)
-	{
+	Ref<Asset> FileAssetManager::GetAsset(AssetHandle handle) {
 		MGN_PROFILE_FUNCTION();
-		if(!IsAssetHandleValid(handle)) {
+		if (!IsAssetHandleValid(handle)) {
 			return nullptr;
 		}
 
 		Ref<Asset> asset = nullptr;
 
-		if(IsAssetLoaded(handle))
-		{
+		if (IsAssetLoaded(handle)) {
 			asset = GetLoadedAsset(handle);
 		}
-		else
-		{
-			const auto& metadata = GetMetadata(handle);
+		else {
+			const auto &metadata = GetMetadata(handle);
 			asset = AssetImporter::ImportAsset(metadata);
-			if(asset) {
+			if (asset) {
 				m_LoadedAssets.insert({handle, asset});
-			} else {
+			}
+			else {
 				MGN_CORE_ERROR("Could not load the asset {0}", handle.string());
 			}
 		}
@@ -59,27 +56,23 @@ namespace Imagine {
 		return asset;
 	}
 
-	AssetType FileAssetManager::GetAssetType(AssetHandle handle) const
-	{
+	AssetType FileAssetManager::GetAssetType(AssetHandle handle) const {
 		MGN_PROFILE_FUNCTION();
-		if(!IsAssetHandleValid(handle)) {
+		if (!IsAssetHandleValid(handle)) {
 			return AssetType::None;
 		}
 
-		if(IsAssetLoaded(handle))
-		{
+		if (IsAssetLoaded(handle)) {
 			return GetLoadedAsset(handle)->GetType();
 		}
-		else
-		{
-			const auto& metadata = GetMetadata(handle);
+		else {
+			const auto &metadata = GetMetadata(handle);
 			return metadata.Type;
 		}
 	}
 
-	Ref<Asset> FileAssetManager::ImportAsset(const Path& assetPath, AssetType hint/* = AssetType::None*/)
-	{
-		if(!FileSystem::Exist(assetPath) || AssetImporter::GetAssetType(assetPath) == AssetType::None) {
+	Ref<Asset> FileAssetManager::ImportAsset(const Path &assetPath, AssetType hint /* = AssetType::None*/) {
+		if (!FileSystem::Exist(assetPath) || AssetImporter::GetAssetType(assetPath) == AssetType::None) {
 			//				MGN_CORE_WARN("The path '{0}' either doesn't exist or cannot be converted.", assetPath.string());
 			return nullptr;
 		}
@@ -90,8 +83,7 @@ namespace Imagine {
 		metadata.Type = AssetImporter::HasAssetType(assetPath, hint) ? hint : AssetImporter::GetAssetType(assetPath);
 		auto asset = AssetImporter::ImportAsset(metadata);
 
-		if(asset)
-		{
+		if (asset) {
 			m_LoadedAssets[metadata.Handle] = asset;
 			m_AssetRegistry[metadata.Handle] = metadata;
 			// TODO: Save asset manager.
@@ -100,21 +92,21 @@ namespace Imagine {
 		return asset;
 	}
 
-	Ref<Asset> FileAssetManager::GetOrCreateAsset(const Path& assetPath, AssetType hint/* = AssetType::None*/)
-	{
+	Ref<Asset> FileAssetManager::GetOrCreateAsset(const Path &assetPath, AssetType hint /* = AssetType::None*/) {
 		MGN_PROFILE_FUNCTION();
 
 		Ref<Asset> asset = nullptr;
 
-		const auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](const std::pair<AssetHandle, AssetMetadata>& assets) {
-		  return assets.second.FilePath.equivalent(assetPath);
+		const auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](const std::pair<AssetHandle, AssetMetadata> &assets) {
+			return assets.second.FilePath.equivalent(assetPath);
 		});
 
-		if(it == m_AssetRegistry.end()) {
+		if (it == m_AssetRegistry.end()) {
 			asset = ImportAsset(assetPath);
-		} else {
+		}
+		else {
 			asset = GetAsset(it->first);
-			if(hint != AssetType::None && hint != asset->GetType()) {
+			if (hint != AssetType::None && hint != asset->GetType()) {
 				MGN_CORE_WARN("Asset '{}'({}) has type '{}', but the expected type is '{}'.", assetPath.string(), it->first.string(), AssetTypeToString(asset->GetType()), AssetTypeToString(hint));
 			}
 		}
@@ -122,55 +114,49 @@ namespace Imagine {
 		return asset;
 	}
 
-	Path FileAssetManager::GetFilePath(const AssetHandle handle) const
-	{
+	Path FileAssetManager::GetFilePath(const AssetHandle handle) const {
 		return GetMetadata(handle).FilePath;
 	}
 
-	const AssetMetadata& FileAssetManager::GetMetadata(const AssetHandle handle) const
-	{
+	const AssetMetadata &FileAssetManager::GetMetadata(const AssetHandle handle) const {
 		MGN_PROFILE_FUNCTION();
 		static AssetMetadata s_NullMetadata;
 		auto it = m_AssetRegistry.find(handle);
-		if(it == m_AssetRegistry.end()) {
+		if (it == m_AssetRegistry.end()) {
 			return s_NullMetadata;
 		}
 		return it->second;
 	}
 
-	std::optional<AssetMetadata> FileAssetManager::GetMetadata(const Path& assetPath) const
-	{
+	std::optional<AssetMetadata> FileAssetManager::GetMetadata(const Path &assetPath) const {
 		MGN_PROFILE_FUNCTION();
 		auto it = std::find_if(m_AssetRegistry.begin(), m_AssetRegistry.end(), [&assetPath](std::pair<AssetHandle, AssetMetadata> assets) {
-		  return assets.second.FilePath == assetPath;
+			return assets.second.FilePath == assetPath;
 		});
 
 		return it != m_AssetRegistry.end() ? it->second : std::optional<AssetMetadata>{std::nullopt};
 	}
 
-	void FileAssetManager::SetPath(AssetHandle handle, Path newPath)
-	{
+	void FileAssetManager::SetPath(AssetHandle handle, Path newPath) {
 		MGN_PROFILE_FUNCTION();
 
 		auto it = m_AssetRegistry.find(handle);
-		if(it != m_AssetRegistry.end()) {
+		if (it != m_AssetRegistry.end()) {
 			it->second.FilePath = newPath;
 			// TODO: Save asset manager.
 		}
 	}
 
-	bool FileAssetManager::AddAsset(Ref<Asset> asset)
-	{
+	bool FileAssetManager::AddAsset(Ref<Asset> asset) {
 		MGN_PROFILE_FUNCTION();
-		if(!asset) return false;
+		if (!asset) return false;
 		m_MemoryAssets.emplace(asset->Handle, asset);
 		return true;
 	}
 
-	bool FileAssetManager::AddAsset(Ref<Asset> asset, const Path& path)
-	{
+	bool FileAssetManager::AddAsset(Ref<Asset> asset, const Path &path) {
 		MGN_PROFILE_FUNCTION();
-		if(!asset) return false;
+		if (!asset) return false;
 		AssetMetadata metadata;
 		metadata.Handle = asset->Handle;
 		metadata.FilePath = path;
@@ -181,14 +167,13 @@ namespace Imagine {
 		return true;
 	}
 
-	bool FileAssetManager::SaveMemoryAsset(AssetHandle handle, const Path& path)
-	{
+	bool FileAssetManager::SaveMemoryAsset(AssetHandle handle, const Path &path) {
 		MGN_PROFILE_FUNCTION();
 		auto it = m_MemoryAssets.find(handle);
-		if(it == m_MemoryAssets.end()) return false;
+		if (it == m_MemoryAssets.end()) return false;
 
 		Ref<Asset> asset = it->second;
-		if(!asset) return false;
+		if (!asset) return false;
 
 		AssetMetadata metadata;
 		metadata.Handle = handle;
@@ -202,23 +187,22 @@ namespace Imagine {
 		return true;
 	}
 
-	bool FileAssetManager::RemoveAsset(AssetHandle handle)
-	{
+	bool FileAssetManager::RemoveAsset(AssetHandle handle) {
 		MGN_PROFILE_FUNCTION();
-		if(!IsAssetHandleValid(handle)) return false;
+		if (!IsAssetHandleValid(handle)) return false;
 
 		auto loaded_it = m_LoadedAssets.find(handle);
-		if(loaded_it != m_LoadedAssets.end()) {
+		if (loaded_it != m_LoadedAssets.end()) {
 			m_LoadedAssets.erase(loaded_it);
 		}
 
 		auto memory_it = m_MemoryAssets.find(handle);
-		if(memory_it != m_MemoryAssets.end()) {
+		if (memory_it != m_MemoryAssets.end()) {
 			m_MemoryAssets.erase(memory_it);
 		}
 
 		auto registry_it = m_AssetRegistry.find(handle);
-		if(registry_it != m_AssetRegistry.end()) {
+		if (registry_it != m_AssetRegistry.end()) {
 			m_AssetRegistry.erase(registry_it);
 		}
 
@@ -226,30 +210,63 @@ namespace Imagine {
 		return true;
 	}
 
-	void FileAssetManager::UnloadAsset(AssetHandle handle)
-	{
+	void FileAssetManager::UnloadAsset(AssetHandle handle) {
 		MGN_PROFILE_FUNCTION();
-		if(!IsAssetHandleValid(handle)) return;
+		if (!IsAssetHandleValid(handle)) return;
 
 		auto loaded_it = m_LoadedAssets.find(handle);
-		if(loaded_it != m_LoadedAssets.end()) {
+		if (loaded_it != m_LoadedAssets.end()) {
 			m_LoadedAssets.erase(loaded_it);
 		}
 
 		auto memory_it = m_MemoryAssets.find(handle);
-		if(memory_it != m_MemoryAssets.end()) {
+		if (memory_it != m_MemoryAssets.end()) {
 			m_MemoryAssets.erase(memory_it);
 		}
 	}
 
-	Ref<Asset> FileAssetManager::GetLoadedAsset(const AssetHandle handle) const
-	{
+	Ref<Asset> FileAssetManager::GetLoadedAsset(const AssetHandle handle) const {
 		MGN_PROFILE_FUNCTION();
 		if (m_LoadedAssets.contains(handle)) {
 			return m_LoadedAssets.at(handle);
-		} else if(m_MemoryAssets.contains(handle)) {
+		}
+		else if (m_MemoryAssets.contains(handle)) {
 			return m_MemoryAssets.at(handle);
 		}
 		return nullptr;
 	}
-}
+
+} // namespace Imagine
+
+namespace Imagine {
+
+	bool FileAssetManagerSerializer::SerializeReadable(const FileAssetManager *manager, const std::filesystem::path &filePath) {
+		YAML::Emitter e;
+		e << YAML::BeginMap;
+		{
+			e << KEYVAL("Type", "File Asset Manager");
+			e << KEYVAL("Assets", YAML::BeginSeq);
+			for (const auto &[id, metadata]: manager->m_AssetRegistry) {
+				e << metadata;
+			}
+			e << YAML::EndSeq;
+		}
+		e << YAML::EndMap;
+		ThirdParty::YamlCpp::WriteYamlFile(filePath, e);
+		return true;
+	}
+
+	bool FileAssetManagerSerializer::DeserializeReadable(FileAssetManager *manager, const std::filesystem::path &filePath) {
+		if (!std::filesystem::exists(filePath) || !std::filesystem::is_regular_file(filePath)) return false;
+
+		const YAML::Node node = ThirdParty::YamlCpp::ReadFileAsYAML(filePath);
+		if (!node["Type"] || node["Type"].as<std::string>() != "File Asset Manager") return false;
+
+		if (!node["Assets"]) return false;
+		for (auto metadataNode: node["Assets"]) {
+			auto metadata = metadataNode.second.as<AssetMetadata>();
+			manager->m_AssetRegistry[metadata.Handle] = metadata;
+		}
+		return true;
+	}
+} // namespace Imagine
