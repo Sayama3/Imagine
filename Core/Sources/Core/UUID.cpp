@@ -20,6 +20,10 @@ namespace Imagine {
 		return "UUID{"s + std::to_string(m_UUID1) + "_"s + std::to_string(m_UUID2) + "}"s;
 	}
 
+	std::string UUID::raw_string() const {
+		return std::to_string(m_UUID1) + "_" + std::to_string(m_UUID2);
+	}
+
 	UUID::operator bool() const {
 		return m_UUID1 != 0 && m_UUID2 != 0;
 	}

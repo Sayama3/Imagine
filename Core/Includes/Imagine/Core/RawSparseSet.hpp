@@ -208,12 +208,17 @@ namespace Imagine {
 
 			sparse = other.sparse;
 			dense = other.dense;
-			elements = other.elements;
-
-			if (copy_constructor) {
-				const auto dataSize = GetDataSize();
-				for (UnsignedInteger i = 0; i < dense.size(); ++i) {
-					copy_constructor(elements.get(i), dataSize, other.elements.get_const_view(i));
+			//elements = other.elements;
+			elements = {other.elements.get_data_size(), other.elements.size()};
+			elements.redimension(other.elements.size());
+			if (!dense.empty()) {
+				if (copy_constructor) {
+					const auto dataSize = GetDataSize();
+					for (UnsignedInteger i = 0; i < dense.size(); ++i) {
+						copy_constructor(elements.get(i), dataSize, other.elements.get_const_view(i));
+					}
+				} else {
+					memcpy(elements.get(0), other.elements.get(0), GetDataSize() * dense.size());
 				}
 			}
 			return *this;
@@ -433,6 +438,16 @@ namespace Imagine {
 			if (!Exist(id)) return ConstBufferView{};
 
 			return elements.get_const_view(sparse[id]);
+		}
+
+		UnsignedInteger GetIndex(const UnsignedInteger id) const {
+			MGN_CORE_MASSERT(dense[sparse[id]] == id, "ID '{}' is not valid.", id);
+			return sparse[id];
+		}
+
+		UnsignedInteger GetID(const UnsignedInteger index) const {
+			MGN_CORE_MASSERT(sparse[dense[index]] == index, "Index '{}' is not valid.", index);
+			return dense[index];
 		}
 
 		[[nodiscard]] UnsignedInteger Count() const {

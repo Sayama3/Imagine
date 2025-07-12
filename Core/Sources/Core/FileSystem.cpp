@@ -155,13 +155,14 @@ namespace Imagine {
 		return std::move(fileContent);
 	}
 
-	std::vector<char> FileSystem::ReadTextFile(const std::filesystem::path &filePath) {
+	std::string FileSystem::ReadTextFile(const std::filesystem::path &filePath) {
 		const std::string fileStr = filePath.string();
 		return std::move(ReadTextFile(fileStr.c_str()));
 	}
 
-	std::vector<char> FileSystem::ReadTextFile(const char *filePath) {
-		std::vector<char> fileContent;
+	std::string FileSystem::ReadTextFile(const char *filePath) {
+		// std::vector<char> fileContent;
+		std::string fileContent;
 
 		CFile file(filePath, "r");
 
@@ -173,6 +174,13 @@ namespace Imagine {
 		fgets(fileContent.data(), static_cast<int>(size), file.filePtr);
 
 		return std::move(fileContent);
+	}
+
+	bool FileSystem::WriteTextFile(const std::filesystem::path &filePath, const std::string& view) {
+		CFile file(filePath.string().c_str(), "w");
+		const int result = fputs(view.c_str(), file.filePtr);
+		file.Close();
+		return result != EOF;
 	}
 
 	bool FileSystem::WriteBinaryFile(const std::filesystem::path &filePath, ConstBufferView view) {

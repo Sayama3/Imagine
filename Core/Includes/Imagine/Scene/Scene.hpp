@@ -17,9 +17,13 @@
 
 namespace Imagine {
 
+	class SceneSerializer;
 	class Scene final : public Asset {
+		friend class SceneSerializer;
+
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Scene);
+
 	public:
 		using ImGuiFunction = std::function<bool(BufferView)>;
 		static constexpr uint64_t c_EntityPrepareCount = 1024;
@@ -116,7 +120,7 @@ namespace Imagine {
 			[[nodiscard]] bool IsValid() const { return scene && current != EntityID::NullID; }
 			[[nodiscard]] explicit operator bool() const { return IsValid(); }
 
-			EntityID GetID() const {return current;}
+			EntityID GetID() const { return current; }
 
 			[[nodiscard]] Entity &Get();
 			[[nodiscard]] const Entity &Get() const;
@@ -137,10 +141,10 @@ namespace Imagine {
 			RelationshipIterator operator++(int);
 			RelationshipIterator &operator++();
 
-			bool operator==(const RelationshipIterator & o) const {
+			bool operator==(const RelationshipIterator &o) const {
 				return scene == o.scene && current == o.current;
 			}
-			bool operator!=(const RelationshipIterator & o) const {
+			bool operator!=(const RelationshipIterator &o) const {
 				return !(*this == o);
 			}
 		};
@@ -153,6 +157,7 @@ namespace Imagine {
 		void AddToChild(EntityID entity, EntityID child);
 
 		void MoveToRoot(EntityID entity);
+
 	private:
 		void RemoveParent(EntityID child);
 		void AddChild(EntityID parent, EntityID orphan);
@@ -167,6 +172,7 @@ namespace Imagine {
 
 	private:
 		void DrawChildren(EntityID entity);
+
 	public:
 		/// Iterate on all the entity with a function.
 		/// Will iterate recursively on all the entity and will pass some data from parent to children.
@@ -187,7 +193,7 @@ namespace Imagine {
 
 		template<typename T>
 		[[nodiscard]] uint64_t CountComponents() const {
-			return CountComponents(UUID::FromType<T>());
+			return CountComponents(UUIDFromType<T>());
 		}
 
 	public:
@@ -219,7 +225,7 @@ namespace Imagine {
 		void RegisterType() {
 			RegisterType(
 					NiceTypeName<T>(),
-					UUID::FromType<T>(),
+					UUIDFromType<T>(),
 					sizeof(T),
 					[](void *data, uint32_t size) { new (data) T(); },
 					[](void *data, uint32_t size) { reinterpret_cast<T *>(data)->~T(); },
@@ -229,7 +235,7 @@ namespace Imagine {
 
 		template<typename T>
 		void RegisterImGui() {
-			RegisterImGui(UUID::FromType<T>(), [](BufferView view) {return ThirdParty::ImGuiLib::RenderData<T>(NiceTypeName<T>(), view.Get<T>());});
+			RegisterImGui(UUIDFromType<T>(), [](BufferView view) { return ThirdParty::ImGuiLib::RenderData<T>(NiceTypeName<T>(), view.Get<T>()); });
 		}
 
 		BufferView AddComponent(EntityID entityId, UUID componentId);
@@ -247,13 +253,13 @@ namespace Imagine {
 
 		template<typename T>
 		bool HasComponent(EntityID entityId) const {
-			return HasComponent(entityId, UUID::FromType<T>());
+			return HasComponent(entityId, UUIDFromType<T>());
 		}
 
 
 		template<typename T>
 		T *AddComponent(const EntityID entityId) {
-			auto view = AddComponent(entityId, UUID::FromType<T>());
+			auto view = AddComponent(entityId, UUIDFromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
@@ -261,37 +267,37 @@ namespace Imagine {
 		T *AddComponent(const EntityID entityId, Args &&...args) {
 			T other(std::forward<Args>(args)...);
 			const ConstBufferView otherView = {(const void *) &other, 0, sizeof(T)};
-			auto view = AddComponent(entityId, UUID::FromType<T>(), otherView);
+			auto view = AddComponent(entityId, UUIDFromType<T>(), otherView);
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
 		template<typename T>
 		T *GetComponent(const EntityID entityId) {
-			auto view = GetComponent(entityId, UUID::FromType<T>());
+			auto view = GetComponent(entityId, UUIDFromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
 		template<typename T>
 		const T *GetComponent(const EntityID entityId) const {
-			auto view = GetComponent(entityId, UUID::FromType<T>());
+			auto view = GetComponent(entityId, UUIDFromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
 		template<typename T>
 		T *TryGetComponent(const EntityID entityId) {
-			auto view = TryGetComponent(entityId, UUID::FromType<T>());
+			auto view = TryGetComponent(entityId, UUIDFromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
 		template<typename T>
 		const T *TryGetComponent(const EntityID entityId) const {
-			auto view = TryGetComponent(entityId, UUID::FromType<T>());
+			auto view = TryGetComponent(entityId, UUIDFromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
 		template<typename T>
 		T *GetOrAddComponent(const EntityID entityId) {
-			auto view = GetOrAddComponent(entityId, UUID::FromType<T>());
+			auto view = GetOrAddComponent(entityId, UUIDFromType<T>());
 			return view.IsValid() ? view.template Get<T>() : nullptr;
 		}
 
@@ -364,7 +370,7 @@ namespace Imagine {
 
 	template<typename T>
 	void Scene::ForEachWithComponent(std::function<void(Scene *scene, EntityID entityId, T &component)> func) {
-		const auto id = UUID::FromType<T>();
+		const auto id = UUIDFromType<T>();
 		if (!m_CustomComponents.contains(id)) return;
 
 		auto &components = m_CustomComponents.at(id);
@@ -380,7 +386,7 @@ namespace Imagine {
 
 	template<typename T>
 	void Scene::ForEachWithComponent(std::function<void(const Scene *scene, EntityID entityId, const T &component)> func) const {
-		const auto id = UUID::FromType<T>();
+		const auto id = UUIDFromType<T>();
 		if (!m_CustomComponents.contains(id)) return;
 
 		auto &components = m_CustomComponents.at(id);

@@ -221,6 +221,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Layers/ProjectLayer.hpp
 		Sources/Physics/PhysicsDebugRenderer.cpp
 		Includes/Imagine/Physics/PhysicsDebugRenderer.hpp
+		Sources/Scene/SceneSerializer.cpp
+		Includes/Imagine/Scene/SceneSerializer.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
@@ -247,6 +249,7 @@ target_precompile_headers(Core PUBLIC
 		<bitset>
 		<execution>
 		<numbers>
+		<regex>
 
 		# Stream related
 		<fstream>

@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include "Imagine/Core/BufferView.hpp"
 #include "Imagine/Core/UUID.hpp"
 
@@ -28,6 +29,10 @@ namespace Imagine::Hasher {
 	[[nodiscard]] uint32_t xxHash32(ConstBufferView view, uint32_t seed = 0);
 	[[nodiscard]] uint64_t xxHash64(ConstBufferView view, uint64_t seed = 0);
 	[[nodiscard]] hash128_t xxHash128(ConstBufferView view, uint64_t seed = 0);
+
+	[[nodiscard]] uint32_t xxHash32(const char* str, uint32_t seed = 0);
+	[[nodiscard]] uint64_t xxHash64(const char* str, uint64_t seed = 0);
+	[[nodiscard]] hash128_t xxHash128(const char* str, uint64_t seed = 0);
 
 	template<typename T>
 	[[nodiscard]] uint32_t xxHash32T(const T& data, uint32_t seed = 0) { return xxHash32({&data, sizeof(T)}, seed); }

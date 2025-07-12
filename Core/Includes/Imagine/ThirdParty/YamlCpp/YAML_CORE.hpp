@@ -30,24 +30,44 @@ namespace YAML {
 	}
 
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Buffer &v) {
-		out << YAML::BeginSeq;
+		out << YAML::BeginMap;
 		{
-			for (uint64_t i = 0; i < v.Size(); ++i) {
-				out << v.Get<uint8_t>(i);
+			out <<KEYVAL("Size", v.Size());
+			out <<KEYVAL("Data", YAML::BeginSeq);
+			const auto count = v.Count<uint32_t>();
+			for (uint64_t i = 0; i < count; ++i) {
+				out << v.Get<uint32_t>(i);
 			}
+			if ((count * 4) != v.Size()) {
+				const auto left = v.Size() - (count * 4);
+				uint32_t data{0};
+				memcpy(&data,&v.Get<uint8_t>(count * 4), left);
+				out << data;
+			}
+			out << YAML::EndSeq;
 		}
-		out << YAML::EndSeq;
+		out << YAML::EndMap;
 		return out;
 	}
 
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::ConstBufferView &v) {
-		out << YAML::BeginSeq;
+		out << YAML::BeginMap;
 		{
-			for (uint64_t i = 0; i < v.Size(); ++i) {
-				out << v.At<uint8_t>(i);
+			out <<KEYVAL("Size", v.Size());
+			out <<KEYVAL("Data", YAML::BeginSeq);
+			const auto count = v.Count<uint32_t>();
+			for (uint64_t i = 0; i < count; ++i) {
+				out << v.At<uint32_t>(i);
 			}
+			if ((count * 4) != v.Size()) {
+				const auto left = v.Size() - (count * 4);
+				uint32_t data{0};
+				memcpy(&data,&v.At<uint8_t>(count * 4), left);
+				out << data;
+			}
+			out << YAML::EndSeq;
 		}
-		out << YAML::EndSeq;
+		out << YAML::EndMap;
 		return out;
 	}
 } // namespace YAML
@@ -109,25 +129,47 @@ namespace YAML {
 	struct convert<::Imagine::Buffer> {
 		inline static Node encode(const ::Imagine::Buffer &v) {
 			Node node;
-			for (uint64_t i = 0; i < v.Size(); ++i) {
-				node.push_back(v.Get<uint8_t>(i));
+			node["Size"] = v.Size();
+			auto dataNode = node["Data"];
+			const auto count = v.Count<uint32_t>();
+			for (uint64_t i = 0; i < count; ++i) {
+				dataNode.push_back(v.Get<uint32_t>(i));
+			}
+			if ((count * 4) != v.Size()) {
+				const auto left = v.Size() - (count * 4);
+				uint32_t data{0};
+				memcpy(&data,&v.Get<uint8_t>(count * 4), left);
+				dataNode.push_back(data);
 			}
 			return node;
 		}
 
 		inline static bool decode(const Node &node, ::Imagine::Buffer &v) {
-			if (node.IsNull() || !node.IsDefined()) {
-				v.Release();
-				return true;
-			}
+			if (!node || !node.IsMap()) return false;
+			if (!node["Size"]) return false;
 
-			if (!node.IsSequence()) {
+			v.Reallocate(node["Size"].as<uint64_t>(0));
+			if (v.Size() == 0) return true;
+
+			const auto data = node["Data"];
+
+			if (!data || data.IsNull() || !data.IsDefined()) {
+				v.Release();
 				return false;
 			}
 
-			v.Reallocate(node.size());
-			for (uint64_t i = 0; i < node.size(); ++i) {
-				v.Get<uint8_t>(i) = node[i].as<uint8_t>();
+			if (!data.IsSequence()) {
+				return false;
+			}
+
+			const auto count = v.Count<uint32_t>();
+			for (uint64_t i = 0; i < count; ++i) {
+				v.Get<uint32_t>(i) = data[i].as<uint32_t>();
+			}
+			if ((count * 4) != v.Size()) {
+				const auto left = v.Size() - (count * 4);
+				uint32_t u32 = data[count].as<uint32_t>();
+				memcpy(&v.Get<uint8_t>(count * 4), &u32, left);
 			}
 			return true;
 		}

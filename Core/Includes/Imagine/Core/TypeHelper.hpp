@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Imagine/Core/Hash.hpp"
 
 namespace Imagine {
 
@@ -20,6 +21,11 @@ namespace Imagine {
 			--beg;
 		}
 		return name + beg + 1;
+	}
+
+	template<typename T>
+	inline static UUID UUIDFromType() {
+		return Hasher::xxHash128(typeid(T).name()).uuid;
 	}
 
 

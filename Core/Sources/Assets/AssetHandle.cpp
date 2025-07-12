@@ -10,6 +10,9 @@ namespace Imagine {
 
 	bool operator!=(const AssetHandle &lft, const AssetHandle &rht) { return lft.m_Id != rht.m_Id; }
 
+	AssetHandle::AssetHandle() : m_Id{} {
+
+	}
 	std::strong_ordering AssetHandle::operator<=>(const AssetHandle &rht) const { return m_Id <=> rht.m_Id; }
 
 	std::string AssetHandle::string() const {

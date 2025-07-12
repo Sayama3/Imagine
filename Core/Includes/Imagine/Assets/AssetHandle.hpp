@@ -15,7 +15,7 @@ namespace Imagine {
 		friend std::hash<Imagine::AssetHandle>;
 		static constexpr AssetHandle Null() { return AssetHandle{0, 0}; }
 	public:
-		AssetHandle() = default;
+		AssetHandle();
 		~AssetHandle() = default;
 		AssetHandle(const AssetHandle&) = default;
 		AssetHandle &operator=(const AssetHandle &) = default;

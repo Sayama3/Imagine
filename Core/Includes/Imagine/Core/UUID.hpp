@@ -39,11 +39,6 @@ namespace Imagine {
 	public:
 		static constexpr UUID Null() { return UUID{0, 0}; }
 
-		template<typename T>
-		inline static UUID FromType() {
-			return UUID{typeid(T).hash_code()};
-		}
-
 	public:
 		UUID();
 		~UUID() = default;
@@ -54,6 +49,7 @@ namespace Imagine {
 		UUID &operator=(const UUID &) = default;
 
 		[[nodiscard]] std::string string() const;
+		[[nodiscard]] std::string raw_string() const;
 		[[nodiscard]] explicit operator bool() const;
 
 	public:

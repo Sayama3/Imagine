@@ -65,6 +65,8 @@ namespace Imagine {
 	Application::Application(const ApplicationParameters &parameters) :
 		m_Parameters(parameters) {
 
+		SceneManager::Intialize();
+
 		Project::New();
 
 		m_ShouldStop = false;

@@ -7,6 +7,7 @@
 #include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Rendering/Light.hpp"
+#include "Imagine/Scene/SceneSerializer.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -15,7 +16,7 @@
 #include <utility>
 #endif
 namespace Imagine {
-	Scene::Scene() {
+	Scene::Scene() : Asset() {
 		RegisterType<Renderable>();
 		RegisterType<Physicalisable>();
 		RegisterType<Light>();
@@ -395,6 +396,24 @@ namespace Imagine {
 	}
 	void Scene::SendImGuiCommands() {
 #ifdef MGN_IMGUI
+		{
+			ImGui::Begin("Main Scene");
+			static std::string scenePath = "./Scenes/MainScene";
+			ImGui::InputText("Scene Path", &scenePath);
+			if (ImGui::Button("Save")) {
+				SceneSerializer::SerializeReadable(this, scenePath);
+			}
+
+			if (ImGui::Button("Load")) {
+				Scene* scene = SceneSerializer::DeserializeReadable(scenePath);
+				if (scene) {
+					*this = *scene;
+					delete scene;
+				}
+			}
+			ImGui::End();
+		}
+
 		{
 			const std::string HierarchyName = "Hierarchy##" + Handle.string();
 			ImGui::Begin(HierarchyName.c_str());

@@ -21,11 +21,12 @@ namespace Imagine {
 		static void UnloadScene(SceneRef scene);
 		static SceneRef UnloadScene(UUID id);
 
+		static void Intialize();
 		static void Shutdown();
 
 	private:
-		static inline SceneRef s_MainScene = std::make_shared<Scene>();
+		static inline SceneRef s_MainScene{nullptr};
 		// Lowest order number is first
-		static inline std::multimap<float, SceneRef> s_LoadedScenes{{0.0f, s_MainScene}};
+		static inline std::multimap<float, SceneRef> s_LoadedScenes{};
 	};
 } // Imagine

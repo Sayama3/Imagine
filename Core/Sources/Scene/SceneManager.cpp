@@ -58,6 +58,10 @@ namespace Imagine {
 		}
 		return scene;
 	}
+	void SceneManager::Intialize() {
+		s_MainScene = CreateRef<Scene>();
+		s_LoadedScenes.emplace(0.0f, s_MainScene);
+	}
 
 	void SceneManager::Shutdown() {
 		s_MainScene.reset();

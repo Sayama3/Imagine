@@ -144,10 +144,11 @@ namespace Imagine {
 		static std::vector<uint8_t> ReadBinaryFileInVector(const std::filesystem::path &filePath);
 		static std::vector<uint8_t> ReadBinaryFileInVector(const char *filePath);
 
-		static std::vector<char> ReadTextFile(const std::filesystem::path &filePath);
-		static std::vector<char> ReadTextFile(const char *filePath);
+		static std::string ReadTextFile(const std::filesystem::path &filePath);
+		static std::string ReadTextFile(const char *filePath);
 
 	public:
+		static bool WriteTextFile(const std::filesystem::path &filePath, const std::string& view);
 		static bool WriteBinaryFile(const std::filesystem::path &filePath, ConstBufferView view);
 		static bool WriteBinaryFile(const char *filePath, ConstBufferView view);
 

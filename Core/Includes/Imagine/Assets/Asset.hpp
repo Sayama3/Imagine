@@ -14,9 +14,10 @@ namespace Imagine {
 
 	class Asset {
 	public:
+		Asset() = default;
 		virtual ~Asset() = default;
 
-		AssetHandle Handle; // Generate handle
+		AssetHandle Handle{}; // Generate handle
 		[[nodiscard]] virtual AssetType GetType() const = 0;
 	};
 

@@ -340,7 +340,8 @@ namespace Imagine {
 						const AssetHandle meshHandle = pMesh->Handle;
 						EntityID meshChild = coreScene->CreateEntity(entityId);
 						coreScene->SetName(meshChild, pMesh->Name);
-						coreScene->AddComponent<Renderable>(meshChild)->cpuMesh = meshHandle;
+						Renderable* renderable = coreScene->AddComponent<Renderable>(meshChild);
+						renderable->cpuMesh = meshHandle;
 						// Physicalisable* p = coreScene->AddComponent<Physicalisable>(meshChild);
 						// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
 						// p->RBType = RB_Static;

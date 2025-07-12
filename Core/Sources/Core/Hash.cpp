@@ -24,4 +24,18 @@ namespace Imagine::Hasher {
 		xxxSeed = XXH3_128bits_withSeed(view.Get(), view.Size(), seed);
 		return mgnSeed;
 	}
+
+
+	uint32_t xxHash32(const char* str, uint32_t seed) {
+		const uint64_t len = strlen(str);
+		return xxHash32(ConstBufferView{str, len}, seed);
+	}
+	uint64_t xxHash64(const char* str, uint64_t seed) {
+		const uint64_t len = strlen(str);
+		return xxHash64(ConstBufferView{str, len}, seed);
+	}
+	hash128_t xxHash128(const char* str, uint64_t seed) {
+		const uint64_t len = strlen(str);
+		return xxHash128(ConstBufferView{str, len}, seed);
+	}
 } // namespace Imagine::Hasher
