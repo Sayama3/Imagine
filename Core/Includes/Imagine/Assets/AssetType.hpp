@@ -60,6 +60,7 @@ namespace Imagine {
 			case AssetType::Script: return "MGN_SCRIPT";
 			case AssetType::None: return "MGN_ASSET_NONE";
 		}
+		return "MGN_UNKNOWN";
 	}
 
 } // namespace Imagine

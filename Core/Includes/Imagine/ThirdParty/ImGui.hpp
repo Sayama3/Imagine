@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Imagine/Assets/AssetField.hpp"
 #include "Imagine/Assets/AssetType.hpp"
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/TypeHelper.hpp"
@@ -89,61 +88,13 @@ namespace Imagine::ThirdParty {
 			return false;
 		}
 
+		bool DrawAssetField(const char *name, AssetHandle *handle, std::initializer_list<AssetType> types);
+
 		template<typename T>
-		static bool DrawAssetField(const char* name, AssetField<T> * v)
-		{
-#ifdef MGN_IMGUI
-			ImGuiWindow* window = ImGui::GetCurrentWindow();
-			if (window->SkipItems) {
-				return false;
-			}
-			bool changed = false;
-			const AssetType assetType = AssetField<T>::GetStaticType();
-
-			ImGuiContext& g = *GImGui;
-			ImGui::BeginGroup();
-			ImGui::PushID(name);
-
-			// TODO: Draw a little preview
-
-			UUID handle = v->GetHandle().GetID();
-			if(ImGuiLib::InputUUID("##UUID", &handle))
-			{
-				v->SetHandle(AssetHandle{handle});
-				changed = true;
-			}
-
-			if(ImGui::BeginDragDropTarget())
-			{
-				auto payloadStr = AssetTypeToPayloadID(assetType);
-				MGN_CORE_CASSERT(payloadStr.size() < 32, "The payloadID is too large.");
-				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(payloadStr.c_str());
-				if (payload != nullptr) {
-					MGN_CORE_CASSERT(payload->DataSize == sizeof(AssetHandle), "The data is not an AssetHandle");
-					auto payloadHandle = *((AssetHandle*)(payload->Data));
-					v->SetHandle(payloadHandle);
-					changed = true;
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
-			if(ImGui::Button("Reset")) {
-				v->SetHandle(NULL_ASSET_HANDLE);
-				changed = true;
-			}
-
-			ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
-			ImGui::TextEx(name, ImGui::FindRenderedTextEnd(name));
-
-			ImGui::PopID();
-			ImGui::EndGroup();
-
-			return changed;
-#else
-			return false;
-#endif
+		static bool DrawAssetField(const char *name, AssetHandle *handle) {
+			return DrawAssetField(name, handle, T::GetStaticType());
 		}
+
 
 	} // namespace ImGuiLib
 

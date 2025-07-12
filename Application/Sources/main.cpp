@@ -9,6 +9,7 @@
 #include "Imagine/Core.hpp"
 #include "Imagine/Layers/ImGuiLayer.hpp"
 #include "Imagine/Layers/PhysicsLayer.hpp"
+#include "Imagine/Layers/ProjectLayer.hpp"
 #include "Imagine/Physics/ObjectLayerPairFilter.hpp"
 
 int main(int argc, char **argv) {
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
 	Application *application = Application::Initialize(params);
 	application->PushLayer<Imagine::Runtime::ApplicationLayer>();
 	application->PushLayer<Imagine::PhysicsLayer>();
+	application->PushLayer<Imagine::ProjectLayer>();
 	application->PushOverlay<Imagine::ImGuiLayer>();
 
 

@@ -348,8 +348,10 @@ namespace Imagine {
 					scene->CacheTransforms();
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
 					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, Renderable &renderable) {
-						const Mat4 worldMat = scene->GetWorldTransform(id);
+						if (renderable.cpuMeshOrModel == NULL_ASSET_HANDLE) return;
 						Ref<Asset> asset = AssetManager::GetAsset(renderable.cpuMeshOrModel);
+						if (!asset) return;
+						const Mat4 worldMat = scene->GetWorldTransform(id);
 						switch (asset->GetType()) {
 							case AssetType::Model: {
 								auto cpuModel = CastPtr<CPUModel>(asset);

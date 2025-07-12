@@ -3,6 +3,9 @@
 //
 
 #include "Imagine/ThirdParty/ImGui.hpp"
+
+#include "Imagine/Assets/AssetHandle.hpp"
+#include "Imagine/Assets/AssetField.hpp"
 #include "Imagine/Core/InternalCore.hpp"
 
 #ifdef MGN_IMGUI
@@ -135,6 +138,58 @@ namespace Imagine::ThirdParty::ImGuiLib {
 
 	bool InputUUID(const char *name, UUID *id, ImGuiInputTextFlags flags) {
 		return ImGui::InputScalarN(name, ImGuiDataType_U64, id, UUID::Count64, nullptr, nullptr, "%llu", flags);
+	}
+	bool DrawAssetField(const char *name, AssetHandle *handle, std::initializer_list<AssetType> types) {
+#ifdef MGN_IMGUI
+		ImGuiWindow *window = ImGui::GetCurrentWindow();
+		if (window->SkipItems) {
+			return false;
+		}
+		bool changed = false;
+
+		ImGuiContext &g = *GImGui;
+		ImGui::BeginGroup();
+		ImGui::PushID(name);
+
+		// TODO: Draw a little preview
+
+		UUID uuid = handle->GetID();
+		if (ImGuiLib::InputUUID("##UUID", &uuid)) {
+			*handle = AssetHandle{uuid};
+			changed = true;
+		}
+
+		if (ImGui::BeginDragDropTarget()) {
+			for (AssetType type: types) {
+				auto payloadStr = AssetTypeToPayloadID(type);
+				MGN_CORE_CASSERT(payloadStr.size() < 32, "The payloadID is too large.");
+				const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(payloadStr.c_str());
+				if (payload != nullptr) {
+					MGN_CORE_CASSERT(payload->DataSize == sizeof(AssetHandle), "The data is not an AssetHandle");
+					auto payloadHandle = *((AssetHandle *) (payload->Data));
+					*handle = payloadHandle;
+					changed = true;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
+		if (ImGui::Button("Reset")) {
+			*handle = NULL_ASSET_HANDLE;
+			changed = true;
+		}
+
+		ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
+		ImGui::TextEx(name, ImGui::FindRenderedTextEnd(name));
+
+		ImGui::PopID();
+		ImGui::EndGroup();
+
+		return changed;
+#else
+		return false;
+#endif
 	}
 
 #else

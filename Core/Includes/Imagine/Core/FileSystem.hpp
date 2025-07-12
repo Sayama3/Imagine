@@ -52,7 +52,7 @@ namespace Imagine {
 		External,
 	};
 
-	inline static constexpr std::string GetFileSourceName(const FileSource source) {
+	inline static constexpr std::string FileSourceToString(const FileSource source) {
 		switch (source) {
 			case FileSource::None:
 				return "None";
@@ -70,7 +70,7 @@ namespace Imagine {
 		return "Unknown";
 	}
 
-	inline static constexpr FileSource GetFileSourceFromName(const std::string& sourceStr) {
+	inline static constexpr FileSource FileSourceFromString(const std::string& sourceStr) {
 		if(sourceStr == "Engine") return FileSource::Engine;
 		if(sourceStr == "Assets") return FileSource::Assets;
 		if(sourceStr == "Scripts") return FileSource::Scripts;
@@ -79,7 +79,7 @@ namespace Imagine {
 		return FileSource::None;
 	}
 
-	inline static constexpr bool TryGetFileSourceFromName(const std::string& sourceStr, FileSource& source) {
+	inline static constexpr bool TryFileSourceFromString(const std::string& sourceStr, FileSource& source) {
 		if(sourceStr == "Engine") {source = FileSource::Engine; return true;}
 		if(sourceStr == "Assets") {source = FileSource::Assets; return true;}
 		if(sourceStr == "Scripts") {source = FileSource::Scripts; return true;}
@@ -185,13 +185,13 @@ namespace Imagine {
 
 
 inline std::ostream &operator<<(std::ostream &os, const Imagine::Path &value) {
-	return os << "Path{" << GetFileSourceName(value.source) << ": " << value.path.string() << "}";
+	return os << "Path{" << FileSourceToString(value.source) << ": " << value.path.string() << "}";
 }
 
 template<>
 struct fmt::formatter<Imagine::Path> : fmt::formatter<std::string> {
 	auto format(const Imagine::Path &value, format_context &ctx) const -> decltype(ctx.out()) {
 		const std::string pathStr = value.path.string();
-		return format_to(ctx.out(), "Path{{ {}: {} }}", GetFileSourceName(value.source), pathStr);
+		return format_to(ctx.out(), "Path{{ {}: {} }}", FileSourceToString(value.source), pathStr);
 	}
 };

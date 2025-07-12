@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Imagine/Assets/AssetField.hpp"
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/UUID.hpp"
@@ -160,7 +161,7 @@ namespace Imagine {
 				case Physicalisable::Mesh:
 				{
 					ColliderShapes::Mesh& shp = std::get<ColliderShapes::Mesh>(*pShape);
-					changed |= ImGuiLib::DrawAssetField("Mesh##Mesh", &shp.handle);
+					changed |= ImGuiLib::DrawAssetField("Mesh##Mesh", (AssetHandle*)&shp.handle, {CPUMesh::GetStaticType()});
 				}
 					break;
 			}

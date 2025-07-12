@@ -15,7 +15,7 @@ namespace YAML {
 	YAML_SIMPLE_EMITTER_FUNC(std::filesystem::path, v.string());
 
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Path &v) {
-		out << KEYVAL("Source", Imagine::GetFileSourceName(v.source));
+		out << KEYVAL("Source", Imagine::FileSourceToString(v.source));
 		out << KEYVAL("Path", v.path);
 		return out;
 	}
@@ -111,14 +111,14 @@ namespace YAML {
 	struct convert<::Imagine::Path> {
 		inline static Node encode(const ::Imagine::Path &v) {
 			Node node;
-			node["Source"] = Imagine::GetFileSourceName(v.source);
+			node["Source"] = Imagine::FileSourceToString(v.source);
 			node["Path"] = v.path;
 			return node;
 		}
 
 		inline static bool decode(const Node &node, ::Imagine::Path &v) {
 			if (!node.IsMap() || node.size() != 2) return false;
-			const bool hasSource = Imagine::TryGetFileSourceFromName(node["Source"].as<std::string>(), v.source);
+			const bool hasSource = Imagine::TryFileSourceFromString(node["Source"].as<std::string>(), v.source);
 			if (!hasSource) return false;
 			v.path = node["Path"].as<std::filesystem::path>();
 			return true;

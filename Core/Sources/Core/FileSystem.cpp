@@ -39,7 +39,7 @@ namespace Imagine {
 	}
 
 	std::string Path::id() const {
-		std::filesystem::path p = GetFileSourceName(source) / path;
+		std::filesystem::path p = FileSourceToString(source) / path;
 		return p.string();
 	}
 

@@ -3,6 +3,8 @@
 //
 
 #include "Imagine/Scene/SceneManager.hpp"
+
+#include "Imagine/Core/SmartPointers.hpp"
 namespace Imagine {
 	SceneManager::SceneRef SceneManager::GetMainScene() {
 		return s_MainScene;
