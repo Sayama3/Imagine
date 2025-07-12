@@ -14,9 +14,9 @@ namespace Imagine {
 	struct Renderable {
 		Renderable() = default;
 		virtual ~Renderable() = default;
-		Renderable(const AssetHandle handle) : cpuMesh(handle) {}
+		Renderable(const AssetHandle handle) : cpuMeshOrModel(handle) {}
 
-		AssetHandle cpuMesh{NULL_ASSET_HANDLE};
+		AssetHandle cpuMeshOrModel{NULL_ASSET_HANDLE};
 	};
 
 } // namespace Imagine

@@ -428,7 +428,7 @@ namespace Imagine {
 					AssetHandle meshHandle = lock->Handle;
 					auto* renderable = coreScene->AddComponent<Renderable>(entityId);
 					MGN_CORE_CASSERT(renderable);
-					renderable->cpuMesh = meshHandle;
+					renderable->cpuMeshOrModel = meshHandle;
 
 					// Physicalisable* p = coreScene->AddComponent<Physicalisable>(entityId);
 					// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
@@ -444,7 +444,7 @@ namespace Imagine {
 						coreScene->SetName(meshChild, lock->Name);
 						Renderable *renderable = coreScene->AddComponent<Renderable>(meshChild);
 						MGN_CORE_CASSERT(renderable);
-						renderable->cpuMesh = meshHandle;
+						renderable->cpuMeshOrModel = meshHandle;
 						// Physicalisable* p = coreScene->AddComponent<Physicalisable>(meshChild);
 						// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
 						// p->RBType = RB_Static;

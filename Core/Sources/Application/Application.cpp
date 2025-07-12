@@ -153,7 +153,7 @@ namespace Imagine {
 			Project::GetActive()->GetFileAssetManager()->AddAsset(model, {FileSource::Assets, "Models/Sponza/Sponza.gltf"});
 			const auto entityId = SceneManager::GetMainScene()->CreateEntity();
 			Renderable *renderable = SceneManager::GetMainScene()->AddComponent<Renderable>(entityId);
-			renderable->cpuMesh = model->Handle;
+			renderable->cpuMeshOrModel = model->Handle;
 			MGN_CORE_CASSERT(model);
 
 			if (model) {
@@ -349,7 +349,7 @@ namespace Imagine {
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
 					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, Renderable &renderable) {
 						const Mat4 worldMat = scene->GetWorldTransform(id);
-						Ref<Asset> asset = AssetManager::GetAsset(renderable.cpuMesh);
+						Ref<Asset> asset = AssetManager::GetAsset(renderable.cpuMeshOrModel);
 						switch (asset->GetType()) {
 							case AssetType::Model: {
 								auto cpuModel = CastPtr<CPUModel>(asset);
