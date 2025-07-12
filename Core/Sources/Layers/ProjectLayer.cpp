@@ -3,6 +3,8 @@
 //
 
 #include "Imagine/Layers/ProjectLayer.hpp"
+
+#include "Imagine/Assets/AssetImporter.hpp"
 #include "Imagine/Assets/AssetManager.hpp"
 #include "Imagine/Assets/FileAssetManager.hpp"
 #include "Imagine/Project/Project.hpp"
@@ -50,9 +52,30 @@ namespace Imagine {
 		ImGui::SetNextWindowSize({400, 200}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Asset Manager");
 		{
+
+			if (ImGui::Button("Save")) {
+				const bool result = FileAssetManagerSerializer::SerializeReadable(manager, "AssetManager.mgn");
+				if(result) MGN_CORE_INFO("FileAssetManager Save Succeed.");
+				else MGN_CORE_INFO("FileAssetManager Save Failed.");
+			}
+
+			if (ImGui::Button("Load")) {
+				const auto new_manager = FileAssetManagerSerializer::DeserializeReadable("AssetManager.mgn");
+				if(new_manager) {
+					*manager = *new_manager;
+					for (const auto& [id, metadata]: manager->m_AssetRegistry) {
+						auto asset = AssetImporter::ImportAsset(metadata);
+						if (asset) {
+							manager->m_LoadedAssets[id] = asset;
+						}
+					}
+					MGN_CORE_INFO("FileAssetManager Load Succeed.");
+				}
+				else MGN_CORE_INFO("FileAssetManager Load Failed.");
+			}
+
 			static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg;
-
 			if (ImGui::BeginTabBar("Assets Components", tab_bar_flags)) {
 				if (ImGui::BeginTabItem("Asset Registry")) {
 					static AssetHandle selected = NULL_ASSET_HANDLE;

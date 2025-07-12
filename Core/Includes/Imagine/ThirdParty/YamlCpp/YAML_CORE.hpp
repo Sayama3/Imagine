@@ -15,8 +15,10 @@ namespace YAML {
 	YAML_SIMPLE_EMITTER_FUNC(std::filesystem::path, v.string());
 
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::Path &v) {
+		out << YAML::BeginMap;
 		out << KEYVAL("Source", Imagine::FileSourceToString(v.source));
 		out << KEYVAL("Path", v.path);
+		out << YAML::EndMap;
 		return out;
 	}
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::UUID &v) {

@@ -88,7 +88,7 @@ namespace Imagine {
 	class FileAssetManagerSerializer {
 	public:
 		static bool SerializeReadable(const FileAssetManager* manager, const std::filesystem::path& filePath);
-		static bool DeserializeReadable(FileAssetManager* manager, const std::filesystem::path& filePath);
+		static Scope<FileAssetManager> DeserializeReadable(const std::filesystem::path& filePath);
 	};
 
 } // namespace Imagine

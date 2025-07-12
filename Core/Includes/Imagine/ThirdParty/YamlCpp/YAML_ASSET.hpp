@@ -17,9 +17,9 @@ namespace YAML {
 	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::AssetMetadata &v) {
 		out << YAML::BeginMap;
 		{
-			out << YAML::Key << "FilePath" << YAML::Value << v.FilePath;
-			out << YAML::Key << "Handle" << YAML::Value << v.Handle;
-			out << YAML::Key << "Type" << YAML::Value << v.Type;
+			out << KEYVAL("FilePath", v.FilePath);
+			out << KEYVAL("Handle", v.Handle);
+			out << KEYVAL("Type", v.Type);
 		}
 		out << YAML::EndMap;
 		return out;
@@ -49,15 +49,15 @@ namespace YAML {
 	struct convert<Imagine::AssetMetadata> {
 		inline static Node encode(const Imagine::AssetMetadata &v) {
 			Node node;
-			YAML_NODE_OUT_VAL(FilePath);
-			YAML_NODE_OUT_VAL(Handle);
-			YAML_NODE_OUT_VAL(Type);
+			node["FilePath"] = v.FilePath;;
+			node["Handle"] = v.Handle;;
+			node["Type"] = v.Type;;
 			return node;
 		}
 		inline static bool decode(const Node &node, Imagine::AssetMetadata &v) {
-			YAML_NODE_IN_VAL(FilePath, Path);
-			YAML_NODE_IN_VAL(Handle, AssetHandle);
-			YAML_NODE_IN_VAL(Type, AssetType);
+			v.FilePath = node["FilePath"].as<Imagine::Path>();
+			v.Handle = node["Handle"].as<Imagine::AssetHandle>();
+			v.Type = node["Type"].as<Imagine::AssetType>();
 			return true;
 		}
 	};

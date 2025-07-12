@@ -256,17 +256,21 @@ namespace Imagine {
 		return true;
 	}
 
-	bool FileAssetManagerSerializer::DeserializeReadable(FileAssetManager *manager, const std::filesystem::path &filePath) {
-		if (!std::filesystem::exists(filePath) || !std::filesystem::is_regular_file(filePath)) return false;
+	Scope<FileAssetManager> FileAssetManagerSerializer::DeserializeReadable(const std::filesystem::path &filePath) {
+		if (!std::filesystem::exists(filePath) || !std::filesystem::is_regular_file(filePath)) return nullptr;
 
 		const YAML::Node node = ThirdParty::YamlCpp::ReadFileAsYAML(filePath);
-		if (!node["Type"] || node["Type"].as<std::string>() != "File Asset Manager") return false;
+		if (!node["Type"] || node["Type"].as<std::string>() != "File Asset Manager") return nullptr;
 
-		if (!node["Assets"]) return false;
-		for (auto metadataNode: node["Assets"]) {
-			auto metadata = metadataNode.second.as<AssetMetadata>();
-			manager->m_AssetRegistry[metadata.Handle] = metadata;
+		Scope<FileAssetManager> manager = CreateScope<FileAssetManager>();
+
+		if (auto assetsNodes = node["Assets"]) {
+			for (auto metadataNode : assetsNodes) {
+				auto metadata = metadataNode.as<AssetMetadata>();
+				manager->m_AssetRegistry[metadata.Handle] = metadata;
+			}
+			return std::move(manager);
 		}
-		return true;
+		return nullptr;
 	}
 } // namespace Imagine
