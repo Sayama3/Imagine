@@ -148,7 +148,7 @@ namespace Imagine::Runtime {
 		handled = dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
 			for (const std::filesystem::path &path: e) {
 				if (std::filesystem::exists(path)) {
-					auto model = CPUModel::LoadModel(path, SceneManager::GetMainScene().get());
+					auto model = CPUModel::LoadModel(Path::GetPath(path));
 					for (auto &tex: model->Textures) {
 						tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
 					}
@@ -161,6 +161,8 @@ namespace Imagine::Runtime {
 					for (auto &mesh: model->Meshes) {
 						mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
 					}
+					// Project::GetActive()->GetFileAssetManager()->AddAsset(model);
+					Project::GetActive()->GetFileAssetManager()->AddAsset(model, model->modelPath);
 				}
 			}
 			return false;

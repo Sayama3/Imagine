@@ -117,8 +117,8 @@ namespace Imagine {
 		bool operator!=(const Path &rhs) const;
 
 	public:
-		inline static Path GetPath(std::filesystem::path path);
-		inline static bool Equivalent(const Path &lhs, const Path &rhs) { return lhs.equivalent(rhs); }
+		static Path GetPath(std::filesystem::path path);
+		static bool Equivalent(const Path &lhs, const Path &rhs) { return lhs.equivalent(rhs); }
 
 	public:
 		std::filesystem::path path;

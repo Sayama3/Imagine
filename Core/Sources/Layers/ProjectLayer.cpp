@@ -55,6 +55,7 @@ namespace Imagine {
 
 			if (ImGui::BeginTabBar("Assets Components", tab_bar_flags)) {
 				if (ImGui::BeginTabItem("Asset Registry")) {
+					static AssetHandle selected = NULL_ASSET_HANDLE;
 					if (ImGui::BeginTable("AssetRegistryTable", 3, flags)) {
 						// Display headers so we can inspect their interaction with borders
 						// (Headers are not the main purpose of this section of the demo, so we are not elaborating on them now. See other sections for details)
@@ -70,7 +71,18 @@ namespace Imagine {
 							ImGui::BeginGroup();
 							if (ImGui::TableSetColumnIndex(0)) {
 								const auto idStr = metadata.Handle.GetID().raw_string();
-								ImGui::Text(idStr.c_str());
+								if (manager->m_LoadedAssets.contains(metadata.Handle)) {
+									if (ImGui::Selectable(idStr.c_str(), selected == metadata.Handle)) selected = metadata.Handle;
+									if (/*selected == metadata.Handle &&*/ ImGui::BeginDragDropSource()) {
+										std::string payloadID = AssetTypeToPayloadID(metadata.Type);
+										MGN_CORE_CASSERT(payloadID.size() < 32, "The payloadID is not high.");
+										ImGui::SetDragDropPayload(payloadID.c_str(), &metadata.Handle, sizeof(metadata.Handle), ImGuiCond_Once);
+										ImGui::EndDragDropSource();
+									}
+								} else {
+									ImGui::Text(idStr.c_str());
+								}
+
 							}
 
 							if (ImGui::TableSetColumnIndex(1)) {
@@ -79,8 +91,14 @@ namespace Imagine {
 							}
 
 							if (ImGui::TableSetColumnIndex(2)) {
-								const std::string nicePathStr = FileSourceToString(metadata.FilePath.source) + "/" + metadata.FilePath.path.string();
-								ImGui::Text(nicePathStr.c_str());
+								if (metadata.FilePath.source == FileSource::External) {
+									const std::string nicePathStr = metadata.FilePath.path.string();
+									ImGui::Text(nicePathStr.c_str());
+								}
+								else {
+									const std::string nicePathStr = FileSourceToString(metadata.FilePath.source) + "/" + metadata.FilePath.path.string();
+									ImGui::Text(nicePathStr.c_str());
+								}
 							}
 							ImGui::EndGroup();
 						}

@@ -54,17 +54,43 @@ namespace Imagine {
 
 	Path Path::GetPath(std::filesystem::path path) {
 		const std::string pathStr = path.make_preferred().string();
-
-		for (int i = 0; i < FileSourceCount; ++i) {
-			auto source = static_cast<FileSource>(i);
-			auto sourcePath = FileSystem::GetRootPath(source);
-			std::string rootSourceStr = sourcePath.make_preferred().string();
+		{
+			const auto source = FileSource::Assets;
+			const auto sourcePath = FileSystem::GetRootPath(source).make_preferred();
+			const std::string rootSourceStr = sourcePath.string();
 			if (pathStr.starts_with(rootSourceStr)) {
 				std::filesystem::path localPath = std::filesystem::relative(path, sourcePath);
 				return {source, localPath};
 			}
 		}
-		return {};
+		{
+			const auto source = FileSource::Engine;
+			const auto sourcePath = FileSystem::GetRootPath(source).make_preferred();
+			const std::string rootSourceStr = sourcePath.string();
+			if (pathStr.starts_with(rootSourceStr)) {
+				std::filesystem::path localPath = std::filesystem::relative(path, sourcePath);
+				return {source, localPath};
+			}
+		}
+		{
+			const auto source = FileSource::Cache;
+			const auto sourcePath = FileSystem::GetRootPath(source).make_preferred();
+			const std::string rootSourceStr = sourcePath.string();
+			if (pathStr.starts_with(rootSourceStr)) {
+				std::filesystem::path localPath = std::filesystem::relative(path, sourcePath);
+				return {source, localPath};
+			}
+		}
+		{
+			const auto source = FileSource::Scripts;
+			const auto sourcePath = FileSystem::GetRootPath(source).make_preferred();
+			const std::string rootSourceStr = sourcePath.string();
+			if (pathStr.starts_with(rootSourceStr)) {
+				std::filesystem::path localPath = std::filesystem::relative(path, sourcePath);
+				return {source, localPath};
+			}
+		}
+		return {FileSource::External, path};
 	}
 	std::optional<uint32_t> FileSystem::ReadFourCC(const std::filesystem::path &path) {
 		MGN_PROFILE_FUNCTION();

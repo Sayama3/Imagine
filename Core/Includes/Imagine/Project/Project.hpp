@@ -98,7 +98,7 @@ namespace Imagine
 		[[nodiscard]] std::filesystem::path GetAssetRegistry() const;
 		[[nodiscard]] const std::filesystem::path& GetFilePath() const;
 	private:
-		std::filesystem::path m_ProjectPath = "./Project.mgn";
+		std::filesystem::path m_ProjectPath = "Project.mgn";
 		ProjectConfig m_Config;
 		Scope<AssetManagerBase> m_AssetManager;
 	private:

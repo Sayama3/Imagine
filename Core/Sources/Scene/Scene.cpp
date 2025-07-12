@@ -415,7 +415,8 @@ namespace Imagine {
 		}
 
 		{
-			const std::string HierarchyName = "Hierarchy##" + Handle.string();
+			// const std::string HierarchyName = "Hierarchy##" + Handle.string();
+			const std::string HierarchyName = "Hierarchy";
 			ImGui::Begin(HierarchyName.c_str());
 			{
 				static std::string newName = "New Entity";
@@ -448,7 +449,8 @@ namespace Imagine {
 		}
 
 		{
-			const std::string PropertiesName = "Properties##" + Handle.string();
+			// const std::string PropertiesName = "Properties##" + Handle.string();
+			const std::string PropertiesName = "Properties";
 			ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
 			ImGui::Begin(PropertiesName.c_str());
 			{
