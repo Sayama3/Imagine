@@ -21,7 +21,7 @@ namespace Imagine
 			// {AssetType::Scene, SceneImporter::ImportScene},
 			{AssetType::Material, MaterialSerializer::ImportReadableMaterial},
 			{AssetType::MaterialInstance, MaterialSerializer::ImportReadableMaterialInstance},
-			//{AssetType::Model, MeshSerializer::ImportModel},
+			{AssetType::Model, MeshSerializer::ImportModel},
 	};
 
 	std::unordered_map<AssetType, AssetDetectorFunction> AssetImporter::AssetDetectors = {
@@ -33,7 +33,7 @@ namespace Imagine
 			// {AssetType::Scene, SceneImporter::IsScene},
 			{AssetType::Material, MaterialSerializer::IsMaterial},
 			{AssetType::MaterialInstance, MaterialSerializer::IsMaterialInstance},
-			// {AssetType::Model, MeshSerializer::IsModel},
+			{AssetType::Model, MeshSerializer::IsModel},
 	};
 
 	Ref<Asset> AssetImporter::ImportAsset(const AssetMetadata &metadata)

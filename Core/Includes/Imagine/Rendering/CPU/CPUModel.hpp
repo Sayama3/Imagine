@@ -21,8 +21,25 @@ namespace Imagine {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Model);
 	public:
+
+		struct Node {
+			std::string name;
+			std::vector<Weak<CPUMesh>> meshes{};
+			std::optional<Light> light{std::nullopt};
+			Mat4 worldMatrix{Math::Identity<Mat4>()};
+			Quat LocalRotation{Math::Identity<Quat>()};
+			Vec3 LocalPosition{0};
+			Vec3 LocalScale{1};
+			std::optional<uint64_t> parent{std::nullopt};
+			std::vector<uint64_t> children{};
+		};
+	public:
 		static Ref<CPUModel> LoadModel(const Path &filePath, Scene* coreScene, EntityID parent = EntityID::NullID);
 		static Ref<CPUModel> LoadModel(const std::filesystem::path &filePath, Scene* coreScene, EntityID parent = EntityID::NullID);
+		static Ref<CPUModel> LoadModel(const Path &filePath);
+		static Ref<CPUModel> LoadModel(const std::filesystem::path &filePath);
+	public:
+		void LoadInScene(Scene* coreScene, EntityID parent = EntityID::NullID);
 	public:
 		Path modelPath;
 		std::vector<Ref<CPUMesh>> Meshes;
@@ -30,6 +47,9 @@ namespace Imagine {
 		std::vector<Ref<CPUMaterialInstance>> Instances;
 		std::vector<Ref<CPUTexture2D>> Textures;
 		std::vector<Ref<CPUShader>> Shaders;
+
+		uint64_t RootNode{0};
+		std::vector<Node> Nodes{};
 	};
 
 } // namespace Imagine

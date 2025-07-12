@@ -27,10 +27,26 @@ namespace Imagine {
 
 	Ref<CPUModel> CPUModel::LoadModel(const std::filesystem::path &filePath, Scene *coreScene, EntityID parent) {
 		MGN_PROFILE_FUNCTION();
+		auto model = LoadModel(filePath);
+		if (!model) return nullptr;
+		model->LoadInScene(coreScene, parent);
+		return model;
+	}
+	Ref<CPUModel> CPUModel::LoadModel(const Path &filePath) {
+		auto model = LoadModel(filePath.GetFullPath());
+		if (model) {
+			model->modelPath = filePath;
+		}
+		return model;
+	}
+
+	Ref<CPUModel> CPUModel::LoadModel(const std::filesystem::path &filePath) {
+		MGN_PROFILE_FUNCTION();
 		using namespace Imagine;
 		Assimp::Importer importer;
 
-		if (!coreScene) return nullptr;
+		const auto extensionStr = filePath.extension().string();
+		if (!importer.IsExtensionSupported(extensionStr.c_str())) return nullptr;
 
 		const aiScene *scene = importer.ReadFile(filePath.string(), ThirdParty::Assimp::GetSmoothPostProcess());
 
@@ -200,14 +216,16 @@ namespace Imagine {
 			if (imageFiles[3] == imageFiles[4]) {
 				// GLTF Specific MetalRough Texture
 				instance->PushSet({1, 0, 2}, glm::fvec3(0, 0, metallic));
-				instance->PushSet({1, 0, 3}, glm::fvec3(0, roughness,0));
-			} else {
+				instance->PushSet({1, 0, 3}, glm::fvec3(0, roughness, 0));
+			}
+			else {
 				// Other where R is each of the data.
-				instance->PushSet({1, 0, 2}, glm::fvec3(metallic,0,0));
-				instance->PushSet({1, 0, 3}, glm::fvec3(roughness,0,0));
+				instance->PushSet({1, 0, 2}, glm::fvec3(metallic, 0, 0));
+				instance->PushSet({1, 0, 3}, glm::fvec3(roughness, 0, 0));
 			}
 
 			LOAD_ASSET(instance);
+
 		}
 
 		model->Meshes.reserve(scene->mNumMeshes);
@@ -283,16 +301,19 @@ namespace Imagine {
 		// Load the nodes as entity in the scene.
 		{
 			// Unwrapping everything in a vector to avoid recursion.
-			std::vector<std::tuple<aiNode *, EntityID>> nodes{{scene->mRootNode, parent}};
+			std::vector<std::tuple<aiNode *, std::optional<uint64_t>>> nodes{{scene->mRootNode, std::nullopt}};
 			nodes.reserve(scene->mNumMeshes);
 			while (!nodes.empty()) {
 				// Pop the last node available
-				auto [node, parentEntityID] = nodes.back();
+				auto [aNode, parentId] = nodes.back();
+
+				Node current{};
 				nodes.pop_back();
 
-				const char *cName = node->mName.C_Str();
+				const char *cName = aNode->mName.C_Str();
+				current.name = cName;
 
-				const aiMatrix4x4 &localMatrix = node->mTransformation; // * parentMatrix;
+				const aiMatrix4x4 &localMatrix = aNode->mTransformation; // * parentMatrix;
 
 				// Going from ASSIMP to GLM is going from row major to column major.
 				//  Therefore, I create the glm matrix by rotating the matrix and
@@ -317,93 +338,124 @@ namespace Imagine {
 				if (scale.x != scale.y || scale.y != scale.z) {
 					MGN_CORE_WARN("The scale of the node {} in the model {} is non-uniform. It's preferred to have a uniform scale of 1.", cName, filePath.string());
 				}
-				else if (Math::Magnitude2(scale) != 1) {
-					// MGN_CORE_WARN("The scale of the node {} in the model {} is not 1. It's preferred to have a uniform scale of 1.");
+
+				current.LocalPosition = pos;
+				current.LocalRotation = rot;
+				current.LocalScale = scale;
+				if (parentId)
+					current.worldMatrix = model->Nodes.at(parentId.value()).worldMatrix * glmLocalMatrix;
+				else
+					current.worldMatrix = glmLocalMatrix;
+				current.parent = parentId;
+
+				for (int i = 0; i < aNode->mNumMeshes; ++i) {
+					const auto &pMesh = model->Meshes[aNode->mMeshes[i]];
+					current.meshes.push_back(pMesh);
 				}
 
-				EntityID entityId = coreScene->CreateEntity(parentEntityID);
-				coreScene->SetName(entityId, node->mName.C_Str());
-				coreScene->GetEntity(entityId).LocalPosition = pos;
-				coreScene->GetEntity(entityId).LocalRotation = rot;
-				coreScene->GetEntity(entityId).LocalScale = scale;
+				uint64_t currentId = model->Nodes.size();
+				model->Nodes.push_back(current);
 
-				if (node->mNumMeshes == 1) {
-					AssetHandle meshHandle = model->Meshes[*node->mMeshes]->Handle;
-					coreScene->AddComponent<Renderable>(entityId)->cpuMesh = meshHandle;
+				if (parentId) model->Nodes.at(parentId.value()).children.push_back(currentId);
+				else model->RootNode = currentId;
+
+				for (int i = 0; i < aNode->mNumChildren; ++i) {
+					aiNode *child = aNode->mChildren[i];
+					nodes.emplace_back(child, currentId);
+				}
+			}
+		}
+
+		for (uint32_t i = 0; i < scene->mNumLights; ++i) {
+			aiLight *pLight = scene->mLights[i];
+			Node node;
+			node.parent = model->RootNode;
+			node.LocalPosition = Vec3(pLight->mPosition.x, pLight->mPosition.y, pLight->mPosition.z);
+			node.LocalRotation = glm::rotation(Vec3{0, -1, 0}, Vec3{pLight->mDirection.x, pLight->mDirection.y, pLight->mDirection.z});
+			node.worldMatrix = model->Nodes[model->RootNode].worldMatrix * Math::TRS(node.LocalPosition, node.LocalRotation);
+			switch (pLight->mType) {
+				case aiLightSource_DIRECTIONAL: {
+					Light light;
+					light.type = LIGHT_DIRECTIONAL;
+					light.color = Vec4{pLight->mColorDiffuse.r, pLight->mColorDiffuse.g, pLight->mColorDiffuse.b, 1};
+					node.light = light;
+				} break;
+				case aiLightSource_POINT: {
+					Light light;
+					light.type = LIGHT_POINT;
+					light.direction.x = 50;
+					light.color = Vec4{pLight->mColorDiffuse.r, pLight->mColorDiffuse.g, pLight->mColorDiffuse.b, 1};
+					node.light = light;
+				} break;
+				case aiLightSource_SPOT: {
+					Light light;
+					light.type = LIGHT_SPOT;
+					light.direction.w = pLight->mAngleOuterCone;
+					light.direction.x = 50;
+					light.color = Vec4{pLight->mColorDiffuse.r, pLight->mColorDiffuse.g, pLight->mColorDiffuse.b, 1};
+					node.light = light;
+				} break;
+				default:
+					continue;
+			}
+
+			if (node.light) {
+				const auto id = model->Nodes.size();
+				model->Nodes.push_back(node);
+				model->Nodes[model->RootNode].children.push_back(id);
+			}
+		}
+
+		// LOAD_ASSET(model);
+		return model;
+	}
+
+	void CPUModel::LoadInScene(Scene *coreScene, EntityID parent) {
+		MGN_PROFILE_FUNCTION();
+		std::vector<std::tuple<Node *, EntityID>> nodes{1, {&Nodes[RootNode], parent}};
+		while (!nodes.empty()) {
+			auto [node, parentEntityID] = nodes.back();
+			nodes.pop_back();
+
+			EntityID entityId = coreScene->CreateEntity(parentEntityID);
+			coreScene->SetName(entityId, node->name);
+			coreScene->GetEntity(entityId).LocalPosition = node->LocalPosition;
+			coreScene->GetEntity(entityId).LocalRotation = node->LocalRotation;
+			coreScene->GetEntity(entityId).LocalScale = node->LocalScale;
+
+			if (node->meshes.size() == 1) {
+				if (auto lock = node->meshes[0].lock()) {
+					AssetHandle meshHandle = lock->Handle;
+					auto* renderable = coreScene->AddComponent<Renderable>(entityId);
+					MGN_CORE_CASSERT(renderable);
+					renderable->cpuMesh = meshHandle;
+
 					// Physicalisable* p = coreScene->AddComponent<Physicalisable>(entityId);
 					// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
 					// p->RBType = RB_Static;
 				}
-				else if (node->mNumMeshes > 1) {
-					for (int i = 0; i < node->mNumMeshes; ++i) {
-						const auto &pMesh = model->Meshes[node->mMeshes[i]];
-						const AssetHandle meshHandle = pMesh->Handle;
+
+			}
+			else if (node->meshes.size() > 1) {
+				for (int i = 0; i < node->meshes.size(); ++i) {
+					if (auto lock = node->meshes[i].lock()) {
+						const AssetHandle meshHandle = lock->Handle;
 						EntityID meshChild = coreScene->CreateEntity(entityId);
-						coreScene->SetName(meshChild, pMesh->Name);
-						Renderable* renderable = coreScene->AddComponent<Renderable>(meshChild);
+						coreScene->SetName(meshChild, lock->Name);
+						Renderable *renderable = coreScene->AddComponent<Renderable>(meshChild);
+						MGN_CORE_CASSERT(renderable);
 						renderable->cpuMesh = meshHandle;
 						// Physicalisable* p = coreScene->AddComponent<Physicalisable>(meshChild);
 						// p->Shape =  ColliderShapes::Mesh{AssetField<CPUMesh>{meshHandle}};
 						// p->RBType = RB_Static;
 					}
 				}
+			}
 
 
-				for (int i = 0; i < node->mNumChildren; ++i) {
-					aiNode *child = node->mChildren[i];
-					nodes.push_back({child, entityId});
-				}
+			for (uint64_t child : node->children) {
+				nodes.emplace_back(&Nodes[child], entityId);
 			}
 		}
-
-		for (uint32_t i = 0; i < scene->mNumLights; ++i) {
-			aiLight* pLight = scene->mLights[i];
-			switch (pLight->mType) {
-				case aiLightSource_DIRECTIONAL: {
-					EntityID entityId = coreScene->CreateEntity(parent);
-					coreScene->SetName(entityId, std::string{"Directional Light - "} + pLight->mName.C_Str());
-					Entity& entity = coreScene->GetEntity(entityId);
-					Light* light = coreScene->AddComponent<Light>(entityId);
-					if(!light) continue;
-					light->type = LIGHT_DIRECTIONAL;
-					entity.LocalPosition = Vec3(pLight->mPosition.x,pLight->mPosition.y,pLight->mPosition.z);
-					entity.LocalRotation = glm::rotation(Vec3{0,-1,0},Vec3{pLight->mDirection.x,pLight->mDirection.y,pLight->mDirection.z});
-					light->color = Vec4{pLight->mColorDiffuse.r,pLight->mColorDiffuse.g,pLight->mColorDiffuse.b,1};
-				}
-					break;
-				case aiLightSource_POINT: {
-					EntityID entityId = coreScene->CreateEntity(parent);
-					coreScene->SetName(entityId, std::string{"Point Light - "} + pLight->mName.C_Str());
-					Entity& entity = coreScene->GetEntity(entityId);
-					Light* light = coreScene->AddComponent<Light>(entityId);
-					if(!light) continue;
-					light->type = LIGHT_POINT;
-					entity.LocalPosition = Vec3(pLight->mPosition.x,pLight->mPosition.y,pLight->mPosition.z);
-					entity.LocalRotation = glm::rotation(Vec3{0,-1,0},Vec3{pLight->mDirection.x,pLight->mDirection.y,pLight->mDirection.z});
-					light->direction.x = 50;
-					light->color = Vec4{pLight->mColorDiffuse.r,pLight->mColorDiffuse.g,pLight->mColorDiffuse.b,1};
-				}
-					break;
-				case aiLightSource_SPOT: {
-					EntityID entityId = coreScene->CreateEntity(parent);
-					coreScene->SetName(entityId, std::string{"Spot Light - "} + pLight->mName.C_Str());
-					Entity& entity = coreScene->GetEntity(entityId);
-					Light* light = coreScene->AddComponent<Light>(entityId);
-					if(!light) continue;
-					light->type = LIGHT_SPOT;
-					light->direction.w = pLight->mAngleOuterCone;
-					light->direction.x = 50;
-					entity.LocalPosition = Vec3(pLight->mPosition.x,pLight->mPosition.y,pLight->mPosition.z);
-					entity.LocalRotation = glm::rotation(Vec3{0,-1,0},Vec3{pLight->mDirection.x,pLight->mDirection.y,pLight->mDirection.z});
-					light->color = Vec4{pLight->mColorDiffuse.r,pLight->mColorDiffuse.g,pLight->mColorDiffuse.b,1};
-				}
-					break;
-				default:
-					continue;
-			}
-		}
-
-		LOAD_ASSET(model);
-		return model;
 	}
 } // namespace Imagine

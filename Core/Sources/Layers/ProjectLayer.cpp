@@ -44,7 +44,7 @@ namespace Imagine {
 #ifdef MGN_IMGUI
 		Project* project = Project::GetActive();
 		if (!project) return;
-		FileAssetManager* manager = project->GetEditorAssetManager();
+		FileAssetManager* manager = project->GetFileAssetManager();
 		if (!manager) return;
 
 		ImGui::SetNextWindowSize({400,200}, ImGuiCond_FirstUseEver);

@@ -108,7 +108,7 @@ namespace Imagine {
 			return {s.x, s.y, s.z};
 		}
 
-		inline static void TRS(Mat4 &trs, const Vec3 &position, const glm::quat &rotation, const Vec3 &scale = Vec3(1.0)) {
+		inline static void TRS(Mat4 &trs, const Vec3 &position, const glm::quat &rotation, const Vec3 &scale) {
 			MGN_PROFILE_FUNCTION();
 			trs = glm::translate(trs, position); // Translation Matrix
 			trs = trs * glm::toMat4(rotation); // Rotation Matrix
@@ -122,10 +122,29 @@ namespace Imagine {
 		 * @param scale The scale as a 3D vector.
 		 * @return A 4x4 matrix representation of the Transform matrix.
 		 */
-		inline static Mat4 TRS(const Vec3 &position, const glm::quat &rotation, const Vec3 &scale = Vec3(1.0)) {
+		inline static Mat4 TRS(const Vec3 &position, const glm::quat &rotation, const Vec3 &scale) {
 			MGN_PROFILE_FUNCTION();
 			Mat4 trs(1.0f);
 			TRS(trs, position, rotation, scale);
+			return trs; // Translation * Rotation * Scale => TRS Matrix.
+		}
+
+		inline static void TRS(Mat4 &trs, const Vec3 &position, const glm::quat &rotation) {
+			MGN_PROFILE_FUNCTION();
+			trs = glm::translate(trs, position); // Translation Matrix
+			trs = trs * glm::toMat4(rotation); // Rotation Matrix
+		}
+
+		/**
+		 * Create a Transform matrix from a position, a rotation.
+		 * @param position The position as a 3D vector.
+		 * @param rotation The rotation as a quaternion.
+		 * @return A 4x4 matrix representation of the Transform matrix.
+		 */
+		inline static Mat4 TRS(const Vec3 &position, const glm::quat &rotation) {
+			MGN_PROFILE_FUNCTION();
+			Mat4 trs(1.0f);
+			TRS(trs, position, rotation);
 			return trs; // Translation * Rotation * Scale => TRS Matrix.
 		}
 

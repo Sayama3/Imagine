@@ -80,7 +80,7 @@ namespace Imagine
 
 		[[nodiscard]] inline AssetManagerBase* GetAssetManager() { return m_AssetManager.get(); }
 
-		[[nodiscard]] inline FileAssetManager* GetEditorAssetManager() {
+		[[nodiscard]] inline FileAssetManager* GetFileAssetManager() {
 			return dynamic_cast<FileAssetManager*>(m_AssetManager.get());
 		}
 		//

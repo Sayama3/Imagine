@@ -148,9 +148,30 @@ namespace Imagine {
 	}
 
 	void Application::Run() {
-		auto model = CPUModel::LoadModel("C:/Users/ianpo/Documents/GitHub/glTF-Sample-Assets/Models/Sponza/glTF/Sponza.gltf", SceneManager::GetMainScene().get());
+		{
+			auto model = CPUModel::LoadModel({FileSource::Assets, "Models/Sponza/Sponza.gltf"});
+			Project::GetActive()->GetFileAssetManager()->AddAsset(model, {FileSource::Assets, "Models/Sponza/Sponza.gltf"});
+			const auto entityId = SceneManager::GetMainScene()->CreateEntity();
+			Renderable *renderable = SceneManager::GetMainScene()->AddComponent<Renderable>(entityId);
+			renderable->cpuMesh = model->Handle;
+			MGN_CORE_CASSERT(model);
 
-		MGN_CORE_CASSERT(model);
+			if (model) {
+				for (auto &tex: model->Textures) {
+					tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
+				}
+				for (Ref<CPUMaterial> &material: model->Materials) {
+					material->gpu = Renderer::Get()->LoadMaterial(*material);
+				}
+				for (auto &instance: model->Instances) {
+					instance->gpu = Renderer::Get()->LoadMaterialInstance(*instance);
+				}
+				for (auto &mesh: model->Meshes) {
+					mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
+				}
+			}
+		}
+
 
 		while (!m_ShouldStop) {
 			MGN_FRAME_START();
@@ -188,21 +209,6 @@ namespace Imagine {
 			if (canDraw) {
 				MGN_PROFILE_SCOPE("App Draw");
 				Camera::s_MainCamera->Update(m_DeltaTime);
-				if (model) {
-					for (auto & tex: model->Textures) {
-						tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
-					}
-					for (Ref<CPUMaterial> & material: model->Materials) {
-						material->gpu = Renderer::Get()->LoadMaterial(*material);
-					}
-					for (auto & instance: model->Instances) {
-						instance->gpu = Renderer::Get()->LoadMaterialInstance(*instance);
-					}
-					for (auto & mesh: model->Meshes) {
-						mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
-					}
-					model.reset();
-				}
 				Draw();
 			}
 
@@ -297,8 +303,8 @@ namespace Imagine {
 
 		std::atomic<int> counter{0};
 
-		for (auto& scene : SceneManager::GetLoadedScenes()) {
-			scene->ForEachWithComponent<Light>([this,&lightData,&counter](const Scene* scn, const EntityID id, const Light& comp) {
+		for (auto &scene: SceneManager::GetLoadedScenes()) {
+			scene->ForEachWithComponent<Light>([this, &lightData, &counter](const Scene *scn, const EntityID id, const Light &comp) {
 				const auto index = counter.fetch_add(1, std::memory_order_relaxed);
 				if (index >= GPULightData::MaxLight) return;
 				Light light = comp;
@@ -307,7 +313,7 @@ namespace Imagine {
 				light.position += scn->GetWorldTransform(id) * Vec4(scn->GetEntity(id).LocalPosition, 1);
 				const auto w = light.direction.w;
 				const auto len = Math::Magnitude(glm::fvec3(light.direction));
-				light.direction = normal * glm::fvec4(0,-1,0,0);
+				light.direction = normal * glm::fvec4(0, -1, 0, 0);
 				light.direction *= len;
 				light.direction.w = w;
 				lightData.lights[index] = light;
@@ -342,12 +348,32 @@ namespace Imagine {
 					scene->CacheTransforms();
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
 					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, Renderable &renderable) {
-						auto gpuMesh = AssetManager::GetAssetAs<CPUMesh>(renderable.cpuMesh)->gpu;
-						if (!gpuMesh) return;
-
 						const Mat4 worldMat = scene->GetWorldTransform(id);
-						MGN_CORE_MASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
-						ctx.OpaqueSurfaces.emplace_back(worldMat, gpuMesh);
+						Ref<Asset> asset = AssetManager::GetAsset(renderable.cpuMesh);
+						switch (asset->GetType()) {
+							case AssetType::Model: {
+								auto cpuModel = CastPtr<CPUModel>(asset);
+								if (!cpuModel) return;
+								for (const CPUModel::Node& node: cpuModel->Nodes) {
+									if (node.meshes.empty()) continue;
+									const auto world = worldMat * node.worldMatrix;
+									for (const Weak<CPUMesh> & mesh: node.meshes) {
+										if (const Ref<CPUMesh> lock = mesh.lock()) {
+											if (lock->gpu) ctx.OpaqueSurfaces.emplace_back(world, lock->gpu);
+										}
+									}
+								}
+							}
+								break;
+							case AssetType::Mesh: {
+								auto gpuMesh = CastPtr<CPUMesh>(asset)->gpu;
+								if (!gpuMesh) return;
+								MGN_CORE_MASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
+								ctx.OpaqueSurfaces.emplace_back(worldMat, gpuMesh);
+							} break;
+							default:
+								return;
+						}
 					});
 					m_Renderer->Draw(ctx);
 					ctx.Clear();
@@ -362,7 +388,7 @@ namespace Imagine {
 				}
 				if (!PhysicsDebugRenderer::s_Vertices.empty()) {
 					Scope<CPUMesh> mesh = CreateScope<CPUMesh>(std::move(PhysicsDebugRenderer::s_Vertices));
-					mesh->Lods.emplace_back(0, (uint32_t)mesh->Indices.size(), NULL_ASSET_HANDLE);
+					mesh->Lods.emplace_back(0, (uint32_t) mesh->Indices.size(), NULL_ASSET_HANDLE);
 					mesh->gpu = m_Renderer->LoadMesh(*mesh);
 					ctx.OpaqueSurfaces.emplace_back(Math::Identity<Mat4>(), mesh->gpu);
 				}
