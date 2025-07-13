@@ -8,6 +8,7 @@
 #include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Rendering/Light.hpp"
 #include "Imagine/Scene/SceneSerializer.hpp"
+#include "Imagine/ThirdParty/FileDialogs.hpp"
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
@@ -398,17 +399,20 @@ namespace Imagine {
 #ifdef MGN_IMGUI
 		{
 			ImGui::Begin("Main Scene");
-			static std::string scenePath = "./Scenes/MainScene";
-			ImGui::InputText("Scene Path", &scenePath);
 			if (ImGui::Button("Save")) {
-				SceneSerializer::SerializeReadable(this, scenePath);
+				std::string folder = ThirdParty::FileDialogs::SelectFolder("Load Scene");
+				SceneSerializer::SerializeReadable(this, folder);
 			}
 
 			if (ImGui::Button("Load")) {
-				Scene* scene = SceneSerializer::DeserializeReadable(scenePath);
-				if (scene) {
-					*this = *scene;
-					delete scene;
+				std::string folder = ThirdParty::FileDialogs::SelectFolder("Load Scene");
+				if (std::filesystem::exists(folder))
+				{
+					Scene* scene = SceneSerializer::DeserializeReadable(folder);
+					if (scene) {
+						*this = *scene;
+						delete scene;
+					}
 				}
 			}
 			ImGui::End();

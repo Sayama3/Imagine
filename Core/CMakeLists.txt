@@ -223,6 +223,9 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Physics/PhysicsDebugRenderer.hpp
 		Sources/Scene/SceneSerializer.cpp
 		Includes/Imagine/Scene/SceneSerializer.hpp
+		Includes/Imagine/ThirdParty/YamlCpp/YAML_SCENE.hpp
+		Sources/ThirdParty/FileDialogs.cpp
+		Includes/Imagine/ThirdParty/FileDialogs.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})

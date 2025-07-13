@@ -4,20 +4,16 @@
 
 #pragma once
 
-#include "Imagine/Project/Project.hpp"
-
+#include "Imagine/Core/SmartPointers.hpp"
 
 namespace Imagine
 {
+	class Project;
 	class ProjectSerializer
 	{
-	private:
-		Ref<Project> m_ProjectHandle;
 	public:
-		ProjectSerializer(Ref<Project>);
-
-		bool SerializeReadable(const std::filesystem::path& filepath);
-		bool DeserializeReadable(const std::filesystem::path& filepath);
+		static bool SerializeReadable(const Project* project, const std::filesystem::path& filepath);
+		static Scope<Project> DeserializeReadable(std::filesystem::path filepath);
 	};
 
 } // namespace Imagine

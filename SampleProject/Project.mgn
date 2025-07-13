@@ -1,0 +1,7 @@
+Type: Project
+Name: Sample Project
+Asset Directory: Assets
+Cache Directory: Cache
+Scripts Directory: Scripts
+Asset Registry Path: AssetRegistry.mgn
+Start Scene Id: [0, 0]

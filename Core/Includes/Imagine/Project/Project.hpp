@@ -24,11 +24,7 @@ namespace Imagine
 
 		std::filesystem::path assetRegistryPath = "AssetRegistry.mgn";
 
-		std::optional<AssetHandle> startSceneId;
-		std::optional<AssetHandle> defaultMaterialId{std::nullopt};
-		std::optional<AssetHandle> defaultShaderId{std::nullopt};
-		std::optional<AssetHandle> deferredShaderId{std::nullopt};
-		std::optional<AssetHandle> gizmoShaderId{std::nullopt};
+		AssetHandle startSceneId{NULL_ASSET_HANDLE};
 	};
 
 
@@ -50,18 +46,6 @@ namespace Imagine
 		static void SetMainScene(const Scene& scene);
 		static void SetMainScene(const Ref<Scene>& scene);
 		static AssetHandle GetMainScene();
-
-		static void SetGizmoShader(AssetHandle id);
-		static AssetHandle GetGizmoShader();
-
-		static void SetDefaultMaterial(AssetHandle id);
-		static AssetHandle GetDefaultMaterial();
-
-		static void SetDefaultShader(AssetHandle id);
-		static AssetHandle GetDefaultShader();
-
-		static void SetDeferredShader(AssetHandle id);
-		static AssetHandle GetDeferredShader();
 
 		static const ProjectConfig& GetConfig();
 		inline static bool ProjectIsLoaded() { return s_ActiveProject != nullptr; }

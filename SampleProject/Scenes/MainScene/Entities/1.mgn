@@ -1,0 +1,10 @@
+Type: Entity
+ID: 1
+Name: Entity 1
+Local Position: [1, 0, 0]
+Local Rotation: [0, 0, 0, 1]
+Local Scale: [1, 1, 1]
+Custom Components:
+  {}
+Relationship:
+  Root: true

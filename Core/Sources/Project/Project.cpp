@@ -5,6 +5,7 @@
 #include "Imagine/Project/Project.hpp"
 
 #include "Imagine/Core/Profiling.hpp"
+#include "Imagine/Project/ProjectSerializer.hpp"
 #include "Imagine/Scene/Scene.hpp"
 
 namespace Imagine {
@@ -81,19 +82,13 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 	Project* Project::Load(const std::filesystem::path &path)
 	{
 		MGN_PROFILE_FUNCTION();
-		MGN_CORE_ERROR("Not Implemented.");
-		// Ref<Project> project = CreateRef<Project>();
-		// auto old = s_ActiveProject;
-		// s_ActiveProject = project;
-		//
-		// ProjectSerializer ps(project);
-		// if(ps.Deserialize(path))
-		// {
-		// 	s_ActiveProject->CallOnLoad();
-		// 	return s_ActiveProject;
-		// } else {
-		// 	s_ActiveProject = old;
-		// }
+		Scope<Project> project = ProjectSerializer::DeserializeReadable(path);
+		if(project)
+		{
+			s_ActiveProject = std::move(project);
+			s_ActiveProject->CallOnLoad();
+			return s_ActiveProject.get();
+		}
 		return nullptr;
 	}
 
@@ -101,10 +96,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 	{
 		MGN_PROFILE_FUNCTION();
 		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project was not loaded.");
-		MGN_CORE_ERROR("Not Implemented.");
-		// ProjectSerializer ps(s_ActiveProject);
-		// return ps.Serialize(s_ActiveProject->m_ProjectPath);
-		return false;
+		return ProjectSerializer::SerializeReadable(s_ActiveProject.get(), s_ActiveProject->m_ProjectPath);
 	}
 
 	bool Project::SaveActive(const std::filesystem::path &path)
@@ -112,10 +104,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 		MGN_PROFILE_FUNCTION();
 		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project was not loaded.");
 		MGN_CORE_CASSERT(!path.empty(), "When given, the path should not be empty.");
-		MGN_CORE_ERROR("Not Implemented.");
-		// ProjectSerializer ps(s_ActiveProject);
-		// return ps.Serialize(path);
-		return false;
+		return ProjectSerializer::SerializeReadable(s_ActiveProject.get(), path);
 	}
 
 	void Project::CallOnLoad()
@@ -241,66 +230,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 	{
 		MGN_PROFILE_FUNCTION();
 		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		MGN_CORE_CASSERT(s_ActiveProject->m_Config.startSceneId.has_value(), "No Start Scene associated with the project.");
-		return s_ActiveProject->m_Config.startSceneId.value_or(NULL_ASSET_HANDLE);
-	}
-
-
-	void Project::SetDefaultMaterial(AssetHandle id)
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		s_ActiveProject->m_Config.defaultMaterialId = id;
-	}
-	AssetHandle Project::GetDefaultMaterial()
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		MGN_CORE_CASSERT(s_ActiveProject->m_Config.defaultMaterialId.has_value(), "No Default Material associated with the project.");
-		return s_ActiveProject->m_Config.defaultMaterialId.value_or(NULL_ASSET_HANDLE);
-	}
-
-	void Project::SetDefaultShader(AssetHandle id)
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		s_ActiveProject->m_Config.defaultShaderId = id;
-	}
-	AssetHandle Project::GetDefaultShader()
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		MGN_CORE_CASSERT(s_ActiveProject->m_Config.defaultShaderId.has_value(), "No Default Shader associated with the project.");
-		return s_ActiveProject->m_Config.defaultShaderId.value_or(NULL_ASSET_HANDLE);
-	}
-
-	void Project::SetDeferredShader(AssetHandle id)
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		s_ActiveProject->m_Config.deferredShaderId = id;
-	}
-	AssetHandle Project::GetDeferredShader()
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		MGN_CORE_CASSERT(s_ActiveProject->m_Config.defaultShaderId.has_value(), "No Deferred Shader associated with the project.");
-		return s_ActiveProject->m_Config.deferredShaderId.value_or(NULL_ASSET_HANDLE);
-	}
-
-	void Project::SetGizmoShader(AssetHandle id)
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		s_ActiveProject->m_Config.gizmoShaderId = id;
-		//TODO: Send the data to the renderer.
-	}
-
-	AssetHandle Project::GetGizmoShader()
-	{
-		MGN_PROFILE_FUNCTION();
-		MGN_CORE_CASSERT(s_ActiveProject, "The Active Project is not loaded yet.");
-		MGN_CORE_CASSERT(s_ActiveProject->m_Config.gizmoShaderId.has_value(), "No Gizmo Shader associated with the project.");
-		return s_ActiveProject->m_Config.gizmoShaderId.value_or(NULL_ASSET_HANDLE);
+		MGN_CORE_CASSERT(s_ActiveProject->m_Config.startSceneId != NULL_ASSET_HANDLE, "No Start Scene associated with the project.");
+		return s_ActiveProject->m_Config.startSceneId;
 	}
 } // namespace Imagine

@@ -7,7 +7,13 @@
 #include "Imagine/Assets/AssetImporter.hpp"
 #include "Imagine/Assets/AssetManager.hpp"
 #include "Imagine/Assets/FileAssetManager.hpp"
+
 #include "Imagine/Project/Project.hpp"
+#include "Imagine/Project/ProjectSerializer.hpp"
+
+#include "Imagine/Scene/Scene.hpp"
+
+#include "Imagine/ThirdParty/FileDialogs.hpp"
 #include "Imagine/ThirdParty/ImGui.hpp"
 
 namespace Imagine {
@@ -37,11 +43,66 @@ namespace Imagine {
 		ImGui::SetNextWindowSize({400, 200}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Project");
 		{
-			// project->m_Config
+
+			if (ImGui::Button("Save")) {
+				Project::SaveActive();
+			}
+
+			ImGui::SameLine();
+			static std::string projectPathStr = project->m_ProjectPath.string();
+			static std::string assetDirectoryStr = project->m_Config.assetDirectory.string();
+			static std::string cacheDirectoryStr = project->m_Config.cacheDirectory.string();
+			static std::string scriptsDirectoryStr = project->m_Config.scriptsDirectory.string();
+			static std::string assetRegistryPathStr = project->m_Config.assetRegistryPath.string();
+
+			if (ImGui::Button("Load")) {
+				const auto result = ThirdParty::FileDialogs::OpenFile("Load Project", project->GetFilePath().string());
+				if (!result.empty() && !result[0].empty()) {
+					auto new_project = Project::Load(result[0]);
+					if (new_project) {
+						project = new_project;
+						projectPathStr = project->m_ProjectPath.string();
+						assetDirectoryStr = project->m_Config.assetDirectory.string();
+						cacheDirectoryStr = project->m_Config.cacheDirectory.string();
+						scriptsDirectoryStr = project->m_Config.scriptsDirectory.string();
+						assetRegistryPathStr = project->m_Config.assetRegistryPath.string();
+					}
+				}
+			}
+
+			ImGui::InputText("Name", &project->m_Config.name);
+
+			ImGui::InputText("Project Path", &projectPathStr);
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				project->m_ProjectPath = projectPathStr;
+			}
+
+			ImGui::InputText("Assets Directory", &assetDirectoryStr);
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				project->m_Config.assetDirectory = assetDirectoryStr;
+			}
+
+			ImGui::InputText("Cache Directory", &cacheDirectoryStr);
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				project->m_Config.cacheDirectory = cacheDirectoryStr;
+			}
+
+			ImGui::InputText("Scripts Directory", &scriptsDirectoryStr);
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				project->m_Config.scriptsDirectory = scriptsDirectoryStr;
+			}
+
+			ImGui::InputText("Asset Registry Path", &assetRegistryPathStr);
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				project->m_Config.assetRegistryPath = assetRegistryPathStr;
+			}
+
+			ThirdParty::ImGuiLib::DrawAssetField<Scene>("Start Scene", &project->m_Config.startSceneId);
 		}
 		ImGui::End();
 #endif
 	}
+
 	void ProjectLayer::ImGuiAssetManager() {
 #ifdef MGN_IMGUI
 		Project *project = Project::GetActive();
@@ -52,30 +113,6 @@ namespace Imagine {
 		ImGui::SetNextWindowSize({400, 200}, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Asset Manager");
 		{
-
-			if (ImGui::Button("Save")) {
-				const bool result = FileAssetManagerSerializer::SerializeReadable(manager, "AssetManager.mgn");
-				if(result) MGN_CORE_INFO("FileAssetManager Save Succeed.");
-				else MGN_CORE_INFO("FileAssetManager Save Failed.");
-			}
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("Load")) {
-				const auto new_manager = FileAssetManagerSerializer::DeserializeReadable("AssetManager.mgn");
-				if(new_manager) {
-					*manager = *new_manager;
-					for (const auto& [id, metadata]: manager->m_AssetRegistry) {
-						auto asset = AssetImporter::ImportAsset(metadata);
-						if (asset) {
-							manager->m_LoadedAssets[id] = asset;
-						}
-					}
-					MGN_CORE_INFO("FileAssetManager Load Succeed.");
-				}
-				else MGN_CORE_INFO("FileAssetManager Load Failed.");
-			}
-
 			static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg;
 			if (ImGui::BeginTabBar("Assets Components", tab_bar_flags)) {
@@ -104,10 +141,10 @@ namespace Imagine {
 										ImGui::SetDragDropPayload(payloadID.c_str(), &metadata.Handle, sizeof(metadata.Handle), ImGuiCond_Once);
 										ImGui::EndDragDropSource();
 									}
-								} else {
+								}
+								else {
 									ImGui::Text(idStr.c_str());
 								}
-
 							}
 
 							if (ImGui::TableSetColumnIndex(1)) {
@@ -133,7 +170,6 @@ namespace Imagine {
 
 					ImGui::EndTabItem();
 				}
-
 
 				if (ImGui::BeginTabItem("Loaded Assets")) {
 					static AssetHandle selected = NULL_ASSET_HANDLE;

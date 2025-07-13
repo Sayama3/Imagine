@@ -1,0 +1,18 @@
+Type: Entity
+ID: 2
+Name: Entity 2
+Local Position: [0, 0, 0]
+Local Rotation: [0, 0, 0, 1]
+Local Scale: [1, 1, 1]
+Custom Components:
+  [14938158363250254886, 16479517033568397836]:
+    Size: 24
+    Data:
+      - 3906485872
+      - 32758
+      - 78964771
+      - 1273975724
+      - 2917153382
+      - 502113021
+Relationship:
+  Root: true

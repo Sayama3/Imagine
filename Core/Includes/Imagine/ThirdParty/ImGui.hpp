@@ -10,6 +10,7 @@
 
 #ifdef MGN_IMGUI
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <imgui_internal.h>
 #endif
 
@@ -92,7 +93,7 @@ namespace Imagine::ThirdParty {
 
 		template<typename T>
 		static bool DrawAssetField(const char *name, AssetHandle *handle) {
-			return DrawAssetField(name, handle, T::GetStaticType());
+			return DrawAssetField(name, handle, {T::GetStaticType()});
 		}
 
 

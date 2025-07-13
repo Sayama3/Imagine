@@ -1,0 +1,7 @@
+Type: File Asset Manager
+Assets:
+  - FilePath:
+      Source: Assets
+      Path: Models\Sponza\Sponza.gltf
+    Handle: [5471684070556887075, 2156559007007914598]
+    Type: Model

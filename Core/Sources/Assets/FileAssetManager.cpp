@@ -241,6 +241,7 @@ namespace Imagine {
 namespace Imagine {
 
 	bool FileAssetManagerSerializer::SerializeReadable(const FileAssetManager *manager, const std::filesystem::path &filePath) {
+		MGN_PROFILE_FUNCTION();
 		YAML::Emitter e;
 		e << YAML::BeginMap;
 		{
@@ -252,11 +253,14 @@ namespace Imagine {
 			e << YAML::EndSeq;
 		}
 		e << YAML::EndMap;
+
+		std::filesystem::create_directories(filePath.parent_path());
 		ThirdParty::YamlCpp::WriteYamlFile(filePath, e);
 		return true;
 	}
 
 	Scope<FileAssetManager> FileAssetManagerSerializer::DeserializeReadable(const std::filesystem::path &filePath) {
+		MGN_PROFILE_FUNCTION();
 		if (!std::filesystem::exists(filePath) || !std::filesystem::is_regular_file(filePath)) return nullptr;
 
 		const YAML::Node node = ThirdParty::YamlCpp::ReadFileAsYAML(filePath);
@@ -265,7 +269,7 @@ namespace Imagine {
 		Scope<FileAssetManager> manager = CreateScope<FileAssetManager>();
 
 		if (auto assetsNodes = node["Assets"]) {
-			for (auto metadataNode : assetsNodes) {
+			for (auto metadataNode: assetsNodes) {
 				auto metadata = metadataNode.as<AssetMetadata>();
 				manager->m_AssetRegistry[metadata.Handle] = metadata;
 			}

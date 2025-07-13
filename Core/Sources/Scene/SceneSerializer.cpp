@@ -5,26 +5,7 @@
 #include "Imagine/Scene/SceneSerializer.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/ThirdParty/YamlCpp.hpp"
-
-namespace YAML {
-	inline YAML::Emitter &operator<<(YAML::Emitter &out, const Imagine::EntityID &v) {
-		out << v.id;
-		return out;
-	};
-
-	template<>
-	struct convert<Imagine::EntityID> {
-		inline static Node encode(const Imagine::EntityID &v) {
-			Node node;
-			node = v.id;
-			return node;
-		}
-		inline static bool decode(const Node &node, Imagine::EntityID &v) {
-			v.id = node.as<uint32_t>();
-			return true;
-		}
-	};
-} // namespace YAML
+#include "Imagine/ThirdParty/YamlCpp/YAML_SCENE.hpp"
 
 namespace Imagine {
 
@@ -48,13 +29,7 @@ namespace Imagine {
 				out << YAML::BeginMap;
 				{
 					out << KEYVAL("Type", "Component");
-					out << KEYVAL("Metadata", YAML::BeginMap);
-					{
-						out << KEYVAL("Name", metadata.name);
-						out << KEYVAL("Size", metadata.size);
-						out << KEYVAL("UUID", metadata.id);
-					}
-					out << YAML::EndMap;
+					out << KEYVAL("Metadata", metadata);
 					out << KEYVAL("Count", cc.Count());
 				}
 				out << YAML::EndMap;
@@ -131,12 +106,7 @@ namespace Imagine {
 			if (it->path().extension() != ".mgn") continue;
 			const YAML::Node node = ThirdParty::YamlCpp::ReadFileAsYAML(it->path());
 			if (node["Type"].as<std::string>() != "Component") continue;
-			Scene::Metadata metadata;
-			if (auto metadataNode = node["Metadata"]) {
-				metadata.name = metadataNode["Name"].as<std::string>();
-				metadata.size = metadataNode["Size"].as<uint64_t>();
-				metadata.id = metadataNode["UUID"].as<UUID>();
-			}
+			Scene::Metadata metadata = node["Metadata"].as<Scene::Metadata>();
 
 			const uint32_t count = node["Count"].as<uint32_t>();
 			if (!scene->m_CustomComponents.contains(metadata.id)) {
