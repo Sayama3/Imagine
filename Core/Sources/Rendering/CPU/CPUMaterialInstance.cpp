@@ -4,6 +4,8 @@
 
 #include "Imagine/Rendering/CPU/CPUMaterialInstance.hpp"
 
+#include "Imagine/Rendering/Renderer.hpp"
+
 namespace Imagine {
 	CPUMaterialInstance::CPUMaterialInstance(const AssetHandle material) : Material(material) {
 	}
@@ -18,5 +20,12 @@ namespace Imagine {
 	}
 	bool CPUMaterialInstance::PushConstantFieldPosition::operator!=(const PushConstantFieldPosition &o) const {
 		return !(*this == o);
+	}
+	void CPUMaterialInstance::LoadInGPU() {
+		if (!gpu) {
+			if (auto* renderer = Renderer::Get()) {
+				gpu = renderer->LoadMaterialInstance(*this);
+			}
+		}
 	}
 } // namespace Imagine

@@ -63,6 +63,8 @@ namespace Imagine {
 			PushConstantEditions[pos] = buffer;
 		}
 	public:
+		void LoadInGPU();
+	public:
 		std::map<SetFieldPosition, MaterialDataBuffer> SetEditions;
 		std::map<PushConstantFieldPosition, MaterialDataBuffer> PushConstantEditions;
 		AssetHandle Material;

@@ -23,8 +23,8 @@
 #include "Imagine/Assets/AssetManager.hpp"
 #include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Rendering/CPU/CPUModel.hpp"
 #include "Imagine/Rendering/Camera.hpp"
-#include "Imagine/Rendering/VirtualTextures.hpp"
 #include "Imagine/Scene/SceneManager.hpp"
 #include "Imagine/Vulkan/Descriptors.hpp"
 #include "Imagine/Vulkan/PipelineBuilder.hpp"
@@ -1402,6 +1402,18 @@ namespace Imagine::Vulkan {
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, 0);
 			ImGui::Image((ImTextureID) m_ImGuiImageDescriptors, {size.x, size.y}, {0.f, 0.f}, {(float) m_DrawExtent.width / (float) m_DrawImage.imageExtent.width, (float) m_DrawExtent.height / (float) m_DrawImage.imageExtent.height});
+			if (ImGui::BeginDragDropTarget()) {
+				auto payloadStr = AssetTypeToPayloadID(AssetType::Model);
+				MGN_CORE_CASSERT(payloadStr.size() < 32, "The payloadID is too large.");
+				const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(payloadStr.c_str());
+				if (payload != nullptr) {
+					MGN_CORE_CASSERT(payload->DataSize == sizeof(AssetHandle), "The data is not an AssetHandle");
+					AssetHandle payloadHandle{ *((AssetHandle *) (payload->Data))};
+					Ref<CPUModel> model = AssetManager::GetAssetAs<CPUModel>(payloadHandle);
+					model->LoadInScene(SceneManager::GetMainScene().get());
+				}
+				ImGui::EndDragDropTarget();
+			}
 			ImGui::PopStyleVar(1);
 		}
 		ImGui::End();
@@ -1892,7 +1904,9 @@ namespace Imagine::Vulkan {
 
 			// TODO: Get the real material from the LOD.
 			auto instance = AssetManager::GetAssetAs<CPUMaterialInstance>(lod.materialInstance);
+			instance->LoadInGPU();
 			auto vkInstance = dynamic_cast<VulkanMaterialInstance *>(instance->gpu.get());
+			if (!vkInstance) continue;
 			if (auto vkMat = vkInstance->material.lock()) {
 
 				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
@@ -1938,6 +1952,7 @@ namespace Imagine::Vulkan {
 			// 	vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 			// }
 			auto vkInstance = m_LineInstance;
+			if (!vkInstance) continue;
 			if (auto vkMat = vkInstance->material.lock()) {
 
 				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);

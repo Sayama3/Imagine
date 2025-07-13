@@ -5,6 +5,7 @@
 #include "Imagine/Rendering/CPU/CPUMesh.hpp"
 
 #include "Imagine/Core/Math.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
 
 #include "Imagine/ThirdParty/Assimp.hpp"
 
@@ -166,6 +167,13 @@ namespace Imagine {
 
 		finalMesh.Lods.emplace_back(0, static_cast<uint32_t>(finalMesh.Indices.size()));
 		return finalMesh;
+	}
+	void CPUMesh::LoadMeshInGPU() {
+		if (!gpu) {
+			if (auto* renderer = Renderer::Get()) {
+				gpu = renderer->LoadMesh(*this);
+			}
+		}
 	}
 
 	void CPUMesh::CalcAABB() {

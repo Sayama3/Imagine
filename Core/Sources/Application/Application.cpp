@@ -356,7 +356,9 @@ namespace Imagine {
 							}
 								break;
 							case AssetType::Mesh: {
-								auto gpuMesh = CastPtr<CPUMesh>(asset)->gpu;
+								auto cpuMesh = CastPtr<CPUMesh>(asset);
+								cpuMesh->LoadMeshInGPU();
+								auto gpuMesh = cpuMesh->gpu;
 								if (!gpuMesh) return;
 								MGN_CORE_MASSERT(worldMat != Mat4(0), "The transform wasn't cached for the entity '{}'", scene->GetName(id));
 								ctx.OpaqueSurfaces.emplace_back(worldMat, gpuMesh);

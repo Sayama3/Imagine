@@ -143,7 +143,6 @@ set(CORE_SRC_FILES
 		Includes/Imagine/Rendering/GPU/GPUTexture2D.hpp
 		Includes/Imagine/Rendering/GPU/GPUTexture3D.hpp
 		Includes/Imagine/Rendering/GPU/GPUMesh.hpp
-		Includes/Imagine/Rendering/VirtualTextures.hpp
 		Sources/Assets/FileAssetManager.cpp
 		Includes/Imagine/Assets/FileAssetManager.hpp
 		Includes/Imagine/Assets/Importers/MaterialSerializer.hpp

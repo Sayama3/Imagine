@@ -209,7 +209,7 @@ namespace Imagine {
 					}
 				}
 				if (comp.dirty) {
-					m_BodyInterface->SetLinearAndAngularVelocity(comp.BodyID, JPH::Vec3(lin.x, lin.y, lin.z), JPH::Vec3(ang.x, ang.y, ang.z));
+					//m_BodyInterface->SetLinearAndAngularVelocity(comp.BodyID, JPH::Vec3(lin.x, lin.y, lin.z), JPH::Vec3(ang.x, ang.y, ang.z));
 					m_BodyInterface->SetFriction(comp.BodyID, comp.GetFriction());
 					m_BodyInterface->SetGravityFactor(comp.BodyID, comp.GetGravityFactor());
 				}
@@ -226,6 +226,12 @@ namespace Imagine {
 				Entity &entity = scene->GetEntity(id);
 				entity.LocalPosition = wpos;
 				entity.LocalRotation = wrot;
+				const Vec3 lin = comp.GetLinearVelocity();
+				const Vec3 ang = comp.GetRadAngularVelocity();
+				m_BodyInterface->AddLinearAndAngularVelocity(comp.BodyID, JPH::Vec3(lin.x, lin.y, lin.z), JPH::Vec3(ang.x, ang.y, ang.z));
+
+				comp.SetLinearVelocity(Vec3(0));
+				comp.SetRadAngularVelocity(Vec3(0));
 			});
 			scene->CacheTransforms();
 		}

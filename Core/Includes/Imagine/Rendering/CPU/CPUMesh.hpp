@@ -31,6 +31,7 @@ namespace Imagine {
 	public:
 		static CPUMesh LoadExternalModelAsMesh(const std::filesystem::path &p);
 
+		void LoadMeshInGPU();
 		void CalcAABB();
 	public:
 		std::string Name;

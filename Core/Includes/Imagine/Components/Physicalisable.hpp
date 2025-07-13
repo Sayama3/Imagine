@@ -8,6 +8,7 @@
 #include "Imagine/Core/Macros.hpp"
 #include "Imagine/Core/Math.hpp"
 #include "Imagine/Core/UUID.hpp"
+#include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Rendering/CPU/CPUMesh.hpp"
 
 #include "Imagine/ThirdParty/JoltPhysics.hpp"
@@ -170,13 +171,17 @@ namespace Imagine {
 			if (label) ImGui::SeparatorText(label);
 			else ImGui::Separator();
 
+			ImGui::BeginDisabled(PhysicsLayer::IsSimulating());
 			changed |= ImGuiLib::RenderData("Shape", &data->Shape);
 			changed |= ImGui::Combo("Rigidbody Type", (int*)&data->RBType, "Static\0Dynamic\0Kinematic");
+			ImGui::EndDisabled();
 			changed |= ImGuiLib::DragReal3("Velocity", Math::ValuePtr(data->LinearVelocity), 0.1, 0, 0, "%.2f");
 			changed |= ImGuiLib::DragReal3("Angular Velocity", Math::ValuePtr(data->AngularVelocity), 1, 0,0 , "%.2f");
+			ImGui::BeginDisabled(PhysicsLayer::IsSimulating());
 			changed |= ImGuiLib::SliderReal("Friction", &data->Friction, 0, 1);
 			changed |= ImGuiLib::DragReal("Gravity Factor", &data->GravityFactor, 0.1, 0,0 , "%.2f");
 			changed |= ImGui::Checkbox("Awake", &data->IsAwake);
+			ImGui::EndDisabled();
 			if (changed) data->dirty = true;
 			ImGui::PopID();
 #endif
