@@ -24,7 +24,7 @@ target_include_directories(Imagine PRIVATE Sources)
 #message(FATAL_ERROR "$ENV{VULKAN_SDK}/Bin/glslc")
 
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
-	file(CREATE_LINK ${CMAKE_SOURCE_DIR}/Assets/ ${CMAKE_CURRENT_BINARY_DIR}/Assets/ RESULT copy_result COPY_ON_ERROR SYMBOLIC)
+	file(CREATE_LINK ${CMAKE_SOURCE_DIR}/EngineAssets/ ${CMAKE_CURRENT_BINARY_DIR}/EngineAssets/ RESULT copy_result COPY_ON_ERROR SYMBOLIC)
 	if(NOT (copy_result EQUAL 0))
 		message(WARNING
 				"Copy made instead of symlink.\n"
@@ -32,5 +32,5 @@ if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
 		)
 	endif()
 else()
-	file(COPY ${CMAKE_SOURCE_DIR}/Assets/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Assets/)
+	file(COPY ${CMAKE_SOURCE_DIR}/EngineAssets/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/EngineAssets/)
 endif()

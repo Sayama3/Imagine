@@ -61,12 +61,12 @@ namespace Imagine::Vulkan {
 		//  Taking into account the fact that later the shader will come from data blob.
 
 		VkShaderModule meshFragShader;
-		if (!Utils::LoadShaderModule("Assets/mesh.frag.spv", renderer->GetDevice(), &meshFragShader)) {
+		if (!Utils::LoadShaderModule("EngineAssets/mesh.frag.spv", renderer->GetDevice(), &meshFragShader)) {
 			MGN_CORE_ERROR("Error when building the mesh fragment shader module");
 		}
 
 		VkShaderModule meshVertexShader;
-		if (!Utils::LoadShaderModule("Assets/mesh.vert.spv", renderer->GetDevice(), &meshVertexShader)) {
+		if (!Utils::LoadShaderModule("EngineAssets/mesh.vert.spv", renderer->GetDevice(), &meshVertexShader)) {
 			MGN_CORE_ERROR("Error when building the mesh vertex shader module");
 		}
 

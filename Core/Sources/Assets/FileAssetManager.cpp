@@ -56,6 +56,18 @@ namespace Imagine {
 		return asset;
 	}
 
+	bool FileAssetManager::LoadAsset(AssetHandle handle) {
+		if (!IsAssetLoaded(handle)) {
+			const auto &metadata = GetMetadata(handle);
+			if (auto asset = AssetImporter::ImportAsset(metadata)) {
+				m_LoadedAssets.emplace(handle, std::move(asset));
+				return true;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	AssetType FileAssetManager::GetAssetType(AssetHandle handle) const {
 		MGN_PROFILE_FUNCTION();
 		if (!IsAssetHandleValid(handle)) {

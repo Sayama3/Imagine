@@ -36,7 +36,7 @@ namespace Imagine::Runtime {
 		Project::GetActive()->GetAssetManager()->AddAsset(m_Mesh);
 		Project::GetActive()->GetAssetManager()->AddAsset(m_SubdividedMesh);
 
-		*m_Mesh = CPUMesh::LoadExternalModelAsMesh("Assets/Models/Box.glb");
+		*m_Mesh = CPUMesh::LoadExternalModelAsMesh("EngineAssets/Models/Box.glb");
 
 		m_OriginalMeshEntityID = SceneManager::GetMainScene()->CreateEntity();
 		SceneManager::GetMainScene()->GetEntity(m_OriginalMeshEntityID).LocalPosition = {-1, 0, 0};

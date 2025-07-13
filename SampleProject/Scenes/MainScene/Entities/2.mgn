@@ -1,15 +1,15 @@
 Type: Entity
 ID: 2
 Name: Sponza
-Local Position: [0, 0, 0]
+Local Position: [0, 0.0299999993, 0]
 Local Rotation: [0, 0, 0, 1]
 Local Scale: [1, 1, 1]
 Custom Components:
   [14938158363250254886, 16479517033568397836]:
     Size: 24
     Data:
-      - 4243992200
-      - 32758
+      - 2592489128
+      - 32759
       - 78964771
       - 1273975724
       - 2917153382

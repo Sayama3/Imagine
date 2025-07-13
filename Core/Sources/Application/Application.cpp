@@ -79,13 +79,15 @@ namespace Imagine {
 		}
 
 		if (parameters.Renderer) {
-			Ref<CPUShader> vert = CreateRef<CPUFileShader>(ShaderStage::Vertex, Path{FileSource::Assets, "pbr.vert.spv"});
-			Ref<CPUShader> frag = CreateRef<CPUFileShader>(ShaderStage::Fragment, Path{FileSource::Assets, "pbr.frag.spv"});
+			Project::AddOnLoad(CPUShader::TryRegister);
+			Project::AddOnLoad(CPUMaterial::TryRegister);
 
-			Project::GetActive()->GetAssetManager()->AddAsset(vert);
-			Project::GetActive()->GetAssetManager()->AddAsset(frag);
+			auto vert = CPUFileShader::Initialize(ShaderStage::Vertex, Path{FileSource::Engine, "pbr.vert.spv"});
+			auto frag = CPUFileShader::Initialize(ShaderStage::Fragment, Path{FileSource::Engine, "pbr.frag.spv"});
+			CPUShader::TryRegister();
 
 			CPUMaterial::InitDefaultMaterials(vert->Handle, frag->Handle);
+			CPUMaterial::TryRegister();
 
 			m_Renderer = Renderer::Initialize(parameters);
 		}
@@ -149,8 +151,8 @@ namespace Imagine {
 
 	void Application::Run() {
 		{
-			auto model = CPUModel::LoadModel({FileSource::Assets, "Models/Sponza/Sponza.gltf"});
-			Project::GetActive()->GetFileAssetManager()->AddAsset(model, {FileSource::Assets, "Models/Sponza/Sponza.gltf"});
+			auto model = CPUModel::LoadModel({FileSource::Engine, "Models/Sponza/Sponza.gltf"});
+			Project::GetActive()->GetFileAssetManager()->AddAsset(model, {FileSource::Engine, "Models/Sponza/Sponza.gltf"});
 			const auto entityId = SceneManager::GetMainScene()->CreateEntity();
 			Renderable *renderable = SceneManager::GetMainScene()->AddComponent<Renderable>(entityId);
 			renderable->cpuMeshOrModel = model->Handle;

@@ -502,8 +502,8 @@ namespace Imagine::Vulkan {
 		// layout code
 		VkShaderModule gradientShader;
 		// TODO: Replace by a real shader loading pipeline with glslc and spirv cache loading.
-		if (!Utils::LoadShaderModule("Assets/gradient.comp.spv", m_Device, &gradientShader)) {
-			MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "Assets/gradient.comp.spv");
+		if (!Utils::LoadShaderModule("EngineAssets/gradient.comp.spv", m_Device, &gradientShader)) {
+			MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "EngineAssets/gradient.comp.spv");
 		}
 
 		VkPipelineShaderStageCreateInfo stageinfo{};
@@ -558,8 +558,8 @@ namespace Imagine::Vulkan {
 		// layout code
 		VkShaderModule skyShader;
 		// TODO: Replace by a real shader loading pipeline with glslc and spirv cache loading.
-		if (!Utils::LoadShaderModule("Assets/sky.comp.spv", m_Device, &skyShader)) {
-			MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "Assets/sky.comp.spv");
+		if (!Utils::LoadShaderModule("EngineAssets/sky.comp.spv", m_Device, &skyShader)) {
+			MGN_CORE_ERROR("[Vulkan] Error when building the compute shader '{}'", "EngineAssets/sky.comp.spv");
 		}
 
 		VkPipelineShaderStageCreateInfo stageinfo{};
@@ -589,7 +589,7 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::InitTrianglePipeline() {
 		VkShaderModule triangleVertexShader{nullptr};
-		if (!Utils::LoadShaderModule("Assets/colored_triangle.vert.spv", m_Device, &triangleVertexShader)) {
+		if (!Utils::LoadShaderModule("EngineAssets/colored_triangle.vert.spv", m_Device, &triangleVertexShader)) {
 			MGN_CORE_ERROR("Error when building the triangle vertex shader module");
 		}
 		else {
@@ -597,7 +597,7 @@ namespace Imagine::Vulkan {
 		}
 
 		VkShaderModule triangleFragmentShader{nullptr};
-		if (!Utils::LoadShaderModule("Assets/colored_triangle.frag.spv", m_Device, &triangleFragmentShader)) {
+		if (!Utils::LoadShaderModule("EngineAssets/colored_triangle.frag.spv", m_Device, &triangleFragmentShader)) {
 			MGN_CORE_ERROR("Error when building the triangle fragment shader module");
 		}
 		else {
@@ -633,7 +633,7 @@ namespace Imagine::Vulkan {
 
 	void VulkanRenderer::InitMeshPipeline() {
 		VkShaderModule triangleVertexShader{nullptr};
-		if (!Utils::LoadShaderModule("Assets/colored_triangle_mesh.vert.spv", m_Device, &triangleVertexShader)) {
+		if (!Utils::LoadShaderModule("EngineAssets/colored_triangle_mesh.vert.spv", m_Device, &triangleVertexShader)) {
 			MGN_CORE_ERROR("Error when building the mesh vertex shader module");
 		}
 		else {
@@ -641,7 +641,7 @@ namespace Imagine::Vulkan {
 		}
 
 		VkShaderModule triangleFragmentShader{nullptr};
-		if (!Utils::LoadShaderModule("Assets/tex_image.frag.spv", m_Device, &triangleFragmentShader)) {
+		if (!Utils::LoadShaderModule("EngineAssets/tex_image.frag.spv", m_Device, &triangleFragmentShader)) {
 			MGN_CORE_ERROR("Error when building the mesh fragment shader module");
 		}
 		else {

@@ -118,19 +118,19 @@ namespace Imagine {
 			if (ImGui::BeginTabBar("Assets Components", tab_bar_flags)) {
 				if (ImGui::BeginTabItem("Asset Registry")) {
 					static AssetHandle selected = NULL_ASSET_HANDLE;
-					if (ImGui::BeginTable("AssetRegistryTable", 3, flags)) {
+					if (ImGui::BeginTable("AssetRegistryTable", 4, flags)) {
 						// Display headers so we can inspect their interaction with borders
 						// (Headers are not the main purpose of this section of the demo, so we are not elaborating on them now. See other sections for details)
 						{
 							ImGui::TableSetupColumn("Handle");
 							ImGui::TableSetupColumn("Type");
 							ImGui::TableSetupColumn("Path");
+							ImGui::TableSetupColumn("Loaded");
 							ImGui::TableHeadersRow();
 						}
 
 						for (auto &[id, metadata]: manager->m_AssetRegistry) {
 							ImGui::TableNextRow();
-							ImGui::BeginGroup();
 							if (ImGui::TableSetColumnIndex(0)) {
 								const auto idStr = metadata.Handle.GetID().raw_string();
 								if (ImGui::Selectable(idStr.c_str(), selected == metadata.Handle)) selected = metadata.Handle;
@@ -157,7 +157,14 @@ namespace Imagine {
 									ImGui::Text(nicePathStr.c_str());
 								}
 							}
-							ImGui::EndGroup();
+							if (ImGui::TableSetColumnIndex(3)) {
+								bool loaded = manager->m_LoadedAssets.contains(id);
+								std::string label = "##" + id.string();
+								if (ImGui::Checkbox(label.c_str(), &loaded)) {
+									if (loaded) manager->LoadAsset(id);
+									else manager->UnloadAsset(id);
+								}
+							}
 						}
 
 						ImGui::EndTable();

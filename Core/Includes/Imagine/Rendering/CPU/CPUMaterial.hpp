@@ -27,7 +27,7 @@ namespace Imagine {
 		static Ref<CPUMaterial> GetDefaultLine();
 		static void DestroyDefaultMaterials();
 		static void InitDefaultMaterials(AssetHandle vertexShader, AssetHandle fragmentShader);
-		static void TryRegisterMaterials();
+		static void TryRegister();
 	public:
 		MaterialLayout layout;
 		std::array<AssetHandle, 5> shaders;

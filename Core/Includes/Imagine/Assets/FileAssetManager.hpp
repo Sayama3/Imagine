@@ -29,6 +29,7 @@ namespace Imagine {
 		[[nodiscard]] virtual bool IsAssetLoaded(AssetHandle handle) const override;
 		[[nodiscard]] virtual AssetType GetAssetType(AssetHandle handle) const override;
 		[[nodiscard]] virtual Ref<Asset> GetAsset(AssetHandle handle) override;
+		virtual bool LoadAsset(AssetHandle handle) override;
 		virtual void UnloadAsset(AssetHandle handle) override;
 		virtual bool AddAsset(Ref<Asset> asset) override;
 		virtual bool RemoveAsset(AssetHandle handle) override;

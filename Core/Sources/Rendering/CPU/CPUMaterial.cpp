@@ -81,10 +81,10 @@ namespace Imagine {
 		s_DefaultTransparentMaterial->shaders[0] = vertexShader;
 		s_DefaultTransparentMaterial->shaders[4] = fragmentShader;
 
-		TryRegisterMaterials();
+		TryRegister();
 	}
 
-	void CPUMaterial::TryRegisterMaterials() {
+	void CPUMaterial::TryRegister() {
 		if (const auto active = Project::GetActive()) {
 			if (const auto assets = active->GetAssetManager()) {
 				assets->AddAsset(s_DefaultOpaqueMaterial);

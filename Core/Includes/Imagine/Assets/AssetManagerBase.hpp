@@ -26,6 +26,7 @@ namespace Imagine {
 		[[nodiscard]] virtual AssetType GetAssetType(AssetHandle handle) const = 0;
 		[[nodiscard]] virtual const AssetMetadata &GetMetadata(AssetHandle handle) const = 0;
 
+		virtual bool LoadAsset(AssetHandle handle) = 0;
 		virtual Ref<Asset> GetAsset(AssetHandle handle) = 0;
 		virtual void UnloadAsset(AssetHandle handle) = 0;
 		virtual bool AddAsset(Ref<Asset> asset) = 0;

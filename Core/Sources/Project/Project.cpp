@@ -110,7 +110,7 @@ std::unordered_map<AssetHandle, void_func_ptr>* Project::s_OnLoad = nullptr;
 	void Project::CallOnLoad()
 	{
 		MGN_PROFILE_FUNCTION();
-		for (auto&&[id, func] : GetOnLoad())
+		for (auto&[id, func] : GetOnLoad())
 		{
 			func();
 		}

@@ -3,16 +3,24 @@
 //
 
 #pragma once
+
 #include "Imagine/Assets/Asset.hpp"
 #include "Imagine/Core/Buffer.hpp"
 #include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Rendering/ShaderParameters.hpp"
 
 namespace Imagine {
 
 	class CPUShader : public Asset {
 	public:
-		MGN_IMPLEMENT_ASSET(AssetType::ShaderSource);
+		MGN_IMPLEMENT_ASSET(AssetType::ShaderSource)
+	protected:
+		static inline std::array<Ref<CPUShader>, 6> s_Shaders;
+	public:
+		static void Initialize(Ref<CPUShader> shader);
+		static void Shutdown();
+		static void TryRegister();
 	public:
 		CPUShader() = default;
 		virtual ~CPUShader() = default;
@@ -26,6 +34,8 @@ namespace Imagine {
 	};
 
 	class CPUFileShader final : public CPUShader {
+	public:
+		static Ref<CPUFileShader> Initialize(ShaderStage stage, Path path);
 	public:
 		CPUFileShader() = default;
 		~CPUFileShader() = default;

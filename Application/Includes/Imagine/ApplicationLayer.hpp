@@ -45,7 +45,7 @@ namespace Imagine::Runtime {
 		LineObject m_Line{};
 
 
-		std::filesystem::path m_ModelPath{"Assets/Models/Box.glb"};
+		std::filesystem::path m_ModelPath{"EngineAssets/Models/Box.glb"};
 		bool m_MeshChanged = true;
 		Ref<CPUMesh> m_Mesh;
 		Math::MeshGraph3D* m_MeshGraph{};
