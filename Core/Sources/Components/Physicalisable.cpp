@@ -94,6 +94,22 @@ namespace Imagine {
 			PhysicsLayer::PushDeletion(BodyID);
 		}
 	}
+	Physicalisable::Physicalisable(const Physicalisable &o) : Shape(o.Shape), RBType(o.RBType), LinearVelocity(o.LinearVelocity), AngularVelocity(o.AngularVelocity), Friction(o.Friction), GravityFactor(o.GravityFactor), IsAwake(o.IsAwake), dirty(true), BodyID(JPH::BodyID::cInvalidBodyID)
+	{
+	}
+
+	Physicalisable &Physicalisable::operator=(const Physicalisable &o)
+	{
+		Shape = o.Shape;
+		RBType = o.RBType;
+		LinearVelocity = o.LinearVelocity;
+		AngularVelocity = o.AngularVelocity;
+		Friction = o.Friction;
+		GravityFactor = o.GravityFactor;
+		IsAwake = o.IsAwake;
+		dirty = true;
+		return *this;
+	}
 
 	JPH::EActivation Physicalisable::GetActivation() const { return IsAwake ? JPH::EActivation::Activate : JPH::EActivation::DontActivate; }
 	JPH::ObjectLayer Physicalisable::GetLayer() const {

@@ -57,6 +57,9 @@ namespace Imagine {
 	public:
 		Physicalisable() = default;
 		~Physicalisable();
+		Physicalisable(const Physicalisable& o);
+		Physicalisable& operator=(const Physicalisable& o);
+
 	public:
 		// Getters
 		[[nodiscard]] Vec3 GetLinearVelocity() const {return LinearVelocity;}
@@ -90,7 +93,7 @@ namespace Imagine {
 		bool IsAwake{true};
 
 		bool dirty = true;
-		JPH::BodyID BodyID;
+		JPH::BodyID BodyID{JPH::BodyID::cInvalidBodyID};
 	};
 
 	namespace ThirdParty::ImGuiLib {
