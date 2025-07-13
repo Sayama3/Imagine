@@ -149,6 +149,7 @@ namespace Imagine::Runtime {
 			for (const std::filesystem::path &path: e) {
 				if (std::filesystem::exists(path)) {
 					auto model = CPUModel::LoadModel(Path::GetPath(path));
+					if (!model) continue;
 					for (auto &tex: model->Textures) {
 						tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
 					}

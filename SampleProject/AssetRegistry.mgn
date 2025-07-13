@@ -2,6 +2,61 @@ Type: File Asset Manager
 Assets:
   - FilePath:
       Source: Assets
+      Path: Models\icosahedron.glb
+    Handle: [1945478481165822190, 15064752231346855746]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\structure.glb
+    Handle: [3751318894652346367, 8440720381664841430]
+    Type: Model
+  - FilePath:
+      Source: Assets
       Path: Models\Sponza\Sponza.gltf
     Handle: [5471684070556887075, 2156559007007914598]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\Box.glb
+    Handle: [5554918066584678457, 4789045983980883970]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\house2.glb
+    Handle: [6277672735640361793, 10588678182724162668]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\house.glb
+    Handle: [7711680100580297114, 9402822250779392727]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\structure_mat.glb
+    Handle: [10240350562388244955, 1072414587441562761]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\basicmesh.glb
+    Handle: [11086287214431256342, 16194155562310461934]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\VirtualCity.glb
+    Handle: [11526376055967950308, 4009008785965149917]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\monkeyHD.glb
+    Handle: [12930001312421049791, 5936550549871197171]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\monkey.glb
+    Handle: [14401367430925149664, 16879360546998810822]
+    Type: Model
+  - FilePath:
+      Source: Assets
+      Path: Models\monkey2.glb
+    Handle: [16955939644332483652, 213651433427178023]
     Type: Model

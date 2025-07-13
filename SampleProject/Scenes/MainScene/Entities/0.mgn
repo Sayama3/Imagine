@@ -1,10 +1,24 @@
 Type: Entity
 ID: 0
-Name: Entity 0
+Name: Light
 Local Position: [-1, 0, 0]
-Local Rotation: [0, 0, 0, 1]
+Local Rotation: [-0.594822764, -0, 0, 0.803856909]
 Local Scale: [1, 1, 1]
 Custom Components:
-  {}
+  [8617021113816766947, 15897890290382257744]:
+    Size: 48
+    Data:
+      - 1063971563
+      - 1065353216
+      - 1065353216
+      - 1079194419
+      - 1092616192
+      - 0
+      - 0
+      - 1061752795
+      - 0
+      - 0
+      - 0
+      - 1
 Relationship:
   Root: true
