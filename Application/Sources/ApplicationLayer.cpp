@@ -150,18 +150,7 @@ namespace Imagine::Runtime {
 				if (std::filesystem::exists(path)) {
 					auto model = CPUModel::LoadModel(Path::GetPath(path));
 					if (!model) continue;
-					for (auto &tex: model->Textures) {
-						tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
-					}
-					for (Ref<CPUMaterial> &material: model->Materials) {
-						material->gpu = Renderer::Get()->LoadMaterial(*material);
-					}
-					for (auto &instance: model->Instances) {
-						instance->gpu = Renderer::Get()->LoadMaterialInstance(*instance);
-					}
-					for (auto &mesh: model->Meshes) {
-						mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
-					}
+					// model->LoadModelInGPU();
 					// Project::GetActive()->GetFileAssetManager()->AddAsset(model);
 					Project::GetActive()->GetFileAssetManager()->AddAsset(model, model->modelPath);
 				}

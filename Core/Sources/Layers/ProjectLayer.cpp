@@ -133,17 +133,12 @@ namespace Imagine {
 							ImGui::BeginGroup();
 							if (ImGui::TableSetColumnIndex(0)) {
 								const auto idStr = metadata.Handle.GetID().raw_string();
-								if (manager->m_LoadedAssets.contains(metadata.Handle)) {
-									if (ImGui::Selectable(idStr.c_str(), selected == metadata.Handle)) selected = metadata.Handle;
-									if (/*selected == metadata.Handle &&*/ ImGui::BeginDragDropSource()) {
-										std::string payloadID = AssetTypeToPayloadID(metadata.Type);
-										MGN_CORE_CASSERT(payloadID.size() < 32, "The payloadID is not high.");
-										ImGui::SetDragDropPayload(payloadID.c_str(), &metadata.Handle, sizeof(metadata.Handle), ImGuiCond_Once);
-										ImGui::EndDragDropSource();
-									}
-								}
-								else {
-									ImGui::Text(idStr.c_str());
+								if (ImGui::Selectable(idStr.c_str(), selected == metadata.Handle)) selected = metadata.Handle;
+								if (ImGui::BeginDragDropSource()) {
+									std::string payloadID = AssetTypeToPayloadID(metadata.Type);
+									MGN_CORE_CASSERT(payloadID.size() < 32, "The payloadID is not high.");
+									ImGui::SetDragDropPayload(payloadID.c_str(), &metadata.Handle, sizeof(metadata.Handle), ImGuiCond_Once);
+									ImGui::EndDragDropSource();
 								}
 							}
 

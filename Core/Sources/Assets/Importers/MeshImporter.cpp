@@ -23,22 +23,6 @@ namespace Imagine
 	Ref<Asset> MeshSerializer::ImportModel(const AssetMetadata &metadata) {
 		auto model = CPUModel::LoadModel(metadata.FilePath);
 		model->Handle = metadata.Handle;
-
-		if (auto renderer = Renderer::Get()) {
-			for (auto &tex: model->Textures) {
-				tex->gpu = renderer->LoadTexture2D(*tex);
-			}
-			for (Ref<CPUMaterial> &material: model->Materials) {
-				material->gpu = renderer->LoadMaterial(*material);
-			}
-			for (auto &instance: model->Instances) {
-				instance->gpu = renderer->LoadMaterialInstance(*instance);
-			}
-			for (auto &mesh: model->Meshes) {
-				mesh->gpu = renderer->LoadMesh(*mesh);
-			}
-		}
-
 		return model;
 	}
 } // namespace Imagine

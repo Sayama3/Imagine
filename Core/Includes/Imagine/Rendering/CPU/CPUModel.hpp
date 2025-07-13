@@ -20,7 +20,9 @@ namespace Imagine {
 	class CPUModel : public Asset {
 	public:
 		MGN_IMPLEMENT_ASSET(AssetType::Model);
+
 	public:
+		bool LoadModelInGPU();
 
 		struct Node {
 			std::string name;

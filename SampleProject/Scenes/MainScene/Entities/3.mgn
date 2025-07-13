@@ -1,18 +1,18 @@
 Type: Entity
 ID: 3
-Name: New Entity
+Name: City
 Local Position: [0, 0, 0]
 Local Rotation: [0, 0, 0, 1]
-Local Scale: [1, 1, 1]
+Local Scale: [10, 10, 10]
 Custom Components:
   [14938158363250254886, 16479517033568397836]:
     Size: 24
     Data:
-      - 2965192304
+      - 4243992200
       - 32758
-      - 888574092
-      - 1640728165
-      - 1867196927
-      - 3572718639
+      - 462005732
+      - 2683693556
+      - 215969501
+      - 933420096
 Relationship:
   Root: true

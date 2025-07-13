@@ -155,21 +155,6 @@ namespace Imagine {
 			Renderable *renderable = SceneManager::GetMainScene()->AddComponent<Renderable>(entityId);
 			renderable->cpuMeshOrModel = model->Handle;
 			MGN_CORE_CASSERT(model);
-
-			if (model) {
-				for (auto &tex: model->Textures) {
-					tex->gpu = Renderer::Get()->LoadTexture2D(*tex);
-				}
-				for (Ref<CPUMaterial> &material: model->Materials) {
-					material->gpu = Renderer::Get()->LoadMaterial(*material);
-				}
-				for (auto &instance: model->Instances) {
-					instance->gpu = Renderer::Get()->LoadMaterialInstance(*instance);
-				}
-				for (auto &mesh: model->Meshes) {
-					mesh->gpu = Renderer::Get()->LoadMesh(*mesh);
-				}
-			}
 		}
 
 
@@ -356,6 +341,7 @@ namespace Imagine {
 							case AssetType::Model: {
 								auto cpuModel = CastPtr<CPUModel>(asset);
 								if (!cpuModel) return;
+								if (cpuModel->LoadModelInGPU())
 								for (const CPUModel::Node& node: cpuModel->Nodes) {
 									if (node.meshes.empty()) continue;
 									const auto world = worldMat * node.worldMatrix;

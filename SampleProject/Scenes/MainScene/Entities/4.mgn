@@ -1,0 +1,27 @@
+Type: Entity
+ID: 4
+Name: Ground
+Local Position: [0, -0.5, 0]
+Local Rotation: [0, 0, 0, 1]
+Local Scale: [1, 1, 1]
+Custom Components:
+  [7949206094873960397, 3561404616613259485]:
+    Size: 60
+    Data:
+      - 1120403456
+      - 1065353216
+      - 1120403456
+      - 0
+      - 3452816640
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 1056964608
+      - 1065353216
+      - 3452764161
+      - 8388609
+Relationship:
+  Root: true

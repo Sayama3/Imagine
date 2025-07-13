@@ -8,6 +8,7 @@
 #include "Imagine/Components/Physicalisable.hpp"
 #include "Imagine/Components/Renderable.hpp"
 #include "Imagine/Rendering/CPU/CPUMaterialInstance.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/Scene/Scene.hpp"
 
 #include "Imagine/ThirdParty/Assimp.hpp"
@@ -17,6 +18,25 @@
 
 namespace Imagine {
 
+	bool CPUModel::LoadModelInGPU() {
+		Renderer* renderer = Renderer::Get();
+		if (!renderer) return false;
+
+		for (auto &tex: Textures) {
+			if(!tex->gpu) tex->gpu = renderer->LoadTexture2D(*tex);
+		}
+		for (Ref<CPUMaterial> &material: Materials) {
+			if(!material->gpu) material->gpu = renderer->LoadMaterial(*material);
+		}
+		for (auto &instance: Instances) {
+			if(!instance->gpu) instance->gpu = renderer->LoadMaterialInstance(*instance);
+		}
+		for (auto &mesh: Meshes) {
+			if(!mesh->gpu) mesh->gpu = renderer->LoadMesh(*mesh);
+		}
+
+		return true;
+	}
 	Ref<CPUModel> CPUModel::LoadModel(const Path &filePath, Scene *coreScene, EntityID parent) {
 		auto model = LoadModel(filePath.GetFullPath(), coreScene, parent);
 		if (model) {
