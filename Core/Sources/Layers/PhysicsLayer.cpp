@@ -193,46 +193,11 @@ namespace Imagine {
 				// }
 
 				if (comp.BodyID.IsInvalid()) {
-					if (comp.Shape.index() != Physicalisable::Mesh) {
 						const JPH::Shape *shp = comp.GetShape();
 						if (!shp) return;
 						JPH::BodyCreationSettings creationSettings = {shp, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetMotionType(), comp.GetLayer()};
 						creationSettings.mAllowDynamicOrKinematic = true;
 						comp.BodyID = m_BodyInterface->CreateAndAddBody(creationSettings, activation);
-					}
-					else {
-						AssetField<CPUMesh> meshAsset{std::get<ColliderShapes::Mesh>(comp.Shape).handle};
-
-						if (!meshAsset.IsValid()) {
-							return;
-						}
-						Ref<CPUMesh> mesh = meshAsset.GetAsset();
-						if (!mesh) {
-							return;
-						}
-
-						JPH::VertexList inVertices{mesh->Vertices.size()};
-						for (int i = 0; i < mesh->Vertices.size(); ++i) {
-							inVertices[i].x = mesh->Vertices[i].position.x;
-							inVertices[i].y = mesh->Vertices[i].position.y;
-							inVertices[i].z = mesh->Vertices[i].position.z;
-						}
-
-						const uint32_t trCount = mesh->Lods.back().count / 3;
-						JPH::IndexedTriangleList inTriangles{trCount};
-
-						uint32_t offset = mesh->Lods.back().index;
-						for (uint32_t iTr = 0; iTr < trCount; ++iTr) {
-							const uint32_t i0 = offset + iTr * 3 + 0;
-							const uint32_t i1 = offset + iTr * 3 + 1;
-							const uint32_t i2 = offset + iTr * 3 + 2;
-							inTriangles[iTr].mIdx[0] = mesh->Indices[i0];
-							inTriangles[iTr].mIdx[1] = mesh->Indices[i1];
-							inTriangles[iTr].mIdx[2] = mesh->Indices[i2];
-						}
-
-						comp.BodyID = m_BodyInterface->CreateAndAddBody(JPH::BodyCreationSettings(new JPH::MeshShapeSettings{inVertices, inTriangles}, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, JPH::EMotionType::Static, PhysicalLayers::NON_MOVING), JPH::EActivation::DontActivate);
-					}
 				}
 				else {
 					m_BodyInterface->SetPositionAndRotation(comp.BodyID, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetActivation());

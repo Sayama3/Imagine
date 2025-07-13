@@ -59,6 +59,8 @@ namespace Imagine {
 				else MGN_CORE_INFO("FileAssetManager Save Failed.");
 			}
 
+			ImGui::SameLine();
+
 			if (ImGui::Button("Load")) {
 				const auto new_manager = FileAssetManagerSerializer::DeserializeReadable("AssetManager.mgn");
 				if(new_manager) {
@@ -150,7 +152,7 @@ namespace Imagine {
 							if (ImGui::TableSetColumnIndex(0)) {
 								const auto idStr = handle.GetID().raw_string();
 								if (ImGui::Selectable(idStr.c_str(), selected == handle)) selected = handle;
-								if (selected == handle && ImGui::BeginDragDropSource()) {
+								if (ImGui::BeginDragDropSource()) {
 									std::string payloadID = AssetTypeToPayloadID(asset->GetType());
 									MGN_CORE_CASSERT(payloadID.size() < 32, "The payloadID is not high.");
 									ImGui::SetDragDropPayload(payloadID.c_str(), &handle, sizeof(handle), ImGuiCond_Once);
@@ -189,7 +191,7 @@ namespace Imagine {
 							if (ImGui::TableSetColumnIndex(0)) {
 								const auto idStr = handle.GetID().raw_string();
 								if (ImGui::Selectable(idStr.c_str(), selected == handle)) selected = handle;
-								if (selected == handle && ImGui::BeginDragDropSource()) {
+								if (ImGui::BeginDragDropSource()) {
 									std::string payloadID = AssetTypeToPayloadID(asset->GetType());
 									MGN_CORE_CASSERT(payloadID.size() < 32, "The payloadID is not high.");
 									ImGui::SetDragDropPayload(payloadID.c_str(), &handle, sizeof(handle), ImGuiCond_Once);

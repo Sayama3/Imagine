@@ -32,13 +32,11 @@ namespace Imagine {
 		struct Sphere {Real Radius {0.5};};
 		struct Capsule {Real Height {1}; Real Radius{0.5};};
 		struct Cylinder {Real Height {1}; Real Radius{0.5}; };
-		struct Mesh {AssetField<CPUMesh> handle; };
 
 		const JPH::Shape* CreateShape(Box box);
 		const JPH::Shape* CreateShape(Sphere sphere);
 		const JPH::Shape* CreateShape(Capsule capsule);
 		const JPH::Shape* CreateShape(Cylinder cylinder);
-		const JPH::Shape* CreateShape(Mesh mesh);
 	}
 
 	struct Physicalisable {
@@ -46,18 +44,16 @@ namespace Imagine {
 		using ShapeVariant = std::variant<ColliderShapes::Box,
 								  ColliderShapes::Sphere,
 								  ColliderShapes::Capsule,
-								  ColliderShapes::Cylinder,
-								  ColliderShapes::Mesh
+								  ColliderShapes::Cylinder
 		>;
 		enum Type : int {
 			Box,
 			Sphere,
 			Capsule,
 			Cylinder,
-			Mesh,
 		};
-		static inline const std::array<std::string, 5> TypeNames {"Box","Sphere","Capsule","Cylinder","Mesh"};
-		static inline constexpr char TypeNamesCombo[] = "Box\0Sphere\0Capsule\0Cylinder\0Mesh";
+		static inline const std::array<std::string, 5> TypeNames {"Box","Sphere","Capsule","Cylinder"};
+		static inline constexpr char TypeNamesCombo[] = "Box\0Sphere\0Capsule\0Cylinder";
 	public:
 		Physicalisable() = default;
 		~Physicalisable();
@@ -125,9 +121,6 @@ namespace Imagine {
 					case Physicalisable::Cylinder:
 						pShape->emplace<ColliderShapes::Cylinder>();
 						break;
-					case Physicalisable::Mesh:
-						pShape->emplace<ColliderShapes::Mesh>();
-						break;
 				}
 			}
 
@@ -158,12 +151,6 @@ namespace Imagine {
 					changed |= ImGuiLib::DragReal("Height##Cylinder", &shp.Height, 0.1, 0.1, REAL_MAX, "%.1f");
 				}
 					break;
-				case Physicalisable::Mesh:
-				{
-					ColliderShapes::Mesh& shp = std::get<ColliderShapes::Mesh>(*pShape);
-					changed |= ImGuiLib::DrawAssetField("Mesh##Mesh", (AssetHandle*)&shp.handle, {CPUMesh::GetStaticType()});
-				}
-					break;
 			}
 			ImGui::PopID();
 #endif
@@ -180,20 +167,14 @@ namespace Imagine {
 			if (label) ImGui::SeparatorText(label);
 			else ImGui::Separator();
 
-			ImGui::BeginDisabled(data->Shape.index() == Physicalisable::Mesh);
 			changed |= ImGuiLib::RenderData("Shape", &data->Shape);
 			changed |= ImGui::Combo("Rigidbody Type", (int*)&data->RBType, "Static\0Dynamic\0Kinematic");
-			ImGui::BeginDisabled(data->RBType == RB_Static);
 			changed |= ImGuiLib::DragReal3("Velocity", Math::ValuePtr(data->LinearVelocity), 0.1, 0, 0, "%.2f");
 			changed |= ImGuiLib::DragReal3("Angular Velocity", Math::ValuePtr(data->AngularVelocity), 1, 0,0 , "%.2f");
-			ImGui::EndDisabled();
 			changed |= ImGuiLib::SliderReal("Friction", &data->Friction, 0, 1);
-			ImGui::BeginDisabled(data->RBType == RB_Static);
 			changed |= ImGuiLib::DragReal("Gravity Factor", &data->GravityFactor, 0.1, 0,0 , "%.2f");
 			changed |= ImGui::Checkbox("Awake", &data->IsAwake);
-			ImGui::EndDisabled();
 			if (changed) data->dirty = true;
-			ImGui::EndDisabled();
 			ImGui::PopID();
 #endif
 			return changed;

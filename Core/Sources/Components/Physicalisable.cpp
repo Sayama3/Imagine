@@ -40,51 +40,51 @@ namespace Imagine::ColliderShapes
 		return new JPH::CylinderShape(cylinder.Height * 0.5, cylinder.Radius);
 	}
 
-	const JPH::Shape *CreateShape(Mesh m) {
-		AssetField<CPUMesh> meshAsset {m.handle};
-		if (!meshAsset.IsValid()) {
-			return nullptr;
-		}
-		Ref<CPUMesh> mesh = meshAsset.GetAsset();
-		if (!mesh) {
-			return nullptr;
-		}
-
-		JPH::VertexList inVertices{mesh->Vertices.size()};
-		for (int i = 0; i < mesh->Vertices.size(); ++i) {
-			inVertices[i].x = mesh->Vertices[i].position.x;
-			inVertices[i].y = mesh->Vertices[i].position.y;
-			inVertices[i].z = mesh->Vertices[i].position.z;
-		}
-
-		const uint32_t trCount = mesh->Lods.back().count / 3;
-		JPH::IndexedTriangleList inTriangles{trCount};
-
-		uint32_t offset = mesh->Lods.back().index;
-		for (uint32_t iTr = 0; iTr < trCount; ++iTr) {
-			const uint32_t i0 = offset + iTr * 3 + 0;
-			const uint32_t i1 = offset + iTr * 3 + 1;
-			const uint32_t i2 = offset + iTr * 3 + 2;
-			inTriangles[iTr].mIdx[0] = mesh->Indices[i0];
-			inTriangles[iTr].mIdx[1] = mesh->Indices[i1];
-			inTriangles[iTr].mIdx[2] = mesh->Indices[i2];
-		}
-
-		JPH::MeshShapeSettings settings{inVertices, inTriangles};
-		JPH::Shape::ShapeResult res{};
-		JPH::Shape* shape = new JPH::MeshShape(settings, res);
-		if (!res.IsValid()) {
-			if (res.HasError()) {
-				MGN_CORE_ERROR("Error while creating the Physics Mesh Shape\n{}", res.GetError().c_str());
-			} else {
-				MGN_CORE_ERROR("Error while creating the Physics Mesh Shape");
-			}
-			delete shape;
-			return nullptr;
-		}
-
-		return shape;
-	}
+	// const JPH::Shape *CreateShape(Mesh m) {
+	// 	AssetField<CPUMesh> meshAsset {m.handle};
+	// 	if (!meshAsset.IsValid()) {
+	// 		return nullptr;
+	// 	}
+	// 	Ref<CPUMesh> mesh = meshAsset.GetAsset();
+	// 	if (!mesh) {
+	// 		return nullptr;
+	// 	}
+	//
+	// 	JPH::VertexList inVertices{mesh->Vertices.size()};
+	// 	for (int i = 0; i < mesh->Vertices.size(); ++i) {
+	// 		inVertices[i].x = mesh->Vertices[i].position.x;
+	// 		inVertices[i].y = mesh->Vertices[i].position.y;
+	// 		inVertices[i].z = mesh->Vertices[i].position.z;
+	// 	}
+	//
+	// 	const uint32_t trCount = mesh->Lods.back().count / 3;
+	// 	JPH::IndexedTriangleList inTriangles{trCount};
+	//
+	// 	uint32_t offset = mesh->Lods.back().index;
+	// 	for (uint32_t iTr = 0; iTr < trCount; ++iTr) {
+	// 		const uint32_t i0 = offset + iTr * 3 + 0;
+	// 		const uint32_t i1 = offset + iTr * 3 + 1;
+	// 		const uint32_t i2 = offset + iTr * 3 + 2;
+	// 		inTriangles[iTr].mIdx[0] = mesh->Indices[i0];
+	// 		inTriangles[iTr].mIdx[1] = mesh->Indices[i1];
+	// 		inTriangles[iTr].mIdx[2] = mesh->Indices[i2];
+	// 	}
+	//
+	// 	JPH::MeshShapeSettings settings{inVertices, inTriangles};
+	// 	JPH::Shape::ShapeResult res{};
+	// 	JPH::Shape* shape = new JPH::MeshShape(settings, res);
+	// 	if (!res.IsValid()) {
+	// 		if (res.HasError()) {
+	// 			MGN_CORE_ERROR("Error while creating the Physics Mesh Shape\n{}", res.GetError().c_str());
+	// 		} else {
+	// 			MGN_CORE_ERROR("Error while creating the Physics Mesh Shape");
+	// 		}
+	// 		delete shape;
+	// 		return nullptr;
+	// 	}
+	//
+	// 	return shape;
+	// }
 } // namespace Imagine::ColliderShapes
 
 namespace Imagine {
