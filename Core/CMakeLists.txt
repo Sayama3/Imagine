@@ -225,6 +225,8 @@ set(CORE_SRC_FILES
 		Includes/Imagine/ThirdParty/YamlCpp/YAML_SCENE.hpp
 		Sources/ThirdParty/FileDialogs.cpp
 		Includes/Imagine/ThirdParty/FileDialogs.hpp
+		Sources/Scripting/LuaScript.cpp
+		Includes/Imagine/Scripting/LuaScript.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
