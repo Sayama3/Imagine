@@ -227,6 +227,10 @@ set(CORE_SRC_FILES
 		Includes/Imagine/ThirdParty/FileDialogs.hpp
 		Sources/Scripting/LuaScript.cpp
 		Includes/Imagine/Scripting/LuaScript.hpp
+		Sources/ThirdParty/Sol.cpp
+		Includes/Imagine/ThirdParty/Sol.hpp
+		Sources/Scripting/ScriptingLayer.cpp
+		Includes/Imagine/Scripting/ScriptingLayer.hpp
 )
 
 add_library(Core STATIC ${CORE_SRC_FILES} ${EXTERNAL_CORE_SRC_FILES})
@@ -301,7 +305,7 @@ target_include_directories(Core PRIVATE Sources)
 
 target_compile_features(Core PUBLIC cxx_std_20)
 
-target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp sol2::sol2 yaml-cpp::yaml-cpp Jolt)
+target_link_libraries(Core PUBLIC glm::glm-header-only spdlog::spdlog_header_only TracyClient assimp::assimp lua_static yaml-cpp::yaml-cpp Jolt)
 # target_link_libraries(Core PUBLIC Bitsery::bitsery)
 target_link_libraries(Core PRIVATE xxhash)
 
@@ -315,6 +319,8 @@ if(MGN_IMGUI)
 	target_link_libraries(Core PUBLIC imgui)
 	target_compile_definitions(Core PUBLIC MGN_IMGUI=1)
 endif()
+
+target_compile_definitions(Core PUBLIC SOL_ALL_SAFETIES_ON=1)
 
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
 	target_compile_definitions(Core PUBLIC MGN_DEBUG=1)

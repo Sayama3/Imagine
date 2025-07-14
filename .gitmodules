@@ -41,9 +41,6 @@
 [submodule "Libraries/bitsery"]
 	path = Libraries/bitsery
 	url = https://github.com/fraillt/bitsery.git
-[submodule "Libraries/sol2"]
-	path = Libraries/sol2
-	url = https://github.com/ThePhD/sol2.git
 [submodule "Libraries/yaml-cpp"]
 	path = Libraries/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git

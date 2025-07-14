@@ -11,6 +11,7 @@
 #include "Imagine/Layers/PhysicsLayer.hpp"
 #include "Imagine/Layers/ProjectLayer.hpp"
 #include "Imagine/Physics/ObjectLayerPairFilter.hpp"
+#include "Imagine/Scripting/ScriptingLayer.hpp"
 
 int main(int argc, char **argv) {
 	using namespace Imagine;
@@ -53,11 +54,13 @@ int main(int argc, char **argv) {
 	MGN_PROFILE_BEGIN_SESSION("startup", "ImagineProfile-Startup.json");
 	MGN_FRAME_START();
 	Application *application = Application::Initialize(params);
-	application->PushLayer<Imagine::Runtime::ApplicationLayer>();
 	application->PushLayer<Imagine::PhysicsLayer>();
+	application->PushLayer<Imagine::ScriptingLayer>();
 	application->PushLayer<Imagine::ProjectLayer>();
+	application->PushLayer<Imagine::Runtime::ApplicationLayer>();
 	application->PushOverlay<Imagine::ImGuiLayer>();
 
+	application->FindLayer<ScriptingLayer>()->Load({FileSource::Engine, "test_script.lua"});
 
 	MGN_FRAME_END();
 	MGN_PROFILE_END_SESSION();
