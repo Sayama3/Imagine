@@ -4,15 +4,18 @@
 
 #include "Imagine/Scripting/LuaScript.hpp"
 #include <format>
+
+#include "Imagine/Components/Physicalisable.hpp"
 #include "Imagine/Core/Inputs.hpp"
 #include "Imagine/Layers/ImGuiLayer.hpp"
 #include "Imagine/Math/Core.hpp"
 #include "Imagine/Rendering/Camera.hpp"
 #include "Imagine/Rendering/Renderer.hpp"
+#include "Imagine/Scene/SceneManager.hpp"
 #include "Imagine/ThirdParty/ImGui.hpp"
 
-#define BIND_RW_VAL(CLASS_TYPE, TYPE, property) [](const CLASS_TYPE* t) ->TYPE {return t->property;},[](CLASS_TYPE* t, TYPE v) {t->property = v;}
-#define BIND_R_VAL(CLASS_TYPE, TYPE, property) [](const CLASS_TYPE* t) ->TYPE {return t->property;}
+#define BIND_RW_VAL(CLASS_TYPE, TYPE, property) [](const CLASS_TYPE *t) -> TYPE { return t->property; }, [](CLASS_TYPE *t, TYPE v) { t->property = v; }
+#define BIND_R_VAL(CLASS_TYPE, TYPE, property) [](const CLASS_TYPE *t) -> TYPE { return t->property; }
 
 namespace Imagine {
 	LuaScript::Log::local_time LuaScript::Log::Now() {
@@ -64,11 +67,15 @@ namespace Imagine {
 
 	bool LuaScript::Load(const std::filesystem::path &path) {
 		m_LoggerStack.push_front({Log::None, "============ Reload at %s ============"});
-		m_State = CreateScope<sol::state>();
+		const bool shouldReload = m_HardReload || !m_State;
+		if (shouldReload) {
+			m_State = CreateScope<sol::state>();
+		}
 		const auto result = m_State->safe_script_file(path.string(), sol::script_pass_on_error);
 		m_Path = path;
 		m_TimeEdited = std::filesystem::last_write_time(m_Path);
 		m_IsValid = result.valid();
+
 		if (!m_IsValid) {
 			sol::error err = result;
 			m_LoggerStack.push_front({Log::Error, err.what()});
@@ -76,14 +83,16 @@ namespace Imagine {
 			return false;
 		}
 		else {
-			m_State->open_libraries(sol::lib::base, sol::lib::package, sol::lib::coroutine, sol::lib::string, sol::lib::math, sol::lib::table);
-			LoadLogger();
-			LoadMathType();
-			LoadKeyboardTypes();
-			LoadKeyboardFuncs();
-			LoadMouseTypes();
-			LoadMouseFuncs();
-			LoadScene();
+			if (shouldReload) {
+				m_State->open_libraries(sol::lib::base, sol::lib::package, sol::lib::coroutine, sol::lib::string, sol::lib::math, sol::lib::table);
+				LoadLogger();
+				LoadMathType();
+				LoadKeyboardTypes();
+				LoadKeyboardFuncs();
+				LoadMouseTypes();
+				LoadMouseFuncs();
+				LoadScene();
+			}
 			for (uint16_t i = 0; i < Count; ++i) {
 				const Event e = (Event) i;
 				sol::protected_function eventFunc = (*m_State)[EventToString(e)];
@@ -134,7 +143,7 @@ namespace Imagine {
 		RectType["size_x"] = sol::readonly_property(BIND_R_VAL(Rect<float>, float, GetSize().x));
 		RectType["size_y"] = sol::readonly_property(BIND_R_VAL(Rect<float>, float, GetSize().y));
 
-		RectType["IsInside"] = [](Rect<float>* rect, float x, float y) {return rect->IsInside({x,y});};
+		RectType["IsInside"] = [](Rect<float> *rect, float x, float y) { return rect->IsInside({x, y}); };
 		RectType["GetRelative"] = &Rect<float>::GetRelative;
 		RectType["GetGlobal"] = &Rect<float>::GetGlobal;
 	}
@@ -318,8 +327,7 @@ namespace Imagine {
 		CameraType["Main"] = sol::var(Camera::s_MainCamera);
 
 
-
-		(*m_State)["SetCameraVelocity"] = [](const sol::table& velocity) {
+		(*m_State)["SetCameraVelocity"] = [](const sol::table &velocity) {
 			Camera::s_MainCamera->velocity.x = velocity.get_or("x", 0.0);
 			Camera::s_MainCamera->velocity.y = velocity.get_or("y", 0.0);
 			Camera::s_MainCamera->velocity.z = velocity.get_or("z", 0.0);
@@ -333,6 +341,45 @@ namespace Imagine {
 			Camera::s_MainCamera->pitchVelocity = velocity;
 		};
 
+		// auto EntityIDType = m_State->new_usertype<EntityID>("EntityID", sol::constructors<EntityID()>());
+		auto EntityType = m_State->new_usertype<Entity>("Entity", sol::constructors<Entity()>());
+
+
+		// EntityType["id"] = BIND_R_VAL(Entity, EntityID, Id);
+
+		EntityType["position_x"] = BIND_RW_VAL(Entity, float, LocalPosition.x);
+		EntityType["position_y"] = BIND_RW_VAL(Entity, float, LocalPosition.y);
+		EntityType["position_z"] = BIND_RW_VAL(Entity, float, LocalPosition.z);
+
+		EntityType["rotation_x"] = BIND_RW_VAL(Entity, float, LocalRotation.x);
+		EntityType["rotation_y"] = BIND_RW_VAL(Entity, float, LocalRotation.y);
+		EntityType["rotation_z"] = BIND_RW_VAL(Entity, float, LocalRotation.z);
+		EntityType["rotation_w"] = BIND_RW_VAL(Entity, float, LocalRotation.w);
+
+		EntityType["scale_x"] = BIND_RW_VAL(Entity, float, LocalScale.x);
+		EntityType["scale_y"] = BIND_RW_VAL(Entity, float, LocalScale.y);
+		EntityType["scale_z"] = BIND_RW_VAL(Entity, float, LocalScale.z);
+
+		EntityType["SetEuler"] = [](Entity *e, float x, float y, float z) { e->LocalRotation = Quat(Vec3{x, y, z} * Math::DegToRad); };
+
+		(*m_State)["CreateEntity"] = []() -> uint32_t { return SceneManager::GetMainScene()->CreateEntity().id; };
+		(*m_State)["GetEntity"] = [](uint32_t id) -> Entity & { return SceneManager::GetMainScene()->GetEntity(id); };
+		(*m_State)["EntityExist"] = [](uint32_t id) -> bool { return SceneManager::GetMainScene()->Exist(id); };
+
+		auto PhysicalisableType = m_State->new_usertype<Physicalisable>("Physics", sol::constructors<Physicalisable()>());
+		PhysicalisableType["linear_velocity_x"] = sol::property(BIND_RW_VAL(Physicalisable, float, LinearVelocity.x));
+		PhysicalisableType["linear_velocity_y"] = sol::property(BIND_RW_VAL(Physicalisable, float, LinearVelocity.y));
+		PhysicalisableType["linear_velocity_z"] = sol::property(BIND_RW_VAL(Physicalisable, float, LinearVelocity.z));
+
+		PhysicalisableType["angular_velocity_x"] = sol::property(BIND_RW_VAL(Physicalisable, float, AngularVelocity.x));
+		PhysicalisableType["angular_velocity_y"] = sol::property(BIND_RW_VAL(Physicalisable, float, AngularVelocity.y));
+		PhysicalisableType["angular_velocity_z"] = sol::property(BIND_RW_VAL(Physicalisable, float, AngularVelocity.z));
+
+		(*m_State)["GetPhysics"] = [](uint32_t id) -> Physicalisable & { return *SceneManager::GetMainScene()->GetComponent<Physicalisable>(id); };
+		(*m_State)["HasPhysics"] = [](uint32_t id) -> bool { return SceneManager::GetMainScene()->HasComponent<Physicalisable>(id); };
+		(*m_State)["AddPhysics"] = [](uint32_t id) -> bool { return SceneManager::GetMainScene()->AddComponent<Physicalisable>(id) != nullptr; };
+		(*m_State)["RemovePhysics"] = [](uint32_t id) -> bool { return SceneManager::GetMainScene()->RemoveComponent<Physicalisable>(id); };
+		(*m_State)["GetOrAddPhysics"] = [](uint32_t id) -> Physicalisable & { return *SceneManager::GetMainScene()->GetOrAddComponent<Physicalisable>(id); };
 	}
 
 	const std::filesystem::path &LuaScript::GetPath() const {

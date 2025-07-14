@@ -1,19 +1,12 @@
 
 
+global_time = 0
 time = 0
-camSpeed =5
+camSpeed = 5
 camRotSpeed = 40
+entity = nil
 
-
-function Update(ts)
-    
-    time = time + ts;
-
-    if time > 1 then
-        print("Curent ts is "..math.floor(1/ts).." fps");
-        time = 0
-    end
-
+function UpdateCamera(ts)
     if CanEditScene then
         if GetKeyPressed(Key.Up) then
             camSpeed = math.max(camSpeed + 1, 0);
@@ -71,5 +64,32 @@ function Update(ts)
         Camera.Main.yawVelocity = 0;
         Camera.Main.pitchVelocity = 0;
     end
+end
 
+
+function Update(ts)
+    
+    time = time + ts;
+    global_time = global_time + ts
+    if time > 1 then
+        print("Curent ts is "..math.floor(1/ts).." fps");
+        time = 0
+    end
+
+    UpdateCamera(ts)
+
+    if entity == nil then
+        return
+    end
+
+    if not EntityExist(entity) then
+        return
+    end
+    physics = GetOrAddPhysics(entity)
+    physics.linear_velocity_y = math.cos(global_time)
+    -- SetPhysics(entity, physics)
+end
+
+function SetEntity(enttId)
+    entity = enttId
 end

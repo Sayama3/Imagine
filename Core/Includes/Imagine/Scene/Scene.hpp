@@ -249,11 +249,18 @@ namespace Imagine {
 
 		BufferView GetOrAddComponent(EntityID entityId, UUID componentId);
 
-		bool HasComponent(EntityID entityId, UUID componentId) const;
+		[[nodiscard]] bool HasComponent(EntityID entityId, UUID componentId) const;
+
+		bool RemoveComponent(EntityID entityId, UUID componentId);
 
 		template<typename T>
-		bool HasComponent(EntityID entityId) const {
+		[[nodiscard]] bool HasComponent(EntityID entityId) const {
 			return HasComponent(entityId, UUIDFromType<T>());
+		}
+
+		template<typename T>
+		bool RemoveComponent(EntityID entityId) {
+			return RemoveComponent(entityId, UUIDFromType<T>());
 		}
 
 

@@ -64,14 +64,14 @@ namespace Imagine {
 		m_BodyInterface = &m_PhysicsSystem->GetBodyInterface();
 
 		// Draw Physics
-		if(JPH::DebugRenderer::sInstance == nullptr) {
+		if (JPH::DebugRenderer::sInstance == nullptr) {
 			JPH::DebugRenderer::sInstance = new PhysicsDebugRenderer();
 		}
 	}
 	void PhysicsLayer::OnDetach() {
 
 		// Draw Physics
-		if(JPH::DebugRenderer::sInstance != nullptr) {
+		if (JPH::DebugRenderer::sInstance != nullptr) {
 			delete JPH::DebugRenderer::sInstance;
 			JPH::DebugRenderer::sInstance = nullptr;
 		}
@@ -129,31 +129,31 @@ namespace Imagine {
 	void PhysicsLayer::OnRender(AppRenderEvent &event) {
 		if (!JPH::DebugRenderer::sInstance) return;
 		// TODO: Fetch the 'JPH::BodyManager::DrawSettings' from some project settings somewhere
-		static JPH::BodyManager::DrawSettings s_DrawSettings {
-		false, 												// mDrawGetSupportFunction
-		false, 												// mDrawSupportDirection
-		false, 												// mDrawGetSupportingFace
-		false, 												// mDrawShape
-		false, 												// mDrawShapeWireframe
-		JPH::BodyManager::EShapeColor::MotionTypeColor,		// mDrawShapeColor
-		true, 												// mDrawBoundingBox
-		false, 												// mDrawCenterOfMassTransform
-		false, 												// mDrawWorldTransform
-		false, 												// mDrawVelocity
-		false, 												// mDrawMassAndInertia
-		false, 												// mDrawSleepStats
-		false, 												// mDrawSoftBodyVertices
-		false, 												// mDrawSoftBodyVertexVelocities
-		false, 												// mDrawSoftBodyEdgeConstraints
-		false, 												// mDrawSoftBodyBendConstraints
-		false, 												// mDrawSoftBodyVolumeConstraints
-		false, 												// mDrawSoftBodySkinConstraints
-		false, 												// mDrawSoftBodyLRAConstraints
-		false, 												// mDrawSoftBodyPredictedBounds
-		JPH::ESoftBodyConstraintColor::ConstraintType,		// mDrawSoftBodyConstraintColor
-	};
+		static JPH::BodyManager::DrawSettings s_DrawSettings{
+				false, // mDrawGetSupportFunction
+				false, // mDrawSupportDirection
+				false, // mDrawGetSupportingFace
+				false, // mDrawShape
+				false, // mDrawShapeWireframe
+				JPH::BodyManager::EShapeColor::MotionTypeColor, // mDrawShapeColor
+				true, // mDrawBoundingBox
+				false, // mDrawCenterOfMassTransform
+				false, // mDrawWorldTransform
+				false, // mDrawVelocity
+				false, // mDrawMassAndInertia
+				false, // mDrawSleepStats
+				false, // mDrawSoftBodyVertices
+				false, // mDrawSoftBodyVertexVelocities
+				false, // mDrawSoftBodyEdgeConstraints
+				false, // mDrawSoftBodyBendConstraints
+				false, // mDrawSoftBodyVolumeConstraints
+				false, // mDrawSoftBodySkinConstraints
+				false, // mDrawSoftBodyLRAConstraints
+				false, // mDrawSoftBodyPredictedBounds
+				JPH::ESoftBodyConstraintColor::ConstraintType, // mDrawSoftBodyConstraintColor
+		};
 
-		((PhysicsDebugRenderer*)JPH::DebugRenderer::sInstance)->SetCameraPos(Convert(Camera::s_MainCamera->position));
+		((PhysicsDebugRenderer *) JPH::DebugRenderer::sInstance)->SetCameraPos(Convert(Camera::s_MainCamera->position));
 		m_PhysicsSystem->DrawBodies(s_DrawSettings, JPH::DebugRenderer::sInstance);
 	}
 
@@ -175,8 +175,6 @@ namespace Imagine {
 		if (!s_Simulate) {
 			MGN_PROFILE_SCOPE("Update Physics Components");
 			scene->ForEachWithComponent<Physicalisable>([this](Scene *scene, EntityID id, Physicalisable &comp) {
-				if (!comp.dirty) return;
-
 				const TransformR trs = scene->GetTransform(id);
 				const Vec3 pos = trs.LocalPosition;
 				const Quat rot = trs.LocalRotation;
@@ -193,11 +191,13 @@ namespace Imagine {
 				// }
 
 				if (comp.BodyID.IsInvalid()) {
-						const JPH::Shape *shp = comp.GetShape();
-						if (!shp) return;
-						JPH::BodyCreationSettings creationSettings = {shp, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetMotionType(), comp.GetLayer()};
-						creationSettings.mAllowDynamicOrKinematic = true;
-						comp.BodyID = m_BodyInterface->CreateAndAddBody(creationSettings, activation);
+					const JPH::Shape *shp = comp.GetShape();
+					if (!shp) return;
+					JPH::BodyCreationSettings creationSettings = {shp, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetMotionType(), comp.GetLayer()};
+					creationSettings.mAllowDynamicOrKinematic = true;
+					comp.BodyID = m_BodyInterface->CreateAndAddBody(creationSettings, activation);
+					m_BodyInterface->SetFriction(comp.BodyID, comp.GetFriction());
+					m_BodyInterface->SetGravityFactor(comp.BodyID, comp.GetGravityFactor());
 				}
 				else {
 					m_BodyInterface->SetPositionAndRotation(comp.BodyID, JPH::RVec3Arg{pos.x, pos.y, pos.z}, JPH::QuatArg{rot.x, rot.y, rot.z, rot.w}, comp.GetActivation());
@@ -206,12 +206,9 @@ namespace Imagine {
 						m_BodyInterface->SetShape(comp.BodyID, shp, true, activation);
 						m_BodyInterface->SetMotionType(comp.BodyID, comp.GetMotionType(), activation);
 						m_BodyInterface->SetObjectLayer(comp.BodyID, comp.GetLayer());
+						m_BodyInterface->SetFriction(comp.BodyID, comp.GetFriction());
+						m_BodyInterface->SetGravityFactor(comp.BodyID, comp.GetGravityFactor());
 					}
-				}
-				if (comp.dirty) {
-					//m_BodyInterface->SetLinearAndAngularVelocity(comp.BodyID, JPH::Vec3(lin.x, lin.y, lin.z), JPH::Vec3(ang.x, ang.y, ang.z));
-					m_BodyInterface->SetFriction(comp.BodyID, comp.GetFriction());
-					m_BodyInterface->SetGravityFactor(comp.BodyID, comp.GetGravityFactor());
 				}
 				comp.dirty = false;
 			});

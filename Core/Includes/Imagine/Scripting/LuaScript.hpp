@@ -79,11 +79,19 @@ namespace Imagine {
 		void LoadScene();
 
 	public:
+		template<typename ... Args>
+		void Call(std::string name, Args&&... args) {
+			if (m_State) {
+				(*m_State)[name](std::forward<Args>(args)...);
+			}
+		}
+	public:
 		const std::filesystem::path& GetPath() const;
 	private:
 		Scope<sol::state> m_State;
 		std::filesystem::path m_Path;
 		bool m_IsValid{false};
+		bool m_HardReload;
 		std::array<bool, Count> m_EventsValidity{true};
 		std::filesystem::file_time_type m_TimeEdited{std::filesystem::file_time_type::min()};
 		LoopBackBuffer<Log, 200> m_LoggerStack;

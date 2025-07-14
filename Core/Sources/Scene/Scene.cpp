@@ -797,4 +797,13 @@ namespace Imagine {
 		auto &components = m_CustomComponents.at(componentId);
 		return components.Exist(entityId.id);
 	}
+
+	bool Scene::RemoveComponent(EntityID entityId, UUID componentId) {
+		if (!m_CustomComponents.contains(componentId)) {
+			return false;
+		}
+		auto &components = m_CustomComponents.at(componentId);
+		components.Remove(entityId.id);
+		return true;
+	}
 } // namespace Imagine

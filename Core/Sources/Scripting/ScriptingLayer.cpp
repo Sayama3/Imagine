@@ -3,6 +3,8 @@
 //
 
 #include "Imagine/Scripting/ScriptingLayer.hpp"
+
+#include "Imagine/Scene/Entity.hpp"
 #include "Imagine/ThirdParty/ImGui.hpp"
 
 #ifdef _WIN32
@@ -52,7 +54,44 @@ namespace Imagine {
 				ImGui::Text("Path - %s", pathStr.c_str());
 #endif
 
-				if (ImGui::Button("Reload")) script.Load(script.m_Path);
+				static constexpr int c_IsSoft = 0;
+				static constexpr int c_IsHard = 1;
+				int hardReload = script.m_HardReload ? c_IsHard : c_IsSoft;
+				if (ImGui::Combo("Reload Type", &hardReload, "Soft\0Hard")) {
+					script.m_HardReload = hardReload == c_IsHard;
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Hard Reload")) {
+					const bool old = script.m_HardReload;
+					script.m_HardReload = true;
+					script.Load(script.m_Path);
+					script.m_HardReload = old;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Soft Reload")) {
+					const bool old = script.m_HardReload;
+					script.m_HardReload = false;
+					script.Load(script.m_Path);
+					script.m_HardReload = old;
+				}
+
+				static EntityID id{EntityID::NullID};
+				static uint32_t step = 1;
+				static uint32_t fast_step = 100;
+				ImGui::InputScalar("Entity ID", ImGuiDataType_U32, &id.id, &step, &fast_step, "%u");
+
+				if (ImGui::Button("SetEntity")) {
+					sol::protected_function func = (*script.m_State)["SetEntity"];
+					if (func) {
+						auto result = func(id.id);
+						if (!result.valid()) {
+							const sol::error err = result;
+							script.m_LoggerStack.push_front({LuaScript::Log::Error, err.what()});
+							MGN_CORE_ERROR("[Lua] Failed to run SetEntity {0}\n{1}", script.m_Path, err.what());
+						}
+					}
+				}
 
 				ImGui::BeginDisabled(true);
 
