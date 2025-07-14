@@ -167,6 +167,8 @@ namespace Imagine {
 		std::optional<T> push_front(const T &item);
 		std::optional<T> push_front(T &&item);
 		std::optional<T> pop_back();
+		void clear();
+
 		[[nodiscard]] iterator begin() { return iterator{static_cast<int64_t>(m_Begin), *this}; }
 		[[nodiscard]] iterator end() { return iterator{static_cast<int64_t>(m_End), *this}; }
 		[[nodiscard]] const_iterator cbegin() const { return const_iterator{static_cast<int64_t>(m_Begin), *this}; }
@@ -220,6 +222,14 @@ namespace Imagine {
 		const uint64_t last_index = m_End == 0 ? Capacity - 1 : m_End - 1;
 		m_End = last_index;
 		return std::move(m_Data[last_index]);
+	}
+
+	template<typename T, uint64_t MaxCount>
+	void LoopBackBuffer<T, MaxCount>::clear() {
+		for (auto& value: *this) {
+			value.~T();
+		}
+		m_Begin = m_End = 0;
 	}
 
 	template<typename T, std::size_t Capacity>

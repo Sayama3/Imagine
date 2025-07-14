@@ -20,6 +20,7 @@ namespace Imagine {
 
 	private:
 		void OnUpdate(AppUpdateEvent &e);
+		void OnImGui(ImGuiEvent &e);
 
 	private:
 		std::vector<LuaScript> m_Scripts;
