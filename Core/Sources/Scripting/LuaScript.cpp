@@ -8,7 +8,11 @@
 #include "Imagine/Layers/ImGuiLayer.hpp"
 #include "Imagine/Math/Core.hpp"
 #include "Imagine/Rendering/Camera.hpp"
+#include "Imagine/Rendering/Renderer.hpp"
 #include "Imagine/ThirdParty/ImGui.hpp"
+
+#define BIND_RW_VAL(CLASS_TYPE, TYPE, property) [](const CLASS_TYPE* t) ->TYPE {return t->property;},[](CLASS_TYPE* t, TYPE v) {t->property = v;}
+#define BIND_R_VAL(CLASS_TYPE, TYPE, property) [](const CLASS_TYPE* t) ->TYPE {return t->property;}
 
 namespace Imagine {
 	LuaScript::Log::local_time LuaScript::Log::Now() {
@@ -116,6 +120,23 @@ namespace Imagine {
 		Vec3Type["x"] = &Vec3::x;
 		Vec3Type["y"] = &Vec3::y;
 		Vec3Type["y"] = &Vec3::z;
+
+		auto RectType = m_State->new_usertype<Rect<float>>("Rect", sol::constructors<Rect<float>()>());
+		RectType["min_x"] = &Rect<float>::minX;
+		RectType["min_y"] = &Rect<float>::minY;
+
+		RectType["max_x"] = &Rect<float>::maxX;
+		RectType["max_y"] = &Rect<float>::maxY;
+
+		RectType["center_x"] = sol::readonly_property(BIND_R_VAL(Rect<float>, float, GetCenter().x));
+		RectType["center_y"] = sol::readonly_property(BIND_R_VAL(Rect<float>, float, GetCenter().y));
+
+		RectType["size_x"] = sol::readonly_property(BIND_R_VAL(Rect<float>, float, GetSize().x));
+		RectType["size_y"] = sol::readonly_property(BIND_R_VAL(Rect<float>, float, GetSize().y));
+
+		RectType["IsInside"] = [](Rect<float>* rect, float x, float y) {return rect->IsInside({x,y});};
+		RectType["GetRelative"] = &Rect<float>::GetRelative;
+		RectType["GetGlobal"] = &Rect<float>::GetGlobal;
 	}
 
 	void LuaScript::LoadKeyboardTypes() {
@@ -281,20 +302,23 @@ namespace Imagine {
 			return Vec2{Inputs::GetMouseState().MotionX, Inputs::GetMouseState().MotionY};
 		};
 	}
-
 	void LuaScript::LoadScene() {
-		// auto CameraType = m_State.new_usertype<Camera>("Camera", sol::constructors<Camera()>());
-		//
-		// CameraType["velocity"] = &Camera::velocity;
-		// CameraType["position"] = &Camera::position;
-		// CameraType["pitch"] = &Camera::pitch;
-		// CameraType["yaw"] = &Camera::yaw;
-		// CameraType["pitchVelocity"] = &Camera::pitchVelocity;
-		// CameraType["yawVelocity"] = &Camera::yawVelocity;
-		// CameraType["velocityMultiplier"] = &Camera::velocityMultiplier;
+		auto CameraType = (*m_State).new_usertype<Camera>("Camera", sol::constructors<Camera()>());
+		CameraType["velocity_x"] = sol::property(BIND_RW_VAL(Camera, float, velocity.x));
+		CameraType["velocity_y"] = sol::property(BIND_RW_VAL(Camera, float, velocity.y));
+		CameraType["velocity_z"] = sol::property(BIND_RW_VAL(Camera, float, velocity.z));
+		CameraType["position_x"] = sol::property(BIND_RW_VAL(Camera, float, position.x));
+		CameraType["position_y"] = sol::property(BIND_RW_VAL(Camera, float, position.y));
+		CameraType["position_z"] = sol::property(BIND_RW_VAL(Camera, float, position.z));
+		CameraType["pitch"] = &Camera::pitch;
+		CameraType["yaw"] = &Camera::yaw;
+		CameraType["pitchVelocity"] = &Camera::pitchVelocity;
+		CameraType["yawVelocity"] = &Camera::yawVelocity;
+		CameraType["velocityMultiplier"] = &Camera::velocityMultiplier;
+		CameraType["Main"] = sol::var(Camera::s_MainCamera);
 
-		// m_State["GetCameraPosition"] = []() { return Camera::s_MainCamera->position; };
-		// m_State["SetCameraPosition"] = [](Vec3 cameraPos) { Camera::s_MainCamera->position = cameraPos; };
+
+
 		(*m_State)["SetCameraVelocity"] = [](const sol::table& velocity) {
 			Camera::s_MainCamera->velocity.x = velocity.get_or("x", 0.0);
 			Camera::s_MainCamera->velocity.y = velocity.get_or("y", 0.0);
@@ -320,6 +344,10 @@ namespace Imagine {
 		if (!m_EventsValidity[UpdateEvent]) return;
 
 		(*m_State)["CanEditScene"] = !ThirdParty::ImGuiLib::EventsBlocked();
+		if (auto renderer = Renderer::Get()) {
+			(*m_State)["Viewport"] = renderer->GetViewport();
+		}
+
 		// LoadKeyboardFuncs();
 
 		sol::protected_function eventFunc = (*m_State)[EventToString(UpdateEvent)];

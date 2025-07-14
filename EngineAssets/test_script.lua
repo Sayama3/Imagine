@@ -2,8 +2,7 @@
 
 time = 0
 camSpeed =5
-camYawSpeed = 50
-camPitchSpeed = 50
+camRotSpeed = 40
 
 
 function Update(ts)
@@ -16,45 +15,61 @@ function Update(ts)
     end
 
     if CanEditScene then
-        camVel = {
-            x=0,
-            y=0,
-            z=0,
-        };
+        if GetKeyPressed(Key.Up) then
+            camSpeed = math.max(camSpeed + 1, 0);
+            print("camSpeed is "..camSpeed)
+        end
+        if GetKeyPressed(Key.Down) then
+            camSpeed = math.max(camSpeed - 1, 0);
+            print("camSpeed is "..camSpeed)
+        end
+
+        if GetKeyPressed(Key.Right) then
+            camRotSpeed = math.max(camRotSpeed + 5, 0);
+            print("camRotSpeed is "..camRotSpeed)
+        end
+        if GetKeyPressed(Key.Left) then
+            camRotSpeed = math.max(camRotSpeed - 5, 0);
+            print("camRotSpeed is "..camRotSpeed)
+        end
 
         if GetMouseDown(Mouse.Right) then
             motion = GetMouseMotion();
-            SetCameraYawVelocity(motion.x*camYawSpeed)
-            SetCameraPitchVelocity(motion.y*camPitchSpeed)
+            Camera.Main.yawVelocity = motion.x*camRotSpeed;
+            Camera.Main.pitchVelocity = motion.y*camRotSpeed;
         else
             SetCameraYawVelocity(0)
             SetCameraPitchVelocity(0)            
         end
 
+        Camera.Main.velocity_z = 0
         if GetKeyDown(Key.W) then
-            camVel.z = camVel.z + camSpeed;
+            Camera.Main.velocity_z = Camera.Main.velocity_z + camSpeed;
         end
         if GetKeyDown(Key.S) then
-            camVel.z = camVel.z - camSpeed;
+            Camera.Main.velocity_z = Camera.Main.velocity_z - camSpeed;
         end
         
+        Camera.Main.velocity_x = 0
         if GetKeyDown(Key.D) then
-            camVel.x = camVel.x + camSpeed;
+            Camera.Main.velocity_x = Camera.Main.velocity_x + camSpeed;
         end
         if GetKeyDown(Key.A) then
-            camVel.x = camVel.x - camSpeed;
+            Camera.Main.velocity_x = Camera.Main.velocity_x - camSpeed;
         end
         
+        Camera.Main.velocity_y = 0
         if GetKeyDown(Key.E) then
-            camVel.y = camVel.y + camSpeed;
+            Camera.Main.velocity_y = Camera.Main.velocity_y + camSpeed;
         end
         if GetKeyDown(Key.Q) then
-            camVel.y = camVel.y - camSpeed;
+            Camera.Main.velocity_y = Camera.Main.velocity_y - camSpeed;
         end
-        SetCameraVelocity(camVel);
 
     else
         SetCameraVelocity({});
+        Camera.Main.yawVelocity = 0;
+        Camera.Main.pitchVelocity = 0;
     end
 
 end
