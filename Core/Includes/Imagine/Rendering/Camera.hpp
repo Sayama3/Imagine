@@ -13,8 +13,8 @@ namespace Imagine {
 	public:
 		static Camera* s_MainCamera;
 	public:
-		glm::vec3 velocity{0};
-		glm::vec3 position{-7, 6, 0};
+		Vec3 velocity{0};
+		Vec3 position{-7, 6, 0};
 		// vertical rotation
 		float pitch { 30.f };
 		// horizontal rotation

@@ -122,27 +122,27 @@ namespace Imagine::Runtime {
 			return false;
 		});
 
-		if (handled) return;
-		handled = dispatch.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &mouse) -> bool {
-			if (mouse.GetMouseButton() == Imagine::Mouse::Right) {
-				const Rect<> window = m_Window->GetWindowRect();
-				const Rect<> viewport = m_Renderer->GetViewport();
-				const Vec2 globalPos = m_MousePos + window.min;
-				const Vec2 viewportPos = globalPos - viewport.min;
-
-				const Vec3 camPos = Camera::s_MainCamera->position;
-				const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
-				const Vec3 fwd = Camera::s_MainCamera->GetForward();
-				const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
-
-				const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0, 0, 0}, Vec3{0, 1, 0}}, ray);
-				if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_OriginalMeshEntityID)) {
-					m_ChaikinCurves.AddPoint(mouseOnGround.value());
-					return true;
-				}
-			}
-			return false;
-		});
+		// if (handled) return;
+		// handled = dispatch.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &mouse) -> bool {
+		// 	if (mouse.GetMouseButton() == Imagine::Mouse::Right) {
+		// 		const Rect<> window = m_Window->GetWindowRect();
+		// 		const Rect<> viewport = m_Renderer->GetViewport();
+		// 		const Vec2 globalPos = m_MousePos + window.min;
+		// 		const Vec2 viewportPos = globalPos - viewport.min;
+		//
+		// 		const Vec3 camPos = Camera::s_MainCamera->position;
+		// 		const Vec3 worldPos = m_Renderer->GetWorldPoint(viewportPos);
+		// 		const Vec3 fwd = Camera::s_MainCamera->GetForward();
+		// 		const auto ray = Ray3{camPos, Math::Normalize(worldPos - camPos)};
+		//
+		// 		const std::optional<Vec3> mouseOnGround = Math::RaycastToPoint(Plane{Vec3{0, 0, 0}, Vec3{0, 1, 0}}, ray);
+		// 		if (mouseOnGround && SceneManager::GetMainScene()->Exist(m_OriginalMeshEntityID)) {
+		// 			m_ChaikinCurves.AddPoint(mouseOnGround.value());
+		// 			return true;
+		// 		}
+		// 	}
+		// 	return false;
+		// });
 
 		if (handled) return;
 		handled = dispatch.Dispatch<WindowDropFileEvent>([this](WindowDropFileEvent &e) -> bool {
@@ -158,83 +158,83 @@ namespace Imagine::Runtime {
 			return false;
 		});
 
-		// Handle Camera movement.
-		if (handled) return;
-		handled = dispatch.Dispatch<KeyPressedEvent>([](KeyPressedEvent &e) -> bool {
-			if (e.GetKeyCode() == Imagine::Key::W) {
-				Camera::s_MainCamera->velocity.z = +1;
-			}
-			if (e.GetKeyCode() == Imagine::Key::S) {
-				Camera::s_MainCamera->velocity.z = -1;
-			}
-			if (e.GetKeyCode() == Imagine::Key::A) {
-				Camera::s_MainCamera->velocity.x = -1;
-			}
-			if (e.GetKeyCode() == Imagine::Key::D) {
-				Camera::s_MainCamera->velocity.x = +1;
-			}
-			if (e.GetKeyCode() == Imagine::Key::E) {
-				Camera::s_MainCamera->velocity.y = +1;
-			}
-			if (e.GetKeyCode() == Imagine::Key::Q) {
-				Camera::s_MainCamera->velocity.y = -1;
-			}
+		// // Handle Camera movement.
+		// if (handled) return;
+		// handled = dispatch.Dispatch<KeyPressedEvent>([](KeyPressedEvent &e) -> bool {
+		// 	if (e.GetKeyCode() == Imagine::Key::W) {
+		// 		Camera::s_MainCamera->velocity.z = +1;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::S) {
+		// 		Camera::s_MainCamera->velocity.z = -1;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::A) {
+		// 		Camera::s_MainCamera->velocity.x = -1;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::D) {
+		// 		Camera::s_MainCamera->velocity.x = +1;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::E) {
+		// 		Camera::s_MainCamera->velocity.y = +1;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::Q) {
+		// 		Camera::s_MainCamera->velocity.y = -1;
+		// 	}
+		//
+		// 	if (e.GetKeyCode() == Imagine::Key::Right) {
+		// 		Camera::s_MainCamera->yawVelocity = +45;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::Left) {
+		// 		Camera::s_MainCamera->yawVelocity = -45;
+		// 	}
+		//
+		// 	if (e.GetKeyCode() == Imagine::Key::Up) {
+		// 		Camera::s_MainCamera->pitchVelocity = +45;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::Down) {
+		// 		Camera::s_MainCamera->pitchVelocity = -45;
+		// 	}
+		//
+		// 	return true;
+		// });
 
-			if (e.GetKeyCode() == Imagine::Key::Right) {
-				Camera::s_MainCamera->yawVelocity = +45;
-			}
-			if (e.GetKeyCode() == Imagine::Key::Left) {
-				Camera::s_MainCamera->yawVelocity = -45;
-			}
-
-			if (e.GetKeyCode() == Imagine::Key::Up) {
-				Camera::s_MainCamera->pitchVelocity = +45;
-			}
-			if (e.GetKeyCode() == Imagine::Key::Down) {
-				Camera::s_MainCamera->pitchVelocity = -45;
-			}
-
-			return true;
-		});
-
-		// Handle Camera movement.
-		if (handled) return;
-		dispatch.Dispatch<KeyReleasedEvent>([](const KeyReleasedEvent &e) -> bool {
-			if (e.GetKeyCode() == Imagine::Key::W) {
-				Camera::s_MainCamera->velocity.z = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::S) {
-				Camera::s_MainCamera->velocity.z = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::A) {
-				Camera::s_MainCamera->velocity.x = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::D) {
-				Camera::s_MainCamera->velocity.x = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::E) {
-				Camera::s_MainCamera->velocity.y = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::Q) {
-				Camera::s_MainCamera->velocity.y = 0;
-			}
-
-			if (e.GetKeyCode() == Imagine::Key::Right) {
-				Camera::s_MainCamera->yawVelocity = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::Left) {
-				Camera::s_MainCamera->yawVelocity = 0;
-			}
-
-			if (e.GetKeyCode() == Imagine::Key::Up) {
-				Camera::s_MainCamera->pitchVelocity = 0;
-			}
-			if (e.GetKeyCode() == Imagine::Key::Down) {
-				Camera::s_MainCamera->pitchVelocity = 0;
-			}
-
-			return true;
-		});
+		// // Handle Camera movement.
+		// if (handled) return;
+		// dispatch.Dispatch<KeyReleasedEvent>([](const KeyReleasedEvent &e) -> bool {
+		// 	if (e.GetKeyCode() == Imagine::Key::W) {
+		// 		Camera::s_MainCamera->velocity.z = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::S) {
+		// 		Camera::s_MainCamera->velocity.z = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::A) {
+		// 		Camera::s_MainCamera->velocity.x = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::D) {
+		// 		Camera::s_MainCamera->velocity.x = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::E) {
+		// 		Camera::s_MainCamera->velocity.y = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::Q) {
+		// 		Camera::s_MainCamera->velocity.y = 0;
+		// 	}
+		//
+		// 	if (e.GetKeyCode() == Imagine::Key::Right) {
+		// 		Camera::s_MainCamera->yawVelocity = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::Left) {
+		// 		Camera::s_MainCamera->yawVelocity = 0;
+		// 	}
+		//
+		// 	if (e.GetKeyCode() == Imagine::Key::Up) {
+		// 		Camera::s_MainCamera->pitchVelocity = 0;
+		// 	}
+		// 	if (e.GetKeyCode() == Imagine::Key::Down) {
+		// 		Camera::s_MainCamera->pitchVelocity = 0;
+		// 	}
+		//
+		// 	return true;
+		// });
 	}
 
 	void ApplicationLayer::MoveMouse(Vec2 pos) {

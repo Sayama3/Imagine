@@ -7,6 +7,7 @@
 #include <sol/sol.hpp>
 
 #include "Imagine/Core/FileSystem.hpp"
+#include "Imagine/Core/SmartPointers.hpp"
 #include "Imagine/Core/TimeStep.hpp"
 #include "Imagine/Core/UUID.hpp"
 
@@ -34,6 +35,7 @@ namespace Imagine {
 		};
 		enum Event : uint16_t {
 			UpdateEvent,
+			InputEvent,
 			Count,
 		};
 
@@ -41,6 +43,9 @@ namespace Imagine {
 			switch (e) {
 				case UpdateEvent:
 					return "Update";
+					break;
+				case InputEvent:
+					return "Input";
 					break;
 				default:
 					return "Unknown";
@@ -66,12 +71,17 @@ namespace Imagine {
 
 	private:
 		void LoadLogger();
-		void LoadKeyboard();
+		void LoadMathType();
+		void LoadKeyboardTypes();
+		void LoadKeyboardFuncs();
+		void LoadMouseTypes();
+		void LoadMouseFuncs();
+		void LoadScene();
 
 	public:
 		const std::filesystem::path& GetPath() const;
 	private:
-		sol::state m_State;
+		Scope<sol::state> m_State;
 		std::filesystem::path m_Path;
 		bool m_IsValid{false};
 		std::array<bool, Count> m_EventsValidity{true};

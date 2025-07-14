@@ -29,36 +29,15 @@ namespace Imagine {
 		}
 
 		Button& operator=(uint8_t s) {
-			state = (ButtonState)s;
-			return *this;
-		}
-		Button& operator=(ButtonState s) {
 			state = s;
 			return *this;
 		}
-
 		Button& operator|=(const uint8_t s) {
 			(*((uint8_t*)&state)) |= s;
 			return *this;
 		}
 		Button& operator&=(const uint8_t s) {
 			(*((uint8_t*)&state)) &= s;
-			return *this;
-		}
-		Button& operator|=(const ButtonState s) {
-			*this |= (uint8_t)s;
-			return *this;
-		}
-		Button& operator&=(const ButtonState s) {
-			*this &= (uint8_t)s;
-			return *this;
-		}
-		Button& operator|=(const Button s) {
-			*this |= (uint8_t)s.state;
-			return *this;
-		}
-		Button& operator&=(const Button s) {
-			*this &= (uint8_t)s.state;
 			return *this;
 		}
 		Button operator&(const uint8_t s) {
@@ -71,33 +50,21 @@ namespace Imagine {
 			o |= s;
 			return o;
 		}
-		Button operator&(const ButtonState s) {
-			Button o(*this);
-			o &= s;
-			return o;
-		}
-		Button operator|(const ButtonState s) {
-			Button o(*this);
-			o |= s;
-			return o;
-		}
-		Button operator&(const Button s) {
-			Button o(*this);
-			o &= s;
-			return o;
-		}
-		Button operator|(const Button s) {
-			Button o(*this);
-			o |= s;
-			return o;
-		}
 
-		ButtonState state;
+		uint8_t state = UP;
 
-		bool IsPressed() const {return state & PRESSED != 0;}
-		bool IsReleased() const {return state & RELEASED != 0;}
-		bool IsDown() const {return state & DOWN != 0;}
-		bool IsUp() const {return state & UP != 0;}
+		[[nodiscard]] bool IsPressed() const {
+			return (state & PRESSED) != 0;
+		}
+		[[nodiscard]] bool IsReleased() const {
+			return (state & RELEASED) != 0;
+		}
+		[[nodiscard]] bool IsDown() const {
+			return (state & DOWN) != 0;
+		}
+		[[nodiscard]] bool IsUp() const {
+			return (state & UP) != 0;
+		}
 	};
 
 	struct KeyboardState {
@@ -133,6 +100,7 @@ namespace Imagine {
 	};
 
 	class Inputs {
+	public:
 		static const KeyboardState& GetKeyboardState();
 		static const MouseState& GetMouseState();
 	};
