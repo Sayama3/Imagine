@@ -38,6 +38,12 @@ else()
 	set(MGN_IMGUI OFF)
 endif()
 
+if (MSVC)
+	add_compile_options(/bigobj)
+else ()
+	add_compile_options(-Wa,-mbig-obj)
+endif ()
+
 add_subdirectory(Libraries)
 add_subdirectory(Core)
 add_subdirectory(Application)

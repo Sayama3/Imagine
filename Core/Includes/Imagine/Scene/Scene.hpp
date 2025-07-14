@@ -177,8 +177,14 @@ namespace Imagine {
 		/// Iterate on all the entity with a function.
 		/// Will iterate recursively on all the entity and will pass some data from parent to children.
 		/// As recusivity imply, this function is as resource intensive as the hierarchy go down.
+		void ForEach(std::function<void(Scene *scene, EntityID entity)> func);
+
+		/// Iterate on all the entity with a function.
+		/// Will iterate recursively on all the entity and will pass some data from parent to children.
+		/// As recusivity imply, this function is as resource intensive as the hierarchy go down.
 		template<typename T>
 		void ForEach(std::function<T(const T &parentData, Scene *scene, EntityID entity)>);
+
 		/// Iterate on all the children with a function.
 		/// Will iterate recursively on all the entity and will pass some data from parent to children.
 		/// As recusivity imply, this function is as resource intensive as the hierarchy go down.
@@ -196,6 +202,7 @@ namespace Imagine {
 			return CountComponents(UUIDFromType<T>());
 		}
 
+		EntityID Find(const std::function<bool(Scene*, EntityID id)>& func);
 	public:
 		void ForEach(std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)>);
 		void ForEach(ConstBufferView rootData, std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)>);

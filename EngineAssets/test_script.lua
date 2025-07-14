@@ -4,6 +4,7 @@ global_time = 0
 time = 0
 camSpeed = 5
 camRotSpeed = 40
+player = nil
 entity = nil
 
 function UpdateCamera(ts)
@@ -78,6 +79,11 @@ function Update(ts)
 
     UpdateCamera(ts)
 
+    if(player == nil) then
+        player = FindEntityByName("Player");
+    end
+
+
     if entity == nil then
         return
     end
@@ -85,8 +91,28 @@ function Update(ts)
     if not EntityExist(entity) then
         return
     end
+
+    direction = Vec3.new(1)
+    print(direction)
+    if(player ~= nil) then
+        if(entity ~= nil) then
+            ePlayer = GetEntity(player)
+            eEntity = GetEntity(entity)
+            print(eEntity)
+            print(ePlayer)
+            print(eEntity.position)
+            print(ePlayer.position)
+            direction = ePlayer.position - eEntity.position   
+            print(direction)
+            Vec3.Normalize(direction);
+            print(direction)
+        end
+    end
+
     physics = GetOrAddPhysics(entity)
-    physics.linear_velocity_y = math.cos(global_time)
+    if direction ~= Vec3.new(0) then
+        physics.linear_velocity = direction * Vec3.new(ts);
+    end
     -- SetPhysics(entity, physics)
 end
 

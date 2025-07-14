@@ -575,6 +575,23 @@ namespace Imagine {
 		}
 #endif
 	}
+	void Scene::ForEach(std::function<void(Scene *scene, EntityID entity)> func) {
+		for (uint32_t i = 0; i < m_SparseEntities.Count(); ++i) {
+			const EntityID id{m_SparseEntities.GetID(i)};
+			func(this, id);
+		}
+	}
+
+	EntityID Scene::Find(const std::function<bool(Scene *, EntityID id)> &func) {
+		for (uint32_t i = 0; i < m_SparseEntities.Count(); ++i) {
+			const EntityID id{m_SparseEntities.GetID(i)};
+			if (func(this, id)) {
+				return id;
+			}
+		}
+		return EntityID::NullID;
+	}
+
 	void Scene::ForEach(std::function<Buffer(ConstBufferView parentData, Scene *scene, EntityID entity)> func) {
 		const auto beg = m_Roots.cbegin();
 		const auto end = m_Roots.cend();

@@ -121,14 +121,66 @@ namespace Imagine {
 	}
 
 	void LuaScript::LoadMathType() {
-		auto Vec2Type = (*m_State).new_usertype<Vec2>("Vec2", sol::constructors<Vec2()>());
+		(*m_State)["DegToRad"] = Math::DegToRad;
+		(*m_State)["RadToDeg"] = Math::RadToDeg;
+
+		auto Vec2Type = (*m_State).new_usertype<Vec2>("Vec2", sol::constructors<Vec2(),Vec2(float),Vec2(float,float)>());
 		Vec2Type["x"] = &Vec2::x;
 		Vec2Type["y"] = &Vec2::y;
+		Vec2Type["Normalize"] = [](Vec2* v) {*v = Math::Normalize(*v);};
+		Vec2Type["Magnitude"] = [](Vec2* v) {return Math::Magnitude(*v);};
+		Vec2Type["Dot"] = [](Vec2* v, Vec2& o) {return Math::Dot(*v, o);};
+		Vec2Type["IsNull"] = [](Vec2 *v) { return *v == Vec2(0); };
+		Vec2Type[sol::meta_function::addition] = [](const Vec2* a,const Vec2& b) {return *a + b;};
+		Vec2Type[sol::meta_function::subtraction] = [](const Vec2* a,const Vec2& b) {return *a - b;};
+		Vec2Type[sol::meta_function::multiplication] = [](const Vec2* a,const Vec2& b) {return *a * b;};
+		Vec2Type[sol::meta_function::division] = [](const Vec2* a,const Vec2& b) {return *a / b;};
+		Vec2Type[sol::meta_function::equal_to] = [](const Vec2* a,const Vec2& b) {return *a == b;};
 
-		auto Vec3Type = (*m_State).new_usertype<Vec3>("Vec3", sol::constructors<Vec3()>());
+
+		auto Vec3Type = (*m_State).new_usertype<Vec3>("Vec3", sol::constructors<Vec3(),Vec3(float),Vec3(float,float,float)>());
 		Vec3Type["x"] = &Vec3::x;
 		Vec3Type["y"] = &Vec3::y;
-		Vec3Type["y"] = &Vec3::z;
+		Vec3Type["z"] = &Vec3::z;
+		Vec3Type["Normalize"] = [](Vec3* v) {*v = Math::Normalize(*v);};
+		Vec3Type["Magnitude"] = [](Vec3* v) {return Math::Magnitude(*v);};
+		Vec3Type["Dot"] = [](Vec3* v, Vec3& o) {return Math::Dot(*v, o);};
+		Vec3Type["Cross"] = [](Vec3* v, Vec3& o) {return Math::Cross(*v, o);};
+		Vec3Type["IsNull"] = [](Vec3* v) {return *v == Vec3(0);};
+		Vec3Type[sol::meta_function::addition] = [](const Vec3* a,const Vec3& b) {return *a + b;};
+		Vec3Type[sol::meta_function::subtraction] = [](const Vec3* a,const Vec3& b) {return *a - b;};
+		Vec3Type[sol::meta_function::multiplication] = [](const Vec3* a,const Vec3& b) {return *a * b;};
+		Vec3Type[sol::meta_function::division] = [](const Vec3* a,const Vec3& b) {return *a / b;};
+		Vec3Type[sol::meta_function::equal_to] = [](const Vec3* a,const Vec3& b) {return *a == b;};
+
+		auto Vec4Type = (*m_State).new_usertype<Vec4>("Vec4", sol::constructors<Vec4(),Vec4(float),Vec4(float,float,float,float)>());
+		Vec4Type["x"] = &Vec4::x;
+		Vec4Type["y"] = &Vec4::y;
+		Vec4Type["z"] = &Vec4::z;
+		Vec4Type["w"] = &Vec4::w;
+		Vec4Type["Normalize"] = [](Vec4* v) {*v = Math::Normalize(*v);};
+		Vec4Type["Magnitude"] = [](Vec4* v) {return Math::Magnitude(*v);};
+		Vec4Type["Dot"] = [](Vec4 *v, Vec4 &o) { return Math::Dot(*v, o); };
+		Vec4Type["IsNull"] = [](Vec4 *v) { return *v == Vec4(0); };
+		Vec4Type[sol::meta_function::addition] = [](const Vec4* a,const Vec4& b) {return *a + b;};
+		Vec4Type[sol::meta_function::subtraction] = [](const Vec4* a,const Vec4& b) {return *a - b;};
+		Vec4Type[sol::meta_function::multiplication] = [](const Vec4* a,const Vec4& b) {return *a * b;};
+		Vec4Type[sol::meta_function::division] = [](const Vec4* a,const Vec4& b) {return *a / b;};
+		Vec4Type[sol::meta_function::equal_to] = [](const Vec4* a,const Vec4& b) {return *a == b;};
+
+		auto QuatType = (*m_State).new_usertype<Quat>("Quat", sol::constructors<Quat(),Quat(Vec3)>());
+		QuatType["x"] = &Quat::x;
+		QuatType["y"] = &Quat::y;
+		QuatType["z"] = &Quat::z;
+		QuatType["w"] = &Quat::w;
+		QuatType["Normalize"] = [](Quat* v) {*v = Math::Normalize(*v);};
+		QuatType["Magnitude"] = [](Quat* v) {return Math::Magnitude(*v);};
+		QuatType["Euler"] = [](Quat* v) {return glm::eulerAngles(*v);};
+		QuatType["Transform"] = [](Quat* quat, const Vec3& vec) {return *quat * vec;};
+		QuatType[sol::meta_function::addition] = [](const Quat* a,const Quat& b) {return *a + b;};
+		QuatType[sol::meta_function::subtraction] = [](const Quat* a,const Quat& b) {return *a - b;};
+		QuatType[sol::meta_function::multiplication] = [](const Quat* a,const Quat& b) {return *a * b;};
+		QuatType[sol::meta_function::equal_to] = [](const Quat* a,const Quat& b) {return *a == b;};
 
 		auto RectType = m_State->new_usertype<Rect<float>>("Rect", sol::constructors<Rect<float>()>());
 		RectType["min_x"] = &Rect<float>::minX;
@@ -316,9 +368,13 @@ namespace Imagine {
 		CameraType["velocity_x"] = sol::property(BIND_RW_VAL(Camera, float, velocity.x));
 		CameraType["velocity_y"] = sol::property(BIND_RW_VAL(Camera, float, velocity.y));
 		CameraType["velocity_z"] = sol::property(BIND_RW_VAL(Camera, float, velocity.z));
+		CameraType["velocity"] = &Camera::velocity;
+
 		CameraType["position_x"] = sol::property(BIND_RW_VAL(Camera, float, position.x));
 		CameraType["position_y"] = sol::property(BIND_RW_VAL(Camera, float, position.y));
 		CameraType["position_z"] = sol::property(BIND_RW_VAL(Camera, float, position.z));
+		CameraType["position"] = &Camera::position;
+
 		CameraType["pitch"] = &Camera::pitch;
 		CameraType["yaw"] = &Camera::yaw;
 		CameraType["pitchVelocity"] = &Camera::pitchVelocity;
@@ -347,21 +403,30 @@ namespace Imagine {
 
 		// EntityType["id"] = BIND_R_VAL(Entity, EntityID, Id);
 
-		EntityType["position_x"] = BIND_RW_VAL(Entity, float, LocalPosition.x);
-		EntityType["position_y"] = BIND_RW_VAL(Entity, float, LocalPosition.y);
-		EntityType["position_z"] = BIND_RW_VAL(Entity, float, LocalPosition.z);
+		EntityType["position_x"] = sol::property(BIND_RW_VAL(Entity, float, LocalPosition.x));
+		EntityType["position_y"] = sol::property(BIND_RW_VAL(Entity, float, LocalPosition.y));
+		EntityType["position_z"] = sol::property(BIND_RW_VAL(Entity, float, LocalPosition.z));
+		EntityType["position"] = &Entity::LocalPosition;
 
-		EntityType["rotation_x"] = BIND_RW_VAL(Entity, float, LocalRotation.x);
-		EntityType["rotation_y"] = BIND_RW_VAL(Entity, float, LocalRotation.y);
-		EntityType["rotation_z"] = BIND_RW_VAL(Entity, float, LocalRotation.z);
-		EntityType["rotation_w"] = BIND_RW_VAL(Entity, float, LocalRotation.w);
+		EntityType["rotation_x"] = sol::property(BIND_RW_VAL(Entity, float, LocalRotation.x));
+		EntityType["rotation_y"] = sol::property(BIND_RW_VAL(Entity, float, LocalRotation.y));
+		EntityType["rotation_z"] = sol::property(BIND_RW_VAL(Entity, float, LocalRotation.z));
+		EntityType["rotation_w"] = sol::property(BIND_RW_VAL(Entity, float, LocalRotation.w));
+		EntityType["rotation"] = &Entity::LocalRotation;
 
-		EntityType["scale_x"] = BIND_RW_VAL(Entity, float, LocalScale.x);
-		EntityType["scale_y"] = BIND_RW_VAL(Entity, float, LocalScale.y);
-		EntityType["scale_z"] = BIND_RW_VAL(Entity, float, LocalScale.z);
+		EntityType["scale_x"] = sol::property(BIND_RW_VAL(Entity, float, LocalScale.x));
+		EntityType["scale_y"] = sol::property(BIND_RW_VAL(Entity, float, LocalScale.y));
+		EntityType["scale_z"] = sol::property(BIND_RW_VAL(Entity, float, LocalScale.z));
+		EntityType["scale"] = &Entity::LocalScale;
 
 		EntityType["SetEuler"] = [](Entity *e, float x, float y, float z) { e->LocalRotation = Quat(Vec3{x, y, z} * Math::DegToRad); };
 
+		(*m_State)["FindEntityByName"] = [](const std::string &name) -> sol::optional<uint32_t> {
+			const auto result = SceneManager::GetMainScene()->Find([&name](Scene *scene, EntityID id) {
+				return scene->GetName(id) == name;
+			});
+			return result.IsValid() ? result.id : sol::optional<uint32_t>{sol::nullopt};
+		};
 		(*m_State)["CreateEntity"] = []() -> uint32_t { return SceneManager::GetMainScene()->CreateEntity().id; };
 		(*m_State)["GetEntity"] = [](uint32_t id) -> Entity & { return SceneManager::GetMainScene()->GetEntity(id); };
 		(*m_State)["EntityExist"] = [](uint32_t id) -> bool { return SceneManager::GetMainScene()->Exist(id); };
@@ -370,10 +435,12 @@ namespace Imagine {
 		PhysicalisableType["linear_velocity_x"] = sol::property(BIND_RW_VAL(Physicalisable, float, LinearVelocity.x));
 		PhysicalisableType["linear_velocity_y"] = sol::property(BIND_RW_VAL(Physicalisable, float, LinearVelocity.y));
 		PhysicalisableType["linear_velocity_z"] = sol::property(BIND_RW_VAL(Physicalisable, float, LinearVelocity.z));
+		PhysicalisableType["linear_velocity"] = &Physicalisable::LinearVelocity;
 
 		PhysicalisableType["angular_velocity_x"] = sol::property(BIND_RW_VAL(Physicalisable, float, AngularVelocity.x));
 		PhysicalisableType["angular_velocity_y"] = sol::property(BIND_RW_VAL(Physicalisable, float, AngularVelocity.y));
 		PhysicalisableType["angular_velocity_z"] = sol::property(BIND_RW_VAL(Physicalisable, float, AngularVelocity.z));
+		PhysicalisableType["angular_velocity"] = &Physicalisable::AngularVelocity;
 
 		(*m_State)["GetPhysics"] = [](uint32_t id) -> Physicalisable & { return *SceneManager::GetMainScene()->GetComponent<Physicalisable>(id); };
 		(*m_State)["HasPhysics"] = [](uint32_t id) -> bool { return SceneManager::GetMainScene()->HasComponent<Physicalisable>(id); };
