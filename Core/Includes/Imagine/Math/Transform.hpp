@@ -98,6 +98,16 @@ namespace Imagine {
 			return PositionWorldToLocal * vec4(dir,0);
 		}
 
+		vec3 GetRight() const {
+			return TransformDirection(vec3{1,0,0});
+		}
+		vec3 GetUp() const {
+			return TransformDirection(vec3{0,1,0});
+		}
+		vec3 GetForward() const {
+			return TransformDirection(vec3{0,0,1});
+		}
+
 		vec3 LocalPosition{0};
 		quat LocalRotation{Math::Identity<quat>()};
 		vec3 LocalScale{1};

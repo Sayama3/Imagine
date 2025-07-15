@@ -244,8 +244,10 @@ namespace Imagine::Vulkan {
 													 .set_required_features_12(features12)
 													 .set_required_features(requiredFeatures)
 													 .set_surface(m_Surface)
+													 .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
 													 .select()
 													 .value();
+		MGN_CORE_INFO("[Vulkan] Use Graphics Card '{0}'", physicalDevice.name);
 
 		physicalDevice.enable_extension_if_present(VK_KHR_DISPLAY_EXTENSION_NAME);
 

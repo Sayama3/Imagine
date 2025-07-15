@@ -334,6 +334,14 @@ namespace Imagine {
 					MGN_PROFILE_SCOPE("Draw One Scene");
 					scene->CacheTransforms();
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
+					ctx.OpaqueLines.reserve(scene->Count()*3);
+					scene->ForEach([&ctx](const Scene *scene, const EntityID id) {
+						const auto trs = scene->GetTransform(id);
+						const auto pos = trs.GetWorldPosition();
+						ctx.OpaqueLines.push_back({{Vertex::PC(pos, Vec4(1,0,0,1)), Vertex::PC(pos + trs.GetRight(), Vec4(1,0,0,1))}});
+						ctx.OpaqueLines.push_back({{Vertex::PC(pos, Vec4(0,1,0,1)), Vertex::PC(pos + trs.GetUp(), Vec4(0,1,0,1))}});
+						ctx.OpaqueLines.push_back({{Vertex::PC(pos, Vec4(0,0,1,1)), Vertex::PC(pos + trs.GetForward(), Vec4(0,0,1,1))}});
+					});
 					scene->ForEachWithComponent<Renderable>([&ctx](const Scene *scene, const EntityID id, Renderable &renderable) {
 						if (renderable.cpuMeshOrModel == NULL_ASSET_HANDLE) return;
 						Ref<Asset> asset = AssetManager::GetAsset(renderable.cpuMeshOrModel);

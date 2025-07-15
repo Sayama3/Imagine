@@ -31,6 +31,11 @@ namespace Imagine {
 
 	// Explicitly write the type for the glm types.
 	struct Vertex {
+		static inline Vertex PC(glm::fvec3 position, glm::fvec4 color) {
+			Vertex v{position};
+			v.color = color;
+			return v;
+		}
 		glm::fvec3 position{0, 0, 0};
 		float uv_x{0};
 		glm::fvec3 normal{0, 1, 0};
