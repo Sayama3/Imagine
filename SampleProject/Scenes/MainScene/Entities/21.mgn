@@ -1,16 +1,16 @@
 Type: Entity
-ID: 0
-Name: Light
-Local Position: [-1, 11.5, 0]
-Local Rotation: [0.376711547, -0.30779475, 0.853003025, 0.189041674]
+ID: 21
+Name: Spot Light
+Local Position: [-3.0999999, 2.9000001, 0]
+Local Rotation: [0.241806, 0.595533311, -0.0473023802, 0.764612675]
 Local Scale: [1, 1, 1]
 Custom Components:
   [8617021113816766947, 15897890290382257744]:
     Size: 48
     Data:
-      - 1063971563
-      - 1065353216
-      - 1065353216
+      - 1063543908
+      - 1056217036
+      - 1038084593
       - 1079194419
       - 1092616192
       - 0
@@ -19,6 +19,6 @@ Custom Components:
       - 0
       - 0
       - 0
-      - 1
+      - 2
 Relationship:
   Root: true
