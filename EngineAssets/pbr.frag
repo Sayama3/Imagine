@@ -31,7 +31,7 @@ vec3 CalculateLighting(vec3 lightColor, vec3 lightDir, float lightIntensity)
     // specular
     float specularStrength = 0.5;
     vec3 viewDir = normalize(sceneData.camPos.xyz - position);
-    vec3 reflectDir = normalize(reflect(-lightDir, normal));
+    vec3 reflectDir = normalize(reflect(lightDir, normal));
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor * lightIntensity;
 
@@ -71,7 +71,7 @@ vec3 AddSpotLight(Light light)
     vec3 lightTarget = normalize(light.direction.xyz);
     float cutOff = light.direction.w;
 
-    if (dot(normalize(lightPos - position), lightTarget) <= cos(cutOff))
+    if (dot(lightDir, lightTarget) >= cos(cutOff))
     {
         return vec3(0);
     }

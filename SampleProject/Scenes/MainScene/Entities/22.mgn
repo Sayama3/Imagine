@@ -1,7 +1,7 @@
 Type: Entity
 ID: 22
 Name: Point Light
-Local Position: [3, 2.70000005, 0]
+Local Position: [6.5, 4.30000019, 0]
 Local Rotation: [0, 0, 0, 1]
 Local Scale: [1, 1, 1]
 Custom Components:
@@ -11,8 +11,8 @@ Custom Components:
       - 1038168459
       - 1063050461
       - 1059707308
-      - 1091777331
-      - 1093035622
+      - 1094293914
+      - 1095866778
       - 0
       - 0
       - 1061752795

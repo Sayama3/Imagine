@@ -49,7 +49,7 @@ namespace Imagine {
 				{
 					out << KEYVAL("Type", "Entity");
 					out << KEYVAL("ID", e.Id);
-					out << KEYVAL("Name", scene->m_Names.Get(id));
+					out << KEYVAL("Name", scene->m_Names.Get(id).c_str());
 					out << KEYVAL("Local Position", e.LocalPosition);
 					out << KEYVAL("Local Rotation", e.LocalRotation);
 					out << KEYVAL("Local Scale", e.LocalScale);

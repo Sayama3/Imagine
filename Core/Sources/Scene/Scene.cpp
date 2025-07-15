@@ -401,7 +401,8 @@ namespace Imagine {
 			ImGui::Begin("Main Scene");
 			if (ImGui::Button("Save")) {
 				std::string folder = ThirdParty::FileDialogs::SelectFolder("Load Scene");
-				SceneSerializer::SerializeReadable(this, folder);
+				if (!folder.empty())
+					SceneSerializer::SerializeReadable(this, folder);
 			}
 
 			if (ImGui::Button("Load")) {
