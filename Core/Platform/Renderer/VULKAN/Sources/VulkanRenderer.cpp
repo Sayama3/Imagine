@@ -698,7 +698,7 @@ namespace Imagine::Vulkan {
 											  .set_desired_format(VkSurfaceFormatKHR{
 													  .format = m_SwapchainImageFormat,
 													  .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR})
-		                                      .set_desired_min_image_count(3)
+											  .set_desired_min_image_count(3)
 											  // no vsync present mode. AKA ASAP
 											  .set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
 											  .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_RELAXED_KHR)
@@ -997,9 +997,8 @@ namespace Imagine::Vulkan {
 	}
 
 	AllocatedImage VulkanRenderer::CreateImage(const void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped) {
-		size_t dataSize = size.depth * size.width * size.height * 4;
+		const size_t dataSize = size.depth * size.width * size.height * 4;
 		AllocatedBuffer uploadbuffer = CreateBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
 		memcpy(uploadbuffer.info.pMappedData, data, dataSize);
 
 		AllocatedImage new_image = CreateImage(size, format, usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, mipmapped);
@@ -1041,7 +1040,7 @@ namespace Imagine::Vulkan {
 
 		if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 			throw std::runtime_error("texture image format does not support linear blitting!");
-			//TODO: Special case of creating the mipmaps through a compute shader or on CPU.
+			// TODO: Special case of creating the mipmaps through a compute shader or on CPU.
 		}
 
 		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
@@ -1059,7 +1058,7 @@ namespace Imagine::Vulkan {
 		int32_t mipWidth = texWidth;
 		int32_t mipHeight = texHeight;
 
-		for (int64_t i = 1; i < mipLevels; ++i)	{
+		for (int64_t i = 1; i < mipLevels; ++i) {
 			barrier.subresourceRange.baseMipLevel = i - 1;
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -1067,30 +1066,30 @@ namespace Imagine::Vulkan {
 			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
 			vkCmdPipelineBarrier(commandBuffer,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-				0, nullptr,
-				0, nullptr,
-				1, &barrier);
+								 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+								 0, nullptr,
+								 0, nullptr,
+								 1, &barrier);
 
 			VkImageBlit blit{};
-			blit.srcOffsets[0] = { 0, 0, 0 };
-			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+			blit.srcOffsets[0] = {0, 0, 0};
+			blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
 			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			blit.srcSubresource.mipLevel = i - 1;
 			blit.srcSubresource.baseArrayLayer = 0;
 			blit.srcSubresource.layerCount = 1;
-			blit.dstOffsets[0] = { 0, 0, 0 };
-			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+			blit.dstOffsets[0] = {0, 0, 0};
+			blit.dstOffsets[1] = {mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1};
 			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			blit.dstSubresource.mipLevel = i;
 			blit.dstSubresource.baseArrayLayer = 0;
 			blit.dstSubresource.layerCount = 1;
 
 			vkCmdBlitImage(commandBuffer,
-				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1, &blit,
-				VK_FILTER_LINEAR);
+						   image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						   image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						   1, &blit,
+						   VK_FILTER_LINEAR);
 
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1098,10 +1097,10 @@ namespace Imagine::Vulkan {
 			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 			vkCmdPipelineBarrier(commandBuffer,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-				0, nullptr,
-				0, nullptr,
-				1, &barrier);
+								 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+								 0, nullptr,
+								 0, nullptr,
+								 1, &barrier);
 
 			if (mipWidth > 1) mipWidth /= 2;
 			if (mipHeight > 1) mipHeight /= 2;
@@ -1115,10 +1114,10 @@ namespace Imagine::Vulkan {
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		vkCmdPipelineBarrier(commandBuffer,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
+							 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+							 0, nullptr,
+							 0, nullptr,
+							 1, &barrier);
 		EndSingleTimeCommands(commandBuffer);
 	}
 
@@ -1182,7 +1181,7 @@ namespace Imagine::Vulkan {
 		return m_IsDrawing;
 	}
 
-	bool VulkanRenderer::BeginDraw(const Imagine::GPUSceneData& sceneData, const Imagine::GPULightData& lightData) {
+	bool VulkanRenderer::BeginDraw(const Imagine::GPUSceneData &sceneData, const Imagine::GPULightData &lightData) {
 		MGN_PROFILE_FUNCTION();
 
 		m_IsDrawing = true;
@@ -1252,7 +1251,7 @@ namespace Imagine::Vulkan {
 
 		{
 			MGN_PROFILE_SCOPE("Setup Scene Data");
-			//TODO: Remove when I properly send the scene data from the application.
+			// TODO: Remove when I properly send the scene data from the application.
 			m_SceneData.view = ViewMatrixCached;
 			m_SceneData.proj = ProjectionMatrixCached;
 			m_SceneData.viewproj = ViewProjectMatrixCached;
@@ -1410,7 +1409,7 @@ namespace Imagine::Vulkan {
 				const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(payloadStr.c_str());
 				if (payload != nullptr) {
 					MGN_CORE_CASSERT(payload->DataSize == sizeof(AssetHandle), "The data is not an AssetHandle");
-					AssetHandle payloadHandle{ *((AssetHandle *) (payload->Data))};
+					AssetHandle payloadHandle{*((AssetHandle *) (payload->Data))};
 					Ref<CPUModel> model = AssetManager::GetAssetAs<CPUModel>(payloadHandle);
 					model->LoadInScene(SceneManager::GetMainScene().get());
 				}
@@ -1780,7 +1779,7 @@ namespace Imagine::Vulkan {
 		sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		sampl.mipLodBias = 0.0f;
 		sampl.minLod = 0.0f;
-		sampl.maxLod =  std::floor(std::log2(std::max((float)tex2d.image.width, (float)tex2d.image.height))) + 1;
+		sampl.maxLod = std::floor(std::log2(std::max((float) tex2d.image.width, (float) tex2d.image.height))) + 1;
 
 		sampl.magFilter = VK_FILTER_LINEAR;
 		sampl.minFilter = VK_FILTER_LINEAR;
