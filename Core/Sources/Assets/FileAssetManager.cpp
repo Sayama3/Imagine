@@ -5,6 +5,7 @@
 #include "Imagine/Assets/FileAssetManager.hpp"
 
 #include "Imagine/Assets/AssetImporter.hpp"
+#include "Imagine/Rendering/CPU/CPUModel.hpp"
 #include "Imagine/Scene/Scene.hpp"
 #include "Imagine/ThirdParty/YamlCpp.hpp"
 
@@ -228,11 +229,37 @@ namespace Imagine {
 
 		auto loaded_it = m_LoadedAssets.find(handle);
 		if (loaded_it != m_LoadedAssets.end()) {
+			if(loaded_it->second->GetType() == AssetType::Model) {
+				if(Ref<CPUModel> model = CastPtr<CPUModel>(loaded_it->second)) {
+					for(auto& m : model->Meshes) {
+						UnloadAsset(m->Handle);
+					}
+					for(auto& m : model->Textures) {
+						UnloadAsset(m->Handle);
+					}
+					for(auto& m : model->Instances) {
+						UnloadAsset(m->Handle);
+					}
+				}
+			}
 			m_LoadedAssets.erase(loaded_it);
 		}
 
 		auto memory_it = m_MemoryAssets.find(handle);
 		if (memory_it != m_MemoryAssets.end()) {
+			if(memory_it->second->GetType() == AssetType::Model) {
+				if(Ref<CPUModel> model = CastPtr<CPUModel>(memory_it->second)) {
+					for(auto& m : model->Meshes) {
+						UnloadAsset(m->Handle);
+					}
+					for(auto& m : model->Textures) {
+						UnloadAsset(m->Handle);
+					}
+					for(auto& m : model->Instances) {
+						UnloadAsset(m->Handle);
+					}
+				}
+			}
 			m_MemoryAssets.erase(memory_it);
 		}
 	}
