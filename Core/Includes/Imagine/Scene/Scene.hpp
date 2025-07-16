@@ -19,6 +19,7 @@ namespace Imagine {
 
 	class SceneSerializer;
 	class Scene final : public Asset {
+
 		friend class SceneSerializer;
 
 	public:

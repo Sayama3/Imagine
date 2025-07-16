@@ -19,7 +19,9 @@ namespace Imagine {
 		~CPUMaterialInstance() = default;
 		CPUMaterialInstance(AssetHandle material);
 	public:
+
 		using MaterialDataBuffer = std::array<uint8_t, MaterialField::DataSize>;
+
 		struct SetFieldPosition {
 			uint32_t SetIndex;
 			uint32_t BindingIndex;

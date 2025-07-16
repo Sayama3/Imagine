@@ -7,9 +7,10 @@
 
 
 layout (location = 0) out vec3 position;
-layout (location = 1) out vec2 texcoord;
-layout (location = 2) out vec4 vColor;
-layout (location = 3) out mat3 tangentBasis;
+layout (location = 1) out vec3 normal;
+layout (location = 2) out vec2 texcoord;
+layout (location = 3) out vec4 vColor;
+layout (location = 4) out mat3 tangentBasis;
 
 layout(buffer_reference, std430) readonly buffer VertexBuffer{
     Vertex vertices[];
@@ -34,13 +35,9 @@ void main()
 
     gl_Position =  sceneData.viewproj * position4;
 
-    vec4 tangent = PushConstants.normalMatrix * vec4(v.tangent.xyz, 0);
-//    tangent /= tangent.w;
-    vec4 bitangent = PushConstants.normalMatrix * vec4(v.bitangent.xyz, 0);
-//    bitangent /= bitangent.w;
-    vec4 normal = PushConstants.normalMatrix * vec4(v.normal.xyz, 0);
-//    normal /= normal.w;
-
-    tangentBasis = /*mat3(PushConstants.normalMatrix) * */ mat3(normalize(tangent), normalize(bitangent), normalize(normal));
+    vec4 normal4 = PushConstants.normalMatrix * vec4(v.normal.xyz, 0);
+//    normal4 /= normal4.w;
+    normal = normalize(normal4.xyz);
+    tangentBasis = mat3(PushConstants.worldMatrix) * mat3(normalize(v.tangent), normalize(v.bitangent), normalize(v.normal));
     vColor = v.color;
 }

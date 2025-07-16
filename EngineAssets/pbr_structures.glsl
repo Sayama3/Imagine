@@ -53,3 +53,6 @@ layout(set = 1, binding = 6) uniform sampler2D ambientOcclusionTexture;
 
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
+
+// Constant normal incidence Fresnel factor for all dielectrics.
+const vec3 Fdielectric = vec3(0.04);

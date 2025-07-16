@@ -176,6 +176,7 @@ namespace Imagine::Vulkan {
 		return Window::Get()->GetWindowRect();
 #endif
 	}
+
 	VkDevice VulkanRenderer::GetDevice() {
 		return m_Device;
 	}
