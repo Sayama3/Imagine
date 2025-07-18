@@ -1412,6 +1412,7 @@ namespace Imagine::Vulkan {
 					MGN_CORE_CASSERT(payload->DataSize == sizeof(AssetHandle), "The data is not an AssetHandle");
 					AssetHandle payloadHandle{*((AssetHandle *) (payload->Data))};
 					Ref<CPUModel> model = AssetManager::GetAssetAs<CPUModel>(payloadHandle);
+					model->LoadModelInGPU();
 					model->LoadInScene(SceneManager::GetMainScene().get());
 				}
 				ImGui::EndDragDropTarget();
@@ -1895,86 +1896,89 @@ namespace Imagine::Vulkan {
 		writer.WriteBuffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		writer.WriteBuffer(1, gpuLightDataBuffer.buffer, sizeof(GPULightData), 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 		writer.UpdateSet(m_Device, GetCurrentFrame().m_GlobalDescriptor);
+		{
+			MGN_PROFILE_SCOPE("Draw Opaque Surface");
+			for (const RenderObject &draw: ctx.OpaqueSurfaces) {
 
-		for (const RenderObject &draw: ctx.OpaqueSurfaces) {
+				AutoDeleteMeshAsset *mesh = dynamic_cast<AutoDeleteMeshAsset *>(draw.mesh.get());
 
-			AutoDeleteMeshAsset *mesh = dynamic_cast<AutoDeleteMeshAsset *>(draw.mesh.get());
+				MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+				// TODO: Do some smart LOD selection instead of the best one everytime
+				const LOD &lod = mesh->lods.front();
 
-			MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
-			// TODO: Do some smart LOD selection instead of the best one everytime
-			const LOD &lod = mesh->lods.front();
+				// TODO: Get the real material from the LOD.
+				auto instance = AssetManager::GetAssetAs<CPUMaterialInstance>(lod.materialInstance);
+				instance->LoadInGPU();
+				auto vkInstance = dynamic_cast<VulkanMaterialInstance *>(instance->gpu.get());
+				if (!vkInstance) continue;
+				if (auto vkMat = vkInstance->material.lock()) {
 
-			// TODO: Get the real material from the LOD.
-			auto instance = AssetManager::GetAssetAs<CPUMaterialInstance>(lod.materialInstance);
-			instance->LoadInGPU();
-			auto vkInstance = dynamic_cast<VulkanMaterialInstance *>(instance->gpu.get());
-			if (!vkInstance) continue;
-			if (auto vkMat = vkInstance->material.lock()) {
+					vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+					for (int i = 1; i < vkMat->materialLayouts.size(); ++i) {
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, i, 1, &vkInstance->materialSets.at(i), 0, nullptr);
+					}
 
-				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-				for (int i = 1; i < vkMat->materialLayouts.size(); ++i) {
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, i, 1, &vkInstance->materialSets.at(i), 0, nullptr);
+					vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+					GPUDrawPushConstants pushConstants;
+					pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+					pushConstants.worldMatrix = draw.transform;
+					pushConstants.normalMatrix = glm::transpose(glm::inverse(pushConstants.worldMatrix));
+					vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+
+					vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 				}
-
-				vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-				GPUDrawPushConstants pushConstants;
-				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-				pushConstants.worldMatrix = draw.transform;
-				pushConstants.normalMatrix = glm::transpose(glm::inverse(pushConstants.worldMatrix));
-				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
-
-				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 			}
 		}
+		{
+			MGN_PROFILE_SCOPE("Draw Lines");
+			for (uint64_t i = 0; i < lineMeshes.size(); ++i) {
+				ManualDeleteMeshAsset *mesh = &lineMeshes[i];
 
-		for (uint64_t i = 0; i < lineMeshes.size(); ++i) {
-			ManualDeleteMeshAsset *mesh = &lineMeshes[i];
+				MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
+				// TODO: Do some smart LOD selection instead of the best one everytime
+				const LOD &lod = mesh->lods.front();
 
-			MGN_CORE_CASSERT(mesh, "The mesh is not a valid vulkan mesh.");
-			// TODO: Do some smart LOD selection instead of the best one everytime
-			const LOD &lod = mesh->lods.front();
+				// // TODO: Get the real material from the LOD.
+				// const VulkanMaterialInstance *material = m_LineInstance.get();
+				//
+				// if (auto vkMat = material->material.lock()) {
+				// 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
+				// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+				// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
+				//
+				// 	vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+				//
+				// 	GPUDrawPushConstants pushConstants;
+				// 	pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+				// 	pushConstants.worldMatrix = Math::Identity<glm::mat4>();
+				// 	vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+				//
+				// 	vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
+				// }
+				auto vkInstance = m_LineInstance;
+				if (!vkInstance) continue;
+				if (auto vkMat = vkInstance->material.lock()) {
 
-			// // TODO: Get the real material from the LOD.
-			// const VulkanMaterialInstance *material = m_LineInstance.get();
-			//
-			// if (auto vkMat = material->material.lock()) {
-			// 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
-			// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-			// 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 1, 1, &material->materialSets.front(), 0, nullptr);
-			//
-			// 	vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-			//
-			// 	GPUDrawPushConstants pushConstants;
-			// 	pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-			// 	pushConstants.worldMatrix = Math::Identity<glm::mat4>();
-			// 	vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
-			//
-			// 	vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
-			// }
-			auto vkInstance = m_LineInstance;
-			if (!vkInstance) continue;
-			if (auto vkMat = vkInstance->material.lock()) {
+					vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
+					for (int i = 1; i < vkMat->materialLayouts.size(); ++i) {
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, i, 1, &vkInstance->materialSets.at(i), 0, nullptr);
+					}
 
-				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.pipeline);
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, 0, 1, &GetCurrentFrame().m_GlobalDescriptor, 0, nullptr);
-				for (int i = 1; i < vkMat->materialLayouts.size(); ++i) {
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkMat->pipeline.layout, i, 1, &vkInstance->materialSets.at(i), 0, nullptr);
+					vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+					GPUDrawPushConstants pushConstants;
+					pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
+					pushConstants.worldMatrix = Math::Identity<glm::fmat4>();
+					pushConstants.normalMatrix = Math::Identity<glm::fmat4>();
+					vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
+
+					vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 				}
-
-				vkCmdBindIndexBuffer(cmd, mesh->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-				GPUDrawPushConstants pushConstants;
-				pushConstants.vertexBuffer = mesh->meshBuffers.vertexBufferAddress;
-				pushConstants.worldMatrix = Math::Identity<glm::fmat4>();
-				pushConstants.normalMatrix = Math::Identity<glm::fmat4>();
-				vkCmdPushConstants(cmd, vkMat->pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
-
-				vkCmdDrawIndexed(cmd, lod.count, 1, lod.index, 0, 0);
 			}
 		}
-
 		// if (pointMesh) {
 		//
 		// 	AutoDeleteMeshAsset *mesh = pointMesh.get();

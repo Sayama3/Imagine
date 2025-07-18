@@ -335,7 +335,7 @@ namespace Imagine {
 					scene->CacheTransforms();
 					ctx.OpaqueSurfaces.reserve(scene->CountComponents<Renderable>());
 					ctx.OpaqueLines.reserve(scene->Count()*3);
-					scene->ForEach([&ctx](const Scene *scene, const EntityID id) {
+					scene->ForEachWithComponent<Light>([&ctx](const Scene *scene, const EntityID id, const Light&) {
 						const auto trs = scene->GetTransform(id);
 						const auto pos = trs.GetWorldPosition();
 						ctx.OpaqueLines.push_back({{Vertex::PC(pos, Vec4(1,0,0,1)), Vertex::PC(pos + trs.GetRight(), Vec4(1,0,0,1))}});

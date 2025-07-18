@@ -51,6 +51,7 @@ namespace Imagine::Vulkan {
 		}
 
 		ManualDeleteMeshAsset LoadManualLines(VulkanRenderer *renderer, std::span<LineObject> lines) {
+			MGN_PROFILE_FUNCTION();
 			ManualDeleteMeshAsset mesh;
 
 			std::vector<uint32_t> indices;
